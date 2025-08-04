@@ -1,0 +1,229 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>250728-250803 周记 缓存池项目学习 | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。 1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。 缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。 每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="250728-250803 周记 缓存池项目学习">
+<meta property="og:url" content="https://eliano64.github.io/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。 1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。 缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。 每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2025-08-04T02:40:00.000Z">
+<meta property="article:modified_time" content="2025-08-04T08:08:39.654Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="projects">
+<meta property="article:tag" content="cache">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "250728-250803 周记 缓存池项目学习",
+  "url": "https://eliano64.github.io/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2025-08-04T02:40:00.000Z",
+  "dateModified": "2025-08-04T08:08:39.654Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://eliano64.github.io/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '250728-250803 周记 缓存池项目学习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/about"><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">250728-250803 周记 缓存池项目学习</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/about"><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">250728-250803 周记 缓存池项目学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-04T02:40:00.000Z" title="发表于 2025-08-04 10:40:00">2025-08-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-04T08:08:39.654Z" title="更新于 2025-08-04 16:08:39">2025-08-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/cache/">cache</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>本周主要跟着<a target="_blank" rel="noopener" href="https://programmercarl.com/other/project_huancun.html">代码随想录</a>学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。</p>
+<h2 id="1-LRU"><a href="#1-LRU" class="headerlink" title="1. LRU"></a>1. LRU</h2><p>LRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。</p>
+<p>缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。</p>
+<p>每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时将该元素从哈希表中删除。</p>
+<h3 id="1-1-改进"><a href="#1-1-改进" class="headerlink" title="1.1 改进"></a>1.1 改进</h3><p>以上的LRU存在着缓存污染、锁的粒度过大的问题。</p>
+<p>缓存污染：当新加进来的一次性的数据很多，导致缓存满时，传统的LRU会直接删除尾部元素。但是，尾部元素可能是热门数据。<br>锁的粒度大：一把大锁锁全局。多线程高并发的访问下，同步等待将是一笔极大的时间开销。</p>
+<p>故考虑以下改进：</p>
+<h3 id="1-1-1-LRU-K"><a href="#1-1-1-LRU-K" class="headerlink" title="1.1.1 LRU-K"></a>1.1.1 LRU-K</h3><p>LRU-K在普通的LRU的基础上，新增加了一个小的LRU副缓存。当数据进入时，它会先进入副缓存，并访问计数加一。只有当它的访问计数大于等于K时，才会移出副缓存，进入主缓存。</p>
+<p>当主副缓存满时，淘汰机制与普通LRU一致。</p>
+<p>这样就可以避免缓存污染的问题。使得大量进入的一次性数据不会挤出热门数据。</p>
+<h3 id="1-1-2-LRU-Hash"><a href="#1-1-2-LRU-Hash" class="headerlink" title="1.1.2 LRU-Hash"></a>1.1.2 LRU-Hash</h3><p>与<a href="https://eliano64.github.io/2025/07/14/250707-250714-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/">2024-xv6-labs-2</a>中2.2 Buffer cache的思想一致，既然一个链表配全局大锁效率低，那就把链表分成多个小链表，每个小链表即是一个小的lru缓存，各自配置最大容量，并通过一个哈希表（<code>vector</code>即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除这个小链表的尾部元素。</p>
+<h2 id="2-LFU"><a href="#2-LFU" class="headerlink" title="2. LFU"></a>2. LFU</h2><p>LFU是Least Frequently Used的缩写，即淘汰使用次数最少的元素。</p>
+<p>缓存的实现使用了一个记录键-值对<code>&lt;key, value&gt;</code>的哈希表a和一个记录频率-列表对<code>&lt;freq, linklist&gt;</code>的哈希表b。哈希表a用于快速查找缓存中的元素，哈希表b用于根据频率高效地维护缓存中的元素。</p>
+<p>每当涉及一个元素的key时，将该元素的频率增加1，并将该元素移动到哈希表b中对应频率的链表头部。移动后若原链表为空则删去。当缓存满时，将哈希表b中频率最低的链表的尾部元素删除。同时将该元素从哈希表a中删除。</p>
+<h2 id="2-1-改进"><a href="#2-1-改进" class="headerlink" title="2.1 改进"></a>2.1 改进</h2><p>普通LFU存在着新来的元素容易被移出（即使是未来的热门数据）、而过时的热门数据很难被移出的问题，而且访问次数若一直增长，可能会导致上溢。</p>
+<p>同时与普通LRU一样，存在锁的粒度过大的问题。</p>
+<p>改进如下：</p>
+<h3 id="2-1-1-最大平均访问次数限制"><a href="#2-1-1-最大平均访问次数限制" class="headerlink" title="2.1.1 最大平均访问次数限制"></a>2.1.1 最大平均访问次数限制</h3><p>首先设置一个阈值。当数据访问&#x2F;插入发生时，不仅需要记录当前最小访问次数，还需要计算平均访问次数。然后当平均访问次数超过阈值时，就需要对记录的访问次数进行调整。所有的元素的访问次数减去阈值的一半，操作后小于0者设为1。然后更新记录<code>&lt;freq-linklist&gt;</code>的哈希表，将元素插入对应频率的链表中。</p>
+<p>这样的方式不仅可以避免访问次数的上溢，还可以加快数据的更新，让旧的热点数据”老化”，缓解挤占未来的热点数据空间的问题。</p>
+<h3 id="2-1-2-LFU-Hash"><a href="#2-1-2-LFU-Hash" class="headerlink" title="2.1.2 LFU-Hash"></a>2.1.2 LFU-Hash</h3><p>同LRU-Hash的思想，分成多个记录<code>&lt;freq-linklist&gt;</code>的小哈希表，每个表即是一个小的lfu缓存，各自配置最大容量，并通过一个哈希表（<code>vector</code>即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除频率最低的链表的尾部元素。</p>
+<h2 id="3-ARC"><a href="#3-ARC" class="headerlink" title="3. ARC"></a>3. ARC</h2><p>ARC是Adaptive Replacement Cache的缩写，即自适应替换缓存。</p>
+<p>当访问的数据趋向于访问最近的内容，会更多地命中LRU list；当系统趋向于访问频繁访问的内容时，会更多地命中LFU list。</p>
+<p>LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混合，取长补短。于是就有了结合LRU和LFU的缓存替换算法，即ARC。</p>
+<p>基本思想是，将缓存分成两个部分，一部分是LRU缓存，一部分是LFU缓存，然后每个缓存有一个自己的ghost缓存。</p>
+<p>当新数据进入时，先进入LRU list，并访问次数设为一。当再次访问这个数据时，访问次数增加1。当访问次数达到阈值后，LFU list里也插入这个元素。于是，<strong>该数据块不仅仅只保存在LRU的缓存目录中，也将保存到LFU中</strong>。所以一个最近的热门数据若有更新应该是两个表同时进行的。</p>
+<p>这样，那些真正被频繁访问的页面将一直呆在缓存中，不会被冷数据的加入而误淘汰，不经常访问的数据会向链表头部移动，最终被淘汰出去。</p>
+<p>当缓存满时，需要淘汰一个元素。淘汰的逻辑与对应的普通LRU和普通LFU一致，只是淘汰出的元素要插入对应的ghost缓存中。ghost缓存的淘汰模式就是简单的FIFO即可。</p>
+<p>这样，访问元素在哪一边ghost中找到，就说明那一边的容量小了而对面的容量大了。对面的容量如果不为0则减一，然后这边的容量加一。否则跳过。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/">https://eliano64.github.io/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://Eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/projects/">projects</a><a class="post-meta__tags" href="/tags/cache/">cache</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="250721 thinking 二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">250721 thinking 二分查找</div></div><div class="info-2"><div class="info-item-1">1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。 于是总结一种模板： 定义域为[lo, hi)的单增的f(x), 找出最小的ans, 使得f(ans)&gt;0成立。 单减同理，甚至可以进行预处理先转化为单增的情况。 伪代码如下： 12345678910111213141516algorithm binary-search(lo,hi)	while the search area has elments do:		mid &lt;- lo + (hi-lo)/2;		if f(mid) satisfied: // the answer may occur here            		ans := mid;			hi &lt;- mid;             // the search area could have no elments when in the next loop, so return ans;  ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/" title="250721 thinking 单调栈"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-21</div><div class="info-item-2">250721 thinking 单调栈</div></div><div class="info-2"><div class="info-item-1"> 他向远方望去，无法看到高山背后的矮山，只看到一座座更高的山峰。————by 灵神  1. 总结单调栈就是保持栈内元素单调的栈。当新元素破坏单调性时，弹出栈顶元素，弹出的瞬间就找到栈顶元素对应的答案。 栈里存放着暂时还没有找到对应答案的元素。新元素入栈时，如果栈顶元素使得栈单调性被破环，那么栈顶元素的答案产生，栈顶元素找到答案，出栈。因此需要建立的栈的单调性与题目的答案需求往往是“反过来”。要下一个更大就要单减；要下一个更小就要单增。 12345678910algorithm generalized-monotonic-stack(A, cmp, process)    stack S ← ∅    for i ← 0 to n-1 do:        while S ≠ ∅ and condition(A[i], A[S.top()]) do: // 栈的单调性被破坏，while是为了让栈里满足条件的元素都可以出栈            j ← S.pop() // 栈顶出栈            recordAnswer(j, i)  // 计算并记录栈顶对应的答案   ...</div></div></div></a><a class="pagination-related" href="/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="250721 thinking 二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-21</div><div class="info-item-2">250721 thinking 二分查找</div></div><div class="info-2"><div class="info-item-1">1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。 于是总结一种模板： 定义域为[lo, hi)的单增的f(x), 找出最小的ans, 使得f(ans)&gt;0成立。 单减同理，甚至可以进行预处理先转化为单增的情况。 伪代码如下： 12345678910111213141516algorithm binary-search(lo,hi)	while the search area has elments do:		mid &lt;- lo + (hi-lo)/2;		if f(mid) satisfied: // the answer may occur here            		ans := mid;			hi &lt;- mid;             // the search area could have no elments when in the next loop, so return ans;  ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">10</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-LRU"><span class="toc-number">1.</span> <span class="toc-text">1. LRU</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%94%B9%E8%BF%9B"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 改进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-1-LRU-K"><span class="toc-number">1.2.</span> <span class="toc-text">1.1.1 LRU-K</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-2-LRU-Hash"><span class="toc-number">1.3.</span> <span class="toc-text">1.1.2 LRU-Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-LFU"><span class="toc-number">2.</span> <span class="toc-text">2. LFU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E6%94%B9%E8%BF%9B"><span class="toc-number">3.</span> <span class="toc-text">2.1 改进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-1-%E6%9C%80%E5%A4%A7%E5%B9%B3%E5%9D%87%E8%AE%BF%E9%97%AE%E6%AC%A1%E6%95%B0%E9%99%90%E5%88%B6"><span class="toc-number">3.1.</span> <span class="toc-text">2.1.1 最大平均访问次数限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-2-LFU-Hash"><span class="toc-number">3.2.</span> <span class="toc-text">2.1.2 LFU-Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-ARC"><span class="toc-number">4.</span> <span class="toc-text">3. ARC</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/" title="250728-250803 周记 缓存池项目学习">250728-250803 周记 缓存池项目学习</a><time datetime="2025-08-04T02:40:00.000Z" title="发表于 2025-08-04 10:40:00">2025-08-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/" title="250721 thinking 单调栈">250721 thinking 单调栈</a><time datetime="2025-07-21T10:15:00.000Z" title="发表于 2025-07-21 18:15:00">2025-07-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="250721 thinking 二分查找">250721 thinking 二分查找</a><time datetime="2025-07-21T10:15:00.000Z" title="发表于 2025-07-21 18:15:00">2025-07-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/" title="250714-250720 周记 2024-xv6-labs(2)">250714-250720 周记 2024-xv6-labs(2)</a><time datetime="2025-07-21T07:23:00.000Z" title="发表于 2025-07-21 15:23:00">2025-07-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/07/14/250707-250714-%E5%91%A8%E8%AE%B0-2024-xv6-labs-1/" title="250707-250714 周记 2024-xv6-labs(1)">250707-250714 周记 2024-xv6-labs(1)</a><time datetime="2025-07-14T10:02:00.000Z" title="发表于 2025-07-14 18:02:00">2025-07-14</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">TODO on footer</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css')
+    await btf.getScript('https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js')
+    await btf.getScript('https://cdn.jsdelivr.net/npm/katex/dist/contrib/auto-render.min.js')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  // 渲染数学公式
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ],
+      throwOnError: false
+    })
+  }
+
+  showKatex()
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
