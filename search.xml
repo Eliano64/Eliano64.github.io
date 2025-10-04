@@ -150,6 +150,15 @@ int searchInsert(vector&lt;int&gt;&amp; nums, int target)&#123;        int l
 
 定义域为$[0, +\infty)$, 找出最大的$\text{ans}$, $\text{ans}^2 \leqslant x$
 int mySqrt(int x) &#123;       long long l = 0, r = x+1, ans; // ans \in [0, +\infty), 但这里对r这样赋值只是为了让ans快速收敛。为什么x+1: x=0,1时 ans = x &lt; x+1。          while (l &lt; r) &#123;            long long  mid = (l+r)&gt;&gt;1;            if (mid * mid &lt;= x) &#123;//因为要找的就是ans*ans&lt;=x                ans = mid; //所以mid可能为答案。                l = mid + 1; //也可能mid不是答案，更新闭的下界为mid+1            &#125; else &#123;                r = mid; // 否则mid绝对不是答案。更新开的上界为mid。            &#125;        &#125;        return ans;     &#125;
+
+也有一些更抽象的二分查找：
+3350.检测相邻递增子数组II
+令f(x)：k=x时数组是否存在两个相邻且长度为 k 的严格递增子数组,存在则f(x)=1否则f(x)=0。
+则f(x)单减。满足二分查找的使用
+于是原问题即为
+定义域为$[2, \lceil nums.length&#x2F;2 \rceil)$, 找出最大的$\text{ans}$, $f(\text{ans})&gt;&#x3D;1$
+解法示例：
+func f(x int, lengths []int) bool &#123;    count := 0    for _, l := range lengths &#123;        if l &gt;= 2*x &#123;             return true        &#125;        if l &gt;= x &#123;            count++            if count &gt;= 2 &#123;                return true            &#125;        &#125;else&#123;            count = 0        &#125;    &#125;    return false&#125;func maxIncreasingSubarrays(nums []int) int &#123;    n := len(nums)    lengths := []int&#123;&#125;    cur := 1    for i := 1; i &lt; n; i++ &#123;        if nums[i] &gt; nums[i-1] &#123;            cur++        &#125; else &#123;            lengths = append(lengths, cur)            cur = 1        &#125;    &#125;    lengths = append(lengths, cur)    lo := 1; hi := len(nums)/2+1    var ans int    for lo&lt;hi&#123;        mi := lo + (hi-lo)/2        if f(mi,lengths)&#123;            ans = mi            lo = mi + 1        &#125;else&#123;            hi=mi        &#125;    &#125;    return ans&#125;
 ]]></content>
       <categories>
         <category>data structure &amp; algorithm</category>
@@ -158,6 +167,47 @@ int mySqrt(int x) &#123;       long long l = 0, r = x+1, ans; // ans \in [0,
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
         <tag>binary search</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250728-250803 周记 缓存池项目学习</title>
+    <url>/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。
+1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。
+缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。
+每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时将该元素从哈希表中删除。
+1.1 改进以上的LRU存在着缓存污染、锁的粒度过大的问题。
+缓存污染：当新加进来的一次性的数据很多，导致缓存满时，传统的LRU会直接删除尾部元素。但是，尾部元素可能是热门数据。锁的粒度大：一把大锁锁全局。多线程高并发的访问下，同步等待将是一笔极大的时间开销。
+故考虑以下改进：
+1.1.1 LRU-KLRU-K在普通的LRU的基础上，新增加了一个小的LRU副缓存。当数据进入时，它会先进入副缓存，并访问计数加一。只有当它的访问计数大于等于K时，才会移出副缓存，进入主缓存。
+当主副缓存满时，淘汰机制与普通LRU一致。
+这样就可以避免缓存污染的问题。使得大量进入的一次性数据不会挤出热门数据。
+1.1.2 LRU-Hash与2024-xv6-labs-2中2.2 Buffer cache的思想一致，既然一个链表配全局大锁效率低，那就把链表分成多个小链表，每个小链表即是一个小的lru缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除这个小链表的尾部元素。
+2. LFULFU是Least Frequently Used的缩写，即淘汰使用次数最少的元素。
+缓存的实现使用了一个记录键-值对&lt;key, value&gt;的哈希表a和一个记录频率-列表对&lt;freq, linklist&gt;的哈希表b。哈希表a用于快速查找缓存中的元素，哈希表b用于根据频率高效地维护缓存中的元素。
+每当涉及一个元素的key时，将该元素的频率增加1，并将该元素移动到哈希表b中对应频率的链表头部。移动后若原链表为空则删去。当缓存满时，将哈希表b中频率最低的链表的尾部元素删除。同时将该元素从哈希表a中删除。
+2.1 改进普通LFU存在着新来的元素容易被移出（即使是未来的热门数据）、而过时的热门数据很难被移出的问题，而且访问次数若一直增长，可能会导致上溢。
+同时与普通LRU一样，存在锁的粒度过大的问题。
+改进如下：
+2.1.1 最大平均访问次数限制首先设置一个阈值。当数据访问&#x2F;插入发生时，不仅需要记录当前最小访问次数，还需要计算平均访问次数。然后当平均访问次数超过阈值时，就需要对记录的访问次数进行调整。所有的元素的访问次数减去阈值的一半，操作后小于0者设为1。然后更新记录&lt;freq-linklist&gt;的哈希表，将元素插入对应频率的链表中。
+这样的方式不仅可以避免访问次数的上溢，还可以加快数据的更新，让旧的热点数据”老化”，缓解挤占未来的热点数据空间的问题。
+2.1.2 LFU-Hash同LRU-Hash的思想，分成多个记录&lt;freq-linklist&gt;的小哈希表，每个表即是一个小的lfu缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除频率最低的链表的尾部元素。
+3. ARCARC是Adaptive Replacement Cache的缩写，即自适应替换缓存。
+当访问的数据趋向于访问最近的内容，会更多地命中LRU list；当系统趋向于访问频繁访问的内容时，会更多地命中LFU list。
+LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混合，取长补短。于是就有了结合LRU和LFU的缓存替换算法，即ARC。
+基本思想是，将缓存分成两个部分，一部分是LRU缓存，一部分是LFU缓存，然后每个缓存有一个自己的ghost缓存。
+当新数据进入时，先进入LRU list，并访问次数设为一。当再次访问这个数据时，访问次数增加1。当访问次数达到阈值后，LFU list里也插入这个元素。于是，该数据块不仅仅只保存在LRU的缓存目录中，也将保存到LFU中。所以一个最近的热门数据若有更新应该是两个表同时进行的。
+这样，那些真正被频繁访问的页面将一直呆在缓存中，不会被冷数据的加入而误淘汰，不经常访问的数据会向链表头部移动，最终被淘汰出去。
+当缓存满时，需要淘汰一个元素。淘汰的逻辑与对应的普通LRU和普通LFU一致，只是淘汰出的元素要插入对应的ghost缓存中。ghost缓存的淘汰模式就是简单的FIFO即可。
+这样，访问元素在哪一边ghost中找到，就说明那一边的容量小了而对面的容量大了。对面的容量如果不为0则减一，然后这边的容量加一。否则跳过。
+]]></content>
+      <categories>
+        <category>cache</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>projects</tag>
+        <tag>cache</tag>
       </tags>
   </entry>
   <entry>
@@ -218,47 +268,6 @@ for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt;
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
         <tag>Monotonic Stack</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250728-250803 周记 缓存池项目学习</title>
-    <url>/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。
-1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。
-缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。
-每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时将该元素从哈希表中删除。
-1.1 改进以上的LRU存在着缓存污染、锁的粒度过大的问题。
-缓存污染：当新加进来的一次性的数据很多，导致缓存满时，传统的LRU会直接删除尾部元素。但是，尾部元素可能是热门数据。锁的粒度大：一把大锁锁全局。多线程高并发的访问下，同步等待将是一笔极大的时间开销。
-故考虑以下改进：
-1.1.1 LRU-KLRU-K在普通的LRU的基础上，新增加了一个小的LRU副缓存。当数据进入时，它会先进入副缓存，并访问计数加一。只有当它的访问计数大于等于K时，才会移出副缓存，进入主缓存。
-当主副缓存满时，淘汰机制与普通LRU一致。
-这样就可以避免缓存污染的问题。使得大量进入的一次性数据不会挤出热门数据。
-1.1.2 LRU-Hash与2024-xv6-labs-2中2.2 Buffer cache的思想一致，既然一个链表配全局大锁效率低，那就把链表分成多个小链表，每个小链表即是一个小的lru缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除这个小链表的尾部元素。
-2. LFULFU是Least Frequently Used的缩写，即淘汰使用次数最少的元素。
-缓存的实现使用了一个记录键-值对&lt;key, value&gt;的哈希表a和一个记录频率-列表对&lt;freq, linklist&gt;的哈希表b。哈希表a用于快速查找缓存中的元素，哈希表b用于根据频率高效地维护缓存中的元素。
-每当涉及一个元素的key时，将该元素的频率增加1，并将该元素移动到哈希表b中对应频率的链表头部。移动后若原链表为空则删去。当缓存满时，将哈希表b中频率最低的链表的尾部元素删除。同时将该元素从哈希表a中删除。
-2.1 改进普通LFU存在着新来的元素容易被移出（即使是未来的热门数据）、而过时的热门数据很难被移出的问题，而且访问次数若一直增长，可能会导致上溢。
-同时与普通LRU一样，存在锁的粒度过大的问题。
-改进如下：
-2.1.1 最大平均访问次数限制首先设置一个阈值。当数据访问&#x2F;插入发生时，不仅需要记录当前最小访问次数，还需要计算平均访问次数。然后当平均访问次数超过阈值时，就需要对记录的访问次数进行调整。所有的元素的访问次数减去阈值的一半，操作后小于0者设为1。然后更新记录&lt;freq-linklist&gt;的哈希表，将元素插入对应频率的链表中。
-这样的方式不仅可以避免访问次数的上溢，还可以加快数据的更新，让旧的热点数据”老化”，缓解挤占未来的热点数据空间的问题。
-2.1.2 LFU-Hash同LRU-Hash的思想，分成多个记录&lt;freq-linklist&gt;的小哈希表，每个表即是一个小的lfu缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除频率最低的链表的尾部元素。
-3. ARCARC是Adaptive Replacement Cache的缩写，即自适应替换缓存。
-当访问的数据趋向于访问最近的内容，会更多地命中LRU list；当系统趋向于访问频繁访问的内容时，会更多地命中LFU list。
-LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混合，取长补短。于是就有了结合LRU和LFU的缓存替换算法，即ARC。
-基本思想是，将缓存分成两个部分，一部分是LRU缓存，一部分是LFU缓存，然后每个缓存有一个自己的ghost缓存。
-当新数据进入时，先进入LRU list，并访问次数设为一。当再次访问这个数据时，访问次数增加1。当访问次数达到阈值后，LFU list里也插入这个元素。于是，该数据块不仅仅只保存在LRU的缓存目录中，也将保存到LFU中。所以一个最近的热门数据若有更新应该是两个表同时进行的。
-这样，那些真正被频繁访问的页面将一直呆在缓存中，不会被冷数据的加入而误淘汰，不经常访问的数据会向链表头部移动，最终被淘汰出去。
-当缓存满时，需要淘汰一个元素。淘汰的逻辑与对应的普通LRU和普通LFU一致，只是淘汰出的元素要插入对应的ghost缓存中。ghost缓存的淘汰模式就是简单的FIFO即可。
-这样，访问元素在哪一边ghost中找到，就说明那一边的容量小了而对面的容量大了。对面的容量如果不为0则减一，然后这边的容量加一。否则跳过。
-]]></content>
-      <categories>
-        <category>cache</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>projects</tag>
-        <tag>cache</tag>
       </tags>
   </entry>
   <entry>
@@ -916,6 +925,98 @@ TO BE CONTINUED
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking Trie</title>
+    <url>/2025/08/24/250824-thinking-Trie/</url>
+    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
+C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
+class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>Trie</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking 二叉树遍历的迭代法</title>
+    <url>/2025/08/24/250824-thinking-%E4%BA%8C%E5%8F%89%E6%A0%91%E9%81%8D%E5%8E%86%E7%9A%84%E8%BF%AD%E4%BB%A3%E6%B3%95/</url>
+    <content><![CDATA[关于二叉树的遍历，有递归法和迭代法两种。递归法简单易懂，但是迭代法较为复杂，需要使用栈来模拟递归的过程。
+这里以“将二叉树按某种顺序遍历输出”为例，介绍迭代法的实现。
+关键在于理解某个节点输出的时机。
+1. 前序遍历
+先输出，再将左子节点入栈。没有左子节点了，才考虑右子节点的入栈。
+
+vector&lt;int&gt; preorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                ans.push_back(root-&gt;val);                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top()-&gt;right;            stk.pop();        &#125;        return ans;    &#125;
+
+2. 中序遍历
+先将左子节点入栈，没有左子节点了，才输出当前节点，然后考虑右子节点的入栈。
+
+vector&lt;int&gt; inorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            stk.pop();            ans.push_back(root-&gt;val);            root=root-&gt;right;        &#125;        return ans;    &#125;
+
+3. 后序遍历
+先将左子节点入栈，没有左子节点了，才考虑右子节点的入栈。如果右子节点也没有了，才输出当前节点。
+
+
+难点：如何判断当前节点的右子节点是否已经遍历过了？
+
+
+使用一个指针prev来记录上一个遍历的节点。
+如果当前节点的右子节点为空，或者右子节点已经遍历过了，才输出当前节点。
+否则，将右子节点入栈，然后考虑左子节点的入栈。
+
+vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt;stk;        TreeNode* prev=nullptr;        while(!stk.empty()||root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            if(root-&gt;right==nullptr || root-&gt;right==prev)&#123;                ans.push_back(root-&gt;val);                prev=root;                stk.pop();                root=nullptr; // 这里很重要！否则会因为root不为空而“入栈-出栈”无限循环            &#125;            else&#123;                root=root-&gt;right;            &#125;        &#125;        return ans;    &#125;
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>Binary Tree</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking 单例模式</title>
+    <url>/2025/08/24/250824-thinking-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
+2. 为什么需要单例模式？在多线程环境下，我们需要多个线程使用同一份资源。
+2.1 为什么不使用全局变量？在一些较为简单的环境中，直接使用一些全局变量供所有线程使用是很好的。
+但是，如果这个对象是资源密集型的，使用全局变量会导致资源的浪费。而且，简单的全局变量没有提供访问控制（封装），线程可以任意地访问和修改。
+而单例模式就可以实现按需创建实例，避免了资源的浪费。而且提供了类封装，确保不会有意外的修改。
+3. 单例模式的实现（C++）这其实体现了一种static关键字的妙用。
+class Singleton &#123;public:    static Singleton* getInstance() &#123;        static Singleton instance;        return &amp;instance;    &#125;    //...other public interface ...private:    Singleton() &#123;&#125;    //...other members&#125;;//...existing code ...auto instance = Singleton::getInstance();// ... call public interface ...
+
+类图：
+
+    classDiagram
+    class Singleton {
+        +getInstance() Singleton
+    }
+  
+
+3.1 线程安全C++11 §6.7 (stmt.dcl) 规定：
+
+If control enters the declaration concurrently while the variable is being initialized, the concurrent execution shall wait for completion of the initialization.
+
+函数作用域内的局部静态变量的初始化是线程安全的。
+3.2 懒加载由于static关键字的特性，实例是在第一次调用getInstance()时才创建, 之后的调用都只是返回已有的实例。
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>Object Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>Singleton Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250811-250817 周记 linux命令与shell编程学习(2)</title>
     <url>/2025/08/19/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-2/</url>
     <content><![CDATA[2. 第二部分 shell 脚本编程基础2.11 构建基础脚本2.11.2 创建 shell 脚本文件
@@ -1523,62 +1624,6 @@ cron 时间表允许使用特定值、取值范围(比如 1-5)或者通配符(*)
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking 二叉树遍历的迭代法</title>
-    <url>/2025/08/24/250824-thinking-%E4%BA%8C%E5%8F%89%E6%A0%91%E9%81%8D%E5%8E%86%E7%9A%84%E8%BF%AD%E4%BB%A3%E6%B3%95/</url>
-    <content><![CDATA[关于二叉树的遍历，有递归法和迭代法两种。递归法简单易懂，但是迭代法较为复杂，需要使用栈来模拟递归的过程。
-这里以“将二叉树按某种顺序遍历输出”为例，介绍迭代法的实现。
-关键在于理解某个节点输出的时机。
-1. 前序遍历
-先输出，再将左子节点入栈。没有左子节点了，才考虑右子节点的入栈。
-
-vector&lt;int&gt; preorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                ans.push_back(root-&gt;val);                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top()-&gt;right;            stk.pop();        &#125;        return ans;    &#125;
-
-2. 中序遍历
-先将左子节点入栈，没有左子节点了，才输出当前节点，然后考虑右子节点的入栈。
-
-vector&lt;int&gt; inorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            stk.pop();            ans.push_back(root-&gt;val);            root=root-&gt;right;        &#125;        return ans;    &#125;
-
-3. 后序遍历
-先将左子节点入栈，没有左子节点了，才考虑右子节点的入栈。如果右子节点也没有了，才输出当前节点。
-
-
-难点：如何判断当前节点的右子节点是否已经遍历过了？
-
-
-使用一个指针prev来记录上一个遍历的节点。
-如果当前节点的右子节点为空，或者右子节点已经遍历过了，才输出当前节点。
-否则，将右子节点入栈，然后考虑左子节点的入栈。
-
-vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt;stk;        TreeNode* prev=nullptr;        while(!stk.empty()||root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            if(root-&gt;right==nullptr || root-&gt;right==prev)&#123;                ans.push_back(root-&gt;val);                prev=root;                stk.pop();                root=nullptr; // 这里很重要！否则会因为root不为空而“入栈-出栈”无限循环            &#125;            else&#123;                root=root-&gt;right;            &#125;        &#125;        return ans;    &#125;
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>Binary Tree</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking Trie</title>
-    <url>/2025/08/24/250824-thinking-Trie/</url>
-    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
-C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
-class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>Trie</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250824 thinking 埃氏筛</title>
     <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
     <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
@@ -1603,33 +1648,44 @@ class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking 单例模式</title>
-    <url>/2025/08/24/250824-thinking-%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
-    <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
-2. 为什么需要单例模式？在多线程环境下，我们需要多个线程使用同一份资源。
-2.1 为什么不使用全局变量？在一些较为简单的环境中，直接使用一些全局变量供所有线程使用是很好的。
-但是，如果这个对象是资源密集型的，使用全局变量会导致资源的浪费。而且，简单的全局变量没有提供访问控制（封装），线程可以任意地访问和修改。
-而单例模式就可以实现按需创建实例，避免了资源的浪费。而且提供了类封装，确保不会有意外的修改。
-3. 单例模式的实现（C++）这其实体现了一种static关键字的妙用。
-class Singleton &#123;public:    static Singleton* getInstance() &#123;        static Singleton instance;        return &amp;instance;    &#125;    //...other public interface ...private:    Singleton() &#123;&#125;    //...other members&#125;;//...existing code ...auto instance = Singleton::getInstance();// ... call public interface ...
+    <title>250824 thinking 状压dp</title>
+    <url>/2025/08/24/250824-thinking-%E7%8A%B6%E5%8E%8Bdp/</url>
+    <content><![CDATA[状压dp使用二进制数来表示状态，将当前已选元素的集合表示为一个二进制数。适用于需要枚举每一种排列进行判断、且最大的$n$有$10&lt;n&lt;20$的题目。状压dp能使得时间复杂度从暴力搜索的$O(n!)$降到$O(n*2^n)$(相邻无关)或者$O(n^2 * 2^n)$(相邻相关)。
+若当前表示已选元素的集合的二进制掩码为mask，则；
 
-3.1 线程安全C++11 §6.7 (stmt.dcl) 规定：
+mask &amp;(1&lt;&lt;i) : 表示第i个元素是否被选择
+mask|(1&lt;&lt;i) : 表示将第i个元素加入集合
+popcount(mask) : 表示集合中元素的个数
 
-If control enters the declaration concurrently while the variable is being initialized, the concurrent execution shall wait for completion of the initialization.
+1. 相邻无关当前位置的选择不依赖于前一个位置的选择，只依赖于当前已选元素的集合。
+$dp[mask]$表示状态为mask的情况(即已经选择的集合的二进制掩码为mask)下的最优解。
+1.1 例题假设有从 1 到 n 的 n 个整数。用这些整数构造一个数组 perm（下标从 1 开始），只要满足下述条件 之一 ，该数组就是一个 优美的排列 ：
 
-函数作用域内的局部静态变量的初始化是线程安全的。
-3.2 懒加载由于static关键字的特性，实例是在第一次调用getInstance()时才创建, 之后的调用都只是返回已有的实例。
-]]></content>
+perm[i] 能够被 i 整除
+i 能够被 perm[i] 整除
+1 &lt;&#x3D; n &lt;&#x3D; 15
+
+给你一个整数 n ，返回可以构造的 优美排列 的 数量 。
+int countArrangement(int n) &#123;        vector&lt;int&gt; dp(1 &lt;&lt; n, 0);        dp[0] = 1;        for(int m = 0; m &lt; 1 &lt;&lt; n; ++m) &#123;            int l = popcount((unsigned) m);            ++l;            for(int j = 0; j &lt; n; ++j) &#123;                int p = j + 1;                if(!(m &amp; (1&lt;&lt;j)))&#123;                    if((l % p == 0)||(p % l == 0))&#123;                        dp[m | (1&lt;&lt;j)] += dp[m];                     &#125;                &#125;            &#125;        &#125;        return dp.back();    &#125;
+
+2. 相邻相关当前位置的选择不仅依赖于当前已选元素的集合，还依赖于前一个位置的选择。
+$dp[mask][i]$表示状态为mask、前一个位置的选择为i的情况下的最优解。
+2.1 例题给你一个下标从 0 开始的整数数组 nums ，它包含 n 个 互不相同 的正整数。如果 nums 的一个排列满足以下条件，我们称它是一个特别的排列：
+
+对于 0 &lt;&#x3D; i &lt; n - 1 的下标 i ，要么 nums[i] % nums[i+1] &#x3D;&#x3D; 0 ，要么 nums[i+1] % nums[i] &#x3D;&#x3D; 0 。
+2 &lt;&#x3D; nums.length &lt;&#x3D; 14
+1 &lt;&#x3D; nums[i] &lt;&#x3D; 1e9
+
+请你返回特别排列的总数目。由于答案可能很大，请将它对 $10^9 + 7$ 取余后返回。
+int specialPerm(vector&lt;int&gt;&amp; nums) &#123;        const int mod = 1e9+7;        int n=nums.size();        vector&lt;vector&lt;int&gt;&gt;dp(1&lt;&lt;n,vector&lt;int&gt;(n,0));        for(int i=0;i&lt;n;++i)&#123;            dp[1&lt;&lt;i][i]=1;        &#125;        for(int m=0;m&lt;1&lt;&lt;n;++m)&#123;            for(int i=0;i&lt;n;++i)&#123;                if(m &amp; (1&lt;&lt;i))&#123;                    for(int j=0;j&lt;n;++j)&#123;                        if(!(m&amp;(1&lt;&lt;j)))&#123;                            if((nums[i]%nums[j]==0)||(nums[j]%nums[i]==0))&#123;                                dp[m|(1&lt;&lt;j)][j]=(dp[m|(1&lt;&lt;j)][j] + dp[m][i])%mod;                            &#125;                        &#125;                    &#125;                &#125;            &#125;        &#125;        int ans=0;        for(int i=0;i&lt;n;++i)&#123;            ans=(ans+dp[(1&lt;&lt;n)-1][i])%mod;        &#125;        return ans;    &#125;]]></content>
       <categories>
-        <category>Design Pattern</category>
+        <category>data structure &amp; algorithm</category>
       </categories>
       <tags>
         <tag>C++</tag>
-        <tag>reading note</tag>
-        <tag>Object Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>Singleton Pattern</tag>
-        <tag>Head First Design Patterns</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>dynamic programming</tag>
+        <tag>state compression</tag>
       </tags>
   </entry>
   <entry>
@@ -1700,24 +1756,33 @@ func subsequenceSumAfterCapping(nums []int, k int) []bool &#123;	slices.Sort(num
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking 快速排序</title>
-    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
-    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
-1. 伪代码示例这里是从小到大的顺序排序。
-// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
+    <title>250926 thinking 子序列判断</title>
+    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
+    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
+一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
+现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
+这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
+比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
+我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
+于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
+2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
+其他nxt[i][c]构建：
+for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
 
-2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
-2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
-2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+对于一个字符串$e_i$判断:
+idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
+
+3. 例题匹配子序列的单词数
+给出go的解法示例
+func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
 ]]></content>
       <categories>
         <category>data structure &amp; algorithm</category>
       </categories>
       <tags>
-        <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
-        <tag>quick sort</tag>
-        <tag>Hoare partition</tag>
+        <tag>string</tag>
+        <tag>go</tag>
       </tags>
   </entry>
   <entry>
@@ -1753,44 +1818,24 @@ func isZeroArray(nums []int, queries [][]int) bool &#123;	diff := make([]int, le
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking 状压dp</title>
-    <url>/2025/08/24/250824-thinking-%E7%8A%B6%E5%8E%8Bdp/</url>
-    <content><![CDATA[状压dp使用二进制数来表示状态，将当前已选元素的集合表示为一个二进制数。适用于需要枚举每一种排列进行判断、且最大的$n$有$10&lt;n&lt;20$的题目。状压dp能使得时间复杂度从暴力搜索的$O(n!)$降到$O(n*2^n)$(相邻无关)或者$O(n^2 * 2^n)$(相邻相关)。
-若当前表示已选元素的集合的二进制掩码为mask，则；
+    <title>250824 thinking 快速排序</title>
+    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
+    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
+1. 伪代码示例这里是从小到大的顺序排序。
+// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
 
-mask &amp;(1&lt;&lt;i) : 表示第i个元素是否被选择
-mask|(1&lt;&lt;i) : 表示将第i个元素加入集合
-popcount(mask) : 表示集合中元素的个数
-
-1. 相邻无关当前位置的选择不依赖于前一个位置的选择，只依赖于当前已选元素的集合。
-$dp[mask]$表示状态为mask的情况(即已经选择的集合的二进制掩码为mask)下的最优解。
-1.1 例题假设有从 1 到 n 的 n 个整数。用这些整数构造一个数组 perm（下标从 1 开始），只要满足下述条件 之一 ，该数组就是一个 优美的排列 ：
-
-perm[i] 能够被 i 整除
-i 能够被 perm[i] 整除
-1 &lt;&#x3D; n &lt;&#x3D; 15
-
-给你一个整数 n ，返回可以构造的 优美排列 的 数量 。
-int countArrangement(int n) &#123;        vector&lt;int&gt; dp(1 &lt;&lt; n, 0);        dp[0] = 1;        for(int m = 0; m &lt; 1 &lt;&lt; n; ++m) &#123;            int l = popcount((unsigned) m);            ++l;            for(int j = 0; j &lt; n; ++j) &#123;                int p = j + 1;                if(!(m &amp; (1&lt;&lt;j)))&#123;                    if((l % p == 0)||(p % l == 0))&#123;                        dp[m | (1&lt;&lt;j)] += dp[m];                     &#125;                &#125;            &#125;        &#125;        return dp.back();    &#125;
-
-2. 相邻相关当前位置的选择不仅依赖于当前已选元素的集合，还依赖于前一个位置的选择。
-$dp[mask][i]$表示状态为mask、前一个位置的选择为i的情况下的最优解。
-2.1 例题给你一个下标从 0 开始的整数数组 nums ，它包含 n 个 互不相同 的正整数。如果 nums 的一个排列满足以下条件，我们称它是一个特别的排列：
-
-对于 0 &lt;&#x3D; i &lt; n - 1 的下标 i ，要么 nums[i] % nums[i+1] &#x3D;&#x3D; 0 ，要么 nums[i+1] % nums[i] &#x3D;&#x3D; 0 。
-2 &lt;&#x3D; nums.length &lt;&#x3D; 14
-1 &lt;&#x3D; nums[i] &lt;&#x3D; 1e9
-
-请你返回特别排列的总数目。由于答案可能很大，请将它对 $10^9 + 7$ 取余后返回。
-int specialPerm(vector&lt;int&gt;&amp; nums) &#123;        const int mod = 1e9+7;        int n=nums.size();        vector&lt;vector&lt;int&gt;&gt;dp(1&lt;&lt;n,vector&lt;int&gt;(n,0));        for(int i=0;i&lt;n;++i)&#123;            dp[1&lt;&lt;i][i]=1;        &#125;        for(int m=0;m&lt;1&lt;&lt;n;++m)&#123;            for(int i=0;i&lt;n;++i)&#123;                if(m &amp; (1&lt;&lt;i))&#123;                    for(int j=0;j&lt;n;++j)&#123;                        if(!(m&amp;(1&lt;&lt;j)))&#123;                            if((nums[i]%nums[j]==0)||(nums[j]%nums[i]==0))&#123;                                dp[m|(1&lt;&lt;j)][j]=(dp[m|(1&lt;&lt;j)][j] + dp[m][i])%mod;                            &#125;                        &#125;                    &#125;                &#125;            &#125;        &#125;        int ans=0;        for(int i=0;i&lt;n;++i)&#123;            ans=(ans+dp[(1&lt;&lt;n)-1][i])%mod;        &#125;        return ans;    &#125;]]></content>
+2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
+2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
+2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+]]></content>
       <categories>
         <category>data structure &amp; algorithm</category>
       </categories>
       <tags>
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
-        <tag>dynamic programming</tag>
-        <tag>state compression</tag>
+        <tag>quick sort</tag>
+        <tag>Hoare partition</tag>
       </tags>
   </entry>
   <entry>
@@ -1822,33 +1867,118 @@ go示例解法
       </tags>
   </entry>
   <entry>
-    <title>250926 thinking 子序列判断</title>
-    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
-    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
-一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
-现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
-这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
-比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
-我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
-于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
-2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
-其他nxt[i][c]构建：
-for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
+    <title>251003 thinking factory method&amp; abstract factory</title>
+    <url>/2025/10/03/251003-thinking-factory-method-abstract-factory/</url>
+    <content><![CDATA[1. 工厂方法以点菜为例。
+type dish interface&#123; Cook() &#125;type pizza struct&#123;&#125;type burger struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;func (*burger) Cook() &#123;  &#125;
 
-对于一个字符串$e_i$判断:
-idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
+若不用工厂方法，则客户端直连产品，新增产品要改分支，不符合开闭原则。
+func orderDish(typeName string) dish &#123;    switch typeName &#123;    case &quot;pizza&quot;:        d := &amp;pizza&#123;&#125;        d.Cook() // &quot;cook pizza&quot;        return d    case &quot;burger&quot;:        d := &amp;burger&#123;&#125;        d.Cook() // &quot;cook burger&quot;        return d    default:        return nil    &#125;&#125;
+而使用工厂方法后，客户端只依赖抽象工厂，新增产品时只需要新增具体工厂即可，符合开闭原则。
+即，把“怎么做菜”的细节从用户（软件开发程序员）手里拿走，交给各自的工厂（中间件）。
+type Factory interface &#123;    Create() dish&#125;type PizzaFactory struct&#123;&#125;func (PizzaFactory) Create() dish &#123; return &amp;pizza&#123;&#125; &#125;type BurgerFactory struct&#123;&#125;func (BurgerFactory) Create() dish &#123; return &amp;burger&#123;&#125; &#125;func order(factory Factory) dish &#123;    d := factory.Create()    d.Cook()     return d&#125;
 
-3. 例题匹配子序列的单词数
-给出go的解法示例
-func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
+这样的话，新增产品时只需要新增产品 + 工厂即可，无需修改用户程序。符合开闭原则。
+type sushi struct&#123;&#125;func (s *sushi) Cook() &#123;  &#125;type SushiFactory struct&#123;&#125;func (SushiFactory) Create() dish &#123; return &amp;sushi&#123;&#125; &#125;
+
+客户端只依赖抽象工厂，只需调用工厂方法即可，不用修改。
+类图：
+
+    classDiagram
+  class Dish {
+    +Cook() 
+  }
+  class Pizza {
+    +Cook() 
+  }
+  class Burger {
+    +Cook() 
+  }
+  Dish &lt;|.. Pizza
+  Dish &lt;|.. Burger
+
+  class Factory {
+    +Create() Dish
+  }
+  class PizzaFactory
+  class BurgerFactory
+  Factory &lt;|.. PizzaFactory
+  Factory &lt;|.. BurgerFactory
+
+  Factory ..&gt; Dish : Create()
+  
+
+2. 抽象工厂场景：套餐由两个相关组件组成（菜 Dish + 饮料 Drink），同一风格的组件应该一起创建并保持搭配一致（意式：Pizza+Coffee，美式：Burger+Cola）。
+// 产品族接口type dish interface&#123; Cook() &#125;type drink interface&#123; Serve() &#125;// 具体产品type pizza struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;type burger struct&#123;&#125;func (*burger) Cook() &#123;  &#125;type coffee struct&#123;&#125;func (coffee) Serve() &#123;  &#125;type cola struct&#123;&#125;func (cola) Serve() &#123;  &#125;    
+
+抽象工厂提供“同时创建多个相关产品”的统一接口，客户端只选择工厂（风格），不再传字符串。
+中间件：工厂方法的“实现”，负责创建具体产品。
+// 抽象工厂：一次创建同一风格的多个相关产品type kitchenFactory interface &#123;    CreateDish() dish    CreateDrink() drink&#125;// 具体工厂：意式（Pizza + Coffee）type italianFactory struct&#123;&#125;func (italianFactory) CreateDish() dish   &#123; return &amp;pizza&#123;&#125; &#125;func (italianFactory) CreateDrink() drink &#123; return &amp;coffee&#123;&#125; &#125;// 具体工厂：美式（Burger + Cola）type americanFactory struct&#123;&#125;func (americanFactory) CreateDish() dish   &#123; return &amp;burger&#123;&#125; &#125;func (americanFactory) CreateDrink() drink &#123; return &amp;cola&#123;&#125; &#125;
+
+用户只需要依赖抽象工厂，无需知道具体产品。
+func orderSet(f kitchenFactory) (dish, drink) &#123;    d := f.CreateDish()    d.Cook()    r := f.CreateDrink()    r.Serve()    return d, r&#125;
+
+类图：
+
+    classDiagram
+class dish {
++Cook()
+}
+class drink {
++Serve()
+}
+
+class pizza {
++Cook()
+}
+class burger {
++Cook()
+}
+class coffee {
++Serve()
+}
+class cola {
++Serve()
+}
+
+dish &lt;|.. pizza
+dish &lt;|.. burger
+drink &lt;|.. coffee
+drink &lt;|.. cola
+
+class kitchenFactory {
++CreateDish() dish
++CreateDrink() drink
+}
+class italianFactory
+class americanFactory
+
+kitchenFactory &lt;|.. italianFactory
+kitchenFactory &lt;|.. americanFactory
+
+italianFactory ..&gt; dish : CreateDish()
+italianFactory ..&gt; drink : CreateDrink()
+americanFactory ..&gt; dish : CreateDish()
+americanFactory ..&gt; drink : CreateDrink()
+  
+
+
+
+
+客户端不写 switch、不传 “pizza&#x2F;burger” 字符串；只选风格工厂（Italian&#x2F;American）。
+搭配关系由工厂保证，防止“风格混搭”造成业务不一致。
+扩展新风格时，仅新增“具体工厂 + 其产品”，保持开闭原则。
+
 ]]></content>
       <categories>
-        <category>data structure &amp; algorithm</category>
+        <category>Design Pattern</category>
       </categories>
       <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
+        <tag>Design Pattern</tag>
         <tag>go</tag>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Factory Method</tag>
+        <tag>Abstract Factory</tag>
       </tags>
   </entry>
   <entry>
