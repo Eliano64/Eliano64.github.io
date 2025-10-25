@@ -1,6 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>250707-250714 周记 2024-xv6-labs(1)</title>
+    <url>/2025/07/14/250707-250714-%E5%91%A8%E8%AE%B0-2024-xv6-labs-1/</url>
+    <content><![CDATA[本周主要完成了2024-xv6-labs的util到cow的五个实验。
+1. util lab1.1 sleep这个算是最简单的实验了。按照hints一步步写即可。没有任何额外需要注意的地方。
+1.2 pingpong这个实验的主要难点是理解pipe函数的使用。先查看 sys_pipe函数：
+voidsys_pipe(void)&#123;   uint64 fdarray; // user pointer to array of two integers   struct file *rf, *wf;   int fd0, fd1;   struct proc *p = myproc();      argaddr(0, &amp;fdarray);   if(pipealloc(&amp;rf, &amp;wf) &lt; 0)&#123;    ...   &#125;     ...   if((fd0 = fdalloc(rf)) &lt; 0 || (fd1 = fdalloc(wf)) &lt; 0)&#123;    ...   &#125;   if(copyout(p-&gt;pagetable, fdarray, (char*)&amp;fd0, sizeof(fd0)) &lt; 0 ||    copyout(p-&gt;pagetable, fdarray+sizeof(fd0), (char *)&amp;fd1, sizeof(fd1)) &lt; 0)&#123;    ...    &#125;    ...&#125;
+
+再继续查看 pipealloc fdalloc copyout等相关函数的定义。可见，pipe是把两个文件描述符分别传给了fdarray[0]和fdarray[1]，且fdarray[0]只读，fdarray[1]只写。
+而本题中，需要父-&gt;子 子-&gt;父两个管道。且对于父进程和子进程都需要读和写，最后代码如下：
+int p1[2]; // 父进程-&gt;子进程int p2[2]; // 子进程-&gt;父进程pipe(p1);pipe(p2);char buf;if(pid&gt;0)&#123;    close(p1[0]); // 关闭p1读端    close(p2[1]); // 关闭p2写端    write(p1[1], &quot;a&quot;, 1);    close(p1[1]);    read(p2[0],&amp;buf,1);    close(p2[0]);    wait(0);    fprintf(2, &quot;%d: received pong\n&quot;, getpid());&#125;else&#123;    close(p1[1]);    close(p2[0]);    read(p1[0],&amp;buf,1);    close(p1[0]);    fprintf(2, &quot;%d: received ping\n&quot;, getpid());    write(p2[1],&quot;a&quot;,1);    close(p2[1]);&#125;
+
+1.3 primes这题更为考验 pipe的使用，而且要特别小心，需留意哪些文件描述符不会使用了并把他们都关闭。否则会导致资源耗尽，在大约37的地方输出乱码。
+该题提取质数的流程如下：
+//Input: file descriptor//Output: void//print the &quot;first&quot; prime in the sequence filtered by last process, and past the  //left sequence to next process recursively.primes(fd) :     if the sequence is empty do:        close(fd);        exit;    print the first number of the sequence;    fork;    pipe;    if is parent proc do:        pass the first number&#x27;s multiples;        write the left numnbers to son proc via pipe;        close(fd);        close(pipe&#x27;s write);        wait;    if is son proc do:        close(fd);        close(pipe&#x27;s write);        primes(pipe&#x27;s read);    exit;
+
+1.4 find实际上，find的写法跟 ls写法几乎相同，对于目录文件而言 ls是打印下面的所有文件，而 find只打印下面名字与第二个参数相同的文件。只是要注意到 find是递归查看目录文件，所以要额外处理”.”和”..”。
+1.5 xargs这题的关键是，如何处理 xargs前 |之前的部分的输出。
+首先要查明，这些输出是被管道重定向到了 stdin里，而 stdin对应的 fd为0.
+然后就是使用read将 stdin里的拼接在原argv后面。注意 &#39; &#39;和 &#39;\n&#39;的情况，前者代表一个参数输入结束，后者不仅代表结束，还需要立即执行一次。
+注意在 exec()中，argv末尾需以 0标志。
+2. syscall lab2.1 trace这题其实理清流程即可，并不复杂：
+将 trace的第一个参数（掩码）给 myproc()保存 ———— 所以 proc结构体需要新添加一个属性 mask来存。然后每当 myproc()执行系统调用时候，检查掩码中对于该系统调用对应的位是否为1（p-&gt;mask&amp;(1&lt;&lt;num)），以此来决定是否打印该系统调用。
+2.2 attack这道题。。。。emmmm。。。说实话我现在都没有想通。
+这道题思路很明显：既然新分配的内存保留了其先前使用的內容，那么attack也申请内存，在其中的某一页中的32个偏移开始8字节就一定是 secrest。
+关键在于：哪一页？
+说实话，我真是万策尽矣，无论是打印申请的每一页开头40字节，还是用前缀字符来比较（这个甚至诡异得一塌糊涂：attack申请后那一存着secret的页开头2字节是乱码），都一一失败了😭。
+最后是在不得已，去github上找到了参考：申请32页的第16页。
+以下是作者的原话：不能理解！这个16是怎么来的？？
+（我也不能理解。。。）
+3. pgtbl lab第3章是我目前为止xv6中做过的最痛苦的实验了😭,我真花了两三天时间做这个。尤其是最后一个超级块的部分，我搞了约14个小时，才过测试。。。
+3.1 ugetpid这个题目的难点。。。在于看不懂题目，找不到该在哪里写什么（bushi）。
+但其实也很简单：在用户空间里拿一页空间 USYSCALL存 usyscall，usyscall来存一些东西（这里是 getpid()）proc定义里添加它的地址，allocproc freeproc proc_pagetable proc_freepagetable这些与进程内存分配释放的函数里面也类似地加上处理 USYSCALL的部分即可。
+但是有一点要注意：关于 USYSCALL页”user can access but read only”.
+3.2 vmprint这个的关键点在于，搞清楚虚拟页和对应的三级页表。
+
+如果PTE叶在0级页表上，则对应的虚拟页相对于初始虚拟页的偏移是在30~38位上；
+如果PTE叶在1级页表上，则对应的虚拟页相对于初始虚拟页的偏移是在21~29位上；
+如果PTE叶在2级页表上，则对应的虚拟页相对于初始虚拟页的偏移是在12~20位上。
+
+（PTE叶指的是有效的，且不表示下一级页表的pte项）
+3.3 super block太困难了！太困难了！😭
+我最后甚至也是钻了空子（我留了10个超级块，而测试最多用8个超级块）才过的。
+题目的思路很清晰：留几个”super block”使得申请大内存空间时不是给他很多个小页而是给他几个超级块。那么，只要在管理分配页的数据结构中添加超级页并给它们标志，并在处理页的申请释放的函数中类似地加上相应处理逻辑即可。
+但是！！！有一些坑！
+
+当地址未对齐时，普通页可以直接 PGROUNDUP对齐。但超级页不能类比！如果直接SUPERPGROUNDUP再分配超级块的话，会导致内存地址空间出现“空隙”，panic(“uvmcopy: page not present”)。所以为了防止这个问题，要先通过分配普通块的方式进行对齐。
+超级页必须是在第1级页表上的pte表示，而不是普通页的第0级。因为超级页2MB，普通页4KB，一个第1级页表上的pte表示512个第0级pte————第1级的pte表示2MB。
+
+4. trap lab4.1 backtrace这题也比较简单，照着这个笔记上关于栈帧布局的示意图写代码并打印即可。
+4.2 alarm虽是 红 题，但我觉得比 pgtbl那道 蓝 题超级块简单得多。。。
+事实上，跟着hints一步步做就好，只是要注意：在进入handler函数时，时钟计数并不会自然停止，我们该在 proc额外设置一个属性来判断当前是否处于handler中。
+而且，为了恢复上下文，我们还应该设一个结构体属性作为备份，来存进入handler之前的trapframe的所有内容。
+5. cow lab这个实验也挺。。。先是filetest死活过不了，花了我几个小时找bug，然后把bug一改，嘿！您猜怎么着？threetest也过不了了🤣。最后找了两个多小时才找到原来是 kfree这边的问题。
+做法其实也是跟着hints一步步来，（注意trap要处理的是  r_scause()==15的情景）只是还是有坑：
+由于我把减引用计数的逻辑与kfree写一起的，所以我天真的以为只需要开始减引用计数时和末尾更新 freelist才需要加锁，而中间是不用锁的。然后 kerneltrap给我狠狠上了一课。😂
+最后还得别忘了在 usetrap添加处理虚拟地址超出最大值时杀死进程的逻辑，否则 usertests -q过不了。🤣
+6. 感谢
+MIT的cs6.828以及xv6-labs的设计者们，感谢他们提供如此优质的项目。虽然写的时候很痛苦😂但确实我感到自己对于C语言和操作系统的理解与认识有所深入。
+siriusyaoz，在做实验的时候，你的关于这个实验的代码给予了我很多启发🥹。
+
+]]></content>
+      <categories>
+        <category>2024-xv6-labs</category>
+      </categories>
+      <tags>
+        <tag>C</tag>
+        <tag>Projects</tag>
+        <tag>Operating System</tag>
+        <tag>2024-xv6-labs</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250714-250720 周记 2024-xv6-labs(2)</title>
     <url>/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/</url>
     <content><![CDATA[本周完成了剩下的实验。上一篇见2024-xv6-labs-1
@@ -155,78 +227,6 @@ for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt;
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
         <tag>Monotonic Stack</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250707-250714 周记 2024-xv6-labs(1)</title>
-    <url>/2025/07/14/250707-250714-%E5%91%A8%E8%AE%B0-2024-xv6-labs-1/</url>
-    <content><![CDATA[本周主要完成了2024-xv6-labs的util到cow的五个实验。
-1. util lab1.1 sleep这个算是最简单的实验了。按照hints一步步写即可。没有任何额外需要注意的地方。
-1.2 pingpong这个实验的主要难点是理解pipe函数的使用。先查看 sys_pipe函数：
-voidsys_pipe(void)&#123;   uint64 fdarray; // user pointer to array of two integers   struct file *rf, *wf;   int fd0, fd1;   struct proc *p = myproc();      argaddr(0, &amp;fdarray);   if(pipealloc(&amp;rf, &amp;wf) &lt; 0)&#123;    ...   &#125;     ...   if((fd0 = fdalloc(rf)) &lt; 0 || (fd1 = fdalloc(wf)) &lt; 0)&#123;    ...   &#125;   if(copyout(p-&gt;pagetable, fdarray, (char*)&amp;fd0, sizeof(fd0)) &lt; 0 ||    copyout(p-&gt;pagetable, fdarray+sizeof(fd0), (char *)&amp;fd1, sizeof(fd1)) &lt; 0)&#123;    ...    &#125;    ...&#125;
-
-再继续查看 pipealloc fdalloc copyout等相关函数的定义。可见，pipe是把两个文件描述符分别传给了fdarray[0]和fdarray[1]，且fdarray[0]只读，fdarray[1]只写。
-而本题中，需要父-&gt;子 子-&gt;父两个管道。且对于父进程和子进程都需要读和写，最后代码如下：
-int p1[2]; // 父进程-&gt;子进程int p2[2]; // 子进程-&gt;父进程pipe(p1);pipe(p2);char buf;if(pid&gt;0)&#123;    close(p1[0]); // 关闭p1读端    close(p2[1]); // 关闭p2写端    write(p1[1], &quot;a&quot;, 1);    close(p1[1]);    read(p2[0],&amp;buf,1);    close(p2[0]);    wait(0);    fprintf(2, &quot;%d: received pong\n&quot;, getpid());&#125;else&#123;    close(p1[1]);    close(p2[0]);    read(p1[0],&amp;buf,1);    close(p1[0]);    fprintf(2, &quot;%d: received ping\n&quot;, getpid());    write(p2[1],&quot;a&quot;,1);    close(p2[1]);&#125;
-
-1.3 primes这题更为考验 pipe的使用，而且要特别小心，需留意哪些文件描述符不会使用了并把他们都关闭。否则会导致资源耗尽，在大约37的地方输出乱码。
-该题提取质数的流程如下：
-//Input: file descriptor//Output: void//print the &quot;first&quot; prime in the sequence filtered by last process, and past the  //left sequence to next process recursively.primes(fd) :     if the sequence is empty do:        close(fd);        exit;    print the first number of the sequence;    fork;    pipe;    if is parent proc do:        pass the first number&#x27;s multiples;        write the left numnbers to son proc via pipe;        close(fd);        close(pipe&#x27;s write);        wait;    if is son proc do:        close(fd);        close(pipe&#x27;s write);        primes(pipe&#x27;s read);    exit;
-
-1.4 find实际上，find的写法跟 ls写法几乎相同，对于目录文件而言 ls是打印下面的所有文件，而 find只打印下面名字与第二个参数相同的文件。只是要注意到 find是递归查看目录文件，所以要额外处理”.”和”..”。
-1.5 xargs这题的关键是，如何处理 xargs前 |之前的部分的输出。
-首先要查明，这些输出是被管道重定向到了 stdin里，而 stdin对应的 fd为0.
-然后就是使用read将 stdin里的拼接在原argv后面。注意 &#39; &#39;和 &#39;\n&#39;的情况，前者代表一个参数输入结束，后者不仅代表结束，还需要立即执行一次。
-注意在 exec()中，argv末尾需以 0标志。
-2. syscall lab2.1 trace这题其实理清流程即可，并不复杂：
-将 trace的第一个参数（掩码）给 myproc()保存 ———— 所以 proc结构体需要新添加一个属性 mask来存。然后每当 myproc()执行系统调用时候，检查掩码中对于该系统调用对应的位是否为1（p-&gt;mask&amp;(1&lt;&lt;num)），以此来决定是否打印该系统调用。
-2.2 attack这道题。。。。emmmm。。。说实话我现在都没有想通。
-这道题思路很明显：既然新分配的内存保留了其先前使用的內容，那么attack也申请内存，在其中的某一页中的32个偏移开始8字节就一定是 secrest。
-关键在于：哪一页？
-说实话，我真是万策尽矣，无论是打印申请的每一页开头40字节，还是用前缀字符来比较（这个甚至诡异得一塌糊涂：attack申请后那一存着secret的页开头2字节是乱码），都一一失败了😭。
-最后是在不得已，去github上找到了参考：申请32页的第16页。
-以下是作者的原话：不能理解！这个16是怎么来的？？
-（我也不能理解。。。）
-3. pgtbl lab第3章是我目前为止xv6中做过的最痛苦的实验了😭,我真花了两三天时间做这个。尤其是最后一个超级块的部分，我搞了约14个小时，才过测试。。。
-3.1 ugetpid这个题目的难点。。。在于看不懂题目，找不到该在哪里写什么（bushi）。
-但其实也很简单：在用户空间里拿一页空间 USYSCALL存 usyscall，usyscall来存一些东西（这里是 getpid()）proc定义里添加它的地址，allocproc freeproc proc_pagetable proc_freepagetable这些与进程内存分配释放的函数里面也类似地加上处理 USYSCALL的部分即可。
-但是有一点要注意：关于 USYSCALL页”user can access but read only”.
-3.2 vmprint这个的关键点在于，搞清楚虚拟页和对应的三级页表。
-
-如果PTE叶在0级页表上，则对应的虚拟页相对于初始虚拟页的偏移是在30~38位上；
-如果PTE叶在1级页表上，则对应的虚拟页相对于初始虚拟页的偏移是在21~29位上；
-如果PTE叶在2级页表上，则对应的虚拟页相对于初始虚拟页的偏移是在12~20位上。
-
-（PTE叶指的是有效的，且不表示下一级页表的pte项）
-3.3 super block太困难了！太困难了！😭
-我最后甚至也是钻了空子（我留了10个超级块，而测试最多用8个超级块）才过的。
-题目的思路很清晰：留几个”super block”使得申请大内存空间时不是给他很多个小页而是给他几个超级块。那么，只要在管理分配页的数据结构中添加超级页并给它们标志，并在处理页的申请释放的函数中类似地加上相应处理逻辑即可。
-但是！！！有一些坑！
-
-当地址未对齐时，普通页可以直接 PGROUNDUP对齐。但超级页不能类比！如果直接SUPERPGROUNDUP再分配超级块的话，会导致内存地址空间出现“空隙”，panic(“uvmcopy: page not present”)。所以为了防止这个问题，要先通过分配普通块的方式进行对齐。
-超级页必须是在第1级页表上的pte表示，而不是普通页的第0级。因为超级页2MB，普通页4KB，一个第1级页表上的pte表示512个第0级pte————第1级的pte表示2MB。
-
-4. trap lab4.1 backtrace这题也比较简单，照着这个笔记上关于栈帧布局的示意图写代码并打印即可。
-4.2 alarm虽是 红 题，但我觉得比 pgtbl那道 蓝 题超级块简单得多。。。
-事实上，跟着hints一步步做就好，只是要注意：在进入handler函数时，时钟计数并不会自然停止，我们该在 proc额外设置一个属性来判断当前是否处于handler中。
-而且，为了恢复上下文，我们还应该设一个结构体属性作为备份，来存进入handler之前的trapframe的所有内容。
-5. cow lab这个实验也挺。。。先是filetest死活过不了，花了我几个小时找bug，然后把bug一改，嘿！您猜怎么着？threetest也过不了了🤣。最后找了两个多小时才找到原来是 kfree这边的问题。
-做法其实也是跟着hints一步步来，（注意trap要处理的是  r_scause()==15的情景）只是还是有坑：
-由于我把减引用计数的逻辑与kfree写一起的，所以我天真的以为只需要开始减引用计数时和末尾更新 freelist才需要加锁，而中间是不用锁的。然后 kerneltrap给我狠狠上了一课。😂
-最后还得别忘了在 usetrap添加处理虚拟地址超出最大值时杀死进程的逻辑，否则 usertests -q过不了。🤣
-6. 感谢
-MIT的cs6.828以及xv6-labs的设计者们，感谢他们提供如此优质的项目。虽然写的时候很痛苦😂但确实我感到自己对于C语言和操作系统的理解与认识有所深入。
-siriusyaoz，在做实验的时候，你的关于这个实验的代码给予了我很多启发🥹。
-
-]]></content>
-      <categories>
-        <category>2024-xv6-labs</category>
-      </categories>
-      <tags>
-        <tag>C</tag>
-        <tag>Projects</tag>
-        <tag>Operating System</tag>
-        <tag>2024-xv6-labs</tag>
       </tags>
   </entry>
   <entry>
@@ -1532,6 +1532,58 @@ cron 时间表允许使用特定值、取值范围(比如 1-5)或者通配符(*)
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking Trie</title>
+    <url>/2025/08/24/250824-thinking-Trie/</url>
+    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
+C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
+class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>Trie</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking singleton</title>
+    <url>/2025/08/24/250824-thinking-singleton/</url>
+    <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
+2. 为什么需要单例模式？在多线程环境下，我们需要多个线程使用同一份资源。
+2.1 为什么不使用全局变量？在一些较为简单的环境中，直接使用一些全局变量供所有线程使用是很好的。
+但是，如果这个对象是资源密集型的，使用全局变量会导致资源的浪费。而且，简单的全局变量没有提供访问控制（封装），线程可以任意地访问和修改。
+而单例模式就可以实现按需创建实例，避免了资源的浪费。而且提供了类封装，确保不会有意外的修改。
+3. 单例模式的实现（go）单例模式尤其要注意线程安全。 sync.Once 确保了实例只被创建一次，避免了多线程环境下的竞态条件。
+以下是一个懒加载的版本。
+中间件代码：
+var once sync.Oncetype singleton struct &#123;&#125;var singleInstance *singletonfunc GetInstance() *singleton &#123;    if singleInstance == nil &#123;        once.Do(            func() &#123;                singleInstance = &amp;singleton&#123;&#125;            &#125;)    &#125;     return singleInstance&#125;
+
+客户端代码：
+func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;           instance := GetInstance() // 每个goroutine都获取到相同的实例       &#125;()    &#125;&#125;
+
+
+
+类图：
+
+    classDiagram
+    class singleton {
+        +GetInstance() singleton
+    }
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>Singleton Pattern</tag>
+        <tag>go</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250824 thinking 二叉树遍历的迭代法</title>
     <url>/2025/08/24/250824-thinking-%E4%BA%8C%E5%8F%89%E6%A0%91%E9%81%8D%E5%8E%86%E7%9A%84%E8%BF%AD%E4%BB%A3%E6%B3%95/</url>
     <content><![CDATA[关于二叉树的遍历，有递归法和迭代法两种。递归法简单易懂，但是迭代法较为复杂，需要使用栈来模拟递归的过程。
@@ -1571,44 +1623,6 @@ vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking Trie</title>
-    <url>/2025/08/24/250824-thinking-Trie/</url>
-    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
-C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
-class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>Trie</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking 快速排序</title>
-    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
-    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
-1. 伪代码示例这里是从小到大的顺序排序。
-// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
-
-2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
-2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
-2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>quick sort</tag>
-        <tag>Hoare partition</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250824 thinking 埃氏筛</title>
     <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
     <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
@@ -1633,38 +1647,24 @@ class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking singleton</title>
-    <url>/2025/08/24/250824-thinking-singleton/</url>
-    <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
-2. 为什么需要单例模式？在多线程环境下，我们需要多个线程使用同一份资源。
-2.1 为什么不使用全局变量？在一些较为简单的环境中，直接使用一些全局变量供所有线程使用是很好的。
-但是，如果这个对象是资源密集型的，使用全局变量会导致资源的浪费。而且，简单的全局变量没有提供访问控制（封装），线程可以任意地访问和修改。
-而单例模式就可以实现按需创建实例，避免了资源的浪费。而且提供了类封装，确保不会有意外的修改。
-3. 单例模式的实现（go）单例模式尤其要注意线程安全。 sync.Once 确保了实例只被创建一次，避免了多线程环境下的竞态条件。
-以下是一个懒加载的版本。
-中间件代码：
-var once sync.Oncetype singleton struct &#123;&#125;var singleInstance *singletonfunc GetInstance() *singleton &#123;    if singleInstance == nil &#123;        once.Do(            func() &#123;                singleInstance = &amp;singleton&#123;&#125;            &#125;)    &#125;     return singleInstance&#125;
+    <title>250824 thinking 快速排序</title>
+    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
+    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
+1. 伪代码示例这里是从小到大的顺序排序。
+// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
 
-客户端代码：
-func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;           instance := GetInstance() // 每个goroutine都获取到相同的实例       &#125;()    &#125;&#125;
-
-
-
-类图：
-
-    classDiagram
-    class singleton {
-        +GetInstance() singleton
-    }
-  ]]></content>
+2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
+2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
+2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+]]></content>
       <categories>
-        <category>Design Pattern</category>
+        <category>data structure &amp; algorithm</category>
       </categories>
       <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>Singleton Pattern</tag>
-        <tag>go</tag>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>quick sort</tag>
+        <tag>Hoare partition</tag>
       </tags>
   </entry>
   <entry>
@@ -1706,6 +1706,86 @@ int specialPerm(vector&lt;int&gt;&amp; nums) &#123;        const int mod = 1e9+7
         <tag>data structure &amp; algorithm</tag>
         <tag>dynamic programming</tag>
         <tag>state compression</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 反悔堆</title>
+    <url>/2025/09/26/250926-thinking-%E5%8F%8D%E6%82%94%E5%A0%86/</url>
+    <content><![CDATA[反悔是贪心的一种策略，用于在当前可能不是全局最优解时，“反思”已做过的选择。
+而对于这样的策略，常使用堆来辅助实现。具体来说就是将已做的选择按照某种规则放入最大堆中。“反悔”就是“撤销”堆顶的选择，即代价最大的选择。
+用最大堆在约束触发时“撤销&#x2F;替换”当前集合里最差的那个已选项。
+1. 示例LCP30. 魔塔游戏
+magicTower(nums[0..n-1], hp)&#123;    declare a empty max heap, named heap.    ans := 0    for num in nums; do        if num &lt; 0; then            heap.push(num) // push the negative number into the heap, so that we can recover the choice later if needed        fi        hp += num        if hp &lt;= 0; then            if heap.isEmpty(); then //cannot recover                return -1            fi            ans++            hp -= heap.pop() // recover the smallest negative number, namely the most costly choice        fi    end    return ans&#125;]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>greedy</tag>
+        <tag>heap</tag>
+        <tag>rollback</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 子序列判断</title>
+    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
+    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
+一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
+现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
+这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
+比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
+我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
+于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
+2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
+其他nxt[i][c]构建：
+for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
+
+对于一个字符串$e_i$判断:
+idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
+
+3. 例题匹配子序列的单词数
+给出go的解法示例
+func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>go</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 差分</title>
+    <url>/2025/09/26/250926-thinking-%E5%B7%AE%E5%88%86/</url>
+    <content><![CDATA[1. 简介对于一个数组a，构造的这样的一个数组d称为a的差分数组：
+
+d[i] =
+\begin{cases}
+0, & \text{if } i = 0 \\
+a[i] - a[i-1], & \text{otherwise}
+\end{cases}
+
+
+2. 性质
+对d构造前缀和数组得到a
+对于a的一个下标区间[i,j)对应的元素统一加上一个数c后，则对应的d的变化为：d[i](now)=&gt;d[i](prev)+c d[j](now)=&gt;d[j](prev)-c。
+
+也就是说，差分数组的构造可以将一个区间的变化映射为两个元素的变化。
+
+在实际操作时，还要注意j&#x3D;&#x3D;a.length，此时超出d索引范围（因为在前面的构造中d.length&#x3D;&#x3D;a.length）。因此为了方便，通常让d.length&#x3D;a.length+1，即设置一个dummy。
+
+3. 例题3355.零数组变换I
+go参考解法：（by 灵神）
+func isZeroArray(nums []int, queries [][]int) bool &#123;	diff := make([]int, len(nums)+1)	for _, q := range queries &#123;		diff[q[0]]++		diff[q[1]+1]--	&#125;	sumD := 0	for i, x := range nums &#123;		sumD += diff[i]		// 此时 sumD 表示 x=nums[i] 要减掉多少		if x &gt; sumD &#123; // x 无法变成 0			return false		&#125;	&#125;	return true&#125;]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>go</tag>
+        <tag>difference</tag>
       </tags>
   </entry>
   <entry>
@@ -1776,68 +1856,6 @@ func subsequenceSumAfterCapping(nums []int, k int) []bool &#123;	slices.Sort(num
       </tags>
   </entry>
   <entry>
-    <title>250926 thinking 子序列判断</title>
-    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
-    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
-一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
-现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
-这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
-比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
-我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
-于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
-2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
-其他nxt[i][c]构建：
-for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
-
-对于一个字符串$e_i$判断:
-idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
-
-3. 例题匹配子序列的单词数
-给出go的解法示例
-func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>go</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250926 thinking 差分</title>
-    <url>/2025/09/26/250926-thinking-%E5%B7%AE%E5%88%86/</url>
-    <content><![CDATA[1. 简介对于一个数组a，构造的这样的一个数组d称为a的差分数组：
-
-d[i] =
-\begin{cases}
-0, & \text{if } i = 0 \\
-a[i] - a[i-1], & \text{otherwise}
-\end{cases}
-
-
-2. 性质
-对d构造前缀和数组得到a
-对于a的一个下标区间[i,j)对应的元素统一加上一个数c后，则对应的d的变化为：d[i](now)=&gt;d[i](prev)+c d[j](now)=&gt;d[j](prev)-c。
-
-也就是说，差分数组的构造可以将一个区间的变化映射为两个元素的变化。
-
-在实际操作时，还要注意j&#x3D;&#x3D;a.length，此时超出d索引范围（因为在前面的构造中d.length&#x3D;&#x3D;a.length）。因此为了方便，通常让d.length&#x3D;a.length+1，即设置一个dummy。
-
-3. 例题3355.零数组变换I
-go参考解法：（by 灵神）
-func isZeroArray(nums []int, queries [][]int) bool &#123;	diff := make([]int, len(nums)+1)	for _, q := range queries &#123;		diff[q[0]]++		diff[q[1]+1]--	&#125;	sumD := 0	for i, x := range nums &#123;		sumD += diff[i]		// 此时 sumD 表示 x=nums[i] 要减掉多少		if x &gt; sumD &#123; // x 无法变成 0			return false		&#125;	&#125;	return true&#125;]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
-        <tag>difference</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250926 thinking 翻转链表</title>
     <url>/2025/09/26/250926-thinking-%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8/</url>
     <content><![CDATA[1. 操作以这道题为实例。
@@ -1866,21 +1884,44 @@ go示例解法
       </tags>
   </entry>
   <entry>
-    <title>250926 thinking 反悔堆</title>
-    <url>/2025/09/26/250926-thinking-%E5%8F%8D%E6%82%94%E5%A0%86/</url>
-    <content><![CDATA[反悔是贪心的一种策略，用于在当前可能不是全局最优解时，“反思”已做过的选择。
-而对于这样的策略，常使用堆来辅助实现。具体来说就是将已做的选择按照某种规则放入最大堆中。“反悔”就是“撤销”堆顶的选择，即代价最大的选择。
-用最大堆在约束触发时“撤销&#x2F;替换”当前集合里最差的那个已选项。
-1. 示例LCP30. 魔塔游戏
-magicTower(nums[0..n-1], hp)&#123;    declare a empty max heap, named heap.    ans := 0    for num in nums; do        if num &lt; 0; then            heap.push(num) // push the negative number into the heap, so that we can recover the choice later if needed        fi        hp += num        if hp &lt;= 0; then            if heap.isEmpty(); then //cannot recover                return -1            fi            ans++            hp -= heap.pop() // recover the smallest negative number, namely the most costly choice        fi    end    return ans&#125;]]></content>
+    <title>250928-251005 weekly electron</title>
+    <url>/2025/10/05/250928-251005-weekly-electron/</url>
+    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
+0. 项目结构静态网页资源dist应先移动到application项目中。
+.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
+
+1. 项目初始化与安装参考：教程
+但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
+npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
+
+后面运行命令出现网络问题也如此。
+2. 打包对web项目使用npm run build后生成的静态网页进行打包。
+但需要注意：
+
+Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
+
+// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
+
+
+在application项目中，文件加载路径的写法。
+
+const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
+
+但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
+更新后的src&#x2F;App.jsx:
+import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
+
+同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
+import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
+
+再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
+]]></content>
       <categories>
-        <category>data structure &amp; algorithm</category>
+        <category>tool</category>
       </categories>
       <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>greedy</tag>
-        <tag>heap</tag>
-        <tag>rollback</tag>
+        <tag>electron</tag>
+        <tag>tool</tag>
       </tags>
   </entry>
   <entry>
@@ -2119,8 +2160,46 @@ systemctl restart docker
         <category>tool</category>
       </categories>
       <tags>
-        <tag>docker</tag>
         <tag>tool</tag>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251006-251012 weekly Qt</title>
+    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
+    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
+我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
+1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
+需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
+2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
+程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
+
+信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
+槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
+默认情况下：信号与槽是“同步的”。
+
+整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
+2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
+它是体现事件驱动的绝佳例子。
+它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
+可以利用QTimer以及timeout信号来实现定时触发事件。
+以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
+QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
+
+
+2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
+QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
+
+通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
+之后遇到了需要QThread的时候再介绍Qt的线程~
+]]></content>
+      <categories>
+        <category>Qt</category>
+      </categories>
+      <tags>
+        <tag>Projects</tag>
+        <tag>C++</tag>
+        <tag>Qt</tag>
       </tags>
   </entry>
   <entry>
@@ -2239,152 +2318,6 @@ americanFactory ..&gt; drink : CreateDrink()
       </tags>
   </entry>
   <entry>
-    <title>251006-251012 weekly Qt</title>
-    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
-    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
-我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
-1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
-需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
-2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
-程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
-
-信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
-槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
-默认情况下：信号与槽是“同步的”。
-
-整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
-2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
-它是体现事件驱动的绝佳例子。
-它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
-可以利用QTimer以及timeout信号来实现定时触发事件。
-以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
-QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
-
-
-2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
-QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
-
-通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
-之后遇到了需要QThread的时候再介绍Qt的线程~
-]]></content>
-      <categories>
-        <category>Qt</category>
-      </categories>
-      <tags>
-        <tag>Projects</tag>
-        <tag>C++</tag>
-        <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 record best-time-to-buy-and-sell-stock</title>
-    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
-    <content><![CDATA[题目
-int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
-
-这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
-]]></content>
-      <categories>
-        <category>record</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>Record</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250928-251005 weekly electron</title>
-    <url>/2025/10/05/250928-251005-weekly-electron/</url>
-    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
-0. 项目结构静态网页资源dist应先移动到application项目中。
-.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
-
-1. 项目初始化与安装参考：教程
-但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
-npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
-
-后面运行命令出现网络问题也如此。
-2. 打包对web项目使用npm run build后生成的静态网页进行打包。
-但需要注意：
-
-Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
-
-// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
-
-
-在application项目中，文件加载路径的写法。
-
-const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
-
-但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
-更新后的src&#x2F;App.jsx:
-import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
-
-同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
-import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
-
-再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
-]]></content>
-      <categories>
-        <category>tool</category>
-      </categories>
-      <tags>
-        <tag>tool</tag>
-        <tag>electron</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 thinking reflect</title>
-    <url>/2025/10/12/251012-thinking-reflect/</url>
-    <content><![CDATA[最近在用 Gin&#x2F;GORM 尝试写一个后端。受 PostgREST 的启发，我想实现一个更通用的后端：它能运行时自动查询数据库的表结构，并动态生成对应的模型 (Model) 和控制器 (Controller)，从而免去为每张表手动编写重复代码的麻烦。
-Go 的反射 (Reflection) 机制是实现这一目标的关键。它允许程序在运行时检查自身的结构、类型和值。
-本篇将介绍 Go 反射的核心思想，并演示如何利用它在运行时动态构建新的结构体类型。
-1. 反射的核心：Type 与 ValueGo 的反射机制建立在两个核心概念之上：reflect.Type 和 reflect.Value。
-可以把任意变量看作一个“箱子”，箱子里装着实际的数据。
-
-**reflect.Type**：是箱子的“标签”，告诉你里面装的是什么类型的东西（比如 int, string, struct）。
-**reflect.Value**：是箱子里的“东西本身”，你可以读取它的值，甚至在满足特定条件时修改它。
-
-我们通过 reflect.TypeOf() 和 reflect.ValueOf() 这两个函数进入反射的世界：
-var x float64 = 3.4t := reflect.TypeOf(x)   // 获取 Typev := reflect.ValueOf(x)  // 获取 Valuefmt.Println(&quot;type:&quot;, t)                  // 输出: type: float64fmt.Println(&quot;value:&quot;, v.Float())         // 输出: value: 3.4fmt.Println(&quot;kind is float64:&quot;, t.Kind() == reflect.Float64) // 输出: kind is float64: true
-
-2. 修改值：地址与 Elem()反射不仅能看，还能改。但有一个前提：**值必须是“可设置的” (settable)**。
-一个 reflect.Value 是可设置的，当且仅当它代表的是一个可寻址的内存空间。简单来说，如果你对一个指针进行反射，那么指针指向的那块内存就是可设置的。
-我们通过 Elem() 方法来获取指针指向的值。
-var x float64 = 3.4p := &amp;x // p 是指向 x 的指针v := reflect.ValueOf(p) // 对指针进行反射// v 现在代表指针 p，它是不可设置的。但它指向的 x 是可设置的。// 使用 Elem() 获取指针指向的值e := v.Elem()e.SetFloat(7.1) // 修改 x 的值fmt.Println(x) // 输出: 7.1
-
-小结：要通过反射修改一个变量，通常需要对该变量的指针进行反射，然后调用 Elem() 获取其指向的值，再进行修改。
-3. 终极目标：运行时创建结构体现在回到最初的目标：根据数据库表结构动态创建模型。这需要我们在运行时动态地“拼凑”出一个新的结构体类型。
-Go 的 reflect 包提供了 reflect.StructOf 函数来实现这一功能。步骤如下：
-
-定义字段：为新结构体的每个字段创建一个 reflect.StructField。每个字段需要名字、类型 (reflect.Type) 和可选的标签 (Tag)，标签对于 JSON 或 GORM 序列化至关重要。
-创建结构体类型：将定义好的字段切片传入 reflect.StructOf()，得到一个全新的结构体 reflect.Type。
-创建实例：使用 reflect.New() 并传入新的类型，来创建一个指向该结构体新实例的指针 (reflect.Value)。
-设置字段值：通过 Elem() 和 Field() 方法，为新实例的字段赋值。
-
-示例：动态创建一个 User 结构体假设我们要动态创建一个等价于下面代码的类型：
-type User struct &#123;    Name string `json:&quot;name&quot;`    Age  int    `json:&quot;age&quot;`&#125;
-
-使用反射的代码如下：
-package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quot;)func main() &#123;	// 1. 定义字段	fields := []reflect.StructField&#123;		&#123;			Name: &quot;Name&quot;,			Type: reflect.TypeOf(&quot;&quot;), // string 类型			Tag:  `json:&quot;name&quot;`,		&#125;,		&#123;			Name: &quot;Age&quot;,			Type: reflect.TypeOf(0), // int 类型			Tag:  `json:&quot;age&quot;`,		&#125;,	&#125;	// 2. 创建结构体类型	structType := reflect.StructOf(fields)	// 3. 创建实例 (返回一个指向新结构体的指针)	structPtr := reflect.New(structType)	// 4. 获取指针指向的结构体并设置字段值	s := structPtr.Elem()	s.FieldByName(&quot;Name&quot;).SetString(&quot;Alice&quot;)	s.FieldByName(&quot;Age&quot;).SetInt(30)	// 将动态创建的结构体实例转回 interface&#123;&#125; 以便使用	//类是interface&#123;&#125;类型 但值是reflect.Value类型	userInstance := structPtr.Interface()	// 使用 json.Marshal 验证结果	jsonData, err := json.Marshal(userInstance)	if err != nil &#123;		panic(err)	&#125;	fmt.Println(string(jsonData)) // 输出: &#123;&quot;name&quot;:&quot;Alice&quot;,&quot;age&quot;:30&#125;&#125;
-
-4. 何时使用反射？虽然反射功能强大，但它也有代价：
-
-性能开销：反射操作比直接代码调用慢得多。
-编译时类型安全丢失：编译器无法检查通过反射进行的操作，错误只能在运行时暴露，通常是 panic。
-代码可读性差：过度使用会使代码逻辑变得晦涩难懂。
-
-因此，反射应该只在必要时使用，比如开发需要处理任意类型的通用框架、序列化库或 ORM 时。对于常规的业务逻辑，清晰的静态类型代码永远是首选。
-]]></content>
-      <categories>
-        <category>go</category>
-      </categories>
-      <tags>
-        <tag>go</tag>
-        <tag>reflect</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251012 thinking builder</title>
     <url>/2025/10/12/251012-thinking-builder/</url>
     <content><![CDATA[1. 什么是生成器模式？生成器模式（Builder Pattern）是一种创建型设计模式，它将一个复杂对象的构建分成多个步骤，每个步骤可以被重写，因此使得同样的构建过程可以生成不同类型和形式的对象。
@@ -2461,6 +2394,22 @@ director ..&gt; product : Construct()
       </tags>
   </entry>
   <entry>
+    <title>251012 record best-time-to-buy-and-sell-stock</title>
+    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
+    <content><![CDATA[题目
+int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
+
+这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
+]]></content>
+      <categories>
+        <category>record</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>Record</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251012 thinking slider window</title>
     <url>/2025/10/12/251012-thinking-slider-window/</url>
     <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
@@ -2488,6 +2437,92 @@ l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    
         <tag>data structure &amp; algorithm</tag>
         <tag>thinking</tag>
         <tag>slider window</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 thinking reflect</title>
+    <url>/2025/10/12/251012-thinking-reflect/</url>
+    <content><![CDATA[最近在用 Gin&#x2F;GORM 尝试写一个后端。受 PostgREST 的启发，我想实现一个更通用的后端：它能运行时自动查询数据库的表结构，并动态生成对应的模型 (Model) 和控制器 (Controller)，从而免去为每张表手动编写重复代码的麻烦。
+Go 的反射 (Reflection) 机制是实现这一目标的关键。它允许程序在运行时检查自身的结构、类型和值。
+本篇将介绍 Go 反射的核心思想，并演示如何利用它在运行时动态构建新的结构体类型。
+1. 反射的核心：Type 与 ValueGo 的反射机制建立在两个核心概念之上：reflect.Type 和 reflect.Value。
+可以把任意变量看作一个“箱子”，箱子里装着实际的数据。
+
+**reflect.Type**：是箱子的“标签”，告诉你里面装的是什么类型的东西（比如 int, string, struct）。
+**reflect.Value**：是箱子里的“东西本身”，你可以读取它的值，甚至在满足特定条件时修改它。
+
+我们通过 reflect.TypeOf() 和 reflect.ValueOf() 这两个函数进入反射的世界：
+var x float64 = 3.4t := reflect.TypeOf(x)   // 获取 Typev := reflect.ValueOf(x)  // 获取 Valuefmt.Println(&quot;type:&quot;, t)                  // 输出: type: float64fmt.Println(&quot;value:&quot;, v.Float())         // 输出: value: 3.4fmt.Println(&quot;kind is float64:&quot;, t.Kind() == reflect.Float64) // 输出: kind is float64: true
+
+2. 修改值：地址与 Elem()反射不仅能看，还能改。但有一个前提：**值必须是“可设置的” (settable)**。
+一个 reflect.Value 是可设置的，当且仅当它代表的是一个可寻址的内存空间。简单来说，如果你对一个指针进行反射，那么指针指向的那块内存就是可设置的。
+我们通过 Elem() 方法来获取指针指向的值。
+var x float64 = 3.4p := &amp;x // p 是指向 x 的指针v := reflect.ValueOf(p) // 对指针进行反射// v 现在代表指针 p，它是不可设置的。但它指向的 x 是可设置的。// 使用 Elem() 获取指针指向的值e := v.Elem()e.SetFloat(7.1) // 修改 x 的值fmt.Println(x) // 输出: 7.1
+
+小结：要通过反射修改一个变量，通常需要对该变量的指针进行反射，然后调用 Elem() 获取其指向的值，再进行修改。
+3. 终极目标：运行时创建结构体现在回到最初的目标：根据数据库表结构动态创建模型。这需要我们在运行时动态地“拼凑”出一个新的结构体类型。
+Go 的 reflect 包提供了 reflect.StructOf 函数来实现这一功能。步骤如下：
+
+定义字段：为新结构体的每个字段创建一个 reflect.StructField。每个字段需要名字、类型 (reflect.Type) 和可选的标签 (Tag)，标签对于 JSON 或 GORM 序列化至关重要。
+创建结构体类型：将定义好的字段切片传入 reflect.StructOf()，得到一个全新的结构体 reflect.Type。
+创建实例：使用 reflect.New() 并传入新的类型，来创建一个指向该结构体新实例的指针 (reflect.Value)。
+设置字段值：通过 Elem() 和 Field() 方法，为新实例的字段赋值。
+
+示例：动态创建一个 User 结构体假设我们要动态创建一个等价于下面代码的类型：
+type User struct &#123;    Name string `json:&quot;name&quot;`    Age  int    `json:&quot;age&quot;`&#125;
+
+使用反射的代码如下：
+package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quot;)func main() &#123;	// 1. 定义字段	fields := []reflect.StructField&#123;		&#123;			Name: &quot;Name&quot;,			Type: reflect.TypeOf(&quot;&quot;), // string 类型			Tag:  `json:&quot;name&quot;`,		&#125;,		&#123;			Name: &quot;Age&quot;,			Type: reflect.TypeOf(0), // int 类型			Tag:  `json:&quot;age&quot;`,		&#125;,	&#125;	// 2. 创建结构体类型	structType := reflect.StructOf(fields)	// 3. 创建实例 (返回一个指向新结构体的指针)	structPtr := reflect.New(structType)	// 4. 获取指针指向的结构体并设置字段值	s := structPtr.Elem()	s.FieldByName(&quot;Name&quot;).SetString(&quot;Alice&quot;)	s.FieldByName(&quot;Age&quot;).SetInt(30)	// 将动态创建的结构体实例转回 interface&#123;&#125; 以便使用	//类是interface&#123;&#125;类型 但值是reflect.Value类型	userInstance := structPtr.Interface()	// 使用 json.Marshal 验证结果	jsonData, err := json.Marshal(userInstance)	if err != nil &#123;		panic(err)	&#125;	fmt.Println(string(jsonData)) // 输出: &#123;&quot;name&quot;:&quot;Alice&quot;,&quot;age&quot;:30&#125;&#125;
+
+4. 何时使用反射？虽然反射功能强大，但它也有代价：
+
+性能开销：反射操作比直接代码调用慢得多。
+编译时类型安全丢失：编译器无法检查通过反射进行的操作，错误只能在运行时暴露，通常是 panic。
+代码可读性差：过度使用会使代码逻辑变得晦涩难懂。
+
+因此，反射应该只在必要时使用，比如开发需要处理任意类型的通用框架、序列化库或 ORM 时。对于常规的业务逻辑，清晰的静态类型代码永远是首选。
+]]></content>
+      <categories>
+        <category>go</category>
+      </categories>
+      <tags>
+        <tag>go</tag>
+        <tag>reflect</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251017-thinking-prototype</title>
+    <url>/2025/10/17/251017-thinking-prototype/</url>
+    <content><![CDATA[1. 什么是原型模式？一言以蔽之，原型模式（Prototype Pattern）是一种创建型设计模式，它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。
+2. 为什么需要原型模式？正如上述，原型模式的主要优势在于它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。这使得原型模式在需要快速创建多个相同对象的场景下非常有用，例如在游戏开发中创建多个相同类型的敌人实例。
+3. 原型模式的实现（go）原型模式提供prototype接口，主要需要实现Clone方法，该方法返回一个与已有实例完全一致的新的实例。
+中间件代码示例：
+type prototype interface &#123;    Clone() prototype&#125;type concreteType struct &#123;    // ...构造参数&#125;func (c *concreteType) Clone() prototype &#123;    return &amp;concreteType&#123;        // ...构造参数    &#125;   &#125;
+
+客户端使用：
+func main() &#123;    // 创建一个原型实例    instance := &amp;concreteType&#123;        // ...构造参数    &#125;    // 使用Clone方法创建一个新的实例    newInstance := &amp;instance.Clone().(concreteType)&#125;
+
+类图：
+
+    classDiagram
+class prototype {
+    &lt;&lt;interface&gt;&gt;
+    +Clone() prototype
+}
+class concreteType {
+    &#x2F;&#x2F; ...构造参数
+}
+prototype &lt;|.. concreteType
+  
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Prototype Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -2548,38 +2583,47 @@ func main() &#123;    // 创建被适配的对象    awesomePlayer := &amp;Aweso
       </tags>
   </entry>
   <entry>
-    <title>251017-thinking-prototype</title>
-    <url>/2025/10/17/251017-thinking-prototype/</url>
-    <content><![CDATA[1. 什么是原型模式？一言以蔽之，原型模式（Prototype Pattern）是一种创建型设计模式，它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。
-2. 为什么需要原型模式？正如上述，原型模式的主要优势在于它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。这使得原型模式在需要快速创建多个相同对象的场景下非常有用，例如在游戏开发中创建多个相同类型的敌人实例。
-3. 原型模式的实现（go）原型模式提供prototype接口，主要需要实现Clone方法，该方法返回一个与已有实例完全一致的新的实例。
-中间件代码示例：
-type prototype interface &#123;    Clone() prototype&#125;type concreteType struct &#123;    // ...构造参数&#125;func (c *concreteType) Clone() prototype &#123;    return &amp;concreteType&#123;        // ...构造参数    &#125;   &#125;
+    <title>251018 thinking composite</title>
+    <url>/2025/10/25/251018-thinking-composite/</url>
+    <content><![CDATA[1. 什么是组合模式组合模式（Composite Pattern）是一种结构型设计模式，它允许你将对象组合成树形结构以表示“部分-整体”的层次关系。组合模式使得客户端可以统一地处理个别对象和对象组合。
+2. 为什么需要组合模式组合最主要的功能是在整个树状结构上递归调用方法并对结果进行汇总。
+3. 组合模式的实现（go）假定一个文件系统，其中包含文件和目录。目录可以包含其他文件和目录。
+现在我们需要搜索文件系统中是否包含某个文件。
+type Component interface &#123;	Search(keyword string)&#125;type Directory struct &#123;	Name     string	children []Component&#125;func (d *Directory) Search(keyword string) &#123;	if d.Name == keyword &#123;		fmt.Println(&quot;find directory:&quot;, d.Name)		return	&#125;	for _, child := range d.children &#123;		child.Search(keyword)	&#125;&#125;// add 方法用于添加子组件func (d *Directory) Add(child Component) &#123;	d.children = append(d.children, child)&#125;type File struct &#123;	Name string&#125;func (f *File) Search(keyword string) &#123;	if f.Name == keyword &#123;		fmt.Println(&quot;find file:&quot;, f.Name)		return	&#125;&#125;
 
-客户端使用：
-func main() &#123;    // 创建一个原型实例    instance := &amp;concreteType&#123;        // ...构造参数    &#125;    // 使用Clone方法创建一个新的实例    newInstance := &amp;instance.Clone().(concreteType)&#125;
+客户端代码
+func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;    dir1 := &amp;Directory&#123;Name: &quot;dir1&quot;&#125;    dir2 := &amp;Directory&#123;Name: &quot;dir2&quot;&#125;    file1 := &amp;File&#123;Name: &quot;file1&quot;&#125;    file2 := &amp;File&#123;Name: &quot;file2&quot;&#125;    root.Add(dir1)    root.Add(dir2)    dir1.Add(file1)    dir2.Add(file2)    root.Search(&quot;file1&quot;)    root.Search(&quot;file2&quot;)    root.Search(&quot;dir1&quot;)    root.Search(&quot;dir2&quot;)&#125;   
 
-类图：
+类图
 
     classDiagram
-class prototype {
-    &lt;&lt;interface&gt;&gt;
-    +Clone() prototype
-}
-class concreteType {
-    &#x2F;&#x2F; ...构造参数
-}
-prototype &lt;|.. concreteType
+    class Component {
+        &lt;&lt;interface&gt;&gt;
+        +Search(keyword string)
+    }
+    class Directory {
+        +Name string
+        -children []Component
+        +Add(child Component)
+        +Search(keyword string)
+    }
+    class File {
+        +Name string
+        +Search(keyword string)
+    }
+    Component &lt;|-- Directory
+    Component &lt;|-- File
+    Directory &quot;1&quot; *-- &quot;n&quot; Component
   
 ]]></content>
       <categories>
         <category>Design Pattern</category>
       </categories>
       <tags>
-        <tag>Interface Oriented Programming</tag>
         <tag>Design Pattern</tag>
         <tag>go</tag>
-        <tag>Prototype Pattern</tag>
+        <tag>Composite Pattern</tag>
+        <tag>Interface Oriented Design</tag>
       </tags>
   </entry>
   <entry>
@@ -2945,25 +2989,25 @@ func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#12
     classDiagram
     class Shape {
         &lt;&lt;interface&gt;&gt;
-        Draw()
+        +Draw()
     }
     class Circle {
         -color: Color
-        Draw()
+        +Draw()
     }
     class Square {
         -color: Color
-        Draw()
+        +Draw() 
     }
     class Color {
         &lt;&lt;interface&gt;&gt;
-        ApplyColor() string
+        +ApplyColor() string
     }
     class RedColor {
-        ApplyColor() string
+        +ApplyColor() string
     }
     class BlueColor {
-        ApplyColor() string
+        +ApplyColor() string        
     }
     Circle --|&gt; Shape
     Square --|&gt; Shape
