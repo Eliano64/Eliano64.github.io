@@ -170,6 +170,47 @@ func f(x int, lengths []int) bool &#123;    count := 0    for _, l := range leng
       </tags>
   </entry>
   <entry>
+    <title>250728-250803 周记 缓存池项目学习</title>
+    <url>/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。
+1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。
+缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。
+每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时将该元素从哈希表中删除。
+1.1 改进以上的LRU存在着缓存污染、锁的粒度过大的问题。
+缓存污染：当新加进来的一次性的数据很多，导致缓存满时，传统的LRU会直接删除尾部元素。但是，尾部元素可能是热门数据。锁的粒度大：一把大锁锁全局。多线程高并发的访问下，同步等待将是一笔极大的时间开销。
+故考虑以下改进：
+1.1.1 LRU-KLRU-K在普通的LRU的基础上，新增加了一个小的LRU副缓存。当数据进入时，它会先进入副缓存，并访问计数加一。只有当它的访问计数大于等于K时，才会移出副缓存，进入主缓存。
+当主副缓存满时，淘汰机制与普通LRU一致。
+这样就可以避免缓存污染的问题。使得大量进入的一次性数据不会挤出热门数据。
+1.1.2 LRU-Hash与2024-xv6-labs-2中2.2 Buffer cache的思想一致，既然一个链表配全局大锁效率低，那就把链表分成多个小链表，每个小链表即是一个小的lru缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除这个小链表的尾部元素。
+2. LFULFU是Least Frequently Used的缩写，即淘汰使用次数最少的元素。
+缓存的实现使用了一个记录键-值对&lt;key, value&gt;的哈希表a和一个记录频率-列表对&lt;freq, linklist&gt;的哈希表b。哈希表a用于快速查找缓存中的元素，哈希表b用于根据频率高效地维护缓存中的元素。
+每当涉及一个元素的key时，将该元素的频率增加1，并将该元素移动到哈希表b中对应频率的链表头部。移动后若原链表为空则删去。当缓存满时，将哈希表b中频率最低的链表的尾部元素删除。同时将该元素从哈希表a中删除。
+2.1 改进普通LFU存在着新来的元素容易被移出（即使是未来的热门数据）、而过时的热门数据很难被移出的问题，而且访问次数若一直增长，可能会导致上溢。
+同时与普通LRU一样，存在锁的粒度过大的问题。
+改进如下：
+2.1.1 最大平均访问次数限制首先设置一个阈值。当数据访问&#x2F;插入发生时，不仅需要记录当前最小访问次数，还需要计算平均访问次数。然后当平均访问次数超过阈值时，就需要对记录的访问次数进行调整。所有的元素的访问次数减去阈值的一半，操作后小于0者设为1。然后更新记录&lt;freq-linklist&gt;的哈希表，将元素插入对应频率的链表中。
+这样的方式不仅可以避免访问次数的上溢，还可以加快数据的更新，让旧的热点数据”老化”，缓解挤占未来的热点数据空间的问题。
+2.1.2 LFU-Hash同LRU-Hash的思想，分成多个记录&lt;freq-linklist&gt;的小哈希表，每个表即是一个小的lfu缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除频率最低的链表的尾部元素。
+3. ARCARC是Adaptive Replacement Cache的缩写，即自适应替换缓存。
+当访问的数据趋向于访问最近的内容，会更多地命中LRU list；当系统趋向于访问频繁访问的内容时，会更多地命中LFU list。
+LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混合，取长补短。于是就有了结合LRU和LFU的缓存替换算法，即ARC。
+基本思想是，将缓存分成两个部分，一部分是LRU缓存，一部分是LFU缓存，然后每个缓存有一个自己的ghost缓存。
+当新数据进入时，先进入LRU list，并访问次数设为一。当再次访问这个数据时，访问次数增加1。当访问次数达到阈值后，LFU list里也插入这个元素。于是，该数据块不仅仅只保存在LRU的缓存目录中，也将保存到LFU中。所以一个最近的热门数据若有更新应该是两个表同时进行的。
+这样，那些真正被频繁访问的页面将一直呆在缓存中，不会被冷数据的加入而误淘汰，不经常访问的数据会向链表头部移动，最终被淘汰出去。
+当缓存满时，需要淘汰一个元素。淘汰的逻辑与对应的普通LRU和普通LFU一致，只是淘汰出的元素要插入对应的ghost缓存中。ghost缓存的淘汰模式就是简单的FIFO即可。
+这样，访问元素在哪一边ghost中找到，就说明那一边的容量小了而对面的容量大了。对面的容量如果不为0则减一，然后这边的容量加一。否则跳过。
+]]></content>
+      <categories>
+        <category>cache</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>projects</tag>
+        <tag>cache</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250721 thinking 单调栈</title>
     <url>/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/</url>
     <content><![CDATA[
@@ -227,47 +268,6 @@ for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt;
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
         <tag>Monotonic Stack</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250728-250803 周记 缓存池项目学习</title>
-    <url>/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。
-1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。
-缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。
-每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时将该元素从哈希表中删除。
-1.1 改进以上的LRU存在着缓存污染、锁的粒度过大的问题。
-缓存污染：当新加进来的一次性的数据很多，导致缓存满时，传统的LRU会直接删除尾部元素。但是，尾部元素可能是热门数据。锁的粒度大：一把大锁锁全局。多线程高并发的访问下，同步等待将是一笔极大的时间开销。
-故考虑以下改进：
-1.1.1 LRU-KLRU-K在普通的LRU的基础上，新增加了一个小的LRU副缓存。当数据进入时，它会先进入副缓存，并访问计数加一。只有当它的访问计数大于等于K时，才会移出副缓存，进入主缓存。
-当主副缓存满时，淘汰机制与普通LRU一致。
-这样就可以避免缓存污染的问题。使得大量进入的一次性数据不会挤出热门数据。
-1.1.2 LRU-Hash与2024-xv6-labs-2中2.2 Buffer cache的思想一致，既然一个链表配全局大锁效率低，那就把链表分成多个小链表，每个小链表即是一个小的lru缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除这个小链表的尾部元素。
-2. LFULFU是Least Frequently Used的缩写，即淘汰使用次数最少的元素。
-缓存的实现使用了一个记录键-值对&lt;key, value&gt;的哈希表a和一个记录频率-列表对&lt;freq, linklist&gt;的哈希表b。哈希表a用于快速查找缓存中的元素，哈希表b用于根据频率高效地维护缓存中的元素。
-每当涉及一个元素的key时，将该元素的频率增加1，并将该元素移动到哈希表b中对应频率的链表头部。移动后若原链表为空则删去。当缓存满时，将哈希表b中频率最低的链表的尾部元素删除。同时将该元素从哈希表a中删除。
-2.1 改进普通LFU存在着新来的元素容易被移出（即使是未来的热门数据）、而过时的热门数据很难被移出的问题，而且访问次数若一直增长，可能会导致上溢。
-同时与普通LRU一样，存在锁的粒度过大的问题。
-改进如下：
-2.1.1 最大平均访问次数限制首先设置一个阈值。当数据访问&#x2F;插入发生时，不仅需要记录当前最小访问次数，还需要计算平均访问次数。然后当平均访问次数超过阈值时，就需要对记录的访问次数进行调整。所有的元素的访问次数减去阈值的一半，操作后小于0者设为1。然后更新记录&lt;freq-linklist&gt;的哈希表，将元素插入对应频率的链表中。
-这样的方式不仅可以避免访问次数的上溢，还可以加快数据的更新，让旧的热点数据”老化”，缓解挤占未来的热点数据空间的问题。
-2.1.2 LFU-Hash同LRU-Hash的思想，分成多个记录&lt;freq-linklist&gt;的小哈希表，每个表即是一个小的lfu缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除频率最低的链表的尾部元素。
-3. ARCARC是Adaptive Replacement Cache的缩写，即自适应替换缓存。
-当访问的数据趋向于访问最近的内容，会更多地命中LRU list；当系统趋向于访问频繁访问的内容时，会更多地命中LFU list。
-LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混合，取长补短。于是就有了结合LRU和LFU的缓存替换算法，即ARC。
-基本思想是，将缓存分成两个部分，一部分是LRU缓存，一部分是LFU缓存，然后每个缓存有一个自己的ghost缓存。
-当新数据进入时，先进入LRU list，并访问次数设为一。当再次访问这个数据时，访问次数增加1。当访问次数达到阈值后，LFU list里也插入这个元素。于是，该数据块不仅仅只保存在LRU的缓存目录中，也将保存到LFU中。所以一个最近的热门数据若有更新应该是两个表同时进行的。
-这样，那些真正被频繁访问的页面将一直呆在缓存中，不会被冷数据的加入而误淘汰，不经常访问的数据会向链表头部移动，最终被淘汰出去。
-当缓存满时，需要淘汰一个元素。淘汰的逻辑与对应的普通LRU和普通LFU一致，只是淘汰出的元素要插入对应的ghost缓存中。ghost缓存的淘汰模式就是简单的FIFO即可。
-这样，访问元素在哪一边ghost中找到，就说明那一边的容量小了而对面的容量大了。对面的容量如果不为0则减一，然后这边的容量加一。否则跳过。
-]]></content>
-      <categories>
-        <category>cache</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>projects</tag>
-        <tag>cache</tag>
       </tags>
   </entry>
   <entry>
@@ -1532,23 +1532,6 @@ cron 时间表允许使用特定值、取值范围(比如 1-5)或者通配符(*)
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking Trie</title>
-    <url>/2025/08/24/250824-thinking-Trie/</url>
-    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
-C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
-class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>Trie</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250824 thinking singleton</title>
     <url>/2025/08/24/250824-thinking-singleton/</url>
     <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
@@ -1581,6 +1564,30 @@ func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;  
         <tag>Design Pattern</tag>
         <tag>Singleton Pattern</tag>
         <tag>go</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking 埃氏筛</title>
+    <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
+    <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
+流程Prime(n):    mark i from 2 to n as prime (initial)    for i from 2 to n:            if i is marked as prime:                for j from i^2 to n with step i:                    mark j as not prime    return all marked primes
+
+解释：
+为什么是从$i^2$开始标记非质数？
+因为如果一个数不是质数，那么它一定有一个小于等于$\sqrt{n}$的质因子。
+所以，我们只需要从$i^2$开始标记，因为小于$i^2$的数，一定已经被小于$i$的数标记过了。
+
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>mathematics</tag>
+        <tag>sieve of Eratosthenes</tag>
       </tags>
   </entry>
   <entry>
@@ -1620,51 +1627,6 @@ vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
         <tag>Binary Tree</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking 埃氏筛</title>
-    <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
-    <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
-流程Prime(n):    mark i from 2 to n as prime (initial)    for i from 2 to n:            if i is marked as prime:                for j from i^2 to n with step i:                    mark j as not prime    return all marked primes
-
-解释：
-为什么是从$i^2$开始标记非质数？
-因为如果一个数不是质数，那么它一定有一个小于等于$\sqrt{n}$的质因子。
-所以，我们只需要从$i^2$开始标记，因为小于$i^2$的数，一定已经被小于$i$的数标记过了。
-
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>mathematics</tag>
-        <tag>sieve of Eratosthenes</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking 快速排序</title>
-    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
-    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
-1. 伪代码示例这里是从小到大的顺序排序。
-// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
-
-2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
-2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
-2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>quick sort</tag>
-        <tag>Hoare partition</tag>
       </tags>
   </entry>
   <entry>
@@ -1709,6 +1671,27 @@ int specialPerm(vector&lt;int&gt;&amp; nums) &#123;        const int mod = 1e9+7
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking 快速排序</title>
+    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
+    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
+1. 伪代码示例这里是从小到大的顺序排序。
+// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
+
+2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
+2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
+2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>quick sort</tag>
+        <tag>Hoare partition</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250926 thinking 反悔堆</title>
     <url>/2025/09/26/250926-thinking-%E5%8F%8D%E6%82%94%E5%A0%86/</url>
     <content><![CDATA[反悔是贪心的一种策略，用于在当前可能不是全局最优解时，“反思”已做过的选择。
@@ -1724,36 +1707,6 @@ magicTower(nums[0..n-1], hp)&#123;    declare a empty max heap, named heap.    a
         <tag>greedy</tag>
         <tag>heap</tag>
         <tag>rollback</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250926 thinking 子序列判断</title>
-    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
-    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
-一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
-现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
-这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
-比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
-我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
-于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
-2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
-其他nxt[i][c]构建：
-for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
-
-对于一个字符串$e_i$判断:
-idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
-
-3. 例题匹配子序列的单词数
-给出go的解法示例
-func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>go</tag>
       </tags>
   </entry>
   <entry>
@@ -1786,6 +1739,50 @@ func isZeroArray(nums []int, queries [][]int) bool &#123;	diff := make([]int, le
         <tag>data structure &amp; algorithm</tag>
         <tag>go</tag>
         <tag>difference</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 翻转链表</title>
+    <url>/2025/09/26/250926-thinking-%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8/</url>
+    <content><![CDATA[1. 操作以这道题为实例。
+对链表的某一部分进行翻转时，需要记录以下这几个节点：
+
+p0: 发生翻转区域的前置节点，这个是为了区域翻转后的连接（循环结束，p0.next为翻转后区间的最后一个元素）。为了统一处理（因为原链表有的翻转区域没有前置节点），先构造dummy=ListNode&#123;next: head&#125;。这样的话，翻转后的链表的头节点即为dummy.next。p0可能为dummy。
+cur: 当前遍历到的节点，循环结束，cur为区域后的第一个元素
+pre: 当前遍历到的节点的原链表中的上一个节点，在翻转后就是next。在最初翻转前为nullptr,循环结束，pre为翻转后的区域的第一个元素
+nxt: 当前遍历到的节点的原链表中的下一个节点，下一个cur，在翻转后它的next就是pre。
+
+操作如下：
+cur := p0.nextpre := nullptrfor cur in area; do    nxt := cur.next    cur.next = pre    pre = cur    cur = nxtend loop// one loop only change one &quot;next&quot;// end loop, cur is next node for this area at the timep0.next.next=cur // set next pointer of the reversed area&#x27;s last node  p0.next=pre // previous node&#x27;s next pointer points to the first node 
+
+2. 例题25.k个一组翻转链表
+这个题的有一个关键：找到每一个翻转区间的p0。它实际就是上一个区间未翻转时的第一个节点。
+go示例解法
+/** * Definition for singly-linked list. * type ListNode struct &#123; *     Val int *     Next *ListNode * &#125; */func reverseKGroup(head *ListNode, k int) *ListNode &#123;    cnt := 0    for p:=head;p!=nil;p=p.Next&#123;        cnt++    &#125;    dummy := &amp;ListNode&#123;0,head&#125;    p0 := dummy    for ; cnt&gt;=k ; cnt-=k &#123;        cur := p0.Next        var pre *ListNode        nextp := p0.Next        for i:=0;i&lt;k;i++&#123;            nxt := cur.Next            cur.Next = pre            pre = cur            cur = nxt        &#125;        p0.Next.Next=cur        p0.Next = pre        p0=nextp    &#125;     return dummy.Next&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>go</tag>
+        <tag>linkList</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 record best-time-to-buy-and-sell-stock</title>
+    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
+    <content><![CDATA[题目
+int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
+
+这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
+]]></content>
+      <categories>
+        <category>record</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>Record</tag>
       </tags>
   </entry>
   <entry>
@@ -1856,34 +1853,6 @@ func subsequenceSumAfterCapping(nums []int, k int) []bool &#123;	slices.Sort(num
       </tags>
   </entry>
   <entry>
-    <title>250926 thinking 翻转链表</title>
-    <url>/2025/09/26/250926-thinking-%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8/</url>
-    <content><![CDATA[1. 操作以这道题为实例。
-对链表的某一部分进行翻转时，需要记录以下这几个节点：
-
-p0: 发生翻转区域的前置节点，这个是为了区域翻转后的连接（循环结束，p0.next为翻转后区间的最后一个元素）。为了统一处理（因为原链表有的翻转区域没有前置节点），先构造dummy=ListNode&#123;next: head&#125;。这样的话，翻转后的链表的头节点即为dummy.next。p0可能为dummy。
-cur: 当前遍历到的节点，循环结束，cur为区域后的第一个元素
-pre: 当前遍历到的节点的原链表中的上一个节点，在翻转后就是next。在最初翻转前为nullptr,循环结束，pre为翻转后的区域的第一个元素
-nxt: 当前遍历到的节点的原链表中的下一个节点，下一个cur，在翻转后它的next就是pre。
-
-操作如下：
-cur := p0.nextpre := nullptrfor cur in area; do    nxt := cur.next    cur.next = pre    pre = cur    cur = nxtend loop// one loop only change one &quot;next&quot;// end loop, cur is next node for this area at the timep0.next.next=cur // set next pointer of the reversed area&#x27;s last node  p0.next=pre // previous node&#x27;s next pointer points to the first node 
-
-2. 例题25.k个一组翻转链表
-这个题的有一个关键：找到每一个翻转区间的p0。它实际就是上一个区间未翻转时的第一个节点。
-go示例解法
-/** * Definition for singly-linked list. * type ListNode struct &#123; *     Val int *     Next *ListNode * &#125; */func reverseKGroup(head *ListNode, k int) *ListNode &#123;    cnt := 0    for p:=head;p!=nil;p=p.Next&#123;        cnt++    &#125;    dummy := &amp;ListNode&#123;0,head&#125;    p0 := dummy    for ; cnt&gt;=k ; cnt-=k &#123;        cur := p0.Next        var pre *ListNode        nextp := p0.Next        for i:=0;i&lt;k;i++&#123;            nxt := cur.Next            cur.Next = pre            pre = cur            cur = nxt        &#125;        p0.Next.Next=cur        p0.Next = pre        p0=nextp    &#125;     return dummy.Next&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
-        <tag>linkList</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250928-251005 weekly electron</title>
     <url>/2025/10/05/250928-251005-weekly-electron/</url>
     <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
@@ -1922,6 +1891,257 @@ import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;impo
       <tags>
         <tag>electron</tag>
         <tag>tool</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 子序列判断</title>
+    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
+    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
+一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
+现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
+这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
+比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
+我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
+于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
+2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
+其他nxt[i][c]构建：
+for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
+
+对于一个字符串$e_i$判断:
+idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
+
+3. 例题匹配子序列的单词数
+给出go的解法示例
+func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>go</tag>
+        <tag>string</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251003 thinking factory method&amp; abstract factory</title>
+    <url>/2025/10/03/251003-thinking-factory-method-abstract-factory/</url>
+    <content><![CDATA[1. 工厂方法以点菜为例。
+type dish interface&#123; Cook() &#125;type pizza struct&#123;&#125;type burger struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;func (*burger) Cook() &#123;  &#125;
+
+若不用工厂方法，则客户端直连产品，新增产品要改分支，不符合开闭原则。
+func orderDish(typeName string) dish &#123;    switch typeName &#123;    case &quot;pizza&quot;:        d := &amp;pizza&#123;&#125;        d.Cook() // &quot;cook pizza&quot;        return d    case &quot;burger&quot;:        d := &amp;burger&#123;&#125;        d.Cook() // &quot;cook burger&quot;        return d    default:        return nil    &#125;&#125;
+而使用工厂方法后，客户端只依赖抽象工厂，新增产品时只需要新增具体工厂即可，符合开闭原则。
+即，把“怎么做菜”的细节从用户（软件开发程序员）手里拿走，交给各自的工厂（中间件）。
+type Factory interface &#123;    Create() dish&#125;type PizzaFactory struct&#123;&#125;func (PizzaFactory) Create() dish &#123; return &amp;pizza&#123;&#125; &#125;type BurgerFactory struct&#123;&#125;func (BurgerFactory) Create() dish &#123; return &amp;burger&#123;&#125; &#125;func order(factory Factory) dish &#123;    d := factory.Create()    d.Cook()     return d&#125;
+
+这样的话，新增产品时只需要新增产品 + 工厂即可，无需修改用户程序。符合开闭原则。
+type sushi struct&#123;&#125;func (s *sushi) Cook() &#123;  &#125;type SushiFactory struct&#123;&#125;func (SushiFactory) Create() dish &#123; return &amp;sushi&#123;&#125; &#125;
+
+客户端只依赖抽象工厂，只需调用工厂方法即可，不用修改。
+类图：
+
+    classDiagram
+  class Dish {
+    +Cook() 
+  }
+  class Pizza {
+    +Cook() 
+  }
+  class Burger {
+    +Cook() 
+  }
+  Dish &lt;|.. Pizza
+  Dish &lt;|.. Burger
+
+  class Factory {
+    +Create() Dish
+  }
+  class PizzaFactory
+  class BurgerFactory
+  Factory &lt;|.. PizzaFactory
+  Factory &lt;|.. BurgerFactory
+
+  Factory ..&gt; Dish : Create()
+  
+
+2. 抽象工厂场景：套餐由两个相关组件组成（菜 Dish + 饮料 Drink），同一风格的组件应该一起创建并保持搭配一致（意式：Pizza+Coffee，美式：Burger+Cola）。
+// 产品族接口type dish interface&#123; Cook() &#125;type drink interface&#123; Serve() &#125;// 具体产品type pizza struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;type burger struct&#123;&#125;func (*burger) Cook() &#123;  &#125;type coffee struct&#123;&#125;func (coffee) Serve() &#123;  &#125;type cola struct&#123;&#125;func (cola) Serve() &#123;  &#125;    
+
+抽象工厂提供“同时创建多个相关产品”的统一接口，客户端只选择工厂（风格），不再传字符串。
+中间件：工厂方法的“实现”，负责创建具体产品。
+// 抽象工厂：一次创建同一风格的多个相关产品type kitchenFactory interface &#123;    CreateDish() dish    CreateDrink() drink&#125;// 具体工厂：意式（Pizza + Coffee）type italianFactory struct&#123;&#125;func (italianFactory) CreateDish() dish   &#123; return &amp;pizza&#123;&#125; &#125;func (italianFactory) CreateDrink() drink &#123; return &amp;coffee&#123;&#125; &#125;// 具体工厂：美式（Burger + Cola）type americanFactory struct&#123;&#125;func (americanFactory) CreateDish() dish   &#123; return &amp;burger&#123;&#125; &#125;func (americanFactory) CreateDrink() drink &#123; return &amp;cola&#123;&#125; &#125;
+
+用户只需要依赖抽象工厂，无需知道具体产品。
+func orderSet(f kitchenFactory) (dish, drink) &#123;    d := f.CreateDish()    d.Cook()    r := f.CreateDrink()    r.Serve()    return d, r&#125;
+
+类图：
+
+    classDiagram
+class dish {
++Cook()
+}
+class drink {
++Serve()
+}
+
+class pizza {
++Cook()
+}
+class burger {
++Cook()
+}
+class coffee {
++Serve()
+}
+class cola {
++Serve()
+}
+
+dish &lt;|.. pizza
+dish &lt;|.. burger
+drink &lt;|.. coffee
+drink &lt;|.. cola
+
+class kitchenFactory {
++CreateDish() dish
++CreateDrink() drink
+}
+class italianFactory
+class americanFactory
+
+kitchenFactory &lt;|.. italianFactory
+kitchenFactory &lt;|.. americanFactory
+
+italianFactory ..&gt; dish : CreateDish()
+italianFactory ..&gt; drink : CreateDrink()
+americanFactory ..&gt; dish : CreateDish()
+americanFactory ..&gt; drink : CreateDrink()
+  
+
+
+
+
+客户端不写 switch、不传 “pizza&#x2F;burger” 字符串；只选风格工厂（Italian&#x2F;American）。
+搭配关系由工厂保证，防止“风格混搭”造成业务不一致。
+扩展新风格时，仅新增“具体工厂 + 其产品”，保持开闭原则。
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Factory Method</tag>
+        <tag>Abstract Factory</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking Trie</title>
+    <url>/2025/08/24/250824-thinking-Trie/</url>
+    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
+C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
+class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>Trie</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251006-251012 weekly Qt</title>
+    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
+    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
+我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
+1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
+需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
+2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
+程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
+
+信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
+槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
+默认情况下：信号与槽是“同步的”。
+
+整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
+2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
+它是体现事件驱动的绝佳例子。
+它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
+可以利用QTimer以及timeout信号来实现定时触发事件。
+以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
+QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
+
+
+2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
+QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
+
+通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
+之后遇到了需要QThread的时候再介绍Qt的线程~
+]]></content>
+      <categories>
+        <category>Qt</category>
+      </categories>
+      <tags>
+        <tag>Projects</tag>
+        <tag>C++</tag>
+        <tag>Qt</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 thinking reflect</title>
+    <url>/2025/10/12/251012-thinking-reflect/</url>
+    <content><![CDATA[最近在用 Gin&#x2F;GORM 尝试写一个后端。受 PostgREST 的启发，我想实现一个更通用的后端：它能运行时自动查询数据库的表结构，并动态生成对应的模型 (Model) 和控制器 (Controller)，从而免去为每张表手动编写重复代码的麻烦。
+Go 的反射 (Reflection) 机制是实现这一目标的关键。它允许程序在运行时检查自身的结构、类型和值。
+本篇将介绍 Go 反射的核心思想，并演示如何利用它在运行时动态构建新的结构体类型。
+1. 反射的核心：Type 与 ValueGo 的反射机制建立在两个核心概念之上：reflect.Type 和 reflect.Value。
+可以把任意变量看作一个“箱子”，箱子里装着实际的数据。
+
+**reflect.Type**：是箱子的“标签”，告诉你里面装的是什么类型的东西（比如 int, string, struct）。
+**reflect.Value**：是箱子里的“东西本身”，你可以读取它的值，甚至在满足特定条件时修改它。
+
+我们通过 reflect.TypeOf() 和 reflect.ValueOf() 这两个函数进入反射的世界：
+var x float64 = 3.4t := reflect.TypeOf(x)   // 获取 Typev := reflect.ValueOf(x)  // 获取 Valuefmt.Println(&quot;type:&quot;, t)                  // 输出: type: float64fmt.Println(&quot;value:&quot;, v.Float())         // 输出: value: 3.4fmt.Println(&quot;kind is float64:&quot;, t.Kind() == reflect.Float64) // 输出: kind is float64: true
+
+2. 修改值：地址与 Elem()反射不仅能看，还能改。但有一个前提：**值必须是“可设置的” (settable)**。
+一个 reflect.Value 是可设置的，当且仅当它代表的是一个可寻址的内存空间。简单来说，如果你对一个指针进行反射，那么指针指向的那块内存就是可设置的。
+我们通过 Elem() 方法来获取指针指向的值。
+var x float64 = 3.4p := &amp;x // p 是指向 x 的指针v := reflect.ValueOf(p) // 对指针进行反射// v 现在代表指针 p，它是不可设置的。但它指向的 x 是可设置的。// 使用 Elem() 获取指针指向的值e := v.Elem()e.SetFloat(7.1) // 修改 x 的值fmt.Println(x) // 输出: 7.1
+
+小结：要通过反射修改一个变量，通常需要对该变量的指针进行反射，然后调用 Elem() 获取其指向的值，再进行修改。
+3. 终极目标：运行时创建结构体现在回到最初的目标：根据数据库表结构动态创建模型。这需要我们在运行时动态地“拼凑”出一个新的结构体类型。
+Go 的 reflect 包提供了 reflect.StructOf 函数来实现这一功能。步骤如下：
+
+定义字段：为新结构体的每个字段创建一个 reflect.StructField。每个字段需要名字、类型 (reflect.Type) 和可选的标签 (Tag)，标签对于 JSON 或 GORM 序列化至关重要。
+创建结构体类型：将定义好的字段切片传入 reflect.StructOf()，得到一个全新的结构体 reflect.Type。
+创建实例：使用 reflect.New() 并传入新的类型，来创建一个指向该结构体新实例的指针 (reflect.Value)。
+设置字段值：通过 Elem() 和 Field() 方法，为新实例的字段赋值。
+
+示例：动态创建一个 User 结构体假设我们要动态创建一个等价于下面代码的类型：
+type User struct &#123;    Name string `json:&quot;name&quot;`    Age  int    `json:&quot;age&quot;`&#125;
+
+使用反射的代码如下：
+package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quot;)func main() &#123;	// 1. 定义字段	fields := []reflect.StructField&#123;		&#123;			Name: &quot;Name&quot;,			Type: reflect.TypeOf(&quot;&quot;), // string 类型			Tag:  `json:&quot;name&quot;`,		&#125;,		&#123;			Name: &quot;Age&quot;,			Type: reflect.TypeOf(0), // int 类型			Tag:  `json:&quot;age&quot;`,		&#125;,	&#125;	// 2. 创建结构体类型	structType := reflect.StructOf(fields)	// 3. 创建实例 (返回一个指向新结构体的指针)	structPtr := reflect.New(structType)	// 4. 获取指针指向的结构体并设置字段值	s := structPtr.Elem()	s.FieldByName(&quot;Name&quot;).SetString(&quot;Alice&quot;)	s.FieldByName(&quot;Age&quot;).SetInt(30)	// 将动态创建的结构体实例转回 interface&#123;&#125; 以便使用	//类是interface&#123;&#125;类型 但值是reflect.Value类型	userInstance := structPtr.Interface()	// 使用 json.Marshal 验证结果	jsonData, err := json.Marshal(userInstance)	if err != nil &#123;		panic(err)	&#125;	fmt.Println(string(jsonData)) // 输出: &#123;&quot;name&quot;:&quot;Alice&quot;,&quot;age&quot;:30&#125;&#125;
+
+4. 何时使用反射？虽然反射功能强大，但它也有代价：
+
+性能开销：反射操作比直接代码调用慢得多。
+编译时类型安全丢失：编译器无法检查通过反射进行的操作，错误只能在运行时暴露，通常是 panic。
+代码可读性差：过度使用会使代码逻辑变得晦涩难懂。
+
+因此，反射应该只在必要时使用，比如开发需要处理任意类型的通用框架、序列化库或 ORM 时。对于常规的业务逻辑，清晰的静态类型代码永远是首选。
+]]></content>
+      <categories>
+        <category>go</category>
+      </categories>
+      <tags>
+        <tag>go</tag>
+        <tag>reflect</tag>
       </tags>
   </entry>
   <entry>
@@ -2165,159 +2385,6 @@ systemctl restart docker
       </tags>
   </entry>
   <entry>
-    <title>251006-251012 weekly Qt</title>
-    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
-    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
-我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
-1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
-需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
-2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
-程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
-
-信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
-槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
-默认情况下：信号与槽是“同步的”。
-
-整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
-2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
-它是体现事件驱动的绝佳例子。
-它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
-可以利用QTimer以及timeout信号来实现定时触发事件。
-以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
-QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
-
-
-2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
-QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
-
-通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
-之后遇到了需要QThread的时候再介绍Qt的线程~
-]]></content>
-      <categories>
-        <category>Qt</category>
-      </categories>
-      <tags>
-        <tag>Projects</tag>
-        <tag>C++</tag>
-        <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251003 thinking factory method&amp; abstract factory</title>
-    <url>/2025/10/03/251003-thinking-factory-method-abstract-factory/</url>
-    <content><![CDATA[1. 工厂方法以点菜为例。
-type dish interface&#123; Cook() &#125;type pizza struct&#123;&#125;type burger struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;func (*burger) Cook() &#123;  &#125;
-
-若不用工厂方法，则客户端直连产品，新增产品要改分支，不符合开闭原则。
-func orderDish(typeName string) dish &#123;    switch typeName &#123;    case &quot;pizza&quot;:        d := &amp;pizza&#123;&#125;        d.Cook() // &quot;cook pizza&quot;        return d    case &quot;burger&quot;:        d := &amp;burger&#123;&#125;        d.Cook() // &quot;cook burger&quot;        return d    default:        return nil    &#125;&#125;
-而使用工厂方法后，客户端只依赖抽象工厂，新增产品时只需要新增具体工厂即可，符合开闭原则。
-即，把“怎么做菜”的细节从用户（软件开发程序员）手里拿走，交给各自的工厂（中间件）。
-type Factory interface &#123;    Create() dish&#125;type PizzaFactory struct&#123;&#125;func (PizzaFactory) Create() dish &#123; return &amp;pizza&#123;&#125; &#125;type BurgerFactory struct&#123;&#125;func (BurgerFactory) Create() dish &#123; return &amp;burger&#123;&#125; &#125;func order(factory Factory) dish &#123;    d := factory.Create()    d.Cook()     return d&#125;
-
-这样的话，新增产品时只需要新增产品 + 工厂即可，无需修改用户程序。符合开闭原则。
-type sushi struct&#123;&#125;func (s *sushi) Cook() &#123;  &#125;type SushiFactory struct&#123;&#125;func (SushiFactory) Create() dish &#123; return &amp;sushi&#123;&#125; &#125;
-
-客户端只依赖抽象工厂，只需调用工厂方法即可，不用修改。
-类图：
-
-    classDiagram
-  class Dish {
-    +Cook() 
-  }
-  class Pizza {
-    +Cook() 
-  }
-  class Burger {
-    +Cook() 
-  }
-  Dish &lt;|.. Pizza
-  Dish &lt;|.. Burger
-
-  class Factory {
-    +Create() Dish
-  }
-  class PizzaFactory
-  class BurgerFactory
-  Factory &lt;|.. PizzaFactory
-  Factory &lt;|.. BurgerFactory
-
-  Factory ..&gt; Dish : Create()
-  
-
-2. 抽象工厂场景：套餐由两个相关组件组成（菜 Dish + 饮料 Drink），同一风格的组件应该一起创建并保持搭配一致（意式：Pizza+Coffee，美式：Burger+Cola）。
-// 产品族接口type dish interface&#123; Cook() &#125;type drink interface&#123; Serve() &#125;// 具体产品type pizza struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;type burger struct&#123;&#125;func (*burger) Cook() &#123;  &#125;type coffee struct&#123;&#125;func (coffee) Serve() &#123;  &#125;type cola struct&#123;&#125;func (cola) Serve() &#123;  &#125;    
-
-抽象工厂提供“同时创建多个相关产品”的统一接口，客户端只选择工厂（风格），不再传字符串。
-中间件：工厂方法的“实现”，负责创建具体产品。
-// 抽象工厂：一次创建同一风格的多个相关产品type kitchenFactory interface &#123;    CreateDish() dish    CreateDrink() drink&#125;// 具体工厂：意式（Pizza + Coffee）type italianFactory struct&#123;&#125;func (italianFactory) CreateDish() dish   &#123; return &amp;pizza&#123;&#125; &#125;func (italianFactory) CreateDrink() drink &#123; return &amp;coffee&#123;&#125; &#125;// 具体工厂：美式（Burger + Cola）type americanFactory struct&#123;&#125;func (americanFactory) CreateDish() dish   &#123; return &amp;burger&#123;&#125; &#125;func (americanFactory) CreateDrink() drink &#123; return &amp;cola&#123;&#125; &#125;
-
-用户只需要依赖抽象工厂，无需知道具体产品。
-func orderSet(f kitchenFactory) (dish, drink) &#123;    d := f.CreateDish()    d.Cook()    r := f.CreateDrink()    r.Serve()    return d, r&#125;
-
-类图：
-
-    classDiagram
-class dish {
-+Cook()
-}
-class drink {
-+Serve()
-}
-
-class pizza {
-+Cook()
-}
-class burger {
-+Cook()
-}
-class coffee {
-+Serve()
-}
-class cola {
-+Serve()
-}
-
-dish &lt;|.. pizza
-dish &lt;|.. burger
-drink &lt;|.. coffee
-drink &lt;|.. cola
-
-class kitchenFactory {
-+CreateDish() dish
-+CreateDrink() drink
-}
-class italianFactory
-class americanFactory
-
-kitchenFactory &lt;|.. italianFactory
-kitchenFactory &lt;|.. americanFactory
-
-italianFactory ..&gt; dish : CreateDish()
-italianFactory ..&gt; drink : CreateDrink()
-americanFactory ..&gt; dish : CreateDish()
-americanFactory ..&gt; drink : CreateDrink()
-  
-
-
-
-
-客户端不写 switch、不传 “pizza&#x2F;burger” 字符串；只选风格工厂（Italian&#x2F;American）。
-搭配关系由工厂保证，防止“风格混搭”造成业务不一致。
-扩展新风格时，仅新增“具体工厂 + 其产品”，保持开闭原则。
-
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Factory Method</tag>
-        <tag>Abstract Factory</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251012 thinking builder</title>
     <url>/2025/10/12/251012-thinking-builder/</url>
     <content><![CDATA[1. 什么是生成器模式？生成器模式（Builder Pattern）是一种创建型设计模式，它将一个复杂对象的构建分成多个步骤，每个步骤可以被重写，因此使得同样的构建过程可以生成不同类型和形式的对象。
@@ -2394,103 +2461,6 @@ director ..&gt; product : Construct()
       </tags>
   </entry>
   <entry>
-    <title>251012 record best-time-to-buy-and-sell-stock</title>
-    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
-    <content><![CDATA[题目
-int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
-
-这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
-]]></content>
-      <categories>
-        <category>record</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>Record</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 thinking slider window</title>
-    <url>/2025/10/12/251012-thinking-slider-window/</url>
-    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
-1. 定长滑动窗口只用r即可，l=r-w+1。
-模板：
-for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
-
-
-注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
-
-2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
-l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
-
-3. 例题
-定长滑动窗口
-
-变长滑动窗口
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>thinking</tag>
-        <tag>slider window</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 thinking reflect</title>
-    <url>/2025/10/12/251012-thinking-reflect/</url>
-    <content><![CDATA[最近在用 Gin&#x2F;GORM 尝试写一个后端。受 PostgREST 的启发，我想实现一个更通用的后端：它能运行时自动查询数据库的表结构，并动态生成对应的模型 (Model) 和控制器 (Controller)，从而免去为每张表手动编写重复代码的麻烦。
-Go 的反射 (Reflection) 机制是实现这一目标的关键。它允许程序在运行时检查自身的结构、类型和值。
-本篇将介绍 Go 反射的核心思想，并演示如何利用它在运行时动态构建新的结构体类型。
-1. 反射的核心：Type 与 ValueGo 的反射机制建立在两个核心概念之上：reflect.Type 和 reflect.Value。
-可以把任意变量看作一个“箱子”，箱子里装着实际的数据。
-
-**reflect.Type**：是箱子的“标签”，告诉你里面装的是什么类型的东西（比如 int, string, struct）。
-**reflect.Value**：是箱子里的“东西本身”，你可以读取它的值，甚至在满足特定条件时修改它。
-
-我们通过 reflect.TypeOf() 和 reflect.ValueOf() 这两个函数进入反射的世界：
-var x float64 = 3.4t := reflect.TypeOf(x)   // 获取 Typev := reflect.ValueOf(x)  // 获取 Valuefmt.Println(&quot;type:&quot;, t)                  // 输出: type: float64fmt.Println(&quot;value:&quot;, v.Float())         // 输出: value: 3.4fmt.Println(&quot;kind is float64:&quot;, t.Kind() == reflect.Float64) // 输出: kind is float64: true
-
-2. 修改值：地址与 Elem()反射不仅能看，还能改。但有一个前提：**值必须是“可设置的” (settable)**。
-一个 reflect.Value 是可设置的，当且仅当它代表的是一个可寻址的内存空间。简单来说，如果你对一个指针进行反射，那么指针指向的那块内存就是可设置的。
-我们通过 Elem() 方法来获取指针指向的值。
-var x float64 = 3.4p := &amp;x // p 是指向 x 的指针v := reflect.ValueOf(p) // 对指针进行反射// v 现在代表指针 p，它是不可设置的。但它指向的 x 是可设置的。// 使用 Elem() 获取指针指向的值e := v.Elem()e.SetFloat(7.1) // 修改 x 的值fmt.Println(x) // 输出: 7.1
-
-小结：要通过反射修改一个变量，通常需要对该变量的指针进行反射，然后调用 Elem() 获取其指向的值，再进行修改。
-3. 终极目标：运行时创建结构体现在回到最初的目标：根据数据库表结构动态创建模型。这需要我们在运行时动态地“拼凑”出一个新的结构体类型。
-Go 的 reflect 包提供了 reflect.StructOf 函数来实现这一功能。步骤如下：
-
-定义字段：为新结构体的每个字段创建一个 reflect.StructField。每个字段需要名字、类型 (reflect.Type) 和可选的标签 (Tag)，标签对于 JSON 或 GORM 序列化至关重要。
-创建结构体类型：将定义好的字段切片传入 reflect.StructOf()，得到一个全新的结构体 reflect.Type。
-创建实例：使用 reflect.New() 并传入新的类型，来创建一个指向该结构体新实例的指针 (reflect.Value)。
-设置字段值：通过 Elem() 和 Field() 方法，为新实例的字段赋值。
-
-示例：动态创建一个 User 结构体假设我们要动态创建一个等价于下面代码的类型：
-type User struct &#123;    Name string `json:&quot;name&quot;`    Age  int    `json:&quot;age&quot;`&#125;
-
-使用反射的代码如下：
-package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quot;)func main() &#123;	// 1. 定义字段	fields := []reflect.StructField&#123;		&#123;			Name: &quot;Name&quot;,			Type: reflect.TypeOf(&quot;&quot;), // string 类型			Tag:  `json:&quot;name&quot;`,		&#125;,		&#123;			Name: &quot;Age&quot;,			Type: reflect.TypeOf(0), // int 类型			Tag:  `json:&quot;age&quot;`,		&#125;,	&#125;	// 2. 创建结构体类型	structType := reflect.StructOf(fields)	// 3. 创建实例 (返回一个指向新结构体的指针)	structPtr := reflect.New(structType)	// 4. 获取指针指向的结构体并设置字段值	s := structPtr.Elem()	s.FieldByName(&quot;Name&quot;).SetString(&quot;Alice&quot;)	s.FieldByName(&quot;Age&quot;).SetInt(30)	// 将动态创建的结构体实例转回 interface&#123;&#125; 以便使用	//类是interface&#123;&#125;类型 但值是reflect.Value类型	userInstance := structPtr.Interface()	// 使用 json.Marshal 验证结果	jsonData, err := json.Marshal(userInstance)	if err != nil &#123;		panic(err)	&#125;	fmt.Println(string(jsonData)) // 输出: &#123;&quot;name&quot;:&quot;Alice&quot;,&quot;age&quot;:30&#125;&#125;
-
-4. 何时使用反射？虽然反射功能强大，但它也有代价：
-
-性能开销：反射操作比直接代码调用慢得多。
-编译时类型安全丢失：编译器无法检查通过反射进行的操作，错误只能在运行时暴露，通常是 panic。
-代码可读性差：过度使用会使代码逻辑变得晦涩难懂。
-
-因此，反射应该只在必要时使用，比如开发需要处理任意类型的通用框架、序列化库或 ORM 时。对于常规的业务逻辑，清晰的静态类型代码永远是首选。
-]]></content>
-      <categories>
-        <category>go</category>
-      </categories>
-      <tags>
-        <tag>go</tag>
-        <tag>reflect</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251017-thinking-prototype</title>
     <url>/2025/10/17/251017-thinking-prototype/</url>
     <content><![CDATA[1. 什么是原型模式？一言以蔽之，原型模式（Prototype Pattern）是一种创建型设计模式，它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。
@@ -2523,6 +2493,36 @@ prototype &lt;|.. concreteType
         <tag>Design Pattern</tag>
         <tag>go</tag>
         <tag>Prototype Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 thinking slider window</title>
+    <url>/2025/10/12/251012-thinking-slider-window/</url>
+    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
+1. 定长滑动窗口只用r即可，l=r-w+1。
+模板：
+for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
+
+
+注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
+
+2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
+l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
+
+3. 例题
+定长滑动窗口
+
+变长滑动窗口
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>thinking</tag>
+        <tag>slider window</tag>
       </tags>
   </entry>
   <entry>
@@ -2583,6 +2583,83 @@ func main() &#123;    // 创建被适配的对象    awesomePlayer := &amp;Aweso
       </tags>
   </entry>
   <entry>
+    <title>251018 thinking bridge</title>
+    <url>/2025/10/18/251018-thinking-bridge/</url>
+    <content><![CDATA[1. 什么是桥接模式？桥接模式（Bridge Pattern）是一种结构型设计模式，它的核心思想是将抽象部分与它的实现部分分离，使它们都可以独立地变化。
+想象一下电视机和遥控器的关系：
+
+抽象层：遥控器。它定义了高层操作，如 开机()、关机()、换台()。不同的遥控器（如 普通遥控器、智能遥控器）可以有不同的交互方式，但它们都服务于控制电视这个目的。
+实现层：电视机。它负责执行具体的操作，如 物理开机()、切换视频源()。不同的电视品牌（如 索尼电视、三星电视）有各自的实现细节。
+
+桥接模式就像是在遥控器中内置一个对电视机实例的引用。遥控器的按钮按下后，会调用它所引用的那台电视机的具体方法。通过这种方式，你可以独立地更换遥控器（从普通遥控器升级到智能遥控器），而无需关心电视机的品牌；同样，你也可以独立地更换电视机（从索尼换成三星），而遥控器无需任何改变。它们通过一个“桥梁”连接，各自演化。
+2. 为什么需要桥接模式？当一个类或系统存在多个独立变化的维度时，桥接模式就显得尤为重要。如果不使用桥接模式，我们可能会倾向于使用继承来解决问题，但这会导致类的数量爆炸式增长。
+设想一个场景：我们要绘制不同颜色（如红色、蓝色）的形状（如圆形、方形）。
+
+维度一：形状（Circle, Square）
+维度二：颜色（Red, Blue）
+
+如果使用继承，我们可能需要创建 RedCircle, BlueCircle, RedSquare, BlueSquare 这样 2 * 2 = 4 个类。如果再增加一种形状（三角形）和一种颜色（绿色），类的数量就会变成 3 * 3 = 9 个。这种“笛卡尔积”式的类爆炸是难以维护的。
+桥接模式通过将“形状”和“颜色”两个维度分离来解决这个问题：
+
+抽象部分：Shape (形状)，它包含一个对 Color (颜色) 的引用。
+实现部分：Color (颜色)，它是一个接口，有 Red、Blue 等具体实现。
+
+这样，类的数量就从 M * N 变成了 M + N。当需要增加一种新形状或新颜色时，只需增加一个新类，而不会影响到其他部分，完美遵循了开闭原则。
+3. 桥接模式的实现（Go）下面我们用 Go 来实现上述的“形状与颜色”的例子。
+中间件：
+// 1. 实现部分 (Implementor)// Color 是实现部分的接口type Color interface &#123;	ApplyColor() string&#125;// 2. 具体实现 (Concrete Implementors)// RedColor 是一个具体的颜色实现type RedColor struct&#123;&#125;func (r *RedColor) ApplyColor() string &#123;	return &quot;Red&quot;&#125;// BlueColor 是另一个具体的颜色实现type BlueColor struct&#123;&#125;func (b *BlueColor) ApplyColor() string &#123;	return &quot;Blue&quot;&#125;// 3. 抽象部分 (Abstraction)// Shape 是抽象部分的接口，它包含一个对实现部分(Color)的引用type Shape interface &#123;	Draw()&#125;// 4. 扩展抽象 (Refined Abstraction)// Circle 是一个具体的形状，它持有一个 Color 对象type Circle struct &#123;	color *Color&#125;func (c *Circle) Draw() &#123;	fmt.Printf(&quot;Drawing a Circle in %s color.\n&quot;, c.color.ApplyColor())&#125;// Square 是另一个具体的形状type Square struct &#123;	color *Color&#125;func (s *Square) Draw() &#123;	fmt.Printf(&quot;Drawing a Square in %s color.\n&quot;, s.color.ApplyColor())&#125;
+
+客户端代码:
+func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#125;	blue := &amp;BlueColor&#123;&#125;	// 创建具体的抽象对象，并将实现对象“桥接”进去	redCircle := &amp;Circle&#123;color: red&#125;	blueSquare := &amp;Square&#123;color: blue&#125;	// 调用方法	redCircle.Draw()   // 输出: Drawing a Circle in Red color.	blueSquare.Draw()  // 输出: Drawing a Square in Blue color.&#125;
+
+类图：
+
+    classDiagram
+    class Shape {
+        &lt;&lt;interface&gt;&gt;
+        +Draw()
+    }
+    class Circle {
+        -color: Color
+        +Draw()
+    }
+    class Square {
+        -color: Color
+        +Draw() 
+    }
+    class Color {
+        &lt;&lt;interface&gt;&gt;
+        +ApplyColor() string
+    }
+    class RedColor {
+        +ApplyColor() string
+    }
+    class BlueColor {
+        +ApplyColor() string        
+    }
+    Circle --|&gt; Shape
+    Square --|&gt; Shape
+    Circle --&gt; Color
+    Square --&gt; Color
+    Circle &quot;1&quot; *-- &quot;1&quot; Color
+    Square &quot;1&quot; *-- &quot;1&quot; Color
+    RedColor --|&gt; Color
+    BlueColor --|&gt; Color
+  
+
+在这个例子中，Shape 和 Color 可以独立地进行扩展。如果想增加一个 Green 颜色，只需实现 Color 接口即可；如果想增加一个 Triangle 形状，只需创建一个新的 Triangle 结构体并实现 Draw 方法，而无需改动任何现有代码。
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Bridge Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251018 thinking composite</title>
     <url>/2025/10/25/251018-thinking-composite/</url>
     <content><![CDATA[1. 什么是组合模式组合模式（Composite Pattern）是一种结构型设计模式，它允许你将对象组合成树形结构以表示“部分-整体”的层次关系。组合模式使得客户端可以统一地处理个别对象和对象组合。
@@ -2613,7 +2690,7 @@ func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;  
     }
     Component &lt;|-- Directory
     Component &lt;|-- File
-    Directory &quot;1&quot; *-- &quot;n&quot; Component
+    Directory &quot;1&quot; o-- &quot;n&quot; Component
   
 ]]></content>
       <categories>
@@ -2624,6 +2701,58 @@ func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;  
         <tag>go</tag>
         <tag>Composite Pattern</tag>
         <tag>Interface Oriented Design</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251018 thinking decorator</title>
+    <url>/2025/10/25/251018-thinking-decorator/</url>
+    <content><![CDATA[1. 什么是装饰器模式装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变原有对象结构的情况下，动态地给对象添加新的功能。
+2. 为什么需要装饰器模式想象一下去咖啡店点单的场景：
+
+一杯基础款咖啡（比如美式）。
+各种调料（比如牛奶、糖、巧克力酱等）。
+
+你可以选择只喝纯的美式，也可以要求加奶，再加糖。
+如果我们用继承来实现“咖啡+调料”的功能，会发生什么？
+我们可能需要创建CoffeeWithMilk CoffeeWithSugar CoffeeWithMilkAndSugar等大量的子类。
+如果再增加一种调料（比如奶油），类的数量就会爆炸式增长。
+同时，如果想给一个已经创建好的Coffee实例动态添加牛奶，使用继承是做不到的，因为继承是静态的。
+但装饰器模式通过组合解决了这些问题：
+
+遵循开闭原则：你可以随时创建新的调料（装饰器），而无需修改任何现有的咖啡（组件）代码。系统对扩展开放，对修改关闭。
+灵活性和动态性：可以在运行时根据需要，任意地、动态地为对象添加一层或多层功能，组合顺序和数量都非常灵活。
+避免子类爆炸：无论有多少种调料，我们只需要为每种调料创建一个装饰器类，而不是为每种组合都创建一个子类。
+
+3. 装饰器模式的实现（go）type Coffee interface &#123;	GetCoffee() string&#125;type Latte struct &#123;&#125;func (l *Latte) GetCoffee() string &#123;	return &quot;Latte&quot;&#125;type CoffeeDecorator struct &#123;    CoffeeOrdered *Coffee    AddCondiment string&#125;func (d *CoffeeDecorator) GetCoffee() string &#123;	return d.CoffeeOrdered.GetCoffee() + &quot; with &quot; + d.AddCondiment&#125;
+
+客户端
+func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeDecorator&#123;CoffeeOrdered: latte, AddCondiment: &quot;Milk&quot;&#125;	latteWithMilkAndSugar := &amp;CoffeeDecorator&#123;CoffeeOrdered: latteWithMilk, AddCondiment: &quot;Sugar&quot;&#125;	fmt.Println(latteWithMilkAndSugar.GetCoffee())&#125;
+类图
+
+    classDiagram
+    class Coffee {
+        &lt;&lt;interface&gt;&gt;
+        +GetCoffee() string
+    }
+    class Latte {
+        +GetCoffee() string
+    }
+    class CoffeeDecorator {
+        +GetCoffee() string
+        +AddCondiment string
+        +CoffeeOrdered *Coffee
+    }
+    Coffee &lt;|-- Latte
+    CoffeeDecorator &quot;1&quot; *-- &quot;1&quot; Coffee
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Decorator Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -2953,82 +3082,5 @@ func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;  
       <categories>
         <category>record</category>
       </categories>
-  </entry>
-  <entry>
-    <title>251018 thinking bridge</title>
-    <url>/2025/10/18/251018-thinking-bridge/</url>
-    <content><![CDATA[1. 什么是桥接模式？桥接模式（Bridge Pattern）是一种结构型设计模式，它的核心思想是将抽象部分与它的实现部分分离，使它们都可以独立地变化。
-想象一下电视机和遥控器的关系：
-
-抽象层：遥控器。它定义了高层操作，如 开机()、关机()、换台()。不同的遥控器（如 普通遥控器、智能遥控器）可以有不同的交互方式，但它们都服务于控制电视这个目的。
-实现层：电视机。它负责执行具体的操作，如 物理开机()、切换视频源()。不同的电视品牌（如 索尼电视、三星电视）有各自的实现细节。
-
-桥接模式就像是在遥控器中内置一个对电视机实例的引用。遥控器的按钮按下后，会调用它所引用的那台电视机的具体方法。通过这种方式，你可以独立地更换遥控器（从普通遥控器升级到智能遥控器），而无需关心电视机的品牌；同样，你也可以独立地更换电视机（从索尼换成三星），而遥控器无需任何改变。它们通过一个“桥梁”连接，各自演化。
-2. 为什么需要桥接模式？当一个类或系统存在多个独立变化的维度时，桥接模式就显得尤为重要。如果不使用桥接模式，我们可能会倾向于使用继承来解决问题，但这会导致类的数量爆炸式增长。
-设想一个场景：我们要绘制不同颜色（如红色、蓝色）的形状（如圆形、方形）。
-
-维度一：形状（Circle, Square）
-维度二：颜色（Red, Blue）
-
-如果使用继承，我们可能需要创建 RedCircle, BlueCircle, RedSquare, BlueSquare 这样 2 * 2 = 4 个类。如果再增加一种形状（三角形）和一种颜色（绿色），类的数量就会变成 3 * 3 = 9 个。这种“笛卡尔积”式的类爆炸是难以维护的。
-桥接模式通过将“形状”和“颜色”两个维度分离来解决这个问题：
-
-抽象部分：Shape (形状)，它包含一个对 Color (颜色) 的引用。
-实现部分：Color (颜色)，它是一个接口，有 Red、Blue 等具体实现。
-
-这样，类的数量就从 M * N 变成了 M + N。当需要增加一种新形状或新颜色时，只需增加一个新类，而不会影响到其他部分，完美遵循了开闭原则。
-3. 桥接模式的实现（Go）下面我们用 Go 来实现上述的“形状与颜色”的例子。
-中间件：
-// 1. 实现部分 (Implementor)// Color 是实现部分的接口type Color interface &#123;	ApplyColor() string&#125;// 2. 具体实现 (Concrete Implementors)// RedColor 是一个具体的颜色实现type RedColor struct&#123;&#125;func (r *RedColor) ApplyColor() string &#123;	return &quot;Red&quot;&#125;// BlueColor 是另一个具体的颜色实现type BlueColor struct&#123;&#125;func (b *BlueColor) ApplyColor() string &#123;	return &quot;Blue&quot;&#125;// 3. 抽象部分 (Abstraction)// Shape 是抽象部分的接口，它包含一个对实现部分(Color)的引用type Shape interface &#123;	Draw()&#125;// 4. 扩展抽象 (Refined Abstraction)// Circle 是一个具体的形状，它持有一个 Color 对象type Circle struct &#123;	color *Color&#125;func (c *Circle) Draw() &#123;	fmt.Printf(&quot;Drawing a Circle in %s color.\n&quot;, c.color.ApplyColor())&#125;// Square 是另一个具体的形状type Square struct &#123;	color *Color&#125;func (s *Square) Draw() &#123;	fmt.Printf(&quot;Drawing a Square in %s color.\n&quot;, s.color.ApplyColor())&#125;
-
-客户端代码:
-func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#125;	blue := &amp;BlueColor&#123;&#125;	// 创建具体的抽象对象，并将实现对象“桥接”进去	redCircle := &amp;Circle&#123;color: red&#125;	blueSquare := &amp;Square&#123;color: blue&#125;	// 调用方法	redCircle.Draw()   // 输出: Drawing a Circle in Red color.	blueSquare.Draw()  // 输出: Drawing a Square in Blue color.&#125;
-
-类图：
-
-    classDiagram
-    class Shape {
-        &lt;&lt;interface&gt;&gt;
-        +Draw()
-    }
-    class Circle {
-        -color: Color
-        +Draw()
-    }
-    class Square {
-        -color: Color
-        +Draw() 
-    }
-    class Color {
-        &lt;&lt;interface&gt;&gt;
-        +ApplyColor() string
-    }
-    class RedColor {
-        +ApplyColor() string
-    }
-    class BlueColor {
-        +ApplyColor() string        
-    }
-    Circle --|&gt; Shape
-    Square --|&gt; Shape
-    Circle --&gt; Color
-    Square --&gt; Color
-    Circle &quot;1&quot; *-- &quot;1&quot; Color
-    Square &quot;1&quot; *-- &quot;1&quot; Color
-    RedColor --|&gt; Color
-    BlueColor --|&gt; Color
-  
-
-在这个例子中，Shape 和 Color 可以独立地进行扩展。如果想增加一个 Green 颜色，只需实现 Color 接口即可；如果想增加一个 Triangle 形状，只需创建一个新的 Triangle 结构体并实现 Draw 方法，而无需改动任何现有代码。
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Bridge Pattern</tag>
-      </tags>
   </entry>
 </search>
