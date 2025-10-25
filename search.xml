@@ -73,6 +73,46 @@ siriusyaoz，在做实验的时候，你的关于这个实验的代码给予了�
       </tags>
   </entry>
   <entry>
+    <title>250721 thinking 二分查找</title>
+    <url>/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</url>
+    <content><![CDATA[1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。
+于是总结一种模板：
+定义域为[lo, hi)的单增的f(x), 找出最小的ans, 使得f(ans)&gt;0成立。
+单减同理，甚至可以进行预处理先转化为单增的情况。
+伪代码如下：
+algorithm binary-search(lo,hi)	while the search area has elments do:		mid &lt;- lo + (hi-lo)/2;		if f(mid) satisfied: // the answer may occur here            		ans := mid;			hi &lt;- mid;             // the search area could have no elments when in the next loop, so return ans;             // but mid&gt;ans if next loop continues,              // for this is a right-open area, hi &lt;- mid;		else :			lo &lt;- mid + 1;             // mid is not the answer, and mid &lt; answer;            // for this is a left-close area, lo &lt;- mid + 1;	end while	return ans;
+
+2. 例
+已知一个有序数组，查找一个元素的位置并返回。若该元素不存在，则返回元素应插入的位置。
+
+定义域为[0, nums.size())，找出最小的ans, nums[ans] &gt;&#x3D; target成立
+int searchInsert(vector&lt;int&gt;&amp; nums, int target)&#123;        int left=0,right=nums.size(),ans; // f(ans)= nums[ans] 的定义域： ans \in [left, right)        while(left&lt;right)&#123;            int mid=(right-left)/2 + left;//防止直接right+left造成溢出            if(nums[mid]&gt;=target)&#123;//因为我们要找的就是nums[ans]&gt;=target                ans=mid; //所以mid可能为答案。                right=mid; //也可能mid不是答案，更新开的上界为mid            &#125;            else&#123;                left=mid+1; // 否则mid绝对不是答案。更新闭的下界为mid+1。            &#125;        &#125;        return ans; &#125;
+
+
+给你一个非负整数 x ，计算并返回 x 的 算术平方根 。由于返回类型是整数，结果只保留 整数部分 ，小数部分将被 舍去 。
+
+定义域为$[0, +\infty)$, 找出最大的$\text{ans}$, $\text{ans}^2 \leqslant x$
+int mySqrt(int x) &#123;       long long l = 0, r = x+1, ans; // ans \in [0, +\infty), 但这里对r这样赋值只是为了让ans快速收敛。为什么x+1: x=0,1时 ans = x &lt; x+1。          while (l &lt; r) &#123;            long long  mid = (l+r)&gt;&gt;1;            if (mid * mid &lt;= x) &#123;//因为要找的就是ans*ans&lt;=x                ans = mid; //所以mid可能为答案。                l = mid + 1; //也可能mid不是答案，更新闭的下界为mid+1            &#125; else &#123;                r = mid; // 否则mid绝对不是答案。更新开的上界为mid。            &#125;        &#125;        return ans;     &#125;
+
+也有一些更抽象的二分查找：
+3350.检测相邻递增子数组II
+令f(x)：k=x时数组是否存在两个相邻且长度为 k 的严格递增子数组,存在则f(x)=1否则f(x)=0。
+则f(x)单减。满足二分查找的使用
+于是原问题即为
+定义域为$[2, \lceil nums.length&#x2F;2 \rceil)$, 找出最大的$\text{ans}$, $f(\text{ans})&gt;&#x3D;1$
+解法示例：
+func f(x int, lengths []int) bool &#123;    count := 0    for _, l := range lengths &#123;        if l &gt;= 2*x &#123;             return true        &#125;        if l &gt;= x &#123;            count++            if count &gt;= 2 &#123;                return true            &#125;        &#125;else&#123;            count = 0        &#125;    &#125;    return false&#125;func maxIncreasingSubarrays(nums []int) int &#123;    n := len(nums)    lengths := []int&#123;&#125;    cur := 1    for i := 1; i &lt; n; i++ &#123;        if nums[i] &gt; nums[i-1] &#123;            cur++        &#125; else &#123;            lengths = append(lengths, cur)            cur = 1        &#125;    &#125;    lengths = append(lengths, cur)    lo := 1; hi := len(nums)/2+1    var ans int    for lo&lt;hi&#123;        mi := lo + (hi-lo)/2        if f(mi,lengths)&#123;            ans = mi            lo = mi + 1        &#125;else&#123;            hi=mi        &#125;    &#125;    return ans&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>binary search</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250714-250720 周记 2024-xv6-labs(2)</title>
     <url>/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/</url>
     <content><![CDATA[本周完成了剩下的实验。上一篇见2024-xv6-labs-1
@@ -130,46 +170,6 @@ ps:sys_open是在干什么？它是创建一个文件描述符（fd），将它�
       </tags>
   </entry>
   <entry>
-    <title>250721 thinking 二分查找</title>
-    <url>/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</url>
-    <content><![CDATA[1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。
-于是总结一种模板：
-定义域为[lo, hi)的单增的f(x), 找出最小的ans, 使得f(ans)&gt;0成立。
-单减同理，甚至可以进行预处理先转化为单增的情况。
-伪代码如下：
-algorithm binary-search(lo,hi)	while the search area has elments do:		mid &lt;- lo + (hi-lo)/2;		if f(mid) satisfied: // the answer may occur here            		ans := mid;			hi &lt;- mid;             // the search area could have no elments when in the next loop, so return ans;             // but mid&gt;ans if next loop continues,              // for this is a right-open area, hi &lt;- mid;		else :			lo &lt;- mid + 1;             // mid is not the answer, and mid &lt; answer;            // for this is a left-close area, lo &lt;- mid + 1;	end while	return ans;
-
-2. 例
-已知一个有序数组，查找一个元素的位置并返回。若该元素不存在，则返回元素应插入的位置。
-
-定义域为[0, nums.size())，找出最小的ans, nums[ans] &gt;&#x3D; target成立
-int searchInsert(vector&lt;int&gt;&amp; nums, int target)&#123;        int left=0,right=nums.size(),ans; // f(ans)= nums[ans] 的定义域： ans \in [left, right)        while(left&lt;right)&#123;            int mid=(right-left)/2 + left;//防止直接right+left造成溢出            if(nums[mid]&gt;=target)&#123;//因为我们要找的就是nums[ans]&gt;=target                ans=mid; //所以mid可能为答案。                right=mid; //也可能mid不是答案，更新开的上界为mid            &#125;            else&#123;                left=mid+1; // 否则mid绝对不是答案。更新闭的下界为mid+1。            &#125;        &#125;        return ans; &#125;
-
-
-给你一个非负整数 x ，计算并返回 x 的 算术平方根 。由于返回类型是整数，结果只保留 整数部分 ，小数部分将被 舍去 。
-
-定义域为$[0, +\infty)$, 找出最大的$\text{ans}$, $\text{ans}^2 \leqslant x$
-int mySqrt(int x) &#123;       long long l = 0, r = x+1, ans; // ans \in [0, +\infty), 但这里对r这样赋值只是为了让ans快速收敛。为什么x+1: x=0,1时 ans = x &lt; x+1。          while (l &lt; r) &#123;            long long  mid = (l+r)&gt;&gt;1;            if (mid * mid &lt;= x) &#123;//因为要找的就是ans*ans&lt;=x                ans = mid; //所以mid可能为答案。                l = mid + 1; //也可能mid不是答案，更新闭的下界为mid+1            &#125; else &#123;                r = mid; // 否则mid绝对不是答案。更新开的上界为mid。            &#125;        &#125;        return ans;     &#125;
-
-也有一些更抽象的二分查找：
-3350.检测相邻递增子数组II
-令f(x)：k=x时数组是否存在两个相邻且长度为 k 的严格递增子数组,存在则f(x)=1否则f(x)=0。
-则f(x)单减。满足二分查找的使用
-于是原问题即为
-定义域为$[2, \lceil nums.length&#x2F;2 \rceil)$, 找出最大的$\text{ans}$, $f(\text{ans})&gt;&#x3D;1$
-解法示例：
-func f(x int, lengths []int) bool &#123;    count := 0    for _, l := range lengths &#123;        if l &gt;= 2*x &#123;             return true        &#125;        if l &gt;= x &#123;            count++            if count &gt;= 2 &#123;                return true            &#125;        &#125;else&#123;            count = 0        &#125;    &#125;    return false&#125;func maxIncreasingSubarrays(nums []int) int &#123;    n := len(nums)    lengths := []int&#123;&#125;    cur := 1    for i := 1; i &lt; n; i++ &#123;        if nums[i] &gt; nums[i-1] &#123;            cur++        &#125; else &#123;            lengths = append(lengths, cur)            cur = 1        &#125;    &#125;    lengths = append(lengths, cur)    lo := 1; hi := len(nums)/2+1    var ans int    for lo&lt;hi&#123;        mi := lo + (hi-lo)/2        if f(mi,lengths)&#123;            ans = mi            lo = mi + 1        &#125;else&#123;            hi=mi        &#125;    &#125;    return ans&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>binary search</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250728-250803 周记 缓存池项目学习</title>
     <url>/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</url>
     <content><![CDATA[本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。
@@ -208,66 +208,6 @@ LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混�
         <tag>C++</tag>
         <tag>projects</tag>
         <tag>cache</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250721 thinking 单调栈</title>
-    <url>/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/</url>
-    <content><![CDATA[
-他向远方望去，无法看到高山背后的矮山，只看到一座座更高的山峰。————by 灵神
-
-1. 总结单调栈就是保持栈内元素单调的栈。当新元素破坏单调性时，弹出栈顶元素，弹出的瞬间就找到栈顶元素对应的答案。
-栈里存放着暂时还没有找到对应答案的元素。新元素入栈时，如果栈顶元素使得栈单调性被破环，那么栈顶元素的答案产生，栈顶元素找到答案，出栈。因此需要建立的栈的单调性与题目的答案需求往往是“反过来”。要下一个更大就要单减；要下一个更小就要单增。
-algorithm generalized-monotonic-stack(A, cmp, process)    stack S ← ∅    for i ← 0 to n-1 do:        while S ≠ ∅ and condition(A[i], A[S.top()]) do: // 栈的单调性被破坏，while是为了让栈里满足条件的元素都可以出栈            j ← S.pop() // 栈顶出栈            recordAnswer(j, i)  // 计算并记录栈顶对应的答案        end while        S.push(i) // 栈为空或者栈的单调性没有被破坏，则新元素一定不是某个元素的答案，入栈    end forend algorithm
-
-时间复杂度为什么是 O(n)？每个元素最多入栈一次，出栈一次，总操作数 ≤ 2n。
-2. 问题分类类型1：找下一个更大&#x2F;更小元素模板：
-// 下一个更大元素while (!st.empty() &amp;&amp; arr[i] &gt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;// 下一个更小元素  while (!st.empty() &amp;&amp; arr[i] &lt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;
-
-类型2：计算面积&#x2F;距离模板：
-// 柱状图最大矩形while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;    int h = heights[st.top()];    st.pop();    int w = st.empty() ? i : i - st.top() - 1;    maxArea = max(maxArea, h * w);&#125;// 每日温度（计算距离）while (!st.empty() &amp;&amp; temps[i] &gt; temps[st.top()]) &#123;    int j = st.top();    st.pop();    result[j] = i - j;  // 距离&#125;
-
-3. 典型例题例1：下一个更大元素vector&lt;int&gt; nextGreaterElement(vector&lt;int&gt;&amp; nums) &#123;    int n = nums.size();    vector&lt;int&gt; result(n, -1);    stack&lt;int&gt; st;      for (int i = 0; i &lt; n; i++) &#123;        while (!st.empty() &amp;&amp; nums[i] &gt; nums[st.top()]) &#123;            result[st.top()] = nums[i];            st.pop();        &#125;        st.push(i);    &#125;    return result;&#125;
-
-例2：柱状图最大矩形
-高度：出栈元素的高度
-宽度：当前位置 - 栈顶位置 - 1
-
-寻找当前高度对应的下一个更小的高度。那么在这个答案对应的下标到栈顶对应的下标这段距离，就是当前高度对应的最大宽度。而当前高度也即是下标取值在这个范围内矩形高度取值的最大值（短板效应），所以这里的高度乘以宽度得到的矩形面积就是在下标取值在这个范围内的最大面积。
-int largestRectangleArea(vector&lt;int&gt;&amp; heights) &#123;    stack&lt;int&gt; st;    heights.push_back(0);  // 哨兵，这是为了保证最后一个元素也能出栈    int maxArea = 0;      for (int i = 0; i &lt; heights.size(); i++) &#123;        while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;            int h = heights[st.top()];            st.pop();            int w = st.empty() ? i : i - st.top() - 1;            maxArea = max(maxArea, h * w);        &#125;        st.push(i);    &#125;    return maxArea;&#125;
-
-例3：接雨水int trap(vector&lt;int&gt;&amp; height) &#123;    stack&lt;int&gt; st;    int water = 0;      for (int i = 0; i &lt; height.size(); i++) &#123;        while (!st.empty() &amp;&amp; height[i] &gt; height[st.top()]) &#123;            int bottom = st.top();            st.pop();            if (st.empty()) break;                      int distance = i - st.top() - 1;            int h = min(height[i], height[st.top()]) - height[bottom];            water += distance * h;        &#125;        st.push(i);    &#125;    return water;&#125;
-
-例4: 最大二叉树TreeNode* constructMaximumBinaryTree(vector&lt;int&gt;&amp; nums) &#123;        stack&lt;TreeNode*&gt;st;        for(auto &amp;i: nums)&#123;            TreeNode* cur = new TreeNode(i);            while(!st.empty() &amp;&amp; st.top()-&gt;val&lt;i)&#123;                cur-&gt;left=st.top();                st.pop();            &#125;             if(!st.empty())&#123;                st.top()-&gt;right=cur;            &#125;            st.push(cur);        &#125;        while(st.size()&gt;1)&#123;            st.pop();        &#125;        return st.top();    &#125;
-
-4. 常用技巧技巧1：哨兵在数组末尾加 0 或无穷大，确保所有元素都能出栈：
-heights.push_back(0);
-
-技巧2：循环数组遍历两遍模拟循环：
-for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt; n) st.push(i);  // 只在第一轮入栈&#125;
-
-技巧3：存储下标 vs 存储值
-需要计算距离&#x2F;面积：存储下标
-只需要元素值：存储值
-
-5. 解题细节
-递增栈还是递减栈？
-
-弹出元素的条件？
-
-弹出时如何处理，进而得到答案？
-
-是否需要哨兵？
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>Monotonic Stack</tag>
       </tags>
   </entry>
   <entry>
@@ -925,6 +865,66 @@ TO BE CONTINUED
       </tags>
   </entry>
   <entry>
+    <title>250721 thinking 单调栈</title>
+    <url>/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/</url>
+    <content><![CDATA[
+他向远方望去，无法看到高山背后的矮山，只看到一座座更高的山峰。————by 灵神
+
+1. 总结单调栈就是保持栈内元素单调的栈。当新元素破坏单调性时，弹出栈顶元素，弹出的瞬间就找到栈顶元素对应的答案。
+栈里存放着暂时还没有找到对应答案的元素。新元素入栈时，如果栈顶元素使得栈单调性被破环，那么栈顶元素的答案产生，栈顶元素找到答案，出栈。因此需要建立的栈的单调性与题目的答案需求往往是“反过来”。要下一个更大就要单减；要下一个更小就要单增。
+algorithm generalized-monotonic-stack(A, cmp, process)    stack S ← ∅    for i ← 0 to n-1 do:        while S ≠ ∅ and condition(A[i], A[S.top()]) do: // 栈的单调性被破坏，while是为了让栈里满足条件的元素都可以出栈            j ← S.pop() // 栈顶出栈            recordAnswer(j, i)  // 计算并记录栈顶对应的答案        end while        S.push(i) // 栈为空或者栈的单调性没有被破坏，则新元素一定不是某个元素的答案，入栈    end forend algorithm
+
+时间复杂度为什么是 O(n)？每个元素最多入栈一次，出栈一次，总操作数 ≤ 2n。
+2. 问题分类类型1：找下一个更大&#x2F;更小元素模板：
+// 下一个更大元素while (!st.empty() &amp;&amp; arr[i] &gt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;// 下一个更小元素  while (!st.empty() &amp;&amp; arr[i] &lt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;
+
+类型2：计算面积&#x2F;距离模板：
+// 柱状图最大矩形while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;    int h = heights[st.top()];    st.pop();    int w = st.empty() ? i : i - st.top() - 1;    maxArea = max(maxArea, h * w);&#125;// 每日温度（计算距离）while (!st.empty() &amp;&amp; temps[i] &gt; temps[st.top()]) &#123;    int j = st.top();    st.pop();    result[j] = i - j;  // 距离&#125;
+
+3. 典型例题例1：下一个更大元素vector&lt;int&gt; nextGreaterElement(vector&lt;int&gt;&amp; nums) &#123;    int n = nums.size();    vector&lt;int&gt; result(n, -1);    stack&lt;int&gt; st;      for (int i = 0; i &lt; n; i++) &#123;        while (!st.empty() &amp;&amp; nums[i] &gt; nums[st.top()]) &#123;            result[st.top()] = nums[i];            st.pop();        &#125;        st.push(i);    &#125;    return result;&#125;
+
+例2：柱状图最大矩形
+高度：出栈元素的高度
+宽度：当前位置 - 栈顶位置 - 1
+
+寻找当前高度对应的下一个更小的高度。那么在这个答案对应的下标到栈顶对应的下标这段距离，就是当前高度对应的最大宽度。而当前高度也即是下标取值在这个范围内矩形高度取值的最大值（短板效应），所以这里的高度乘以宽度得到的矩形面积就是在下标取值在这个范围内的最大面积。
+int largestRectangleArea(vector&lt;int&gt;&amp; heights) &#123;    stack&lt;int&gt; st;    heights.push_back(0);  // 哨兵，这是为了保证最后一个元素也能出栈    int maxArea = 0;      for (int i = 0; i &lt; heights.size(); i++) &#123;        while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;            int h = heights[st.top()];            st.pop();            int w = st.empty() ? i : i - st.top() - 1;            maxArea = max(maxArea, h * w);        &#125;        st.push(i);    &#125;    return maxArea;&#125;
+
+例3：接雨水int trap(vector&lt;int&gt;&amp; height) &#123;    stack&lt;int&gt; st;    int water = 0;      for (int i = 0; i &lt; height.size(); i++) &#123;        while (!st.empty() &amp;&amp; height[i] &gt; height[st.top()]) &#123;            int bottom = st.top();            st.pop();            if (st.empty()) break;                      int distance = i - st.top() - 1;            int h = min(height[i], height[st.top()]) - height[bottom];            water += distance * h;        &#125;        st.push(i);    &#125;    return water;&#125;
+
+例4: 最大二叉树TreeNode* constructMaximumBinaryTree(vector&lt;int&gt;&amp; nums) &#123;        stack&lt;TreeNode*&gt;st;        for(auto &amp;i: nums)&#123;            TreeNode* cur = new TreeNode(i);            while(!st.empty() &amp;&amp; st.top()-&gt;val&lt;i)&#123;                cur-&gt;left=st.top();                st.pop();            &#125;             if(!st.empty())&#123;                st.top()-&gt;right=cur;            &#125;            st.push(cur);        &#125;        while(st.size()&gt;1)&#123;            st.pop();        &#125;        return st.top();    &#125;
+
+4. 常用技巧技巧1：哨兵在数组末尾加 0 或无穷大，确保所有元素都能出栈：
+heights.push_back(0);
+
+技巧2：循环数组遍历两遍模拟循环：
+for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt; n) st.push(i);  // 只在第一轮入栈&#125;
+
+技巧3：存储下标 vs 存储值
+需要计算距离&#x2F;面积：存储下标
+只需要元素值：存储值
+
+5. 解题细节
+递增栈还是递减栈？
+
+弹出元素的条件？
+
+弹出时如何处理，进而得到答案？
+
+是否需要哨兵？
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>Monotonic Stack</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250811-250817 周记 linux命令与shell编程学习(2)</title>
     <url>/2025/08/19/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-2/</url>
     <content><![CDATA[2. 第二部分 shell 脚本编程基础2.11 构建基础脚本2.11.2 创建 shell 脚本文件
@@ -1567,6 +1567,23 @@ func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;  
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking Trie</title>
+    <url>/2025/08/24/250824-thinking-Trie/</url>
+    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
+C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
+class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>Trie</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250824 thinking 埃氏筛</title>
     <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
     <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
@@ -1630,6 +1647,27 @@ vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking 快速排序</title>
+    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
+    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
+1. 伪代码示例这里是从小到大的顺序排序。
+// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
+
+2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
+2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
+2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>quick sort</tag>
+        <tag>Hoare partition</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250824 thinking 状压dp</title>
     <url>/2025/08/24/250824-thinking-%E7%8A%B6%E5%8E%8Bdp/</url>
     <content><![CDATA[状压dp使用二进制数来表示状态，将当前已选元素的集合表示为一个二进制数。适用于需要枚举每一种排列进行判断、且最大的$n$有$10&lt;n&lt;20$的题目。状压dp能使得时间复杂度从暴力搜索的$O(n!)$降到$O(n*2^n)$(相邻无关)或者$O(n^2 * 2^n)$(相邻相关)。
@@ -1671,24 +1709,100 @@ int specialPerm(vector&lt;int&gt;&amp; nums) &#123;        const int mod = 1e9+7
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking 快速排序</title>
-    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
-    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
-1. 伪代码示例这里是从小到大的顺序排序。
-// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
+    <title>250926 thinking 0-1背包dp</title>
+    <url>/2025/09/26/250926-thinking-0-1%E8%83%8C%E5%8C%85dp/</url>
+    <content><![CDATA[本文的内容是0-1背包的空间优化、倒序遍历，以及至多&#x2F;恰好&#x2F;至少变体。一些基本概念不再赘述。
+1. 空间优化由于它的递推表达式：
+$$dp[i][c] &#x3D; \max{, dp[i-1][c],; dp[i-1][c-w[i]] + v[i] ,}$$
+dp[i][c]: 遍历到第 i 个物品时，若总容量为 c 时能获得的最大价值
+可以发现每次更新值时，都是 i-1 更新 i 的，所以完全可以写为：
+$$dp[c] &#x3D; \max{, dp[c],; dp[c-w[i]] + v[i] ,}$$
+2. 倒序遍历在使用一维数组进行空间优化时，容量 c 必须“倒序遍历”（从最大容量 C 递减到 w[i]）。
+Why?
 
-2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
-2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
-2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+若正序遍历（c 从小到大），在同一轮 i 的更新中，dp[c-w[i]] 已经被本轮 i 更新过，会导致同一物品 i 被复用多次，等价成“完全背包”的效果；
+倒序遍历能保证本轮计算依赖的是“上一轮 i-1 的结果”，从而保持 0-1 约束。
+
+更形式化的解释：维护不变式“在处理物品 i 时，所有用于计算的 dp[*] 均来自 i-1 的状态”。倒序使得 dp[c-w[i]] 在本轮尚未更新，仍是 i-1 的值。
+一个反例（正序导致复用）：容量 c = w[i] 更新了 dp[w[i]]，随后 c = 2*w[i] 又读到刚更新过的 dp[w[i]]，把 i 用了两次。
+3. 初始化与变体根据目标约束不同，dp 的初始化与转移边界需要调整：
+
+0-1 背包（至多容量 C）：
+
+初始化：dp[0..C] = 0；
+转移：倒序 for c = C..w[i]，dp[c] = max(dp[c], dp[c - w[i]] + v[i])；
+结果：max(dp[0..C])，常规题通常取 dp[C]。
+
+
+恰好容量的方案数（计数问题）：
+
+目标：选择若干件物品使总容量恰好为 C 的子集数（不计顺序）。
+初始化：dp[0] = 1，其余 dp[1..C] = 0；
+转移（倒序）：dp[c] += dp[c - w[i]]；
+注意：倒序是 0-1 语义（每件物品至多用一次）；若写成正序会变成“序列计数&#x2F;可重复使用”，语义错误。
+
+
+至少容量（at least C）：
+
+两种做法：
+把答案定义为达到“任意 c &gt;&#x3D; C”的最大价值，遍历所有 c&gt;&#x3D;C 的 dp；
+通过容量截断&#x2F;偏移构造辅助数组（如果题目有额外结构，有时更高效）。
+
+
+常见实现：仍按至多容量的转移，最终取 max(dp[C..C_max])。
+
+
+
+4. 例题3685. 含上限元素的子序列和
+
+对 nums 升序排序，分层处理“值为 x 的元素”。这样当我们处理到 x 时，dp 中包含了“所有小于等于 x 的原始元素”的子集和可达性。 维护一个布尔 bitset dp，dp[s]&#x3D;1 表示和 s 可达；插入一个值 v 时做 dp |&#x3D; (dp &lt;&lt; v)。大于 x 的元素都被 cap 成 x，剩余数量 remain &#x3D; n - cur。检查是否存在 0 ≤ i ≤ min(remain, ⌊k&#x2F;x⌋) 使得 dp[k - i*x] 为真。
+
+func subsequenceSumAfterCapping(nums []int, k int) []bool &#123;	slices.Sort(nums)	n := len(nums)	ans := make([]bool, n)	// f[s]==1 表示和 s 可达	f := big.NewInt(1)	// 掩码 u = (1&lt;&lt;(k+1)) - 1，确保位长 &lt;= k+1	u := new(big.Int).Lsh(big.NewInt(1), uint(k+1))	u.Sub(u, big.NewInt(1))	// 复用一个临时 big.Int，避免每次 new（微优化）	var t big.Int	i := 0	for x := 1; x &lt;= n; x++ &#123;		// 插入所有值等于 x 的原始元素：f |= f &lt;&lt; x		for i &lt; n &amp;&amp; nums[i] == x &#123;			t.Lsh(f, uint(nums[i])) // t = f &lt;&lt; v			f.Or(f, &amp;t)             // f |= t			f.And(f, u)             // 截断到 k+1 位			i++		&#125;		// 大于 x 的部分都被 cap 成 x，最多还能取 j = min(n-i, k/x) 个		limit := n - i		if k/x &lt; limit &#123;			limit = k / x		&#125;		ok := false		for j := 0; j &lt;= limit; j++ &#123;			// target &gt;= 0 恒成立，因为 j &lt;= k/x			if f.Bit(k-j*x) == 1 &#123;				ok = true				break			&#125;		&#125;		ans[x-1] = ok	&#125;	return ans&#125;
+
+
+
+
+
+
 ]]></content>
       <categories>
         <category>data structure &amp; algorithm</category>
       </categories>
       <tags>
-        <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
-        <tag>quick sort</tag>
-        <tag>Hoare partition</tag>
+        <tag>go</tag>
+        <tag>dynamic programming</tag>
+        <tag>0-1 bag dp</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 子序列判断</title>
+    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
+    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
+一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
+现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
+这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
+比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
+我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
+于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
+2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
+其他nxt[i][c]构建：
+for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
+
+对于一个字符串$e_i$判断:
+idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
+
+3. 例题匹配子序列的单词数
+给出go的解法示例
+func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>go</tag>
+        <tag>string</tag>
       </tags>
   </entry>
   <entry>
@@ -1767,381 +1881,6 @@ go示例解法
         <tag>data structure &amp; algorithm</tag>
         <tag>go</tag>
         <tag>linkList</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 record best-time-to-buy-and-sell-stock</title>
-    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
-    <content><![CDATA[题目
-int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
-
-这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
-]]></content>
-      <categories>
-        <category>record</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>Record</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250926 thinking 0-1背包dp</title>
-    <url>/2025/09/26/250926-thinking-0-1%E8%83%8C%E5%8C%85dp/</url>
-    <content><![CDATA[本文的内容是0-1背包的空间优化、倒序遍历，以及至多&#x2F;恰好&#x2F;至少变体。一些基本概念不再赘述。
-1. 空间优化由于它的递推表达式：
-$$dp[i][c] &#x3D; \max{, dp[i-1][c],; dp[i-1][c-w[i]] + v[i] ,}$$
-dp[i][c]: 遍历到第 i 个物品时，若总容量为 c 时能获得的最大价值
-可以发现每次更新值时，都是 i-1 更新 i 的，所以完全可以写为：
-$$dp[c] &#x3D; \max{, dp[c],; dp[c-w[i]] + v[i] ,}$$
-2. 倒序遍历在使用一维数组进行空间优化时，容量 c 必须“倒序遍历”（从最大容量 C 递减到 w[i]）。
-Why?
-
-若正序遍历（c 从小到大），在同一轮 i 的更新中，dp[c-w[i]] 已经被本轮 i 更新过，会导致同一物品 i 被复用多次，等价成“完全背包”的效果；
-倒序遍历能保证本轮计算依赖的是“上一轮 i-1 的结果”，从而保持 0-1 约束。
-
-更形式化的解释：维护不变式“在处理物品 i 时，所有用于计算的 dp[*] 均来自 i-1 的状态”。倒序使得 dp[c-w[i]] 在本轮尚未更新，仍是 i-1 的值。
-一个反例（正序导致复用）：容量 c = w[i] 更新了 dp[w[i]]，随后 c = 2*w[i] 又读到刚更新过的 dp[w[i]]，把 i 用了两次。
-3. 初始化与变体根据目标约束不同，dp 的初始化与转移边界需要调整：
-
-0-1 背包（至多容量 C）：
-
-初始化：dp[0..C] = 0；
-转移：倒序 for c = C..w[i]，dp[c] = max(dp[c], dp[c - w[i]] + v[i])；
-结果：max(dp[0..C])，常规题通常取 dp[C]。
-
-
-恰好容量的方案数（计数问题）：
-
-目标：选择若干件物品使总容量恰好为 C 的子集数（不计顺序）。
-初始化：dp[0] = 1，其余 dp[1..C] = 0；
-转移（倒序）：dp[c] += dp[c - w[i]]；
-注意：倒序是 0-1 语义（每件物品至多用一次）；若写成正序会变成“序列计数&#x2F;可重复使用”，语义错误。
-
-
-至少容量（at least C）：
-
-两种做法：
-把答案定义为达到“任意 c &gt;&#x3D; C”的最大价值，遍历所有 c&gt;&#x3D;C 的 dp；
-通过容量截断&#x2F;偏移构造辅助数组（如果题目有额外结构，有时更高效）。
-
-
-常见实现：仍按至多容量的转移，最终取 max(dp[C..C_max])。
-
-
-
-4. 例题3685. 含上限元素的子序列和
-
-对 nums 升序排序，分层处理“值为 x 的元素”。这样当我们处理到 x 时，dp 中包含了“所有小于等于 x 的原始元素”的子集和可达性。 维护一个布尔 bitset dp，dp[s]&#x3D;1 表示和 s 可达；插入一个值 v 时做 dp |&#x3D; (dp &lt;&lt; v)。大于 x 的元素都被 cap 成 x，剩余数量 remain &#x3D; n - cur。检查是否存在 0 ≤ i ≤ min(remain, ⌊k&#x2F;x⌋) 使得 dp[k - i*x] 为真。
-
-func subsequenceSumAfterCapping(nums []int, k int) []bool &#123;	slices.Sort(nums)	n := len(nums)	ans := make([]bool, n)	// f[s]==1 表示和 s 可达	f := big.NewInt(1)	// 掩码 u = (1&lt;&lt;(k+1)) - 1，确保位长 &lt;= k+1	u := new(big.Int).Lsh(big.NewInt(1), uint(k+1))	u.Sub(u, big.NewInt(1))	// 复用一个临时 big.Int，避免每次 new（微优化）	var t big.Int	i := 0	for x := 1; x &lt;= n; x++ &#123;		// 插入所有值等于 x 的原始元素：f |= f &lt;&lt; x		for i &lt; n &amp;&amp; nums[i] == x &#123;			t.Lsh(f, uint(nums[i])) // t = f &lt;&lt; v			f.Or(f, &amp;t)             // f |= t			f.And(f, u)             // 截断到 k+1 位			i++		&#125;		// 大于 x 的部分都被 cap 成 x，最多还能取 j = min(n-i, k/x) 个		limit := n - i		if k/x &lt; limit &#123;			limit = k / x		&#125;		ok := false		for j := 0; j &lt;= limit; j++ &#123;			// target &gt;= 0 恒成立，因为 j &lt;= k/x			if f.Bit(k-j*x) == 1 &#123;				ok = true				break			&#125;		&#125;		ans[x-1] = ok	&#125;	return ans&#125;
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
-        <tag>dynamic programming</tag>
-        <tag>0-1 bag dp</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250928-251005 weekly electron</title>
-    <url>/2025/10/05/250928-251005-weekly-electron/</url>
-    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
-0. 项目结构静态网页资源dist应先移动到application项目中。
-.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
-
-1. 项目初始化与安装参考：教程
-但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
-npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
-
-后面运行命令出现网络问题也如此。
-2. 打包对web项目使用npm run build后生成的静态网页进行打包。
-但需要注意：
-
-Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
-
-// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
-
-
-在application项目中，文件加载路径的写法。
-
-const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
-
-但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
-更新后的src&#x2F;App.jsx:
-import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
-
-同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
-import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
-
-再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
-]]></content>
-      <categories>
-        <category>tool</category>
-      </categories>
-      <tags>
-        <tag>electron</tag>
-        <tag>tool</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250926 thinking 子序列判断</title>
-    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
-    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
-一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
-现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
-这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
-比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
-我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
-于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
-2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
-其他nxt[i][c]构建：
-for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
-
-对于一个字符串$e_i$判断:
-idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
-
-3. 例题匹配子序列的单词数
-给出go的解法示例
-func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
-        <tag>string</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251003 thinking factory method&amp; abstract factory</title>
-    <url>/2025/10/03/251003-thinking-factory-method-abstract-factory/</url>
-    <content><![CDATA[1. 工厂方法以点菜为例。
-type dish interface&#123; Cook() &#125;type pizza struct&#123;&#125;type burger struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;func (*burger) Cook() &#123;  &#125;
-
-若不用工厂方法，则客户端直连产品，新增产品要改分支，不符合开闭原则。
-func orderDish(typeName string) dish &#123;    switch typeName &#123;    case &quot;pizza&quot;:        d := &amp;pizza&#123;&#125;        d.Cook() // &quot;cook pizza&quot;        return d    case &quot;burger&quot;:        d := &amp;burger&#123;&#125;        d.Cook() // &quot;cook burger&quot;        return d    default:        return nil    &#125;&#125;
-而使用工厂方法后，客户端只依赖抽象工厂，新增产品时只需要新增具体工厂即可，符合开闭原则。
-即，把“怎么做菜”的细节从用户（软件开发程序员）手里拿走，交给各自的工厂（中间件）。
-type Factory interface &#123;    Create() dish&#125;type PizzaFactory struct&#123;&#125;func (PizzaFactory) Create() dish &#123; return &amp;pizza&#123;&#125; &#125;type BurgerFactory struct&#123;&#125;func (BurgerFactory) Create() dish &#123; return &amp;burger&#123;&#125; &#125;func order(factory Factory) dish &#123;    d := factory.Create()    d.Cook()     return d&#125;
-
-这样的话，新增产品时只需要新增产品 + 工厂即可，无需修改用户程序。符合开闭原则。
-type sushi struct&#123;&#125;func (s *sushi) Cook() &#123;  &#125;type SushiFactory struct&#123;&#125;func (SushiFactory) Create() dish &#123; return &amp;sushi&#123;&#125; &#125;
-
-客户端只依赖抽象工厂，只需调用工厂方法即可，不用修改。
-类图：
-
-    classDiagram
-  class Dish {
-    +Cook() 
-  }
-  class Pizza {
-    +Cook() 
-  }
-  class Burger {
-    +Cook() 
-  }
-  Dish &lt;|.. Pizza
-  Dish &lt;|.. Burger
-
-  class Factory {
-    +Create() Dish
-  }
-  class PizzaFactory
-  class BurgerFactory
-  Factory &lt;|.. PizzaFactory
-  Factory &lt;|.. BurgerFactory
-
-  Factory ..&gt; Dish : Create()
-  
-
-2. 抽象工厂场景：套餐由两个相关组件组成（菜 Dish + 饮料 Drink），同一风格的组件应该一起创建并保持搭配一致（意式：Pizza+Coffee，美式：Burger+Cola）。
-// 产品族接口type dish interface&#123; Cook() &#125;type drink interface&#123; Serve() &#125;// 具体产品type pizza struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;type burger struct&#123;&#125;func (*burger) Cook() &#123;  &#125;type coffee struct&#123;&#125;func (coffee) Serve() &#123;  &#125;type cola struct&#123;&#125;func (cola) Serve() &#123;  &#125;    
-
-抽象工厂提供“同时创建多个相关产品”的统一接口，客户端只选择工厂（风格），不再传字符串。
-中间件：工厂方法的“实现”，负责创建具体产品。
-// 抽象工厂：一次创建同一风格的多个相关产品type kitchenFactory interface &#123;    CreateDish() dish    CreateDrink() drink&#125;// 具体工厂：意式（Pizza + Coffee）type italianFactory struct&#123;&#125;func (italianFactory) CreateDish() dish   &#123; return &amp;pizza&#123;&#125; &#125;func (italianFactory) CreateDrink() drink &#123; return &amp;coffee&#123;&#125; &#125;// 具体工厂：美式（Burger + Cola）type americanFactory struct&#123;&#125;func (americanFactory) CreateDish() dish   &#123; return &amp;burger&#123;&#125; &#125;func (americanFactory) CreateDrink() drink &#123; return &amp;cola&#123;&#125; &#125;
-
-用户只需要依赖抽象工厂，无需知道具体产品。
-func orderSet(f kitchenFactory) (dish, drink) &#123;    d := f.CreateDish()    d.Cook()    r := f.CreateDrink()    r.Serve()    return d, r&#125;
-
-类图：
-
-    classDiagram
-class dish {
-+Cook()
-}
-class drink {
-+Serve()
-}
-
-class pizza {
-+Cook()
-}
-class burger {
-+Cook()
-}
-class coffee {
-+Serve()
-}
-class cola {
-+Serve()
-}
-
-dish &lt;|.. pizza
-dish &lt;|.. burger
-drink &lt;|.. coffee
-drink &lt;|.. cola
-
-class kitchenFactory {
-+CreateDish() dish
-+CreateDrink() drink
-}
-class italianFactory
-class americanFactory
-
-kitchenFactory &lt;|.. italianFactory
-kitchenFactory &lt;|.. americanFactory
-
-italianFactory ..&gt; dish : CreateDish()
-italianFactory ..&gt; drink : CreateDrink()
-americanFactory ..&gt; dish : CreateDish()
-americanFactory ..&gt; drink : CreateDrink()
-  
-
-
-
-
-客户端不写 switch、不传 “pizza&#x2F;burger” 字符串；只选风格工厂（Italian&#x2F;American）。
-搭配关系由工厂保证，防止“风格混搭”造成业务不一致。
-扩展新风格时，仅新增“具体工厂 + 其产品”，保持开闭原则。
-
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Factory Method</tag>
-        <tag>Abstract Factory</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking Trie</title>
-    <url>/2025/08/24/250824-thinking-Trie/</url>
-    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
-C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
-class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>Trie</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251006-251012 weekly Qt</title>
-    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
-    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
-我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
-1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
-需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
-2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
-程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
-
-信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
-槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
-默认情况下：信号与槽是“同步的”。
-
-整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
-2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
-它是体现事件驱动的绝佳例子。
-它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
-可以利用QTimer以及timeout信号来实现定时触发事件。
-以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
-QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
-
-
-2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
-QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
-
-通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
-之后遇到了需要QThread的时候再介绍Qt的线程~
-]]></content>
-      <categories>
-        <category>Qt</category>
-      </categories>
-      <tags>
-        <tag>Projects</tag>
-        <tag>C++</tag>
-        <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 thinking reflect</title>
-    <url>/2025/10/12/251012-thinking-reflect/</url>
-    <content><![CDATA[最近在用 Gin&#x2F;GORM 尝试写一个后端。受 PostgREST 的启发，我想实现一个更通用的后端：它能运行时自动查询数据库的表结构，并动态生成对应的模型 (Model) 和控制器 (Controller)，从而免去为每张表手动编写重复代码的麻烦。
-Go 的反射 (Reflection) 机制是实现这一目标的关键。它允许程序在运行时检查自身的结构、类型和值。
-本篇将介绍 Go 反射的核心思想，并演示如何利用它在运行时动态构建新的结构体类型。
-1. 反射的核心：Type 与 ValueGo 的反射机制建立在两个核心概念之上：reflect.Type 和 reflect.Value。
-可以把任意变量看作一个“箱子”，箱子里装着实际的数据。
-
-**reflect.Type**：是箱子的“标签”，告诉你里面装的是什么类型的东西（比如 int, string, struct）。
-**reflect.Value**：是箱子里的“东西本身”，你可以读取它的值，甚至在满足特定条件时修改它。
-
-我们通过 reflect.TypeOf() 和 reflect.ValueOf() 这两个函数进入反射的世界：
-var x float64 = 3.4t := reflect.TypeOf(x)   // 获取 Typev := reflect.ValueOf(x)  // 获取 Valuefmt.Println(&quot;type:&quot;, t)                  // 输出: type: float64fmt.Println(&quot;value:&quot;, v.Float())         // 输出: value: 3.4fmt.Println(&quot;kind is float64:&quot;, t.Kind() == reflect.Float64) // 输出: kind is float64: true
-
-2. 修改值：地址与 Elem()反射不仅能看，还能改。但有一个前提：**值必须是“可设置的” (settable)**。
-一个 reflect.Value 是可设置的，当且仅当它代表的是一个可寻址的内存空间。简单来说，如果你对一个指针进行反射，那么指针指向的那块内存就是可设置的。
-我们通过 Elem() 方法来获取指针指向的值。
-var x float64 = 3.4p := &amp;x // p 是指向 x 的指针v := reflect.ValueOf(p) // 对指针进行反射// v 现在代表指针 p，它是不可设置的。但它指向的 x 是可设置的。// 使用 Elem() 获取指针指向的值e := v.Elem()e.SetFloat(7.1) // 修改 x 的值fmt.Println(x) // 输出: 7.1
-
-小结：要通过反射修改一个变量，通常需要对该变量的指针进行反射，然后调用 Elem() 获取其指向的值，再进行修改。
-3. 终极目标：运行时创建结构体现在回到最初的目标：根据数据库表结构动态创建模型。这需要我们在运行时动态地“拼凑”出一个新的结构体类型。
-Go 的 reflect 包提供了 reflect.StructOf 函数来实现这一功能。步骤如下：
-
-定义字段：为新结构体的每个字段创建一个 reflect.StructField。每个字段需要名字、类型 (reflect.Type) 和可选的标签 (Tag)，标签对于 JSON 或 GORM 序列化至关重要。
-创建结构体类型：将定义好的字段切片传入 reflect.StructOf()，得到一个全新的结构体 reflect.Type。
-创建实例：使用 reflect.New() 并传入新的类型，来创建一个指向该结构体新实例的指针 (reflect.Value)。
-设置字段值：通过 Elem() 和 Field() 方法，为新实例的字段赋值。
-
-示例：动态创建一个 User 结构体假设我们要动态创建一个等价于下面代码的类型：
-type User struct &#123;    Name string `json:&quot;name&quot;`    Age  int    `json:&quot;age&quot;`&#125;
-
-使用反射的代码如下：
-package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quot;)func main() &#123;	// 1. 定义字段	fields := []reflect.StructField&#123;		&#123;			Name: &quot;Name&quot;,			Type: reflect.TypeOf(&quot;&quot;), // string 类型			Tag:  `json:&quot;name&quot;`,		&#125;,		&#123;			Name: &quot;Age&quot;,			Type: reflect.TypeOf(0), // int 类型			Tag:  `json:&quot;age&quot;`,		&#125;,	&#125;	// 2. 创建结构体类型	structType := reflect.StructOf(fields)	// 3. 创建实例 (返回一个指向新结构体的指针)	structPtr := reflect.New(structType)	// 4. 获取指针指向的结构体并设置字段值	s := structPtr.Elem()	s.FieldByName(&quot;Name&quot;).SetString(&quot;Alice&quot;)	s.FieldByName(&quot;Age&quot;).SetInt(30)	// 将动态创建的结构体实例转回 interface&#123;&#125; 以便使用	//类是interface&#123;&#125;类型 但值是reflect.Value类型	userInstance := structPtr.Interface()	// 使用 json.Marshal 验证结果	jsonData, err := json.Marshal(userInstance)	if err != nil &#123;		panic(err)	&#125;	fmt.Println(string(jsonData)) // 输出: &#123;&quot;name&quot;:&quot;Alice&quot;,&quot;age&quot;:30&#125;&#125;
-
-4. 何时使用反射？虽然反射功能强大，但它也有代价：
-
-性能开销：反射操作比直接代码调用慢得多。
-编译时类型安全丢失：编译器无法检查通过反射进行的操作，错误只能在运行时暴露，通常是 panic。
-代码可读性差：过度使用会使代码逻辑变得晦涩难懂。
-
-因此，反射应该只在必要时使用，比如开发需要处理任意类型的通用框架、序列化库或 ORM 时。对于常规的业务逻辑，清晰的静态类型代码永远是首选。
-]]></content>
-      <categories>
-        <category>go</category>
-      </categories>
-      <tags>
-        <tag>go</tag>
-        <tag>reflect</tag>
       </tags>
   </entry>
   <entry>
@@ -2380,8 +2119,218 @@ systemctl restart docker
         <category>tool</category>
       </categories>
       <tags>
-        <tag>tool</tag>
         <tag>docker</tag>
+        <tag>tool</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250928-251005 weekly electron</title>
+    <url>/2025/10/05/250928-251005-weekly-electron/</url>
+    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
+0. 项目结构静态网页资源dist应先移动到application项目中。
+.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
+
+1. 项目初始化与安装参考：教程
+但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
+npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
+
+后面运行命令出现网络问题也如此。
+2. 打包对web项目使用npm run build后生成的静态网页进行打包。
+但需要注意：
+
+Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
+
+// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
+
+
+在application项目中，文件加载路径的写法。
+
+const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
+
+但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
+更新后的src&#x2F;App.jsx:
+import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
+
+同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
+import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
+
+再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
+]]></content>
+      <categories>
+        <category>tool</category>
+      </categories>
+      <tags>
+        <tag>tool</tag>
+        <tag>electron</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251003 thinking factory method&amp; abstract factory</title>
+    <url>/2025/10/03/251003-thinking-factory-method-abstract-factory/</url>
+    <content><![CDATA[1. 工厂方法以点菜为例。
+type dish interface&#123; Cook() &#125;type pizza struct&#123;&#125;type burger struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;func (*burger) Cook() &#123;  &#125;
+
+若不用工厂方法，则客户端直连产品，新增产品要改分支，不符合开闭原则。
+func orderDish(typeName string) dish &#123;    switch typeName &#123;    case &quot;pizza&quot;:        d := &amp;pizza&#123;&#125;        d.Cook() // &quot;cook pizza&quot;        return d    case &quot;burger&quot;:        d := &amp;burger&#123;&#125;        d.Cook() // &quot;cook burger&quot;        return d    default:        return nil    &#125;&#125;
+而使用工厂方法后，客户端只依赖抽象工厂，新增产品时只需要新增具体工厂即可，符合开闭原则。
+即，把“怎么做菜”的细节从用户（软件开发程序员）手里拿走，交给各自的工厂（中间件）。
+type Factory interface &#123;    Create() dish&#125;type PizzaFactory struct&#123;&#125;func (PizzaFactory) Create() dish &#123; return &amp;pizza&#123;&#125; &#125;type BurgerFactory struct&#123;&#125;func (BurgerFactory) Create() dish &#123; return &amp;burger&#123;&#125; &#125;func order(factory Factory) dish &#123;    d := factory.Create()    d.Cook()     return d&#125;
+
+这样的话，新增产品时只需要新增产品 + 工厂即可，无需修改用户程序。符合开闭原则。
+type sushi struct&#123;&#125;func (s *sushi) Cook() &#123;  &#125;type SushiFactory struct&#123;&#125;func (SushiFactory) Create() dish &#123; return &amp;sushi&#123;&#125; &#125;
+
+客户端只依赖抽象工厂，只需调用工厂方法即可，不用修改。
+类图：
+
+    classDiagram
+  class Dish {
+    +Cook() 
+  }
+  class Pizza {
+    +Cook() 
+  }
+  class Burger {
+    +Cook() 
+  }
+  Dish &lt;|.. Pizza
+  Dish &lt;|.. Burger
+
+  class Factory {
+    +Create() Dish
+  }
+  class PizzaFactory
+  class BurgerFactory
+  Factory &lt;|.. PizzaFactory
+  Factory &lt;|.. BurgerFactory
+
+  Factory ..&gt; Dish : Create()
+  
+
+2. 抽象工厂场景：套餐由两个相关组件组成（菜 Dish + 饮料 Drink），同一风格的组件应该一起创建并保持搭配一致（意式：Pizza+Coffee，美式：Burger+Cola）。
+// 产品族接口type dish interface&#123; Cook() &#125;type drink interface&#123; Serve() &#125;// 具体产品type pizza struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;type burger struct&#123;&#125;func (*burger) Cook() &#123;  &#125;type coffee struct&#123;&#125;func (coffee) Serve() &#123;  &#125;type cola struct&#123;&#125;func (cola) Serve() &#123;  &#125;    
+
+抽象工厂提供“同时创建多个相关产品”的统一接口，客户端只选择工厂（风格），不再传字符串。
+中间件：工厂方法的“实现”，负责创建具体产品。
+// 抽象工厂：一次创建同一风格的多个相关产品type kitchenFactory interface &#123;    CreateDish() dish    CreateDrink() drink&#125;// 具体工厂：意式（Pizza + Coffee）type italianFactory struct&#123;&#125;func (italianFactory) CreateDish() dish   &#123; return &amp;pizza&#123;&#125; &#125;func (italianFactory) CreateDrink() drink &#123; return &amp;coffee&#123;&#125; &#125;// 具体工厂：美式（Burger + Cola）type americanFactory struct&#123;&#125;func (americanFactory) CreateDish() dish   &#123; return &amp;burger&#123;&#125; &#125;func (americanFactory) CreateDrink() drink &#123; return &amp;cola&#123;&#125; &#125;
+
+用户只需要依赖抽象工厂，无需知道具体产品。
+func orderSet(f kitchenFactory) (dish, drink) &#123;    d := f.CreateDish()    d.Cook()    r := f.CreateDrink()    r.Serve()    return d, r&#125;
+
+类图：
+
+    classDiagram
+class dish {
++Cook()
+}
+class drink {
++Serve()
+}
+
+class pizza {
++Cook()
+}
+class burger {
++Cook()
+}
+class coffee {
++Serve()
+}
+class cola {
++Serve()
+}
+
+dish &lt;|.. pizza
+dish &lt;|.. burger
+drink &lt;|.. coffee
+drink &lt;|.. cola
+
+class kitchenFactory {
++CreateDish() dish
++CreateDrink() drink
+}
+class italianFactory
+class americanFactory
+
+kitchenFactory &lt;|.. italianFactory
+kitchenFactory &lt;|.. americanFactory
+
+italianFactory ..&gt; dish : CreateDish()
+italianFactory ..&gt; drink : CreateDrink()
+americanFactory ..&gt; dish : CreateDish()
+americanFactory ..&gt; drink : CreateDrink()
+  
+
+
+
+
+客户端不写 switch、不传 “pizza&#x2F;burger” 字符串；只选风格工厂（Italian&#x2F;American）。
+搭配关系由工厂保证，防止“风格混搭”造成业务不一致。
+扩展新风格时，仅新增“具体工厂 + 其产品”，保持开闭原则。
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Factory Method</tag>
+        <tag>Abstract Factory</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251006-251012 weekly Qt</title>
+    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
+    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
+我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
+1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
+需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
+2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
+程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
+
+信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
+槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
+默认情况下：信号与槽是“同步的”。
+
+整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
+2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
+它是体现事件驱动的绝佳例子。
+它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
+可以利用QTimer以及timeout信号来实现定时触发事件。
+以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
+QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
+
+
+2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
+QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
+
+通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
+之后遇到了需要QThread的时候再介绍Qt的线程~
+]]></content>
+      <categories>
+        <category>Qt</category>
+      </categories>
+      <tags>
+        <tag>Projects</tag>
+        <tag>C++</tag>
+        <tag>Qt</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 record best-time-to-buy-and-sell-stock</title>
+    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
+    <content><![CDATA[题目
+int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
+
+这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
+]]></content>
+      <categories>
+        <category>record</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>Record</tag>
       </tags>
   </entry>
   <entry>
@@ -2461,6 +2410,87 @@ director ..&gt; product : Construct()
       </tags>
   </entry>
   <entry>
+    <title>251012 thinking reflect</title>
+    <url>/2025/10/12/251012-thinking-reflect/</url>
+    <content><![CDATA[最近在用 Gin&#x2F;GORM 尝试写一个后端。受 PostgREST 的启发，我想实现一个更通用的后端：它能运行时自动查询数据库的表结构，并动态生成对应的模型 (Model) 和控制器 (Controller)，从而免去为每张表手动编写重复代码的麻烦。
+Go 的反射 (Reflection) 机制是实现这一目标的关键。它允许程序在运行时检查自身的结构、类型和值。
+本篇将介绍 Go 反射的核心思想，并演示如何利用它在运行时动态构建新的结构体类型。
+1. 反射的核心：Type 与 ValueGo 的反射机制建立在两个核心概念之上：reflect.Type 和 reflect.Value。
+可以把任意变量看作一个“箱子”，箱子里装着实际的数据。
+
+**reflect.Type**：是箱子的“标签”，告诉你里面装的是什么类型的东西（比如 int, string, struct）。
+**reflect.Value**：是箱子里的“东西本身”，你可以读取它的值，甚至在满足特定条件时修改它。
+
+我们通过 reflect.TypeOf() 和 reflect.ValueOf() 这两个函数进入反射的世界：
+var x float64 = 3.4t := reflect.TypeOf(x)   // 获取 Typev := reflect.ValueOf(x)  // 获取 Valuefmt.Println(&quot;type:&quot;, t)                  // 输出: type: float64fmt.Println(&quot;value:&quot;, v.Float())         // 输出: value: 3.4fmt.Println(&quot;kind is float64:&quot;, t.Kind() == reflect.Float64) // 输出: kind is float64: true
+
+2. 修改值：地址与 Elem()反射不仅能看，还能改。但有一个前提：**值必须是“可设置的” (settable)**。
+一个 reflect.Value 是可设置的，当且仅当它代表的是一个可寻址的内存空间。简单来说，如果你对一个指针进行反射，那么指针指向的那块内存就是可设置的。
+我们通过 Elem() 方法来获取指针指向的值。
+var x float64 = 3.4p := &amp;x // p 是指向 x 的指针v := reflect.ValueOf(p) // 对指针进行反射// v 现在代表指针 p，它是不可设置的。但它指向的 x 是可设置的。// 使用 Elem() 获取指针指向的值e := v.Elem()e.SetFloat(7.1) // 修改 x 的值fmt.Println(x) // 输出: 7.1
+
+小结：要通过反射修改一个变量，通常需要对该变量的指针进行反射，然后调用 Elem() 获取其指向的值，再进行修改。
+3. 终极目标：运行时创建结构体现在回到最初的目标：根据数据库表结构动态创建模型。这需要我们在运行时动态地“拼凑”出一个新的结构体类型。
+Go 的 reflect 包提供了 reflect.StructOf 函数来实现这一功能。步骤如下：
+
+定义字段：为新结构体的每个字段创建一个 reflect.StructField。每个字段需要名字、类型 (reflect.Type) 和可选的标签 (Tag)，标签对于 JSON 或 GORM 序列化至关重要。
+创建结构体类型：将定义好的字段切片传入 reflect.StructOf()，得到一个全新的结构体 reflect.Type。
+创建实例：使用 reflect.New() 并传入新的类型，来创建一个指向该结构体新实例的指针 (reflect.Value)。
+设置字段值：通过 Elem() 和 Field() 方法，为新实例的字段赋值。
+
+示例：动态创建一个 User 结构体假设我们要动态创建一个等价于下面代码的类型：
+type User struct &#123;    Name string `json:&quot;name&quot;`    Age  int    `json:&quot;age&quot;`&#125;
+
+使用反射的代码如下：
+package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quot;)func main() &#123;	// 1. 定义字段	fields := []reflect.StructField&#123;		&#123;			Name: &quot;Name&quot;,			Type: reflect.TypeOf(&quot;&quot;), // string 类型			Tag:  `json:&quot;name&quot;`,		&#125;,		&#123;			Name: &quot;Age&quot;,			Type: reflect.TypeOf(0), // int 类型			Tag:  `json:&quot;age&quot;`,		&#125;,	&#125;	// 2. 创建结构体类型	structType := reflect.StructOf(fields)	// 3. 创建实例 (返回一个指向新结构体的指针)	structPtr := reflect.New(structType)	// 4. 获取指针指向的结构体并设置字段值	s := structPtr.Elem()	s.FieldByName(&quot;Name&quot;).SetString(&quot;Alice&quot;)	s.FieldByName(&quot;Age&quot;).SetInt(30)	// 将动态创建的结构体实例转回 interface&#123;&#125; 以便使用	//类是interface&#123;&#125;类型 但值是reflect.Value类型	userInstance := structPtr.Interface()	// 使用 json.Marshal 验证结果	jsonData, err := json.Marshal(userInstance)	if err != nil &#123;		panic(err)	&#125;	fmt.Println(string(jsonData)) // 输出: &#123;&quot;name&quot;:&quot;Alice&quot;,&quot;age&quot;:30&#125;&#125;
+
+4. 何时使用反射？虽然反射功能强大，但它也有代价：
+
+性能开销：反射操作比直接代码调用慢得多。
+编译时类型安全丢失：编译器无法检查通过反射进行的操作，错误只能在运行时暴露，通常是 panic。
+代码可读性差：过度使用会使代码逻辑变得晦涩难懂。
+
+因此，反射应该只在必要时使用，比如开发需要处理任意类型的通用框架、序列化库或 ORM 时。对于常规的业务逻辑，清晰的静态类型代码永远是首选。
+]]></content>
+      <categories>
+        <category>go</category>
+      </categories>
+      <tags>
+        <tag>go</tag>
+        <tag>reflect</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 thinking slider window</title>
+    <url>/2025/10/12/251012-thinking-slider-window/</url>
+    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
+1. 定长滑动窗口只用r即可，l=r-w+1。
+模板：
+for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
+
+
+注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
+
+2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
+l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
+
+3. 例题
+定长滑动窗口
+
+变长滑动窗口
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>thinking</tag>
+        <tag>slider window</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251017-thinking-prototype</title>
     <url>/2025/10/17/251017-thinking-prototype/</url>
     <content><![CDATA[1. 什么是原型模式？一言以蔽之，原型模式（Prototype Pattern）是一种创建型设计模式，它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。
@@ -2493,36 +2523,6 @@ prototype &lt;|.. concreteType
         <tag>Design Pattern</tag>
         <tag>go</tag>
         <tag>Prototype Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 thinking slider window</title>
-    <url>/2025/10/12/251012-thinking-slider-window/</url>
-    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
-1. 定长滑动窗口只用r即可，l=r-w+1。
-模板：
-for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
-
-
-注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
-
-2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
-l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
-
-3. 例题
-定长滑动窗口
-
-变长滑动窗口
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>thinking</tag>
-        <tag>slider window</tag>
       </tags>
   </entry>
   <entry>
@@ -2568,7 +2568,7 @@ func main() &#123;    // 创建被适配的对象    awesomePlayer := &amp;Aweso
         -adaptee: AwesomePlayer
         +PlayMusic()
     }
-    Player &lt;|-- AwesomePlayerAdapter
+    Player &lt;|.. AwesomePlayerAdapter
     AwesomePlayerAdapter &quot;1&quot; *-- &quot;1&quot; AwesomePlayer
     AwesomePlayerAdapter ..&gt; AwesomePlayer : PlayMusic() call PlaySound()
   ]]></content>
@@ -2643,8 +2643,8 @@ func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#12
     Square --&gt; Color
     Circle &quot;1&quot; *-- &quot;1&quot; Color
     Square &quot;1&quot; *-- &quot;1&quot; Color
-    RedColor --|&gt; Color
-    BlueColor --|&gt; Color
+    RedColor ..|&gt; Color
+    BlueColor ..|&gt; Color
   
 
 在这个例子中，Shape 和 Color 可以独立地进行扩展。如果想增加一个 Green 颜色，只需实现 Color 接口即可；如果想增加一个 Triangle 形状，只需创建一个新的 Triangle 结构体并实现 Draw 方法，而无需改动任何现有代码。
@@ -2688,8 +2688,8 @@ func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;  
         +Name string
         +Search(keyword string)
     }
-    Component &lt;|-- Directory
-    Component &lt;|-- File
+    Component &lt;|.. Directory
+    Component &lt;|.. File
     Directory &quot;1&quot; o-- &quot;n&quot; Component
   
 ]]></content>
@@ -2742,7 +2742,7 @@ func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeD
         +AddCondiment string
         +CoffeeOrdered *Coffee
     }
-    Coffee &lt;|-- Latte
+    Coffee &lt;|.. Latte
     CoffeeDecorator &quot;1&quot; *-- &quot;1&quot; Coffee
   ]]></content>
       <categories>
@@ -2753,6 +2753,61 @@ func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeD
         <tag>go</tag>
         <tag>Interface Oriented Design</tag>
         <tag>Decorator Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251018 thinking facade</title>
+    <url>/2025/10/25/251018-thinking-facade/</url>
+    <content><![CDATA[1. 什么是外观模式外观模式是一种结构型设计模式， 能为程序库、 框架或其他复杂类提供一个简单的接口。
+2. 为什么需要外观模式外观模式的主要目的是简化复杂系统的使用。它通过提供一个简单的接口，隐藏系统的复杂性，使客户端代码更易于理解和使用。
+3. 外观模式的实现（go）以计算机开机为例，展示外观模式的实现。
+// 子系统：CPUtype CPU struct&#123;&#125;func (c *CPU) Start()    &#123; fmt.Println(&quot;CPU: start&quot;) &#125;func (c *CPU) Shutdown() &#123; fmt.Println(&quot;CPU: shutdown&quot;) &#125;// 子系统：内存type Memory struct&#123;&#125;func (m *Memory) LoadOS() &#123; fmt.Println(&quot;Memory: load OS into memory&quot;) &#125;func (m *Memory) Clear()  &#123; fmt.Println(&quot;Memory: clear&quot;) &#125;// 子系统：磁盘type Disk struct&#123;&#125;func (d *Disk) ReadBootSector() &#123; fmt.Println(&quot;Disk: read boot sector&quot;) &#125;// 外观：计算机type ComputerFacade struct &#123;	cpu  *CPU	mem  *Memory	disk *Disk&#125;func NewComputerFacade() *ComputerFacade &#123;	return &amp;ComputerFacade&#123;		cpu:  &amp;CPU&#123;&#125;,		mem:  &amp;Memory&#123;&#125;,		disk: &amp;Disk&#123;&#125;,	&#125;&#125;// 对外暴露的简化接口：开机流程func (c *ComputerFacade) PowerOn() &#123;	fmt.Println(&quot;== PowerOn ==&quot;)	c.disk.ReadBootSector()	c.cpu.Start()	c.mem.LoadOS()	fmt.Println(&quot;System is up.&quot;)&#125;// 对外暴露的简化接口：关机流程func (c *ComputerFacade) PowerOff() &#123;	fmt.Println(&quot;== PowerOff ==&quot;)	c.cpu.Shutdown()	c.mem.Clear()	fmt.Println(&quot;System is down.&quot;)&#125;
+
+客户端
+func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
+
+类图
+
+    classDiagram
+    class CPU {
+        +Start()
+        +Shutdown()
+    }
+    class Memory {
+        +LoadOS()
+        +Clear()
+    }
+    class Disk {
+        +ReadBootSector()
+    }
+    class ComputerFacade {
+        -cpu: CPU
+        -mem: Memory
+        -disk: Disk
+        +NewComputerFacade()
+        +PowerOn()
+        +PowerOff()
+    }
+    ComputerFacade *-- CPU : uses
+    ComputerFacade *-- Memory : uses
+    ComputerFacade *-- Disk : uses
+    ComputerFacade ..&gt; CPU : Start()
+    ComputerFacade ..&gt; Memory : LoadOS()
+    ComputerFacade ..&gt; Disk : ReadBootSector()
+    ComputerFacade ..&gt; CPU : Shutdown()
+    ComputerFacade ..&gt; Memory : Clear()
+  
+
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Facade Pattern</tag>
       </tags>
   </entry>
   <entry>
