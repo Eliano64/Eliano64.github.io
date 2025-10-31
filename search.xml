@@ -73,6 +73,63 @@ siriusyaoz，在做实验的时候，你的关于这个实验的代码给予了�
       </tags>
   </entry>
   <entry>
+    <title>250714-250720 周记 2024-xv6-labs(2)</title>
+    <url>/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/</url>
+    <content><![CDATA[本周完成了剩下的实验。上一篇见2024-xv6-labs-1
+1. net lab1.1 NIC第一个实验是补全e1000_transmit() 和 e1000_recv()
+重点在于先要理解e1000初始化的代码，以及e1000_dev.h里给出的各寄存器的定义。
+然后理清一下工作流程：transmit所做的，其实就是将发送区和发送环的尾部更新为带发送的数据对应的元数据。注意此时status应为0而不是E1000_TXD_STAT_DD，因为这只是代表将数据填入发送区，并没有真正发送。然后更新E100_TDT的值。但为了防止竞态条件，所以还要注意用e1000_lock加锁。
+而receive所做的就是以帧为单位，不断地将缓冲区里的数据交给net_rx()，并更新缓冲区和E1000_RDT，直到遇见E1000_RXD_STAT_DD。这里不用加锁，但值得注意的是E1000_RDT必须在最后更新？想不通。
+1.2 UDP Receive说来惭愧，这个部分我实在没有思路，是让ai写的。。。
+2. lock2.1 Memory allocator这里需要做的，就是kinit初始化内存管理的数据结构时，是初始化kmem[NCPU]而不是单个kmem，即通过格式化字符串的方式为每个kmem分配一把锁。然后其他跟单个kmem几乎一致。但是在kalloc里，如果某个kmem没有空闲页了，应找一个还有空闲页的kmem，拿一页进行分配。
+注意在调用cpuid取当前cpu的id的时候要push_off()关中断，调用完毕要pop_off()重新开启。
+但这个实验部分我个人觉得很有意思的就是格式化字符串。
+2.2 Buffer cache这个题虽然是红题。但实际上本质并不复杂，它实际上说的是：
+原有一个链表和一把大锁，可是这样太低效了，因为需要进行修改的可能是两个不同的节点，没有必要一把大锁把全局锁死。于是使用哈希表，将大链表拆成多个小链表分别存入每个哈希桶里，然后对每个哈希桶给予锁。这样需要进行修改的若是两个不同的节点，则可以实现并发了。
+将原bcache的定义改为：
+  struct bucket&#123;  struct spinlock lock;  // Linked list of all buffers, through prev/next.  // Sorted by how recently the buffer was used.  // head.next is most recent, head.prev is least.  struct buf head;&#125;;struct &#123;  struct bucket table[NHASH];  struct buf buf[NBUF];&#125; bcache;
+
+然后修改下面的代码，使其符合这个新数据结构即可。。。
+才怪！！！🤣🤣🤣
+还得有一步，否则panic: bget: no buffers：
+因为初始化时候，所有的缓存区都在同一个桶里，其他桶全为空！
+此时就应该像上一题一样，从key对应的桶处“偷”一块缓存：
+b-&gt;next-&gt;prev = b-&gt;prev;b-&gt;prev-&gt;next = b-&gt;next;release(&amp;bcache.table[key].lock);acquire(&amp;bcache.table[gethash(blockno)].lock);b-&gt;next = bcache.table[gethash(blockno)].head.next;b-&gt;prev = &amp;bcache.table[gethash(blockno)].head;bcache.table[gethash(blockno)].head.next-&gt;prev = b;bcache.table[gethash(blockno)].head.next = b;release(&amp;bcache.table[gethash(blockno)].lock);
+
+3. fs这个实验很奇怪，make grade时会因为qemu-system-riscv64: terminating on signal 15 from pid xxxx(make)导致fail，但是单独地在qemu环境中运行bigfile symlinktest usertests -q却没有问题。难道是我wsl2 ubuntu系统的版本问题吗？
+3.1 Large files这里就是将fs.h里面NDIRECT再减少一块作为双重间接块。然后添加定义
+#define NDOUBLE (NINDIRECT*NINDIRECT)#define MAXFILE (NDIRECT + NINDIRECT + NDOUBLE)
+在bmap里仿照分配间接块的写法，分配双重间接块。
+在itrunc里仿照释放间接块的写法，释放双重间接块。
+（不过，这个是真绕啊）
+这里一定要理清楚：对于双重间接块，256个块为一组，第0层的data就表示每一组。第一层的data则表示每一组的每一块的地址，而第二层的data才表示真正的数据。
+所以，对于分配，bn / NINDIRECT计算得组号；对于每个块在该组的序号则由bn % NINDIRECT给出。
+对于释放，ip-&gt;addrs[NDIRECT+1]!=0意味着存在未释放的组。因此要对每一个未释放的组，读取它对应的第一层间接块的data，因为一个data[i]!=0就表示一个这一组未释放掉的块的地址。就这样从第2层一直到第0层逐层释放。
+3.2 Symbolic links首先是sys_symlink，要在目标路径处创建一个T_SYMLINK类型的文件。并在对应的inode里分配一个缓冲块，写入target，即源文件的路径。
+后一步看起来复杂，实际上就是writei函数的调用。
+然后是改写sys_open。这里主要是添加一个T_SYMLINK且不是O_NOFOLLOW的处理。
+为了方便处理链接的文件也是符号链接的情况，用了一个递归的函数follow
+  struct inode*follow(char *path, int cnt)&#123;  if(cnt&gt;=10)&#123;    return 0;  &#125;  struct inode *ip = namei(path);  if(ip==0)&#123;    return 0;  &#125;  ilock(ip);  if(ip-&gt;type != T_SYMLINK)&#123;    return ip;  &#125;  char target[MAXPATH];  if(readi(ip, 0, (uint64)target, 0, MAXPATH) != MAXPATH)&#123;    iunlockput(ip);    return 0;  &#125;  iunlockput(ip);  struct inode *ans = follow(target,cnt+1);  return ans;&#125;
+
+
+ps:sys_open是在干什么？它是创建一个文件描述符（fd），将它绑定到一个 struct file*，供后续 read(fd) &#x2F;write(fd) 使用。示意如下：
+
+// 1. 从用户拿参数：路径 和 打开方式argstr(0, path);argint(1, &amp;omode);// 2. 找到这个文件的 inode（如果没有而且带 O_CREATE，则创建）ip = namei(path) / create(path);// 3. 分配一个 file 结构f = filealloc();// 4. 分配一个 fd 并将其与 file* 绑定fd = fdalloc(f);      // 进程的 proc-&gt;ofile[fd] = f;// 5. 初始化 file 结构：指向 inode，设置读写权限f-&gt;ip = ip;f-&gt;readable = ...f-&gt;writable = ...
+
+4. mmap呃呃，这个也不是我自己写的。。。😭
+这个实验我打算后面再“补票”。（虽然这个flag大概率会倒）
+]]></content>
+      <categories>
+        <category>2024-xv6-labs</category>
+      </categories>
+      <tags>
+        <tag>C</tag>
+        <tag>Projects</tag>
+        <tag>Operating System</tag>
+        <tag>2024-xv6-labs</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250721 thinking 二分查找</title>
     <url>/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</url>
     <content><![CDATA[1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。
@@ -211,687 +268,6 @@ LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混�
         <tag>C++</tag>
         <tag>projects</tag>
         <tag>cache</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250714-250720 周记 2024-xv6-labs(2)</title>
-    <url>/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/</url>
-    <content><![CDATA[本周完成了剩下的实验。上一篇见2024-xv6-labs-1
-1. net lab1.1 NIC第一个实验是补全e1000_transmit() 和 e1000_recv()
-重点在于先要理解e1000初始化的代码，以及e1000_dev.h里给出的各寄存器的定义。
-然后理清一下工作流程：transmit所做的，其实就是将发送区和发送环的尾部更新为带发送的数据对应的元数据。注意此时status应为0而不是E1000_TXD_STAT_DD，因为这只是代表将数据填入发送区，并没有真正发送。然后更新E100_TDT的值。但为了防止竞态条件，所以还要注意用e1000_lock加锁。
-而receive所做的就是以帧为单位，不断地将缓冲区里的数据交给net_rx()，并更新缓冲区和E1000_RDT，直到遇见E1000_RXD_STAT_DD。这里不用加锁，但值得注意的是E1000_RDT必须在最后更新？想不通。
-1.2 UDP Receive说来惭愧，这个部分我实在没有思路，是让ai写的。。。
-2. lock2.1 Memory allocator这里需要做的，就是kinit初始化内存管理的数据结构时，是初始化kmem[NCPU]而不是单个kmem，即通过格式化字符串的方式为每个kmem分配一把锁。然后其他跟单个kmem几乎一致。但是在kalloc里，如果某个kmem没有空闲页了，应找一个还有空闲页的kmem，拿一页进行分配。
-注意在调用cpuid取当前cpu的id的时候要push_off()关中断，调用完毕要pop_off()重新开启。
-但这个实验部分我个人觉得很有意思的就是格式化字符串。
-2.2 Buffer cache这个题虽然是红题。但实际上本质并不复杂，它实际上说的是：
-原有一个链表和一把大锁，可是这样太低效了，因为需要进行修改的可能是两个不同的节点，没有必要一把大锁把全局锁死。于是使用哈希表，将大链表拆成多个小链表分别存入每个哈希桶里，然后对每个哈希桶给予锁。这样需要进行修改的若是两个不同的节点，则可以实现并发了。
-将原bcache的定义改为：
-  struct bucket&#123;  struct spinlock lock;  // Linked list of all buffers, through prev/next.  // Sorted by how recently the buffer was used.  // head.next is most recent, head.prev is least.  struct buf head;&#125;;struct &#123;  struct bucket table[NHASH];  struct buf buf[NBUF];&#125; bcache;
-
-然后修改下面的代码，使其符合这个新数据结构即可。。。
-才怪！！！🤣🤣🤣
-还得有一步，否则panic: bget: no buffers：
-因为初始化时候，所有的缓存区都在同一个桶里，其他桶全为空！
-此时就应该像上一题一样，从key对应的桶处“偷”一块缓存：
-b-&gt;next-&gt;prev = b-&gt;prev;b-&gt;prev-&gt;next = b-&gt;next;release(&amp;bcache.table[key].lock);acquire(&amp;bcache.table[gethash(blockno)].lock);b-&gt;next = bcache.table[gethash(blockno)].head.next;b-&gt;prev = &amp;bcache.table[gethash(blockno)].head;bcache.table[gethash(blockno)].head.next-&gt;prev = b;bcache.table[gethash(blockno)].head.next = b;release(&amp;bcache.table[gethash(blockno)].lock);
-
-3. fs这个实验很奇怪，make grade时会因为qemu-system-riscv64: terminating on signal 15 from pid xxxx(make)导致fail，但是单独地在qemu环境中运行bigfile symlinktest usertests -q却没有问题。难道是我wsl2 ubuntu系统的版本问题吗？
-3.1 Large files这里就是将fs.h里面NDIRECT再减少一块作为双重间接块。然后添加定义
-#define NDOUBLE (NINDIRECT*NINDIRECT)#define MAXFILE (NDIRECT + NINDIRECT + NDOUBLE)
-在bmap里仿照分配间接块的写法，分配双重间接块。
-在itrunc里仿照释放间接块的写法，释放双重间接块。
-（不过，这个是真绕啊）
-这里一定要理清楚：对于双重间接块，256个块为一组，第0层的data就表示每一组。第一层的data则表示每一组的每一块的地址，而第二层的data才表示真正的数据。
-所以，对于分配，bn / NINDIRECT计算得组号；对于每个块在该组的序号则由bn % NINDIRECT给出。
-对于释放，ip-&gt;addrs[NDIRECT+1]!=0意味着存在未释放的组。因此要对每一个未释放的组，读取它对应的第一层间接块的data，因为一个data[i]!=0就表示一个这一组未释放掉的块的地址。就这样从第2层一直到第0层逐层释放。
-3.2 Symbolic links首先是sys_symlink，要在目标路径处创建一个T_SYMLINK类型的文件。并在对应的inode里分配一个缓冲块，写入target，即源文件的路径。
-后一步看起来复杂，实际上就是writei函数的调用。
-然后是改写sys_open。这里主要是添加一个T_SYMLINK且不是O_NOFOLLOW的处理。
-为了方便处理链接的文件也是符号链接的情况，用了一个递归的函数follow
-  struct inode*follow(char *path, int cnt)&#123;  if(cnt&gt;=10)&#123;    return 0;  &#125;  struct inode *ip = namei(path);  if(ip==0)&#123;    return 0;  &#125;  ilock(ip);  if(ip-&gt;type != T_SYMLINK)&#123;    return ip;  &#125;  char target[MAXPATH];  if(readi(ip, 0, (uint64)target, 0, MAXPATH) != MAXPATH)&#123;    iunlockput(ip);    return 0;  &#125;  iunlockput(ip);  struct inode *ans = follow(target,cnt+1);  return ans;&#125;
-
-
-ps:sys_open是在干什么？它是创建一个文件描述符（fd），将它绑定到一个 struct file*，供后续 read(fd) &#x2F;write(fd) 使用。示意如下：
-
-// 1. 从用户拿参数：路径 和 打开方式argstr(0, path);argint(1, &amp;omode);// 2. 找到这个文件的 inode（如果没有而且带 O_CREATE，则创建）ip = namei(path) / create(path);// 3. 分配一个 file 结构f = filealloc();// 4. 分配一个 fd 并将其与 file* 绑定fd = fdalloc(f);      // 进程的 proc-&gt;ofile[fd] = f;// 5. 初始化 file 结构：指向 inode，设置读写权限f-&gt;ip = ip;f-&gt;readable = ...f-&gt;writable = ...
-
-4. mmap呃呃，这个也不是我自己写的。。。😭
-这个实验我打算后面再“补票”。（虽然这个flag大概率会倒）
-]]></content>
-      <categories>
-        <category>2024-xv6-labs</category>
-      </categories>
-      <tags>
-        <tag>C</tag>
-        <tag>Projects</tag>
-        <tag>Operating System</tag>
-        <tag>2024-xv6-labs</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250811-250817 周记 linux命令与shell编程学习(2)</title>
-    <url>/2025/08/19/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-2/</url>
-    <content><![CDATA[2. 第二部分 shell 脚本编程基础2.11 构建基础脚本2.11.2 创建 shell 脚本文件
-其中输入命令。 在创建 shell 脚本文件时,必须在文件的第一行指定要使用的 shell,格式如下:  #!&#x2F;bin&#x2F;bash  在普通的 shell 脚本中,#用作注释行。shell 并不会处理 shell 脚本中的注释行。然而,shell 脚本文件的第一行是个例外,#后面的惊叹号会告诉 shell 用哪个 shell 来运行脚本。(是的,可以使用 bash shell,然后使用另一个 shell 来运行你的脚本。)
-通过 chmod 命令(参见第 7 章)赋予文件属主执行文件的权限后，就可以直接./script.sh来运行脚本了。
-
-2.11.3 显示消息
-如果在 echo 命令后面加上字符串,那么 echo 命令就会显示出这个字符串
-echo输出默认句末带一个换行符\n,可以使用-n选项取消换行符
-
-2.11.4 使用变量2.11.4.1 环境变量
-反斜线允许 shell 脚本按照字面意义解释$,而不是引用变量
-通过${variable}形式引用的变量。花括号通常用于帮助界定$后的变量名。
-
-2.11.4.2 用户自定义变量
-使用等号为变量赋值。在变量、等号和值之间不能出现空格
-shell 脚本会以字符串形式存储所有的变量值,脚本中的各个命令可以自行决定变量值的数据类型。
-shell 脚本中定义的变量在脚本的整个生命周期里会一直保持着它们的值,在脚本结束时会被删除。
-引用变量值时要加$,对变量赋值时则不用加$
-
-2.11.4.3 命令替换
-将命令输出赋给变量: var=$(command)或者: var=`command` 注意,赋值号和命令替换 符之间没有空格
-
-2.11.5 重定向输入和输出2.11.5.1 输出重定向
-最基本的重定向会将命令的输出发送至文件。bash shell 使用“&gt;”来实现该操作
-将命令输出追加到已有文件中：&gt;&gt;
-
-2.11.5.2 输入重定向
-输入重定向会将文件的内容作为命令的输入。使用“&lt;”来实现该操作 command &lt; inputfile
-一种简单的记忆方法是,在命令行中,命令总是在左侧,而重定向运算符“指向”数据流动的方向。小于号说明数据正在从输入文件流向命令。
-还有另外一种输入重定向的方法,称为内联输入重定向。这种方法 无须使用文件进行重定向,只需在命令行中指定用于输入重定向的数据即可。
-内联输入重定向的格式如下: command &lt;&lt; delimiter
-其中,delimiter 是一个用户定义的字符串,用于标识输入重定向的结束。
-内联输入重定向的工作原理是,shell 会将命令行中所有位于 delimiter 之前的文本作为命令的输入。例如：
-
-
-
-$ wc &lt;&lt; EOF &gt; test string 1 &gt; test string 2 &gt; test string 3 &gt; EOF 
-
-
-因此可以在脚本中像这样用：
-
-cat &gt;&gt; $outfile &lt;&lt; EOF INSERT INTO members (lname,fname,address,city,state,zip) VALUES (&#x27;$lname&#x27;, &#x27;$fname&#x27;, &#x27;$address&#x27;, &#x27;$city&#x27;, &#x27;$state&#x27;, &#x27;$zip&#x27;); EOF
-
-
-快速地根据csv文件生成sql语句
-
-2.11.6 管道
-将一个命令的输出作为另一个命令的输入 command1 | command2
-实际上,Linux 系统会同时运行这两个命令, 在系统内部将二者连接起来。当第一个命令产生输出时,它会被立即传给第二个命令。数据传输 不会用到任何中间文件或缓冲区。
-管道可以串联的命令数量没有限制。可以持续地将命令输出通过管道传给其他命令来细化操作。
-
-
-2.11.7 执行数学运算2.11.7.2 使用括号
-要将数学运算结果赋给变量,使用var=$((expression))
-bash shell 的数学运算符只支持整数运算, z shell(zsh)提供了完整的浮点数操作。
-
-2.11.8 退出脚本2.11.8.1 查看退出状态码
-Linux 提供了专门的变量$?来保存最后一个已执行命令的退出状态码。
-按照惯例,对于成功结束的命令,其退出状态码是 0。对于因错误而结束的命令,其退出状态码是一个正整数。
-
-2.1.8.2 exit 命令
-exit 命令允许在脚本结束时指定一个退出状态码
-退出状态码必须是 0 到 255 之间的整数。如果指定了超出这个范围的值,则会自动对256取模。
-
-2.12 结构化命令2.12.1 使用 if-then 语句if command; then    commandsfi
-
-2.12.2 if-then-elseif command; then    commandselse    commandsfi
-
-2.12.3 if-then-elif-elseif command; then    commandselif command; then    commands(省略可能的多个elif语句)else    commandsfi
-
-2.12.4 test 命令
-bash shell 提供了另一种条件测试方式:
-
-if [ condition ]; then    commandsfi
-
-
-第一个方括号之后和第二个方括号之前必须留有空格
-
-2.12.4.1 数值比较
-
-
-比较
-描述
-
-
-
-n1 -eq n2
-检查 n1 是否等于 n2
-
-
-n1 -ge n2
-检查 n1 是否大于或等于 n2
-
-
-n1 -gt n2
-检查 n1 是否大于 n2
-
-
-n1 -le n2
-检查 n1 是否小于或等于 n2
-
-
-n1 -lt n2
-检查 n1 是否小于 n2
-
-
-n1 -ne n2
-检查 n1 是否不等于 n2
-
-
-2.12.4.2 字符串比较
-
-
-比较
-描述
-
-
-
--z string
-检查字符串是否为空
-
-
--n string
-检查字符串是否不为空
-
-
-string1 &#x3D; string2
-检查字符串是否相等
-
-
-string1 !&#x3D; string2
-检查字符串是否不相等
-
-
-string1 &lt; string2
-检查字符串是否小于 string2
-
-
-string1 &gt; string2
-检查字符串是否大于 string2
-
-
-
-测试表达式使用标准的数学比较符号来表示字符串比较,而用文本代码来表示数值比较。
-
-2.12.4.3 文件比较
-
-
-比较
-描述
-
-
-
--e filename
-检查文件是否存在
-
-
--f filename
-检查文件是否存在且是一个普通文件
-
-
--d filename
-检查文件是否存在且是一个目录
-
-
--r filename
-检查文件是否存在且可读
-
-
--w filename
-检查文件是否存在且可写
-
-
--x filename
-检查文件是否存在且可执行
-
-
--s filename
-检查文件是否存在且非空
-
-
-filename1 -nt filename2
-检查 filename1 是否比 filename2 新
-
-
-filename1 -ot filename2
-检查 filename1 是否比 filename2 旧
-
-
-2.12.5 复合条件测试
-if-then 语句允许使用布尔逻辑将测试条件组合起来。可以使用以下两种布尔运算符：
-[ condition1 ] &amp;&amp; [ condition2 ] 
-[ condition1 ] || [ condition2 ]
-
-
-
-2.12.6 if-then 的高级特性2.12.6.1 使用单括号if (command); then    commandsfi
-
-
-单括号中的命令会在子 shell 中执行,而不是在当前 shell 中执行。
-单括号中的命令可以使用分号分隔多个命令。
-单括号中的命令可以使用反引号或美元符号引用变量。
-
-2.12.6.2 使用双括号if ((expression)); then    commandsfi
-
-
-双括号中的表达式可以使用的运算符：
-
-
-
-
-符号
-描述
-
-
-
-val++
-后增
-
-
-val–
-后减
-
-
-++val
-先增
-
-
-–val
-先减
-
-
-!
-逻辑求反
-
-
-~
-位求反
-
-
-**
-幂运算
-
-
-&lt;&lt;
-左位移
-
-
-&gt;&gt;
-右位移
-
-
-&amp;
-位布尔 AND
-
-
-|
-位布尔 OR
-
-
-&amp;&amp;
-逻辑 AND
-
-
-||
-逻辑 OR
-
-
-
-双括号命令既可以在 if 语句中使用,也可以在脚本中的普通命令里用来赋值
-双括号中表达式的大于号和小于号不用转义。这是双括号命令又一个优越性的体现。
-
-2.12.6.3 使用双方括号
-双方括号命令提供了针对字符串比较的高级特性
-
-if [[ expression ]]; then    commandsfi
-
-提供了 test 命令所不具备的另一个特性——模式匹配。
-双等号(&#x3D;&#x3D;)会将右侧的字符串视为一个模式并应用模式匹配规则。
-
-2.12.7 case 命令
-有了 case 命令,就无须再写大量的 elif 语句来检查同一个变量的值了。case 命令会采 用列表格式来检查变量的多个值:
-
-case variable in    pattern1)        commands        ;;    pattern2)        commands        ;;    *)        commands        ;;esac
-
-2.13 更多的结构化命令2.13.1 for 命令for variable in list; do    commandsdone
-
-2.13.1.2 读取列表中的复杂值
-for 循环假定各个值之间是 以空格分隔的。如果某个值含有空格, 则必须将其放入双引号内。
-
-2.13.1.5 更改字段分隔符
-IFS 环境变量定义了 bash shell 用作字段分隔符的一系列字符。在默认情况下,bash shell 会将下列字符视为字段分隔符。
-空格
-制表符
-换行符
-
-
-修改 IFS 环境变量可以改变 bash shell 用作字段分隔符的字符。修改 IFS 的值,使其只能识别换行符: IFS=$&#39;\n&#39;
-
-
-在 Bash 里，$’…’ 是 ANSI-C 风格的字符串，会识别 C 语言风格的转义符$’\n’ → 真正的换行符$’\t’ → 制表符（Tab）$’\x41’ → 字符 A
-
-
-在处理代码量较大的脚本时,可能在一个地方需要修改 IFS 的值,然后再将其恢复原状,而脚本的其他地方则继续沿用 IFS 的默认值。一种安全的做法是在修改 IFS 之前保存原来的 IFS 值,之后再恢复它。这种技术可以像下面这样来实现:IFS.OLD=$IFS IFS=$&#39;\n&#39;&lt;在代码中使用新的 IFS 值&gt;IFS=$IFS.OLD这就保证了在脚本的后续操作中使用的是 IFS 的默认值。
-
-2.13.1.6 使用通配符读取目录
-用 for 命令来自动遍历目录中的文件。
-在文件名或路径名中使用 通配符,这会强制 shell 使用文件名通配符匹配(file globbing)。
-
-for file in /path/*; do    commandsdone
-
-
-在 Linux 中,目录名和文件名中包含空格是完全合法的。要应对这种情况,应该将$file 变 量放入双引号内。否则,遇到含有空格的目录名或文件名时会产生错误
-
-
-可以在 for 命令中列出多个目录通配符
-
-for file in /path/* /path2/*; do    commandsdone
-
-2.13.2 C 语言风格的 for 命令
-bash 中仿 C 语言的 for 循环的基本格式如下:  for (( variable assignment ; condition ; iteration process )); do    commandsdone
-
-2.13.3 while 命令2.13.3.1 while 的基本格式while [ condition ]; do    commandsdone
-
-2.13.7 循环控制2.13.7.1 break 命令for var in list; do    commands    if [ condition ]; then        break    fidone
-
-2.13.7.2 continue 命令for var in list; do    commands    if [ condition ]; then        continue    fidone
-
-2.13.8 处理循环的输出
-对循环的输出使用管道或进行重定向。通过在 done 命令之后 添加一个处理命令来实现
-
-for var in list; do    commandsdone &gt; output.txt
-
-
-“|”以及”&lt;”都可以像这样用
-
-2.14 处理用户输入2.14.1 传递参数2.14.1.1 读取参数
-bash shell 会将所有的命令行参数都指派给称作位置参数(positional parameter)的特殊变量。 这也包括 shell 脚本名称。
-位置变量的名称都是标准数字:$0 对应脚本名,$1 对应第一个命令行参数,$2 对应第二个命令行参数,以此类推。
-
-2.14.1.2 读取脚本名
-basename 命令可以返回不包含路径的脚本名
-
-2.14.2 特殊参数变量2.14.2.1 参数统计
-$#含有脚本运行时携带的命令行参数的个数，不包含脚本名。
-$&#123;!#&#125; 代表了最后一个位置变量
-
-2.14.2.2 获取所有的数据
-$*变量和$@变量可以轻松访问所有参数,它们各自包含了所有的命令行参数
-$*变量会将所有的命令行参数视为一个单词。这个单词含有命令行中出现的每一个参数。 基本上,$*变量会将这些参数视为一个整体,而不是一系列个体。
-$@变量会将所有的命令行参数视为同一字符串中的多个独立的单词,以便你能遍历并处理全部参数。这通常使用 for 命令完成。
-
-2.14.3 移动参数
-shift 命令会将所有的位置参数向左移动。每个位置参数的变量名都会减 1。$1 会变成$0,$2 会变成$1,以此类推。被删除的参数会被丢弃。
-shift 命令可以接受一个可选的参数,用于指定要左移几位。默认情况下,它会将所有的位置参数向左移动一个位置。
-
-2.14.4.3 使用 getopts 命令
-getopts optstring variable
-getopts 命令要用到两个环境变量。如果选项需要加带参数值,那么 OPTARG 环境变量保存的就是这个值。OPTIND 环境变量保存着参数列表中 getopts 正在处理的参数位置。这样在处理完当前选项之后就能继续处理其他命令行参数了。使用举例：
-
-while getopts :ab: opt; do    case $opt in        a)            echo &quot;Option a&quot; ;;        b)            echo &quot;Option b with value $OPTARG&quot; ;;        \?)            echo &quot;Invalid option: -$opt&quot; ;;    esacdone
-
-
-在解析命令行选项时,getopts 命令会移 除起始的连字符,所以在 case 语句中不用连字符。
-选项字符串中的冒号(:)表示该选项需要一个参数值。
-
-2.14.6 获取用户输入2.14.6.1 基本的读取
-read 命令从标准输入(键盘)或另一个文件描述符中接受输入。获取输入后,read 命令会 将数据存入变量。read variable
-read 命令也提供了-p 选项,允许直接指定提示符:read -p &quot;Enter your name: &quot; name
-
-2.14.6.2 超时
-用-t 选项来指定一个计时器。-t 选项会指定 read 命令等待输入的 秒数。如果计时器超时,则 read 命令会返回非 0 退出状态码
-用-n 选项来指定 read 命令读取的字符数，read会在接收到设定个数的字符后自动退出。
-
-2.14.6.3 无显示读取
--s 选项可以避免在 read 命令中输入的数据出现在屏幕上(其实数据还是会被显示,只不 过 read 命令将文本颜色设成了跟背景色一样)
-
-2.14.6.4 从文件中读取
-每次调用 read 命令都会从指定文件中读取一行文本。 当文件中没有内容可读时,read 命令会退出并返回非 0 退出状态码。
-
-while read line; do    echo $linedone &lt; input.txt
-
-2.15 呈现数据2.15.1 理解输入和输出
-
-
-文件描述符
-缩写
-描述
-
-
-
-0
-STDIN
-标准输入
-
-
-1
-STDOUT
-标准输出
-
-
-2
-STDERR
-标准错误
-
-
-
-shell 对于错误消息的处理是跟普通输出分开的。只使用“&gt;”重定向只能重定向标准输出,而不能重定向标准错误。
-在默认情况下,STDERR 和 STDOUT 指向同一个地方————显示器。
-
-2.15.1.2 重定向错误
-只重定向错误
-
-
-command 2&gt; &amp;1 2与“&gt;”必须紧挨着,否则无法正常工作
-
-
-重定向错误消息和正常输出
-
-
-如果想重定向错误消息和正常输出,则必须使用两个重定向符号。你需要在重定向符号之前 放上需要重定向的文件描述符,然后让它们指向用于保存数据的输出文件
-将 STDERR 和 STDOUT 的输出重定向到同一个文件：&amp;&gt;
-
-2.15.2 在脚本中重定向输出
-有意在脚本中生成错误消息,可以将单独的一行输出重定向到 STDERR: &gt;&amp;2 
-在重定向到文件描述符时,必须在文件 描述符索引值之前加一个&amp;
-可以理解为：0、1、2为文件描述符，而&amp;1、&amp;2、&amp;3为文件描述符所指代的具体的文件&#x2F;设备名。
-
-2.15.2.2 永久重定向
-exec 命令会告诉 shell 在脚本执行期间重定向某个特定文件描述符: exec 1&gt; output.txt。还可以用来创建新的文件描述符。exec 3&gt; testfile
-
-2.15.3 在脚本中重定向输入
-exec 命令允许将 STDIN 重定向为文件: exec 0&lt; input.txt
-只要脚本需要输入, 这个重定向就会起作用：
-
-exec 0&lt; testfile count=1  while read line; do     echo &quot;Line #$count: $line&quot;     count=$[ $count + 1 ] done
-
-2.15.4 创建自己的重定向2.15.4.2 重定向文件描述符
-恢复已重定向的文件描述符：
-
-exec 3&gt;&amp;1 exec 1&gt;test14out...exec 1&gt;&amp;3# 1恢复
-
-
-2.15.4.5 关闭文件描述符
-要关闭文件描述符,只需将其重定向到特殊符号&amp;-即可: exec 3&gt;&amp;-
-
-2.15.5 列出打开的文件描述符
-lsof 命令可以列出当前系统中打开的所有文件描述符。
-最常用的选项包括-p 和-d,前者允许指定进程 ID(PID),后者允许指定要显示的文件描述符编号(多个编号之间以逗号分隔)。
-$$: 当前进程的 PID
-lsof的默认输出：
-
-
-
-
-列
-描述
-
-
-
-COMMAND
-进程对应的命令名的前 9 个字符
-
-
-PID
-进程的 PID
-
-
-USER
-进程属主的登录名
-
-
-FD
-文件描述符编号以及访问类型(r 代表读,w 代表写,u 代表读&#x2F;写)
-
-
-TYPE
-文件的类型(CHR 代表字符型,BLK 代表块型,DIR 代表目录,REG 代表常规文件)
-
-
-DEVICE
-设备号(主设备号和从设备号)
-
-
-SIZE
-如果有的话,表示文件的大小
-
-
-NODE
-本地文件的节点号
-
-
-NAME
-文件名
-
-
-2.15.6 抑制命令输出
-重定向到 &#x2F;dev&#x2F;null 可以抑制命令的输出
-也可以在输入重定向中将&#x2F;dev&#x2F;null 作为输入文件，快速清除现有文件中的数据：cat /dev/null &gt; testfile
-
-2.15.7 使用临时文件2.15.7.1 创建本地临时文件
-mktemp 会在本地目录中创建一个文件。在使用 mktemp 命令时,只需指定 一个文件名模板即可。模板可以包含任意文本字符,同时在文件名末尾要加上 6 个 X。
-mktemp 命令会任意地将 6 个 X 替换为同等数量的字符,以保证文件名在目录中是唯一的。 你可以创建多个临时文件,并确保每个文件名都不重复
-mktemp 命令的输出正是它所创建的文件名。
-
-2.15.7.2 在&#x2F;tmp 目录中创建临时文件
--t 选项会强制 mktemp 命令在系统的临时目录中创建文件。在使用这个特性时,mktemp 命令会返回所创建的临时文件的完整路径名,而不只是文件名
-
-2.15.7.3 创建临时目录
--d 选项会告诉 mktemp 命令创建一个临时目录。你可以根据需要使用该目录,比如在其中 创建其他的临时文件
-
-2.15.8 记录消息
-tee 命令就像是连接管道的 T 型接头,它能将来自 STDIN 的数据同时送往两处。一处是 STDOUT,另一处是 tee 命令行所指定的文件名（这个文件不需要先前存在）
-配合管道命令来重定向命令输出: command | tee testfile
-tee 命令的 -a 选项会将输出追加到文件中,而不是覆盖文件内容
-
-2.16 脚本控制2.16.1 处理信号2.16.1.1 重温 Linux 信号
-
-
-信号值
-信号名
-描述
-
-
-
-1
-SIGHUP
-挂起(hang up)进程
-
-
-2
-SIGINT
-中断(interrupt)进程
-
-
-3
-SIGQUIT
-停止(stop)进程
-
-
-9
-SIGKILL
-无条件终止(terminate)进程
-
-
-15
-SIGTERM
-尽可能终止进程
-
-
-18
-SIGCONT
-继续运行停止的进程
-
-
-19
-SIGSTOP
-无条件停止,但不终止进程
-
-
-20
-SIGTSTP
-停止或暂停(pause),但不终止进程
-
-
-2.16.2 以后台模式运行脚本2.16.2.1 后台运行脚本
-以后台模式运行 shell 脚本非常简单,只需在脚本名后面加上&amp;即可
-
-2.16.3 在非控制台下运行脚本
-有时候,即便退出了终端会话,你也想在终端会话中启动 shell 脚本,让脚本一直以后台模 式运行到结束。这可以用 nohup 命令来实现
-nohup 命令能阻断发给特定进程的 SIGHUP 信号。当退出终端会话时,这可以避免进程退出
-nohup command
-
-2.16.4 作业控制2.16.4.1 查看作业
-jobs 是作业控制中的关键命令,该命令允许用户查看 shell 当前正在处理的作业
-可以使用 jobs 命令的-l 选项(小写字母 l)查看作业的 PID
-
-2.16.4.2 重启已停止的作业
-暂停： ^Z
-要以后台模式重启作业,可以使用 bg 命令
-如果存在多个作业,则需要在 bg 命令后加上作业号
-
-2.16.6 定时运行作业2.16.6.1 使用 at 命令调度作业
-at [-f filename] time。适用于计划运行少数几次。
-
-2.16.6.2 调度需要定期运行的脚本
-Linux 系统使用 cron 程序调度需要定期执行的作业。cron 在后台运行,并会检查一个特殊的 表(cron 时间表),从中获知已安排执行的作业
-cron 时间表通过一种特别的格式指定作业何时运行,其格式如下:minutepasthour hourofday dayofmonth month dayofweek command
-cron 时间表允许使用特定值、取值范围(比如 1-5)或者通配符(*)来指定各个字段。
-如果想在每天的 10:15 运行一个命令,可以使用如下 cron 时间表字段: 15 10 * * * command
-列出已有的 cron 时间表：crontab -l
-向cron 时间表添加字段： crontab -e, 然后添加15 10 * * * command
-保存并退出编辑器后, cron 会在指定的时间运行命令
-
-]]></content>
-      <categories>
-        <category>tool</category>
-      </categories>
-      <tags>
-        <tag>shell</tag>
-        <tag>reading note</tag>
-        <tag>linux</tag>
-        <tag>Linux Command Line and Shell Scripting Bible</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking Trie</title>
-    <url>/2025/08/24/250824-thinking-Trie/</url>
-    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
-C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
-class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>Trie</tag>
       </tags>
   </entry>
   <entry>
@@ -1549,53 +925,618 @@ TO BE CONTINUED
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking singleton</title>
-    <url>/2025/08/24/250824-thinking-singleton/</url>
-    <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
-2. 为什么需要单例模式？在多线程环境下，我们需要多个线程使用同一份资源。
-2.1 为什么不使用全局变量？在一些较为简单的环境中，直接使用一些全局变量供所有线程使用是很好的。
-但是，如果这个对象是资源密集型的，使用全局变量会导致资源的浪费。而且，简单的全局变量没有提供访问控制（封装），线程可以任意地访问和修改。
-而单例模式就可以实现按需创建实例，避免了资源的浪费。而且提供了类封装，确保不会有意外的修改。
-3. 单例模式的实现（go）单例模式尤其要注意线程安全。 sync.Once 确保了实例只被创建一次，避免了多线程环境下的竞态条件。
-以下是一个懒加载的版本。
-中间件代码：
-var once sync.Oncetype singleton struct &#123;&#125;var singleInstance *singletonfunc GetInstance() *singleton &#123;    if singleInstance == nil &#123;        once.Do(            func() &#123;                singleInstance = &amp;singleton&#123;&#125;            &#125;)    &#125;     return singleInstance&#125;
+    <title>250811-250817 周记 linux命令与shell编程学习(2)</title>
+    <url>/2025/08/19/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-2/</url>
+    <content><![CDATA[2. 第二部分 shell 脚本编程基础2.11 构建基础脚本2.11.2 创建 shell 脚本文件
+其中输入命令。 在创建 shell 脚本文件时,必须在文件的第一行指定要使用的 shell,格式如下:  #!&#x2F;bin&#x2F;bash  在普通的 shell 脚本中,#用作注释行。shell 并不会处理 shell 脚本中的注释行。然而,shell 脚本文件的第一行是个例外,#后面的惊叹号会告诉 shell 用哪个 shell 来运行脚本。(是的,可以使用 bash shell,然后使用另一个 shell 来运行你的脚本。)
+通过 chmod 命令(参见第 7 章)赋予文件属主执行文件的权限后，就可以直接./script.sh来运行脚本了。
 
-客户端代码：
-func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;           instance := GetInstance() // 每个goroutine都获取到相同的实例       &#125;()    &#125;&#125;
+2.11.3 显示消息
+如果在 echo 命令后面加上字符串,那么 echo 命令就会显示出这个字符串
+echo输出默认句末带一个换行符\n,可以使用-n选项取消换行符
+
+2.11.4 使用变量2.11.4.1 环境变量
+反斜线允许 shell 脚本按照字面意义解释$,而不是引用变量
+通过${variable}形式引用的变量。花括号通常用于帮助界定$后的变量名。
+
+2.11.4.2 用户自定义变量
+使用等号为变量赋值。在变量、等号和值之间不能出现空格
+shell 脚本会以字符串形式存储所有的变量值,脚本中的各个命令可以自行决定变量值的数据类型。
+shell 脚本中定义的变量在脚本的整个生命周期里会一直保持着它们的值,在脚本结束时会被删除。
+引用变量值时要加$,对变量赋值时则不用加$
+
+2.11.4.3 命令替换
+将命令输出赋给变量: var=$(command)或者: var=`command` 注意,赋值号和命令替换 符之间没有空格
+
+2.11.5 重定向输入和输出2.11.5.1 输出重定向
+最基本的重定向会将命令的输出发送至文件。bash shell 使用“&gt;”来实现该操作
+将命令输出追加到已有文件中：&gt;&gt;
+
+2.11.5.2 输入重定向
+输入重定向会将文件的内容作为命令的输入。使用“&lt;”来实现该操作 command &lt; inputfile
+一种简单的记忆方法是,在命令行中,命令总是在左侧,而重定向运算符“指向”数据流动的方向。小于号说明数据正在从输入文件流向命令。
+还有另外一种输入重定向的方法,称为内联输入重定向。这种方法 无须使用文件进行重定向,只需在命令行中指定用于输入重定向的数据即可。
+内联输入重定向的格式如下: command &lt;&lt; delimiter
+其中,delimiter 是一个用户定义的字符串,用于标识输入重定向的结束。
+内联输入重定向的工作原理是,shell 会将命令行中所有位于 delimiter 之前的文本作为命令的输入。例如：
 
 
 
-类图：
+$ wc &lt;&lt; EOF &gt; test string 1 &gt; test string 2 &gt; test string 3 &gt; EOF 
 
-    classDiagram
-    class singleton {
-        +GetInstance() singleton
-    }
-  ]]></content>
+
+因此可以在脚本中像这样用：
+
+cat &gt;&gt; $outfile &lt;&lt; EOF INSERT INTO members (lname,fname,address,city,state,zip) VALUES (&#x27;$lname&#x27;, &#x27;$fname&#x27;, &#x27;$address&#x27;, &#x27;$city&#x27;, &#x27;$state&#x27;, &#x27;$zip&#x27;); EOF
+
+
+快速地根据csv文件生成sql语句
+
+2.11.6 管道
+将一个命令的输出作为另一个命令的输入 command1 | command2
+实际上,Linux 系统会同时运行这两个命令, 在系统内部将二者连接起来。当第一个命令产生输出时,它会被立即传给第二个命令。数据传输 不会用到任何中间文件或缓冲区。
+管道可以串联的命令数量没有限制。可以持续地将命令输出通过管道传给其他命令来细化操作。
+
+
+2.11.7 执行数学运算2.11.7.2 使用括号
+要将数学运算结果赋给变量,使用var=$((expression))
+bash shell 的数学运算符只支持整数运算, z shell(zsh)提供了完整的浮点数操作。
+
+2.11.8 退出脚本2.11.8.1 查看退出状态码
+Linux 提供了专门的变量$?来保存最后一个已执行命令的退出状态码。
+按照惯例,对于成功结束的命令,其退出状态码是 0。对于因错误而结束的命令,其退出状态码是一个正整数。
+
+2.1.8.2 exit 命令
+exit 命令允许在脚本结束时指定一个退出状态码
+退出状态码必须是 0 到 255 之间的整数。如果指定了超出这个范围的值,则会自动对256取模。
+
+2.12 结构化命令2.12.1 使用 if-then 语句if command; then    commandsfi
+
+2.12.2 if-then-elseif command; then    commandselse    commandsfi
+
+2.12.3 if-then-elif-elseif command; then    commandselif command; then    commands(省略可能的多个elif语句)else    commandsfi
+
+2.12.4 test 命令
+bash shell 提供了另一种条件测试方式:
+
+if [ condition ]; then    commandsfi
+
+
+第一个方括号之后和第二个方括号之前必须留有空格
+
+2.12.4.1 数值比较
+
+
+比较
+描述
+
+
+
+n1 -eq n2
+检查 n1 是否等于 n2
+
+
+n1 -ge n2
+检查 n1 是否大于或等于 n2
+
+
+n1 -gt n2
+检查 n1 是否大于 n2
+
+
+n1 -le n2
+检查 n1 是否小于或等于 n2
+
+
+n1 -lt n2
+检查 n1 是否小于 n2
+
+
+n1 -ne n2
+检查 n1 是否不等于 n2
+
+
+2.12.4.2 字符串比较
+
+
+比较
+描述
+
+
+
+-z string
+检查字符串是否为空
+
+
+-n string
+检查字符串是否不为空
+
+
+string1 &#x3D; string2
+检查字符串是否相等
+
+
+string1 !&#x3D; string2
+检查字符串是否不相等
+
+
+string1 &lt; string2
+检查字符串是否小于 string2
+
+
+string1 &gt; string2
+检查字符串是否大于 string2
+
+
+
+测试表达式使用标准的数学比较符号来表示字符串比较,而用文本代码来表示数值比较。
+
+2.12.4.3 文件比较
+
+
+比较
+描述
+
+
+
+-e filename
+检查文件是否存在
+
+
+-f filename
+检查文件是否存在且是一个普通文件
+
+
+-d filename
+检查文件是否存在且是一个目录
+
+
+-r filename
+检查文件是否存在且可读
+
+
+-w filename
+检查文件是否存在且可写
+
+
+-x filename
+检查文件是否存在且可执行
+
+
+-s filename
+检查文件是否存在且非空
+
+
+filename1 -nt filename2
+检查 filename1 是否比 filename2 新
+
+
+filename1 -ot filename2
+检查 filename1 是否比 filename2 旧
+
+
+2.12.5 复合条件测试
+if-then 语句允许使用布尔逻辑将测试条件组合起来。可以使用以下两种布尔运算符：
+[ condition1 ] &amp;&amp; [ condition2 ] 
+[ condition1 ] || [ condition2 ]
+
+
+
+2.12.6 if-then 的高级特性2.12.6.1 使用单括号if (command); then    commandsfi
+
+
+单括号中的命令会在子 shell 中执行,而不是在当前 shell 中执行。
+单括号中的命令可以使用分号分隔多个命令。
+单括号中的命令可以使用反引号或美元符号引用变量。
+
+2.12.6.2 使用双括号if ((expression)); then    commandsfi
+
+
+双括号中的表达式可以使用的运算符：
+
+
+
+
+符号
+描述
+
+
+
+val++
+后增
+
+
+val–
+后减
+
+
+++val
+先增
+
+
+–val
+先减
+
+
+!
+逻辑求反
+
+
+~
+位求反
+
+
+**
+幂运算
+
+
+&lt;&lt;
+左位移
+
+
+&gt;&gt;
+右位移
+
+
+&amp;
+位布尔 AND
+
+
+|
+位布尔 OR
+
+
+&amp;&amp;
+逻辑 AND
+
+
+||
+逻辑 OR
+
+
+
+双括号命令既可以在 if 语句中使用,也可以在脚本中的普通命令里用来赋值
+双括号中表达式的大于号和小于号不用转义。这是双括号命令又一个优越性的体现。
+
+2.12.6.3 使用双方括号
+双方括号命令提供了针对字符串比较的高级特性
+
+if [[ expression ]]; then    commandsfi
+
+提供了 test 命令所不具备的另一个特性——模式匹配。
+双等号(&#x3D;&#x3D;)会将右侧的字符串视为一个模式并应用模式匹配规则。
+
+2.12.7 case 命令
+有了 case 命令,就无须再写大量的 elif 语句来检查同一个变量的值了。case 命令会采 用列表格式来检查变量的多个值:
+
+case variable in    pattern1)        commands        ;;    pattern2)        commands        ;;    *)        commands        ;;esac
+
+2.13 更多的结构化命令2.13.1 for 命令for variable in list; do    commandsdone
+
+2.13.1.2 读取列表中的复杂值
+for 循环假定各个值之间是 以空格分隔的。如果某个值含有空格, 则必须将其放入双引号内。
+
+2.13.1.5 更改字段分隔符
+IFS 环境变量定义了 bash shell 用作字段分隔符的一系列字符。在默认情况下,bash shell 会将下列字符视为字段分隔符。
+空格
+制表符
+换行符
+
+
+修改 IFS 环境变量可以改变 bash shell 用作字段分隔符的字符。修改 IFS 的值,使其只能识别换行符: IFS=$&#39;\n&#39;
+
+
+在 Bash 里，$’…’ 是 ANSI-C 风格的字符串，会识别 C 语言风格的转义符$’\n’ → 真正的换行符$’\t’ → 制表符（Tab）$’\x41’ → 字符 A
+
+
+在处理代码量较大的脚本时,可能在一个地方需要修改 IFS 的值,然后再将其恢复原状,而脚本的其他地方则继续沿用 IFS 的默认值。一种安全的做法是在修改 IFS 之前保存原来的 IFS 值,之后再恢复它。这种技术可以像下面这样来实现:IFS.OLD=$IFS IFS=$&#39;\n&#39;&lt;在代码中使用新的 IFS 值&gt;IFS=$IFS.OLD这就保证了在脚本的后续操作中使用的是 IFS 的默认值。
+
+2.13.1.6 使用通配符读取目录
+用 for 命令来自动遍历目录中的文件。
+在文件名或路径名中使用 通配符,这会强制 shell 使用文件名通配符匹配(file globbing)。
+
+for file in /path/*; do    commandsdone
+
+
+在 Linux 中,目录名和文件名中包含空格是完全合法的。要应对这种情况,应该将$file 变 量放入双引号内。否则,遇到含有空格的目录名或文件名时会产生错误
+
+
+可以在 for 命令中列出多个目录通配符
+
+for file in /path/* /path2/*; do    commandsdone
+
+2.13.2 C 语言风格的 for 命令
+bash 中仿 C 语言的 for 循环的基本格式如下:  for (( variable assignment ; condition ; iteration process )); do    commandsdone
+
+2.13.3 while 命令2.13.3.1 while 的基本格式while [ condition ]; do    commandsdone
+
+2.13.7 循环控制2.13.7.1 break 命令for var in list; do    commands    if [ condition ]; then        break    fidone
+
+2.13.7.2 continue 命令for var in list; do    commands    if [ condition ]; then        continue    fidone
+
+2.13.8 处理循环的输出
+对循环的输出使用管道或进行重定向。通过在 done 命令之后 添加一个处理命令来实现
+
+for var in list; do    commandsdone &gt; output.txt
+
+
+“|”以及”&lt;”都可以像这样用
+
+2.14 处理用户输入2.14.1 传递参数2.14.1.1 读取参数
+bash shell 会将所有的命令行参数都指派给称作位置参数(positional parameter)的特殊变量。 这也包括 shell 脚本名称。
+位置变量的名称都是标准数字:$0 对应脚本名,$1 对应第一个命令行参数,$2 对应第二个命令行参数,以此类推。
+
+2.14.1.2 读取脚本名
+basename 命令可以返回不包含路径的脚本名
+
+2.14.2 特殊参数变量2.14.2.1 参数统计
+$#含有脚本运行时携带的命令行参数的个数，不包含脚本名。
+$&#123;!#&#125; 代表了最后一个位置变量
+
+2.14.2.2 获取所有的数据
+$*变量和$@变量可以轻松访问所有参数,它们各自包含了所有的命令行参数
+$*变量会将所有的命令行参数视为一个单词。这个单词含有命令行中出现的每一个参数。 基本上,$*变量会将这些参数视为一个整体,而不是一系列个体。
+$@变量会将所有的命令行参数视为同一字符串中的多个独立的单词,以便你能遍历并处理全部参数。这通常使用 for 命令完成。
+
+2.14.3 移动参数
+shift 命令会将所有的位置参数向左移动。每个位置参数的变量名都会减 1。$1 会变成$0,$2 会变成$1,以此类推。被删除的参数会被丢弃。
+shift 命令可以接受一个可选的参数,用于指定要左移几位。默认情况下,它会将所有的位置参数向左移动一个位置。
+
+2.14.4.3 使用 getopts 命令
+getopts optstring variable
+getopts 命令要用到两个环境变量。如果选项需要加带参数值,那么 OPTARG 环境变量保存的就是这个值。OPTIND 环境变量保存着参数列表中 getopts 正在处理的参数位置。这样在处理完当前选项之后就能继续处理其他命令行参数了。使用举例：
+
+while getopts :ab: opt; do    case $opt in        a)            echo &quot;Option a&quot; ;;        b)            echo &quot;Option b with value $OPTARG&quot; ;;        \?)            echo &quot;Invalid option: -$opt&quot; ;;    esacdone
+
+
+在解析命令行选项时,getopts 命令会移 除起始的连字符,所以在 case 语句中不用连字符。
+选项字符串中的冒号(:)表示该选项需要一个参数值。
+
+2.14.6 获取用户输入2.14.6.1 基本的读取
+read 命令从标准输入(键盘)或另一个文件描述符中接受输入。获取输入后,read 命令会 将数据存入变量。read variable
+read 命令也提供了-p 选项,允许直接指定提示符:read -p &quot;Enter your name: &quot; name
+
+2.14.6.2 超时
+用-t 选项来指定一个计时器。-t 选项会指定 read 命令等待输入的 秒数。如果计时器超时,则 read 命令会返回非 0 退出状态码
+用-n 选项来指定 read 命令读取的字符数，read会在接收到设定个数的字符后自动退出。
+
+2.14.6.3 无显示读取
+-s 选项可以避免在 read 命令中输入的数据出现在屏幕上(其实数据还是会被显示,只不 过 read 命令将文本颜色设成了跟背景色一样)
+
+2.14.6.4 从文件中读取
+每次调用 read 命令都会从指定文件中读取一行文本。 当文件中没有内容可读时,read 命令会退出并返回非 0 退出状态码。
+
+while read line; do    echo $linedone &lt; input.txt
+
+2.15 呈现数据2.15.1 理解输入和输出
+
+
+文件描述符
+缩写
+描述
+
+
+
+0
+STDIN
+标准输入
+
+
+1
+STDOUT
+标准输出
+
+
+2
+STDERR
+标准错误
+
+
+
+shell 对于错误消息的处理是跟普通输出分开的。只使用“&gt;”重定向只能重定向标准输出,而不能重定向标准错误。
+在默认情况下,STDERR 和 STDOUT 指向同一个地方————显示器。
+
+2.15.1.2 重定向错误
+只重定向错误
+
+
+command 2&gt; &amp;1 2与“&gt;”必须紧挨着,否则无法正常工作
+
+
+重定向错误消息和正常输出
+
+
+如果想重定向错误消息和正常输出,则必须使用两个重定向符号。你需要在重定向符号之前 放上需要重定向的文件描述符,然后让它们指向用于保存数据的输出文件
+将 STDERR 和 STDOUT 的输出重定向到同一个文件：&amp;&gt;
+
+2.15.2 在脚本中重定向输出
+有意在脚本中生成错误消息,可以将单独的一行输出重定向到 STDERR: &gt;&amp;2 
+在重定向到文件描述符时,必须在文件 描述符索引值之前加一个&amp;
+可以理解为：0、1、2为文件描述符，而&amp;1、&amp;2、&amp;3为文件描述符所指代的具体的文件&#x2F;设备名。
+
+2.15.2.2 永久重定向
+exec 命令会告诉 shell 在脚本执行期间重定向某个特定文件描述符: exec 1&gt; output.txt。还可以用来创建新的文件描述符。exec 3&gt; testfile
+
+2.15.3 在脚本中重定向输入
+exec 命令允许将 STDIN 重定向为文件: exec 0&lt; input.txt
+只要脚本需要输入, 这个重定向就会起作用：
+
+exec 0&lt; testfile count=1  while read line; do     echo &quot;Line #$count: $line&quot;     count=$[ $count + 1 ] done
+
+2.15.4 创建自己的重定向2.15.4.2 重定向文件描述符
+恢复已重定向的文件描述符：
+
+exec 3&gt;&amp;1 exec 1&gt;test14out...exec 1&gt;&amp;3# 1恢复
+
+
+2.15.4.5 关闭文件描述符
+要关闭文件描述符,只需将其重定向到特殊符号&amp;-即可: exec 3&gt;&amp;-
+
+2.15.5 列出打开的文件描述符
+lsof 命令可以列出当前系统中打开的所有文件描述符。
+最常用的选项包括-p 和-d,前者允许指定进程 ID(PID),后者允许指定要显示的文件描述符编号(多个编号之间以逗号分隔)。
+$$: 当前进程的 PID
+lsof的默认输出：
+
+
+
+
+列
+描述
+
+
+
+COMMAND
+进程对应的命令名的前 9 个字符
+
+
+PID
+进程的 PID
+
+
+USER
+进程属主的登录名
+
+
+FD
+文件描述符编号以及访问类型(r 代表读,w 代表写,u 代表读&#x2F;写)
+
+
+TYPE
+文件的类型(CHR 代表字符型,BLK 代表块型,DIR 代表目录,REG 代表常规文件)
+
+
+DEVICE
+设备号(主设备号和从设备号)
+
+
+SIZE
+如果有的话,表示文件的大小
+
+
+NODE
+本地文件的节点号
+
+
+NAME
+文件名
+
+
+2.15.6 抑制命令输出
+重定向到 &#x2F;dev&#x2F;null 可以抑制命令的输出
+也可以在输入重定向中将&#x2F;dev&#x2F;null 作为输入文件，快速清除现有文件中的数据：cat /dev/null &gt; testfile
+
+2.15.7 使用临时文件2.15.7.1 创建本地临时文件
+mktemp 会在本地目录中创建一个文件。在使用 mktemp 命令时,只需指定 一个文件名模板即可。模板可以包含任意文本字符,同时在文件名末尾要加上 6 个 X。
+mktemp 命令会任意地将 6 个 X 替换为同等数量的字符,以保证文件名在目录中是唯一的。 你可以创建多个临时文件,并确保每个文件名都不重复
+mktemp 命令的输出正是它所创建的文件名。
+
+2.15.7.2 在&#x2F;tmp 目录中创建临时文件
+-t 选项会强制 mktemp 命令在系统的临时目录中创建文件。在使用这个特性时,mktemp 命令会返回所创建的临时文件的完整路径名,而不只是文件名
+
+2.15.7.3 创建临时目录
+-d 选项会告诉 mktemp 命令创建一个临时目录。你可以根据需要使用该目录,比如在其中 创建其他的临时文件
+
+2.15.8 记录消息
+tee 命令就像是连接管道的 T 型接头,它能将来自 STDIN 的数据同时送往两处。一处是 STDOUT,另一处是 tee 命令行所指定的文件名（这个文件不需要先前存在）
+配合管道命令来重定向命令输出: command | tee testfile
+tee 命令的 -a 选项会将输出追加到文件中,而不是覆盖文件内容
+
+2.16 脚本控制2.16.1 处理信号2.16.1.1 重温 Linux 信号
+
+
+信号值
+信号名
+描述
+
+
+
+1
+SIGHUP
+挂起(hang up)进程
+
+
+2
+SIGINT
+中断(interrupt)进程
+
+
+3
+SIGQUIT
+停止(stop)进程
+
+
+9
+SIGKILL
+无条件终止(terminate)进程
+
+
+15
+SIGTERM
+尽可能终止进程
+
+
+18
+SIGCONT
+继续运行停止的进程
+
+
+19
+SIGSTOP
+无条件停止,但不终止进程
+
+
+20
+SIGTSTP
+停止或暂停(pause),但不终止进程
+
+
+2.16.2 以后台模式运行脚本2.16.2.1 后台运行脚本
+以后台模式运行 shell 脚本非常简单,只需在脚本名后面加上&amp;即可
+
+2.16.3 在非控制台下运行脚本
+有时候,即便退出了终端会话,你也想在终端会话中启动 shell 脚本,让脚本一直以后台模 式运行到结束。这可以用 nohup 命令来实现
+nohup 命令能阻断发给特定进程的 SIGHUP 信号。当退出终端会话时,这可以避免进程退出
+nohup command
+
+2.16.4 作业控制2.16.4.1 查看作业
+jobs 是作业控制中的关键命令,该命令允许用户查看 shell 当前正在处理的作业
+可以使用 jobs 命令的-l 选项(小写字母 l)查看作业的 PID
+
+2.16.4.2 重启已停止的作业
+暂停： ^Z
+要以后台模式重启作业,可以使用 bg 命令
+如果存在多个作业,则需要在 bg 命令后加上作业号
+
+2.16.6 定时运行作业2.16.6.1 使用 at 命令调度作业
+at [-f filename] time。适用于计划运行少数几次。
+
+2.16.6.2 调度需要定期运行的脚本
+Linux 系统使用 cron 程序调度需要定期执行的作业。cron 在后台运行,并会检查一个特殊的 表(cron 时间表),从中获知已安排执行的作业
+cron 时间表通过一种特别的格式指定作业何时运行,其格式如下:minutepasthour hourofday dayofmonth month dayofweek command
+cron 时间表允许使用特定值、取值范围(比如 1-5)或者通配符(*)来指定各个字段。
+如果想在每天的 10:15 运行一个命令,可以使用如下 cron 时间表字段: 15 10 * * * command
+列出已有的 cron 时间表：crontab -l
+向cron 时间表添加字段： crontab -e, 然后添加15 10 * * * command
+保存并退出编辑器后, cron 会在指定的时间运行命令
+
+]]></content>
       <categories>
-        <category>Design Pattern</category>
+        <category>tool</category>
       </categories>
       <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>Singleton Pattern</tag>
-        <tag>go</tag>
+        <tag>shell</tag>
+        <tag>reading note</tag>
+        <tag>linux</tag>
+        <tag>Linux Command Line and Shell Scripting Bible</tag>
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking 埃氏筛</title>
-    <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
-    <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
-流程Prime(n):    mark i from 2 to n as prime (initial)    for i from 2 to n:            if i is marked as prime:                for j from i^2 to n with step i:                    mark j as not prime    return all marked primes
-
-解释：
-为什么是从$i^2$开始标记非质数？
-因为如果一个数不是质数，那么它一定有一个小于等于$\sqrt{n}$的质因子。
-所以，我们只需要从$i^2$开始标记，因为小于$i^2$的数，一定已经被小于$i$的数标记过了。
-
-
-
+    <title>250824 thinking Trie</title>
+    <url>/2025/08/24/250824-thinking-Trie/</url>
+    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
+C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
+class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
 ]]></content>
       <categories>
         <category>data structure &amp; algorithm</category>
@@ -1603,29 +1544,8 @@ func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;  
       <tags>
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
-        <tag>mathematics</tag>
-        <tag>sieve of Eratosthenes</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking 快速排序</title>
-    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
-    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
-1. 伪代码示例这里是从小到大的顺序排序。
-// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
-
-2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
-2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
-2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>quick sort</tag>
-        <tag>Hoare partition</tag>
+        <tag>string</tag>
+        <tag>Trie</tag>
       </tags>
   </entry>
   <entry>
@@ -1665,6 +1585,86 @@ vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
         <tag>Binary Tree</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking 埃氏筛</title>
+    <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
+    <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
+流程Prime(n):    mark i from 2 to n as prime (initial)    for i from 2 to n:            if i is marked as prime:                for j from i^2 to n with step i:                    mark j as not prime    return all marked primes
+
+解释：
+为什么是从$i^2$开始标记非质数？
+因为如果一个数不是质数，那么它一定有一个小于等于$\sqrt{n}$的质因子。
+所以，我们只需要从$i^2$开始标记，因为小于$i^2$的数，一定已经被小于$i$的数标记过了。
+
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>mathematics</tag>
+        <tag>sieve of Eratosthenes</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking singleton</title>
+    <url>/2025/08/24/250824-thinking-singleton/</url>
+    <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
+2. 为什么需要单例模式？在多线程环境下，我们需要多个线程使用同一份资源。
+2.1 为什么不使用全局变量？在一些较为简单的环境中，直接使用一些全局变量供所有线程使用是很好的。
+但是，如果这个对象是资源密集型的，使用全局变量会导致资源的浪费。而且，简单的全局变量没有提供访问控制（封装），线程可以任意地访问和修改。
+而单例模式就可以实现按需创建实例，避免了资源的浪费。而且提供了类封装，确保不会有意外的修改。
+3. 单例模式的实现（go）单例模式尤其要注意线程安全。 sync.Once 确保了实例只被创建一次，避免了多线程环境下的竞态条件。
+以下是一个懒加载的版本。
+中间件代码：
+var once sync.Oncetype singleton struct &#123;&#125;var singleInstance *singletonfunc GetInstance() *singleton &#123;    if singleInstance == nil &#123;        once.Do(            func() &#123;                singleInstance = &amp;singleton&#123;&#125;            &#125;)    &#125;     return singleInstance&#125;
+
+客户端代码：
+func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;           instance := GetInstance() // 每个goroutine都获取到相同的实例       &#125;()    &#125;&#125;
+
+
+
+类图：
+
+    classDiagram
+    class singleton {
+        +GetInstance() singleton
+    }
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>Singleton Pattern</tag>
+        <tag>go</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking 快速排序</title>
+    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
+    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
+1. 伪代码示例这里是从小到大的顺序排序。
+// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
+
+2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
+2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
+2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>quick sort</tag>
+        <tag>Hoare partition</tag>
       </tags>
   </entry>
   <entry>
@@ -2280,6 +2280,22 @@ americanFactory ..&gt; drink : CreateDrink()
       </tags>
   </entry>
   <entry>
+    <title>251012 record best-time-to-buy-and-sell-stock</title>
+    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
+    <content><![CDATA[题目
+int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
+
+这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
+]]></content>
+      <categories>
+        <category>record</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>Record</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251006-251012 weekly Qt</title>
     <url>/2025/10/12/251006-251012-weekly-Qt/</url>
     <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
@@ -2315,22 +2331,6 @@ QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒�
         <tag>Projects</tag>
         <tag>C++</tag>
         <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 record best-time-to-buy-and-sell-stock</title>
-    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
-    <content><![CDATA[题目
-int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
-
-这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
-]]></content>
-      <categories>
-        <category>record</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>Record</tag>
       </tags>
   </entry>
   <entry>
@@ -2491,6 +2491,41 @@ l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    
       </tags>
   </entry>
   <entry>
+    <title>251017-thinking-prototype</title>
+    <url>/2025/10/17/251017-thinking-prototype/</url>
+    <content><![CDATA[1. 什么是原型模式？一言以蔽之，原型模式（Prototype Pattern）是一种创建型设计模式，它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。
+2. 为什么需要原型模式？正如上述，原型模式的主要优势在于它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。这使得原型模式在需要快速创建多个相同对象的场景下非常有用，例如在游戏开发中创建多个相同类型的敌人实例。
+3. 原型模式的实现（go）原型模式提供prototype接口，主要需要实现Clone方法，该方法返回一个与已有实例完全一致的新的实例。
+中间件代码示例：
+type prototype interface &#123;    Clone() prototype&#125;type concreteType struct &#123;    // ...构造参数&#125;func (c *concreteType) Clone() prototype &#123;    return &amp;concreteType&#123;        // ...构造参数    &#125;   &#125;
+
+客户端使用：
+func main() &#123;    // 创建一个原型实例    instance := &amp;concreteType&#123;        // ...构造参数    &#125;    // 使用Clone方法创建一个新的实例    newInstance := &amp;instance.Clone().(concreteType)&#125;
+
+类图：
+
+    classDiagram
+class prototype {
+    &lt;&lt;interface&gt;&gt;
+    +Clone() prototype
+}
+class concreteType {
+    &#x2F;&#x2F; ...构造参数
+}
+prototype &lt;|.. concreteType
+  
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Prototype Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251018 thinking adapter</title>
     <url>/2025/10/18/251018-thinking-adapter/</url>
     <content><![CDATA[1. 什么是适配器模式？适配器模式（Adapter Pattern）是一种结构型设计模式，它允许将一个类的接口转换为客户端期望的另一个接口。适配器模式使得原本由于接口不兼容而不能一起工作的类可以协同工作。
@@ -2545,41 +2580,6 @@ func main() &#123;    // 创建被适配的对象    awesomePlayer := &amp;Aweso
         <tag>Design Pattern</tag>
         <tag>go</tag>
         <tag>Adapter Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251017-thinking-prototype</title>
-    <url>/2025/10/17/251017-thinking-prototype/</url>
-    <content><![CDATA[1. 什么是原型模式？一言以蔽之，原型模式（Prototype Pattern）是一种创建型设计模式，它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。
-2. 为什么需要原型模式？正如上述，原型模式的主要优势在于它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。这使得原型模式在需要快速创建多个相同对象的场景下非常有用，例如在游戏开发中创建多个相同类型的敌人实例。
-3. 原型模式的实现（go）原型模式提供prototype接口，主要需要实现Clone方法，该方法返回一个与已有实例完全一致的新的实例。
-中间件代码示例：
-type prototype interface &#123;    Clone() prototype&#125;type concreteType struct &#123;    // ...构造参数&#125;func (c *concreteType) Clone() prototype &#123;    return &amp;concreteType&#123;        // ...构造参数    &#125;   &#125;
-
-客户端使用：
-func main() &#123;    // 创建一个原型实例    instance := &amp;concreteType&#123;        // ...构造参数    &#125;    // 使用Clone方法创建一个新的实例    newInstance := &amp;instance.Clone().(concreteType)&#125;
-
-类图：
-
-    classDiagram
-class prototype {
-    &lt;&lt;interface&gt;&gt;
-    +Clone() prototype
-}
-class concreteType {
-    &#x2F;&#x2F; ...构造参数
-}
-prototype &lt;|.. concreteType
-  
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Prototype Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -2660,67 +2660,37 @@ func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#12
       </tags>
   </entry>
   <entry>
-    <title>251018 thinking flyweight</title>
-    <url>/2025/10/31/251018-thinking-flyweight/</url>
-    <content><![CDATA[1. 什么是享元模式享元模式是一种结构型设计模式，它通过共享相同状态的对象来减少内存占用和提高性能。
-2. 为什么需要享元模式我们用一个“在地图上种树”的例子来理解。
-2.1. 问题：内存爆炸假设要在地图上种 100 万棵树。每棵树都有：
+    <title>251018 thinking composite</title>
+    <url>/2025/10/25/251018-thinking-composite/</url>
+    <content><![CDATA[1. 什么是组合模式组合模式（Composite Pattern）是一种结构型设计模式，它允许你将对象组合成树形结构以表示“部分-整体”的层次关系。组合模式使得客户端可以统一地处理个别对象和对象组合。
+2. 为什么需要组合模式组合最主要的功能是在整个树状结构上递归调用方法并对结果进行汇总。
+3. 组合模式的实现（go）假定一个文件系统，其中包含文件和目录。目录可以包含其他文件和目录。
+现在我们需要搜索文件系统中是否包含某个文件。
+type Component interface &#123;	Search(keyword string)&#125;type Directory struct &#123;	Name     string	children []Component&#125;func (d *Directory) Search(keyword string) &#123;	if d.Name == keyword &#123;		fmt.Println(&quot;find directory:&quot;, d.Name)		return	&#125;	for _, child := range d.children &#123;		child.Search(keyword)	&#125;&#125;// add 方法用于添加子组件func (d *Directory) Add(child Component) &#123;	d.children = append(d.children, child)&#125;type File struct &#123;	Name string&#125;func (f *File) Search(keyword string) &#123;	if f.Name == keyword &#123;		fmt.Println(&quot;find file:&quot;, f.Name)		return	&#125;&#125;
 
-**坐标(x, y)**：每棵树都不同。
-类型信息：如名称（松树）、颜色（绿色）、纹理图片等。类型是有限的，比如只有几种。
+客户端代码
+func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;    dir1 := &amp;Directory&#123;Name: &quot;dir1&quot;&#125;    dir2 := &amp;Directory&#123;Name: &quot;dir2&quot;&#125;    file1 := &amp;File&#123;Name: &quot;file1&quot;&#125;    file2 := &amp;File&#123;Name: &quot;file2&quot;&#125;    root.Add(dir1)    root.Add(dir2)    dir1.Add(file1)    dir2.Add(file2)    root.Search(&quot;file1&quot;)    root.Search(&quot;file2&quot;)    root.Search(&quot;dir1&quot;)    root.Search(&quot;dir2&quot;)&#125;   
 
-如果为每棵树都创建一个包含所有信息的对象，Texture（纹理图片）这份可能很大的数据会被重复存储 100 万次，导致内存爆炸。
-// 传统方式：每个对象都包含所有数据type Tree struct &#123;	X, Y      int	Name      string	Color     string	Texture   []byte // 假设这份数据很大&#125;
-
-该如何解决这个问题？
-2.2. 方案：享元模式享元模式的核心是分离并共享相似对象中的共同部分，以减少内存占用。
-我们将对象的状态分为两种：
-
-**内部状态 (Intrinsic State)**：可共享、不随环境改变的部分。在例子中是 Name, Color, Texture。
-**外部状态 (Extrinsic State)**：不可共享、随环境改变的部分。在例子中是 X, Y 坐标。
-
-实现步骤是创建享元对象（内部状态），通过享元工厂来复用它，并让上下文对象（外部状态）持有对享元的引用。
-// 1. 享元对象：存储共享的【内部状态】type treeType struct &#123;	Name    string	Color   string	Texture []byte // 这份数据被共享&#125;// 2. 享元工厂：确保相同类型的享元只创建一次type treeTypeFactory struct &#123;	types map[string]*treeType&#125;func (f *treeTypeFactory) GetTreeType(name, color string, texture []byte) *treeType &#123;	key := name + &quot;_&quot; + color	if t, ok := f.types[key]; ok &#123;		return t // 已存在，直接返回	&#125;	// 不存在，创建新的并存起来	newType := &amp;treeType&#123;name, color, texture&#125;	f.types[key] = newType	return newType&#125;// 3. 上下文对象：存储【外部状态】和对享元的引用type Tree struct &#123;	X, Y int	Type *treeType // 指向共享的享元对象&#125;type Forest struct &#123;	trees   []*Tree	factory *treeTypeFactory&#125;func (f *Forest) SetFactory() &#123;	f.factory = &amp;treeTypeFactory&#123;		types: make(map[string]*treeType),	&#125;&#125;func (f *Forest) PlantTree(x, y int, name, color string, texture []byte) &#123;	// 从工厂获取共享的 treeType	treeType := f.factory.GetTreeType(name, color, texture)	// 创建 Tree，只存储外部状态和引用	tree := &amp;Tree&#123;X: x, Y: y, Type: treeType&#125;	f.trees = append(f.trees, tree)&#125;func (f *Forest) GetTrees() []*Tree &#123;	return f.trees&#125;
-
-通过这种方式，TreeType 对象（比如“松树”）只会在内存中存在一份，所有松树实例都共享它。内存占用问题迎刃而解。
-
-
-对于某个类 A 的一些在不同实例中基本相同的属性，我们把它们单独拿出来形成一个类 B，并由一个缓存池（享元工厂）来管理。
-新建 A 时，先在缓存池中查找是否已有相同的 B 实例，如果有就复用它，否则创建新的并放入池中。
-最终表现为：多个 A 实例共享同一个 B 对象。
-
-
-3. 享元模式的实现（go）如上。
-类图：
+类图
 
     classDiagram
-    class Forest {
-        -trees: []*Tree
-        -factory: *treeTypeFactory
-        +SetFactory()
-        +PlantTree(x, y, name, color, texture)
-        +GetTrees(): []*Tree
+    class Component {
+        &lt;&lt;interface&gt;&gt;
+        +Search(keyword string)
     }
-    class treeTypeFactory {
-        -types: map[string]*treeType
-        +GetTreeType(name, color, texture): *treeType
+    class Directory {
+        +Name string
+        -children []Component
+        +Add(child Component)
+        +Search(keyword string)
     }
-    class Tree {
-        +X: int
-        +Y: int
-        +Type: *treeType
+    class File {
+        +Name string
+        +Search(keyword string)
     }
-    class treeType {
-        &lt;&lt;Flyweight&gt;&gt;
-        +Name: string
-        +Color: string
-        +Texture: []byte
-    }
-
-    Forest &quot;1&quot; --o &quot;1&quot; treeTypeFactory : uses
-    Forest &quot;1&quot; --* &quot;0..*&quot; Tree : contains
-    Tree &quot;1&quot; --o &quot;1&quot; treeType : references
-    treeTypeFactory &quot;1&quot; ..&gt; &quot;0..*&quot; treeType : creates &amp; manages
+    Component &lt;|.. Directory
+    Component &lt;|.. File
+    Directory &quot;1&quot; o-- &quot;n&quot; Component
   
 ]]></content>
       <categories>
@@ -2729,7 +2699,8 @@ func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#12
       <tags>
         <tag>Design Pattern</tag>
         <tag>go</tag>
-        <tag>Flyweight Pattern</tag>
+        <tag>Composite Pattern</tag>
+        <tag>Interface Oriented Design</tag>
       </tags>
   </entry>
   <entry>
@@ -2780,107 +2751,8 @@ func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeD
       <tags>
         <tag>Design Pattern</tag>
         <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
         <tag>Decorator Pattern</tag>
-        <tag>Interface Oriented Design</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251018 thinking composite</title>
-    <url>/2025/10/25/251018-thinking-composite/</url>
-    <content><![CDATA[1. 什么是组合模式组合模式（Composite Pattern）是一种结构型设计模式，它允许你将对象组合成树形结构以表示“部分-整体”的层次关系。组合模式使得客户端可以统一地处理个别对象和对象组合。
-2. 为什么需要组合模式组合最主要的功能是在整个树状结构上递归调用方法并对结果进行汇总。
-3. 组合模式的实现（go）假定一个文件系统，其中包含文件和目录。目录可以包含其他文件和目录。
-现在我们需要搜索文件系统中是否包含某个文件。
-type Component interface &#123;	Search(keyword string)&#125;type Directory struct &#123;	Name     string	children []Component&#125;func (d *Directory) Search(keyword string) &#123;	if d.Name == keyword &#123;		fmt.Println(&quot;find directory:&quot;, d.Name)		return	&#125;	for _, child := range d.children &#123;		child.Search(keyword)	&#125;&#125;// add 方法用于添加子组件func (d *Directory) Add(child Component) &#123;	d.children = append(d.children, child)&#125;type File struct &#123;	Name string&#125;func (f *File) Search(keyword string) &#123;	if f.Name == keyword &#123;		fmt.Println(&quot;find file:&quot;, f.Name)		return	&#125;&#125;
-
-客户端代码
-func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;    dir1 := &amp;Directory&#123;Name: &quot;dir1&quot;&#125;    dir2 := &amp;Directory&#123;Name: &quot;dir2&quot;&#125;    file1 := &amp;File&#123;Name: &quot;file1&quot;&#125;    file2 := &amp;File&#123;Name: &quot;file2&quot;&#125;    root.Add(dir1)    root.Add(dir2)    dir1.Add(file1)    dir2.Add(file2)    root.Search(&quot;file1&quot;)    root.Search(&quot;file2&quot;)    root.Search(&quot;dir1&quot;)    root.Search(&quot;dir2&quot;)&#125;   
-
-类图
-
-    classDiagram
-    class Component {
-        &lt;&lt;interface&gt;&gt;
-        +Search(keyword string)
-    }
-    class Directory {
-        +Name string
-        -children []Component
-        +Add(child Component)
-        +Search(keyword string)
-    }
-    class File {
-        +Name string
-        +Search(keyword string)
-    }
-    Component &lt;|.. Directory
-    Component &lt;|.. File
-    Directory &quot;1&quot; o-- &quot;n&quot; Component
-  
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Interface Oriented Design</tag>
-        <tag>Composite Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251018 thinking facade</title>
-    <url>/2025/10/25/251018-thinking-facade/</url>
-    <content><![CDATA[1. 什么是外观模式外观模式是一种结构型设计模式， 能为程序库、 框架或其他复杂类提供一个简单的接口。
-2. 为什么需要外观模式外观模式的主要目的是简化复杂系统的使用。它通过提供一个简单的接口，隐藏系统的复杂性，使客户端代码更易于理解和使用。
-3. 外观模式的实现（go）以计算机开机为例，展示外观模式的实现。
-// 子系统：CPUtype CPU struct&#123;&#125;func (c *CPU) Start()    &#123; fmt.Println(&quot;CPU: start&quot;) &#125;func (c *CPU) Shutdown() &#123; fmt.Println(&quot;CPU: shutdown&quot;) &#125;// 子系统：内存type Memory struct&#123;&#125;func (m *Memory) LoadOS() &#123; fmt.Println(&quot;Memory: load OS into memory&quot;) &#125;func (m *Memory) Clear()  &#123; fmt.Println(&quot;Memory: clear&quot;) &#125;// 子系统：磁盘type Disk struct&#123;&#125;func (d *Disk) ReadBootSector() &#123; fmt.Println(&quot;Disk: read boot sector&quot;) &#125;// 外观：计算机type ComputerFacade struct &#123;	cpu  *CPU	mem  *Memory	disk *Disk&#125;func NewComputerFacade() *ComputerFacade &#123;	return &amp;ComputerFacade&#123;		cpu:  &amp;CPU&#123;&#125;,		mem:  &amp;Memory&#123;&#125;,		disk: &amp;Disk&#123;&#125;,	&#125;&#125;// 对外暴露的简化接口：开机流程func (c *ComputerFacade) PowerOn() &#123;	fmt.Println(&quot;== PowerOn ==&quot;)	c.disk.ReadBootSector()	c.cpu.Start()	c.mem.LoadOS()	fmt.Println(&quot;System is up.&quot;)&#125;// 对外暴露的简化接口：关机流程func (c *ComputerFacade) PowerOff() &#123;	fmt.Println(&quot;== PowerOff ==&quot;)	c.cpu.Shutdown()	c.mem.Clear()	fmt.Println(&quot;System is down.&quot;)&#125;
-
-客户端
-func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
-
-类图
-
-    classDiagram
-    class CPU {
-        +Start()
-        +Shutdown()
-    }
-    class Memory {
-        +LoadOS()
-        +Clear()
-    }
-    class Disk {
-        +ReadBootSector()
-    }
-    class ComputerFacade {
-        -cpu: CPU
-        -mem: Memory
-        -disk: Disk
-        +NewComputerFacade()
-        +PowerOn()
-        +PowerOff()
-    }
-    ComputerFacade *-- CPU : uses
-    ComputerFacade *-- Memory : uses
-    ComputerFacade *-- Disk : uses
-    ComputerFacade ..&gt; CPU : Start()
-    ComputerFacade ..&gt; Memory : LoadOS()
-    ComputerFacade ..&gt; Disk : ReadBootSector()
-    ComputerFacade ..&gt; CPU : Shutdown()
-    ComputerFacade ..&gt; Memory : Clear()
-  
-
-
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Interface Oriented Design</tag>
-        <tag>Facade Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -3210,5 +3082,133 @@ func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
       <categories>
         <category>record</category>
       </categories>
+  </entry>
+  <entry>
+    <title>251031 thinking flyweight</title>
+    <url>/2025/10/31/251031-thinking-flyweight/</url>
+    <content><![CDATA[1. 什么是享元模式享元模式是一种结构型设计模式，它通过共享相同状态的对象来减少内存占用和提高性能。
+2. 为什么需要享元模式我们用一个“在地图上种树”的例子来理解。
+2.1. 问题：内存爆炸假设要在地图上种 100 万棵树。每棵树都有：
+
+**坐标(x, y)**：每棵树都不同。
+类型信息：如名称（松树）、颜色（绿色）、纹理图片等。类型是有限的，比如只有几种。
+
+如果为每棵树都创建一个包含所有信息的对象，Texture（纹理图片）这份可能很大的数据会被重复存储 100 万次，导致内存爆炸。
+// 传统方式：每个对象都包含所有数据type Tree struct &#123;	X, Y      int	Name      string	Color     string	Texture   []byte // 假设这份数据很大&#125;
+
+该如何解决这个问题？
+2.2. 方案：享元模式享元模式的核心是分离并共享相似对象中的共同部分，以减少内存占用。
+我们将对象的状态分为两种：
+
+**内部状态 (Intrinsic State)**：可共享、不随环境改变的部分。在例子中是 Name, Color, Texture。
+**外部状态 (Extrinsic State)**：不可共享、随环境改变的部分。在例子中是 X, Y 坐标。
+
+实现步骤是创建享元对象（内部状态），通过享元工厂来复用它，并让上下文对象（外部状态）持有对享元的引用。
+// 1. 享元对象：存储共享的【内部状态】type treeType struct &#123;	Name    string	Color   string	Texture []byte // 这份数据被共享&#125;// 2. 享元工厂：确保相同类型的享元只创建一次type treeTypeFactory struct &#123;	types map[string]*treeType&#125;func (f *treeTypeFactory) GetTreeType(name, color string, texture []byte) *treeType &#123;	key := name + &quot;_&quot; + color	if t, ok := f.types[key]; ok &#123;		return t // 已存在，直接返回	&#125;	// 不存在，创建新的并存起来	newType := &amp;treeType&#123;name, color, texture&#125;	f.types[key] = newType	return newType&#125;// 3. 上下文对象：存储【外部状态】和对享元的引用type Tree struct &#123;	X, Y int	Type *treeType // 指向共享的享元对象&#125;type Forest struct &#123;	trees   []*Tree	factory *treeTypeFactory&#125;func (f *Forest) SetFactory() &#123;	f.factory = &amp;treeTypeFactory&#123;		types: make(map[string]*treeType),	&#125;&#125;func (f *Forest) PlantTree(x, y int, name, color string, texture []byte) &#123;	// 从工厂获取共享的 treeType	treeType := f.factory.GetTreeType(name, color, texture)	// 创建 Tree，只存储外部状态和引用	tree := &amp;Tree&#123;X: x, Y: y, Type: treeType&#125;	f.trees = append(f.trees, tree)&#125;func (f *Forest) GetTrees() []*Tree &#123;	return f.trees&#125;
+
+通过这种方式，TreeType 对象（比如“松树”）只会在内存中存在一份，所有松树实例都共享它。内存占用问题迎刃而解。
+
+
+对于某个类 A 的一些在不同实例中基本相同的属性，我们把它们单独拿出来形成一个类 B，并由一个缓存池（享元工厂）来管理。
+新建 A 时，先在缓存池中查找是否已有相同的 B 实例，如果有就复用它，否则创建新的并放入池中。
+最终表现为：多个 A 实例共享同一个 B 对象。
+
+
+3. 享元模式的实现（go）如上。
+类图：
+
+    classDiagram
+    class Forest {
+        -trees: []*Tree
+        -factory: *treeTypeFactory
+        +SetFactory()
+        +PlantTree(x, y, name, color, texture)
+        +GetTrees(): []*Tree
+    }
+    class treeTypeFactory {
+        -types: map[string]*treeType
+        +GetTreeType(name, color, texture): *treeType
+    }
+    class Tree {
+        +X: int
+        +Y: int
+        +Type: *treeType
+    }
+    class treeType {
+        &lt;&lt;Flyweight&gt;&gt;
+        +Name: string
+        +Color: string
+        +Texture: []byte
+    }
+
+    Forest &quot;1&quot; --o &quot;1&quot; treeTypeFactory : uses
+    Forest &quot;1&quot; --* &quot;0..*&quot; Tree : contains
+    Tree &quot;1&quot; --o &quot;1&quot; treeType : references
+    treeTypeFactory &quot;1&quot; ..&gt; &quot;0..*&quot; treeType : creates &amp; manages
+  
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Flyweight Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251025 thinking facade</title>
+    <url>/2025/10/25/251025-thinking-facade/</url>
+    <content><![CDATA[1. 什么是外观模式外观模式是一种结构型设计模式， 能为程序库、 框架或其他复杂类提供一个简单的接口。
+2. 为什么需要外观模式外观模式的主要目的是简化复杂系统的使用。它通过提供一个简单的接口，隐藏系统的复杂性，使客户端代码更易于理解和使用。
+3. 外观模式的实现（go）以计算机开机为例，展示外观模式的实现。
+// 子系统：CPUtype CPU struct&#123;&#125;func (c *CPU) Start()    &#123; fmt.Println(&quot;CPU: start&quot;) &#125;func (c *CPU) Shutdown() &#123; fmt.Println(&quot;CPU: shutdown&quot;) &#125;// 子系统：内存type Memory struct&#123;&#125;func (m *Memory) LoadOS() &#123; fmt.Println(&quot;Memory: load OS into memory&quot;) &#125;func (m *Memory) Clear()  &#123; fmt.Println(&quot;Memory: clear&quot;) &#125;// 子系统：磁盘type Disk struct&#123;&#125;func (d *Disk) ReadBootSector() &#123; fmt.Println(&quot;Disk: read boot sector&quot;) &#125;// 外观：计算机type ComputerFacade struct &#123;	cpu  *CPU	mem  *Memory	disk *Disk&#125;func NewComputerFacade() *ComputerFacade &#123;	return &amp;ComputerFacade&#123;		cpu:  &amp;CPU&#123;&#125;,		mem:  &amp;Memory&#123;&#125;,		disk: &amp;Disk&#123;&#125;,	&#125;&#125;// 对外暴露的简化接口：开机流程func (c *ComputerFacade) PowerOn() &#123;	fmt.Println(&quot;== PowerOn ==&quot;)	c.disk.ReadBootSector()	c.cpu.Start()	c.mem.LoadOS()	fmt.Println(&quot;System is up.&quot;)&#125;// 对外暴露的简化接口：关机流程func (c *ComputerFacade) PowerOff() &#123;	fmt.Println(&quot;== PowerOff ==&quot;)	c.cpu.Shutdown()	c.mem.Clear()	fmt.Println(&quot;System is down.&quot;)&#125;
+
+客户端
+func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
+
+类图
+
+    classDiagram
+    class CPU {
+        +Start()
+        +Shutdown()
+    }
+    class Memory {
+        +LoadOS()
+        +Clear()
+    }
+    class Disk {
+        +ReadBootSector()
+    }
+    class ComputerFacade {
+        -cpu: CPU
+        -mem: Memory
+        -disk: Disk
+        +NewComputerFacade()
+        +PowerOn()
+        +PowerOff()
+    }
+    ComputerFacade *-- CPU : uses
+    ComputerFacade *-- Memory : uses
+    ComputerFacade *-- Disk : uses
+    ComputerFacade ..&gt; CPU : Start()
+    ComputerFacade ..&gt; Memory : LoadOS()
+    ComputerFacade ..&gt; Disk : ReadBootSector()
+    ComputerFacade ..&gt; CPU : Shutdown()
+    ComputerFacade ..&gt; Memory : Clear()
+  
+
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Facade Pattern</tag>
+      </tags>
   </entry>
 </search>
