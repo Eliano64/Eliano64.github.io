@@ -1,0 +1,312 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>250714-250720 周记 2024-xv6-labs(2) | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="本周完成了剩下的实验。上一篇见2024-xv6-labs-1 1. net lab1.1 NIC第一个实验是补全e1000_transmit() 和 e1000_recv() 重点在于先要理解e1000初始化的代码，以及e1000_dev.h里给出的各寄存器的定义。 然后理清一下工作流程：transmit所做的，其实就是将发送区和发送环的尾部更新为带发送的数据对应的元数据。注意此时status应为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="250714-250720 周记 2024-xv6-labs(2)">
+<meta property="og:url" content="https://eliano64.github.io/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="本周完成了剩下的实验。上一篇见2024-xv6-labs-1 1. net lab1.1 NIC第一个实验是补全e1000_transmit() 和 e1000_recv() 重点在于先要理解e1000初始化的代码，以及e1000_dev.h里给出的各寄存器的定义。 然后理清一下工作流程：transmit所做的，其实就是将发送区和发送环的尾部更新为带发送的数据对应的元数据。注意此时status应为">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2025-07-21T07:23:00.000Z">
+<meta property="article:modified_time" content="2025-07-22T14:09:19.535Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="C">
+<meta property="article:tag" content="Projects">
+<meta property="article:tag" content="Operating System">
+<meta property="article:tag" content="2024-xv6-labs">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "250714-250720 周记 2024-xv6-labs(2)",
+  "url": "https://eliano64.github.io/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2025-07-21T07:23:00.000Z",
+  "dateModified": "2025-07-22T14:09:19.535Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://eliano64.github.io/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '250714-250720 周记 2024-xv6-labs(2)',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">34</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">52</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">250714-250720 周记 2024-xv6-labs(2)</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">250714-250720 周记 2024-xv6-labs(2)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-07-21T07:23:00.000Z" title="发表于 2025-07-21 15:23:00">2025-07-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-07-22T14:09:19.535Z" title="更新于 2025-07-22 22:09:19">2025-07-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/2024-xv6-labs/">2024-xv6-labs</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.5k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>本周完成了剩下的实验。上一篇见<a href="https://eliano64.github.io/2025/07/14/250707-250714-%E5%91%A8%E8%AE%B0-2024-xv6-labs-1/">2024-xv6-labs-1</a></p>
+<h1 id="1-net-lab"><a href="#1-net-lab" class="headerlink" title="1. net lab"></a>1. net lab</h1><h2 id="1-1-NIC"><a href="#1-1-NIC" class="headerlink" title="1.1 NIC"></a>1.1 NIC</h2><p>第一个实验是补全<code>e1000_transmit()</code> 和 <code>e1000_recv()</code></p>
+<p>重点在于先要理解e1000初始化的代码，以及<code>e1000_dev.h</code>里给出的各寄存器的定义。</p>
+<p>然后理清一下工作流程：<br>transmit所做的，其实就是将发送区和发送环的尾部更新为带发送的数据对应的元数据。注意此时<code>status</code>应为0而不是<code>E1000_TXD_STAT_DD</code>，因为这只是代表将数据填入发送<strong>区</strong>，并没有<strong>真正发送</strong>。然后更新<code>E100_TDT</code>的值。但为了防止竞态条件，所以还要注意用<code>e1000_lock</code>加锁。</p>
+<p>而receive所做的就是以帧为单位，不断地将缓冲区里的数据交给<code>net_rx()</code>，并更新缓冲区和<code>E1000_RDT</code>，直到遇见<code>E1000_RXD_STAT_DD</code>。这里不用加锁，但值得注意的是<code>E1000_RDT</code><strong>必须在最后</strong>更新？<em>想不通。</em></p>
+<h2 id="1-2-UDP-Receive"><a href="#1-2-UDP-Receive" class="headerlink" title="1.2 UDP Receive"></a>1.2 UDP Receive</h2><p>说来惭愧，这个部分我实在没有思路，是让ai写的。。。</p>
+<h1 id="2-lock"><a href="#2-lock" class="headerlink" title="2. lock"></a>2. lock</h1><h2 id="2-1-Memory-allocator"><a href="#2-1-Memory-allocator" class="headerlink" title="2.1 Memory allocator"></a>2.1 Memory allocator</h2><p>这里需要做的，就是<code>kinit</code>初始化内存管理的数据结构时，是初始化<code>kmem[NCPU]</code>而不是<em>单个</em><code>kmem</code>，即通过<strong>格式化字符串</strong>的方式为每个<code>kmem</code>分配一把锁。然后其他跟单个<code>kmem</code>几乎一致。但是在<code>kalloc</code>里，如果某个<code>kmem</code>没有空闲页了，应找一个还有空闲页的<code>kmem</code>，拿一页进行分配。</p>
+<p>注意在调用<code>cpuid</code>取当前cpu的id的时候要<code>push_off()</code>关中断，调用完毕要<code>pop_off()</code>重新开启。</p>
+<p>但这个实验部分我个人觉得很有意思的就是<strong>格式化字符串</strong>。</p>
+<h2 id="2-2-Buffer-cache"><a href="#2-2-Buffer-cache" class="headerlink" title="2.2 Buffer cache"></a>2.2 Buffer cache</h2><p>这个题虽然是红题。但实际上本质并不复杂，它实际上说的是：</p>
+<p><strong>原有一个链表和一把大锁，可是这样太低效了，因为需要进行修改的可能是两个不同的节点，没有必要一把大锁把全局锁死。于是使用哈希表，将大链表拆成多个小链表分别存入每个哈希桶里，然后对每个哈希桶给予锁。这样需要进行修改的若是两个不同的节点，则可以实现并发了。</strong></p>
+<p>将原<code>bcache</code>的定义改为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">bucket</span>&#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">spinlock</span> <span class="title">lock</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// Linked list of all buffers, through prev/next.</span></span><br><span class="line">  <span class="comment">// Sorted by how recently the buffer was used.</span></span><br><span class="line">  <span class="comment">// head.next is most recent, head.prev is least.</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">buf</span> <span class="title">head</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">bucket</span> <span class="title">table</span>[<span class="title">NHASH</span>];</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">buf</span> <span class="title">buf</span>[<span class="title">NBUF</span>];</span></span><br><span class="line">&#125; bcache;</span><br></pre></td></tr></table></figure>
+
+<p>然后修改下面的代码，使其符合这个新数据结构即可。。。</p>
+<p><strong>才怪！！！🤣🤣🤣</strong></p>
+<p>还得有一步，否则<code>panic: bget: no buffers</code>：</p>
+<p>因为初始化时候，所有的缓存区都在同一个桶里，<strong>其他桶全为空！</strong></p>
+<p>此时就应该像上一题一样，从<code>key</code>对应的桶处“偷”一块缓存：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">b-&gt;next-&gt;prev = b-&gt;prev;</span><br><span class="line">b-&gt;prev-&gt;next = b-&gt;next;</span><br><span class="line">release(&amp;bcache.table[key].lock);</span><br><span class="line">acquire(&amp;bcache.table[gethash(blockno)].lock);</span><br><span class="line">b-&gt;next = bcache.table[gethash(blockno)].head.next;</span><br><span class="line">b-&gt;prev = &amp;bcache.table[gethash(blockno)].head;</span><br><span class="line">bcache.table[gethash(blockno)].head.next-&gt;prev = b;</span><br><span class="line">bcache.table[gethash(blockno)].head.next = b;</span><br><span class="line">release(&amp;bcache.table[gethash(blockno)].lock);</span><br></pre></td></tr></table></figure>
+
+<h1 id="3-fs"><a href="#3-fs" class="headerlink" title="3. fs"></a>3. fs</h1><p>这个实验很奇怪，<code>make grade</code>时会因为<code>qemu-system-riscv64: terminating on signal 15 from pid xxxx(make)</code>导致<code>fail</code>，但是单独地在qemu环境中运行<code>bigfile</code> <code>symlinktest</code> <code>usertests -q</code>却没有问题。难道是我wsl2 ubuntu系统的版本问题吗？</p>
+<h2 id="3-1-Large-files"><a href="#3-1-Large-files" class="headerlink" title="3.1 Large files"></a>3.1 Large files</h2><p>这里就是将<code>fs.h</code>里面<code>NDIRECT</code>再减少一块作为双重间接块。然后添加定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> NDOUBLE (NINDIRECT*NINDIRECT)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXFILE (NDIRECT + NINDIRECT + NDOUBLE)</span></span><br></pre></td></tr></table></figure>
+<p>在<code>bmap</code>里仿照分配间接块的写法，分配双重间接块。</p>
+<p>在<code>itrunc</code>里仿照释放间接块的写法，释放双重间接块。</p>
+<p><del>（不过，这个是真绕啊）</del></p>
+<p>这里一定要理清楚：对于双重间接块，256个块为一组，第0层的<code>data</code>就表示<strong>每一组</strong>。第一层的<code>data</code>则表示<strong>每一组的每一块的地址</strong>，而第二层的<code>data</code>才表示真正的<em>数据</em>。</p>
+<p>所以，对于分配，<code>bn / NINDIRECT</code>计算得组号；对于每个块在该组的序号则由<code>bn % NINDIRECT</code>给出。</p>
+<p>对于释放，<code>ip-&gt;addrs[NDIRECT+1]!=0</code>意味着存在未释放的<strong>组</strong>。因此要对每一个未释放的<em>组</em>，读取它对应的第一层间接块的<code>data</code>，因为一个<code>data[i]!=0</code>就表示一个这一组未释放掉的块的地址。就这样从第2层一直到第0层逐层释放。</p>
+<h2 id="3-2-Symbolic-links"><a href="#3-2-Symbolic-links" class="headerlink" title="3.2 Symbolic links"></a>3.2 Symbolic links</h2><p>首先是<code>sys_symlink</code>，要在目标路径处创建一个<code>T_SYMLINK</code>类型的文件。并在对应的<code>inode</code><br>里分配一个缓冲块，写入<code>target</code>，即源文件的路径。</p>
+<p>后一步看起来复杂，实际上就是<code>writei</code>函数的调用。</p>
+<p>然后是改写<code>sys_open</code>。这里主要是添加一个<code>T_SYMLINK</code>且不是<code>O_NOFOLLOW</code>的处理。</p>
+<p>为了方便处理链接的文件也是符号链接的情况，用了一个递归的函数<code>follow</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">struct</span> inode*</span><br><span class="line"><span class="title function_">follow</span><span class="params">(<span class="type">char</span> *path, <span class="type">int</span> cnt)</span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(cnt&gt;=<span class="number">10</span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">ip</span> =</span> namei(path);</span><br><span class="line">  <span class="keyword">if</span>(ip==<span class="number">0</span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  ilock(ip);</span><br><span class="line">  <span class="keyword">if</span>(ip-&gt;type != T_SYMLINK)&#123;</span><br><span class="line">    <span class="keyword">return</span> ip;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">char</span> target[MAXPATH];</span><br><span class="line">  <span class="keyword">if</span>(readi(ip, <span class="number">0</span>, (uint64)target, <span class="number">0</span>, MAXPATH) != MAXPATH)&#123;</span><br><span class="line">    iunlockput(ip);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  iunlockput(ip);</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">inode</span> *<span class="title">ans</span> =</span> follow(target,cnt+<span class="number">1</span>);</span><br><span class="line">  <span class="keyword">return</span> ans;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>ps:<br><code>sys_open</code>是在干什么？<br>它是创建一个文件描述符（fd），将它绑定到一个 struct file*，供后续 read(fd) &#x2F;write(fd) 使用。<br>示意如下：</p>
+</blockquote>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// 1. 从用户拿参数：路径 和 打开方式</span><br><span class="line">argstr(0, path);</span><br><span class="line">argint(1, &amp;omode);</span><br><span class="line"></span><br><span class="line">// 2. 找到这个文件的 inode（如果没有而且带 O_CREATE，则创建）</span><br><span class="line">ip = namei(path) / create(path);</span><br><span class="line"></span><br><span class="line">// 3. 分配一个 file 结构</span><br><span class="line">f = filealloc();</span><br><span class="line"></span><br><span class="line">// 4. 分配一个 fd 并将其与 file* 绑定</span><br><span class="line">fd = fdalloc(f);      // 进程的 proc-&gt;ofile[fd] = f;</span><br><span class="line"></span><br><span class="line">// 5. 初始化 file 结构：指向 inode，设置读写权限</span><br><span class="line">f-&gt;ip = ip;</span><br><span class="line">f-&gt;readable = ...</span><br><span class="line">f-&gt;writable = ...</span><br></pre></td></tr></table></figure>
+
+<h1 id="4-mmap"><a href="#4-mmap" class="headerlink" title="4. mmap"></a>4. mmap</h1><p>呃呃，这个也不是我自己写的。。。😭</p>
+<p>这个实验我打算后面再“补票”。<del>（虽然这个flag大概率会倒）</del></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/">https://eliano64.github.io/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://Eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C</a><a class="post-meta__tags" href="/tags/Projects/">Projects</a><a class="post-meta__tags" href="/tags/Operating-System/">Operating System</a><a class="post-meta__tags" href="/tags/2024-xv6-labs/">2024-xv6-labs</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/07/14/250707-250714-%E5%91%A8%E8%AE%B0-2024-xv6-labs-1/" title="250707-250714 周记 2024-xv6-labs(1)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">250707-250714 周记 2024-xv6-labs(1)</div></div><div class="info-2"><div class="info-item-1">本周主要完成了2024-xv6-labs的util到cow的五个实验。 1. util lab1.1 sleep这个算是最简单的实验了。按照hints一步步写即可。没有任何额外需要注意的地方。 1.2 pingpong这个实验的主要难点是理解pipe函数的使用。先查看 sys_pipe函数： 1234567891011121314151617181920212223voidsys_pipe(void)&#123;   uint64 fdarray; // user pointer to array of two integers   struct file *rf, *wf;   int fd0, fd1;   struct proc *p = myproc();      argaddr(0, &amp;fdarray);   if(pipealloc(&amp;rf, &amp;wf) &lt; 0)&#123;    ...   &#125;     ...   if((fd0 = fdalloc(rf)) &lt; 0 || (fd1 = fdalloc(wf))...</div></div></div></a><a class="pagination-related" href="/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="250721 thinking 二分查找"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">250721 thinking 二分查找</div></div><div class="info-2"><div class="info-item-1">1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。 于是总结一种模板： 定义域为[lo, hi)的单增的f(x), 找出最小的ans, 使得f(ans)&gt;0成立。 单减同理，甚至可以进行预处理先转化为单增的情况。 伪代码如下： 12345678910111213141516algorithm binary-search(lo,hi)	while the search area has elments do:		mid &lt;- lo + (hi-lo)/2;		if f(mid) satisfied: // the answer may occur here            		ans := mid;			hi &lt;- mid;             // the search area could have no elments when in the next loop, so return ans;  ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/07/14/250707-250714-%E5%91%A8%E8%AE%B0-2024-xv6-labs-1/" title="250707-250714 周记 2024-xv6-labs(1)"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-14</div><div class="info-item-2">250707-250714 周记 2024-xv6-labs(1)</div></div><div class="info-2"><div class="info-item-1">本周主要完成了2024-xv6-labs的util到cow的五个实验。 1. util lab1.1 sleep这个算是最简单的实验了。按照hints一步步写即可。没有任何额外需要注意的地方。 1.2 pingpong这个实验的主要难点是理解pipe函数的使用。先查看 sys_pipe函数： 1234567891011121314151617181920212223voidsys_pipe(void)&#123;   uint64 fdarray; // user pointer to array of two integers   struct file *rf, *wf;   int fd0, fd1;   struct proc *p = myproc();      argaddr(0, &amp;fdarray);   if(pipealloc(&amp;rf, &amp;wf) &lt; 0)&#123;    ...   &#125;     ...   if((fd0 = fdalloc(rf)) &lt; 0 || (fd1 = fdalloc(wf))...</div></div></div></a><a class="pagination-related" href="/2025/10/12/251006-251012-weekly-Qt/" title="251006-251012 weekly Qt"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-12</div><div class="info-item-2">251006-251012 weekly Qt</div></div><div class="info-2"><div class="info-item-1">最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。 我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。 1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。 需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。 2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。 程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。  信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">34</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">52</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-net-lab"><span class="toc-text">1. net lab</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-NIC"><span class="toc-text">1.1 NIC</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-UDP-Receive"><span class="toc-text">1.2 UDP Receive</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-lock"><span class="toc-text">2. lock</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-Memory-allocator"><span class="toc-text">2.1 Memory allocator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-Buffer-cache"><span class="toc-text">2.2 Buffer cache</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-fs"><span class="toc-text">3. fs</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Large-files"><span class="toc-text">3.1 Large files</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Symbolic-links"><span class="toc-text">3.2 Symbolic links</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-mmap"><span class="toc-text">4. mmap</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/31/251018-thinking-flyweight/" title="251018 thinking flyweight">251018 thinking flyweight</a><time datetime="2025-10-31T08:04:09.000Z" title="发表于 2025-10-31 16:04:09">2025-10-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/25/251018-thinking-facade/" title="251018 thinking facade">251018 thinking facade</a><time datetime="2025-10-25T09:11:36.000Z" title="发表于 2025-10-25 17:11:36">2025-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/25/251018-thinking-decorator/" title="251018 thinking decorator">251018 thinking decorator</a><time datetime="2025-10-25T08:07:58.000Z" title="发表于 2025-10-25 16:07:58">2025-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/25/251018-thinking-composite/" title="251018 thinking composite">251018 thinking composite</a><time datetime="2025-10-25T07:29:56.000Z" title="发表于 2025-10-25 15:29:56">2025-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/19/251019-record-Duetting/" title="251019 record Duetting">251019 record Duetting</a><time datetime="2025-10-19T15:14:44.000Z" title="发表于 2025-10-19 23:14:44">2025-10-19</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
