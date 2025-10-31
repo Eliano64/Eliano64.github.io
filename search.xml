@@ -73,46 +73,6 @@ siriusyaoz，在做实验的时候，你的关于这个实验的代码给予了�
       </tags>
   </entry>
   <entry>
-    <title>250721 thinking 二分查找</title>
-    <url>/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</url>
-    <content><![CDATA[1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。
-于是总结一种模板：
-定义域为[lo, hi)的单增的f(x), 找出最小的ans, 使得f(ans)&gt;0成立。
-单减同理，甚至可以进行预处理先转化为单增的情况。
-伪代码如下：
-algorithm binary-search(lo,hi)	while the search area has elments do:		mid &lt;- lo + (hi-lo)/2;		if f(mid) satisfied: // the answer may occur here            		ans := mid;			hi &lt;- mid;             // the search area could have no elments when in the next loop, so return ans;             // but mid&gt;ans if next loop continues,              // for this is a right-open area, hi &lt;- mid;		else :			lo &lt;- mid + 1;             // mid is not the answer, and mid &lt; answer;            // for this is a left-close area, lo &lt;- mid + 1;	end while	return ans;
-
-2. 例
-已知一个有序数组，查找一个元素的位置并返回。若该元素不存在，则返回元素应插入的位置。
-
-定义域为[0, nums.size())，找出最小的ans, nums[ans] &gt;&#x3D; target成立
-int searchInsert(vector&lt;int&gt;&amp; nums, int target)&#123;        int left=0,right=nums.size(),ans; // f(ans)= nums[ans] 的定义域： ans \in [left, right)        while(left&lt;right)&#123;            int mid=(right-left)/2 + left;//防止直接right+left造成溢出            if(nums[mid]&gt;=target)&#123;//因为我们要找的就是nums[ans]&gt;=target                ans=mid; //所以mid可能为答案。                right=mid; //也可能mid不是答案，更新开的上界为mid            &#125;            else&#123;                left=mid+1; // 否则mid绝对不是答案。更新闭的下界为mid+1。            &#125;        &#125;        return ans; &#125;
-
-
-给你一个非负整数 x ，计算并返回 x 的 算术平方根 。由于返回类型是整数，结果只保留 整数部分 ，小数部分将被 舍去 。
-
-定义域为$[0, +\infty)$, 找出最大的$\text{ans}$, $\text{ans}^2 \leqslant x$
-int mySqrt(int x) &#123;       long long l = 0, r = x+1, ans; // ans \in [0, +\infty), 但这里对r这样赋值只是为了让ans快速收敛。为什么x+1: x=0,1时 ans = x &lt; x+1。          while (l &lt; r) &#123;            long long  mid = (l+r)&gt;&gt;1;            if (mid * mid &lt;= x) &#123;//因为要找的就是ans*ans&lt;=x                ans = mid; //所以mid可能为答案。                l = mid + 1; //也可能mid不是答案，更新闭的下界为mid+1            &#125; else &#123;                r = mid; // 否则mid绝对不是答案。更新开的上界为mid。            &#125;        &#125;        return ans;     &#125;
-
-也有一些更抽象的二分查找：
-3350.检测相邻递增子数组II
-令f(x)：k=x时数组是否存在两个相邻且长度为 k 的严格递增子数组,存在则f(x)=1否则f(x)=0。
-则f(x)单减。满足二分查找的使用
-于是原问题即为
-定义域为$[2, \lceil nums.length&#x2F;2 \rceil)$, 找出最大的$\text{ans}$, $f(\text{ans})&gt;&#x3D;1$
-解法示例：
-func f(x int, lengths []int) bool &#123;    count := 0    for _, l := range lengths &#123;        if l &gt;= 2*x &#123;             return true        &#125;        if l &gt;= x &#123;            count++            if count &gt;= 2 &#123;                return true            &#125;        &#125;else&#123;            count = 0        &#125;    &#125;    return false&#125;func maxIncreasingSubarrays(nums []int) int &#123;    n := len(nums)    lengths := []int&#123;&#125;    cur := 1    for i := 1; i &lt; n; i++ &#123;        if nums[i] &gt; nums[i-1] &#123;            cur++        &#125; else &#123;            lengths = append(lengths, cur)            cur = 1        &#125;    &#125;    lengths = append(lengths, cur)    lo := 1; hi := len(nums)/2+1    var ans int    for lo&lt;hi&#123;        mi := lo + (hi-lo)/2        if f(mi,lengths)&#123;            ans = mi            lo = mi + 1        &#125;else&#123;            hi=mi        &#125;    &#125;    return ans&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>binary search</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250714-250720 周记 2024-xv6-labs(2)</title>
     <url>/2025/07/21/250714-250720-%E5%91%A8%E8%AE%B0-2024-xv6-labs-2/</url>
     <content><![CDATA[本周完成了剩下的实验。上一篇见2024-xv6-labs-1
@@ -167,6 +127,106 @@ ps:sys_open是在干什么？它是创建一个文件描述符（fd），将它�
         <tag>Projects</tag>
         <tag>Operating System</tag>
         <tag>2024-xv6-labs</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250721 thinking 二分查找</title>
+    <url>/2025/07/21/250721-thinking-%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</url>
+    <content><![CDATA[1. 总结二分查找的原理非常简单，但是一些细节例如是 l&lt;r还是 l&lt;=r、更新 r时是 r=mid还是 r=mid-1（l同理）等地方却有些让人头疼，实际写来如果不注意就可能会造成死循环。
+于是总结一种模板：
+定义域为[lo, hi)的单增的f(x), 找出最小的ans, 使得f(ans)&gt;0成立。
+单减同理，甚至可以进行预处理先转化为单增的情况。
+伪代码如下：
+algorithm binary-search(lo,hi)	while the search area has elments do:		mid &lt;- lo + (hi-lo)/2;		if f(mid) satisfied: // the answer may occur here            		ans := mid;			hi &lt;- mid;             // the search area could have no elments when in the next loop, so return ans;             // but mid&gt;ans if next loop continues,              // for this is a right-open area, hi &lt;- mid;		else :			lo &lt;- mid + 1;             // mid is not the answer, and mid &lt; answer;            // for this is a left-close area, lo &lt;- mid + 1;	end while	return ans;
+
+2. 例
+已知一个有序数组，查找一个元素的位置并返回。若该元素不存在，则返回元素应插入的位置。
+
+定义域为[0, nums.size())，找出最小的ans, nums[ans] &gt;&#x3D; target成立
+int searchInsert(vector&lt;int&gt;&amp; nums, int target)&#123;        int left=0,right=nums.size(),ans; // f(ans)= nums[ans] 的定义域： ans \in [left, right)        while(left&lt;right)&#123;            int mid=(right-left)/2 + left;//防止直接right+left造成溢出            if(nums[mid]&gt;=target)&#123;//因为我们要找的就是nums[ans]&gt;=target                ans=mid; //所以mid可能为答案。                right=mid; //也可能mid不是答案，更新开的上界为mid            &#125;            else&#123;                left=mid+1; // 否则mid绝对不是答案。更新闭的下界为mid+1。            &#125;        &#125;        return ans; &#125;
+
+
+给你一个非负整数 x ，计算并返回 x 的 算术平方根 。由于返回类型是整数，结果只保留 整数部分 ，小数部分将被 舍去 。
+
+定义域为$[0, +\infty)$, 找出最大的$\text{ans}$, $\text{ans}^2 \leqslant x$
+int mySqrt(int x) &#123;       long long l = 0, r = x+1, ans; // ans \in [0, +\infty), 但这里对r这样赋值只是为了让ans快速收敛。为什么x+1: x=0,1时 ans = x &lt; x+1。          while (l &lt; r) &#123;            long long  mid = (l+r)&gt;&gt;1;            if (mid * mid &lt;= x) &#123;//因为要找的就是ans*ans&lt;=x                ans = mid; //所以mid可能为答案。                l = mid + 1; //也可能mid不是答案，更新闭的下界为mid+1            &#125; else &#123;                r = mid; // 否则mid绝对不是答案。更新开的上界为mid。            &#125;        &#125;        return ans;     &#125;
+
+也有一些更抽象的二分查找：
+3350.检测相邻递增子数组II
+令f(x)：k=x时数组是否存在两个相邻且长度为 k 的严格递增子数组,存在则f(x)=1否则f(x)=0。
+则f(x)单减。满足二分查找的使用
+于是原问题即为
+定义域为$[2, \lceil nums.length&#x2F;2 \rceil)$, 找出最大的$\text{ans}$, $f(\text{ans})&gt;&#x3D;1$
+解法示例：
+func f(x int, lengths []int) bool &#123;    count := 0    for _, l := range lengths &#123;        if l &gt;= 2*x &#123;             return true        &#125;        if l &gt;= x &#123;            count++            if count &gt;= 2 &#123;                return true            &#125;        &#125;else&#123;            count = 0        &#125;    &#125;    return false&#125;func maxIncreasingSubarrays(nums []int) int &#123;    n := len(nums)    lengths := []int&#123;&#125;    cur := 1    for i := 1; i &lt; n; i++ &#123;        if nums[i] &gt; nums[i-1] &#123;            cur++        &#125; else &#123;            lengths = append(lengths, cur)            cur = 1        &#125;    &#125;    lengths = append(lengths, cur)    lo := 1; hi := len(nums)/2+1    var ans int    for lo&lt;hi&#123;        mi := lo + (hi-lo)/2        if f(mi,lengths)&#123;            ans = mi            lo = mi + 1        &#125;else&#123;            hi=mi        &#125;    &#125;    return ans&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>binary search</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250721 thinking 单调栈</title>
+    <url>/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/</url>
+    <content><![CDATA[
+他向远方望去，无法看到高山背后的矮山，只看到一座座更高的山峰。————by 灵神
+
+1. 总结单调栈就是保持栈内元素单调的栈。当新元素破坏单调性时，弹出栈顶元素，弹出的瞬间就找到栈顶元素对应的答案。
+栈里存放着暂时还没有找到对应答案的元素。新元素入栈时，如果栈顶元素使得栈单调性被破环，那么栈顶元素的答案产生，栈顶元素找到答案，出栈。因此需要建立的栈的单调性与题目的答案需求往往是“反过来”。要下一个更大就要单减；要下一个更小就要单增。
+algorithm generalized-monotonic-stack(A, cmp, process)    stack S ← ∅    for i ← 0 to n-1 do:        while S ≠ ∅ and condition(A[i], A[S.top()]) do: // 栈的单调性被破坏，while是为了让栈里满足条件的元素都可以出栈            j ← S.pop() // 栈顶出栈            recordAnswer(j, i)  // 计算并记录栈顶对应的答案        end while        S.push(i) // 栈为空或者栈的单调性没有被破坏，则新元素一定不是某个元素的答案，入栈    end forend algorithm
+
+时间复杂度为什么是 O(n)？每个元素最多入栈一次，出栈一次，总操作数 ≤ 2n。
+2. 问题分类类型1：找下一个更大&#x2F;更小元素模板：
+// 下一个更大元素while (!st.empty() &amp;&amp; arr[i] &gt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;// 下一个更小元素  while (!st.empty() &amp;&amp; arr[i] &lt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;
+
+类型2：计算面积&#x2F;距离模板：
+// 柱状图最大矩形while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;    int h = heights[st.top()];    st.pop();    int w = st.empty() ? i : i - st.top() - 1;    maxArea = max(maxArea, h * w);&#125;// 每日温度（计算距离）while (!st.empty() &amp;&amp; temps[i] &gt; temps[st.top()]) &#123;    int j = st.top();    st.pop();    result[j] = i - j;  // 距离&#125;
+
+3. 典型例题例1：下一个更大元素vector&lt;int&gt; nextGreaterElement(vector&lt;int&gt;&amp; nums) &#123;    int n = nums.size();    vector&lt;int&gt; result(n, -1);    stack&lt;int&gt; st;      for (int i = 0; i &lt; n; i++) &#123;        while (!st.empty() &amp;&amp; nums[i] &gt; nums[st.top()]) &#123;            result[st.top()] = nums[i];            st.pop();        &#125;        st.push(i);    &#125;    return result;&#125;
+
+例2：柱状图最大矩形
+高度：出栈元素的高度
+宽度：当前位置 - 栈顶位置 - 1
+
+寻找当前高度对应的下一个更小的高度。那么在这个答案对应的下标到栈顶对应的下标这段距离，就是当前高度对应的最大宽度。而当前高度也即是下标取值在这个范围内矩形高度取值的最大值（短板效应），所以这里的高度乘以宽度得到的矩形面积就是在下标取值在这个范围内的最大面积。
+int largestRectangleArea(vector&lt;int&gt;&amp; heights) &#123;    stack&lt;int&gt; st;    heights.push_back(0);  // 哨兵，这是为了保证最后一个元素也能出栈    int maxArea = 0;      for (int i = 0; i &lt; heights.size(); i++) &#123;        while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;            int h = heights[st.top()];            st.pop();            int w = st.empty() ? i : i - st.top() - 1;            maxArea = max(maxArea, h * w);        &#125;        st.push(i);    &#125;    return maxArea;&#125;
+
+例3：接雨水int trap(vector&lt;int&gt;&amp; height) &#123;    stack&lt;int&gt; st;    int water = 0;      for (int i = 0; i &lt; height.size(); i++) &#123;        while (!st.empty() &amp;&amp; height[i] &gt; height[st.top()]) &#123;            int bottom = st.top();            st.pop();            if (st.empty()) break;                      int distance = i - st.top() - 1;            int h = min(height[i], height[st.top()]) - height[bottom];            water += distance * h;        &#125;        st.push(i);    &#125;    return water;&#125;
+
+例4: 最大二叉树TreeNode* constructMaximumBinaryTree(vector&lt;int&gt;&amp; nums) &#123;        stack&lt;TreeNode*&gt;st;        for(auto &amp;i: nums)&#123;            TreeNode* cur = new TreeNode(i);            while(!st.empty() &amp;&amp; st.top()-&gt;val&lt;i)&#123;                cur-&gt;left=st.top();                st.pop();            &#125;             if(!st.empty())&#123;                st.top()-&gt;right=cur;            &#125;            st.push(cur);        &#125;        while(st.size()&gt;1)&#123;            st.pop();        &#125;        return st.top();    &#125;
+
+4. 常用技巧技巧1：哨兵在数组末尾加 0 或无穷大，确保所有元素都能出栈：
+heights.push_back(0);
+
+技巧2：循环数组遍历两遍模拟循环：
+for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt; n) st.push(i);  // 只在第一轮入栈&#125;
+
+技巧3：存储下标 vs 存储值
+需要计算距离&#x2F;面积：存储下标
+只需要元素值：存储值
+
+5. 解题细节
+递增栈还是递减栈？
+
+弹出元素的条件？
+
+弹出时如何处理，进而得到答案？
+
+是否需要哨兵？
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>Monotonic Stack</tag>
       </tags>
   </entry>
   <entry>
@@ -865,66 +925,6 @@ TO BE CONTINUED
       </tags>
   </entry>
   <entry>
-    <title>250721 thinking 单调栈</title>
-    <url>/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/</url>
-    <content><![CDATA[
-他向远方望去，无法看到高山背后的矮山，只看到一座座更高的山峰。————by 灵神
-
-1. 总结单调栈就是保持栈内元素单调的栈。当新元素破坏单调性时，弹出栈顶元素，弹出的瞬间就找到栈顶元素对应的答案。
-栈里存放着暂时还没有找到对应答案的元素。新元素入栈时，如果栈顶元素使得栈单调性被破环，那么栈顶元素的答案产生，栈顶元素找到答案，出栈。因此需要建立的栈的单调性与题目的答案需求往往是“反过来”。要下一个更大就要单减；要下一个更小就要单增。
-algorithm generalized-monotonic-stack(A, cmp, process)    stack S ← ∅    for i ← 0 to n-1 do:        while S ≠ ∅ and condition(A[i], A[S.top()]) do: // 栈的单调性被破坏，while是为了让栈里满足条件的元素都可以出栈            j ← S.pop() // 栈顶出栈            recordAnswer(j, i)  // 计算并记录栈顶对应的答案        end while        S.push(i) // 栈为空或者栈的单调性没有被破坏，则新元素一定不是某个元素的答案，入栈    end forend algorithm
-
-时间复杂度为什么是 O(n)？每个元素最多入栈一次，出栈一次，总操作数 ≤ 2n。
-2. 问题分类类型1：找下一个更大&#x2F;更小元素模板：
-// 下一个更大元素while (!st.empty() &amp;&amp; arr[i] &gt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;// 下一个更小元素  while (!st.empty() &amp;&amp; arr[i] &lt; arr[st.top()]) &#123;    result[st.top()] = arr[i];    st.pop();&#125;
-
-类型2：计算面积&#x2F;距离模板：
-// 柱状图最大矩形while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;    int h = heights[st.top()];    st.pop();    int w = st.empty() ? i : i - st.top() - 1;    maxArea = max(maxArea, h * w);&#125;// 每日温度（计算距离）while (!st.empty() &amp;&amp; temps[i] &gt; temps[st.top()]) &#123;    int j = st.top();    st.pop();    result[j] = i - j;  // 距离&#125;
-
-3. 典型例题例1：下一个更大元素vector&lt;int&gt; nextGreaterElement(vector&lt;int&gt;&amp; nums) &#123;    int n = nums.size();    vector&lt;int&gt; result(n, -1);    stack&lt;int&gt; st;      for (int i = 0; i &lt; n; i++) &#123;        while (!st.empty() &amp;&amp; nums[i] &gt; nums[st.top()]) &#123;            result[st.top()] = nums[i];            st.pop();        &#125;        st.push(i);    &#125;    return result;&#125;
-
-例2：柱状图最大矩形
-高度：出栈元素的高度
-宽度：当前位置 - 栈顶位置 - 1
-
-寻找当前高度对应的下一个更小的高度。那么在这个答案对应的下标到栈顶对应的下标这段距离，就是当前高度对应的最大宽度。而当前高度也即是下标取值在这个范围内矩形高度取值的最大值（短板效应），所以这里的高度乘以宽度得到的矩形面积就是在下标取值在这个范围内的最大面积。
-int largestRectangleArea(vector&lt;int&gt;&amp; heights) &#123;    stack&lt;int&gt; st;    heights.push_back(0);  // 哨兵，这是为了保证最后一个元素也能出栈    int maxArea = 0;      for (int i = 0; i &lt; heights.size(); i++) &#123;        while (!st.empty() &amp;&amp; heights[i] &lt; heights[st.top()]) &#123;            int h = heights[st.top()];            st.pop();            int w = st.empty() ? i : i - st.top() - 1;            maxArea = max(maxArea, h * w);        &#125;        st.push(i);    &#125;    return maxArea;&#125;
-
-例3：接雨水int trap(vector&lt;int&gt;&amp; height) &#123;    stack&lt;int&gt; st;    int water = 0;      for (int i = 0; i &lt; height.size(); i++) &#123;        while (!st.empty() &amp;&amp; height[i] &gt; height[st.top()]) &#123;            int bottom = st.top();            st.pop();            if (st.empty()) break;                      int distance = i - st.top() - 1;            int h = min(height[i], height[st.top()]) - height[bottom];            water += distance * h;        &#125;        st.push(i);    &#125;    return water;&#125;
-
-例4: 最大二叉树TreeNode* constructMaximumBinaryTree(vector&lt;int&gt;&amp; nums) &#123;        stack&lt;TreeNode*&gt;st;        for(auto &amp;i: nums)&#123;            TreeNode* cur = new TreeNode(i);            while(!st.empty() &amp;&amp; st.top()-&gt;val&lt;i)&#123;                cur-&gt;left=st.top();                st.pop();            &#125;             if(!st.empty())&#123;                st.top()-&gt;right=cur;            &#125;            st.push(cur);        &#125;        while(st.size()&gt;1)&#123;            st.pop();        &#125;        return st.top();    &#125;
-
-4. 常用技巧技巧1：哨兵在数组末尾加 0 或无穷大，确保所有元素都能出栈：
-heights.push_back(0);
-
-技巧2：循环数组遍历两遍模拟循环：
-for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt; n) st.push(i);  // 只在第一轮入栈&#125;
-
-技巧3：存储下标 vs 存储值
-需要计算距离&#x2F;面积：存储下标
-只需要元素值：存储值
-
-5. 解题细节
-递增栈还是递减栈？
-
-弹出元素的条件？
-
-弹出时如何处理，进而得到答案？
-
-是否需要哨兵？
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>Monotonic Stack</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250811-250817 周记 linux命令与shell编程学习(2)</title>
     <url>/2025/08/19/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-2/</url>
     <content><![CDATA[2. 第二部分 shell 脚本编程基础2.11 构建基础脚本2.11.2 创建 shell 脚本文件
@@ -1532,6 +1532,23 @@ cron 时间表允许使用特定值、取值范围(比如 1-5)或者通配符(*)
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking Trie</title>
+    <url>/2025/08/24/250824-thinking-Trie/</url>
+    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
+C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
+class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>Trie</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250824 thinking singleton</title>
     <url>/2025/08/24/250824-thinking-singleton/</url>
     <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
@@ -1567,23 +1584,6 @@ func main() &#123;    for i := 0; i &lt; 10; i++ &#123;       go func() &#123;  
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking Trie</title>
-    <url>/2025/08/24/250824-thinking-Trie/</url>
-    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
-C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
-class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>Trie</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250824 thinking 埃氏筛</title>
     <url>/2025/08/24/250824-thinking-%E5%9F%83%E6%B0%8F%E7%AD%9B/</url>
     <content><![CDATA[埃氏筛是一种简单的筛法，用于求小于等于n的所有质数。
@@ -1605,66 +1605,6 @@ class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son
         <tag>data structure &amp; algorithm</tag>
         <tag>mathematics</tag>
         <tag>sieve of Eratosthenes</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking 二叉树遍历的迭代法</title>
-    <url>/2025/08/24/250824-thinking-%E4%BA%8C%E5%8F%89%E6%A0%91%E9%81%8D%E5%8E%86%E7%9A%84%E8%BF%AD%E4%BB%A3%E6%B3%95/</url>
-    <content><![CDATA[关于二叉树的遍历，有递归法和迭代法两种。递归法简单易懂，但是迭代法较为复杂，需要使用栈来模拟递归的过程。
-这里以“将二叉树按某种顺序遍历输出”为例，介绍迭代法的实现。
-关键在于理解某个节点输出的时机。
-1. 前序遍历
-先输出，再将左子节点入栈。没有左子节点了，才考虑右子节点的入栈。
-
-vector&lt;int&gt; preorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                ans.push_back(root-&gt;val);                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top()-&gt;right;            stk.pop();        &#125;        return ans;    &#125;
-
-2. 中序遍历
-先将左子节点入栈，没有左子节点了，才输出当前节点，然后考虑右子节点的入栈。
-
-vector&lt;int&gt; inorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            stk.pop();            ans.push_back(root-&gt;val);            root=root-&gt;right;        &#125;        return ans;    &#125;
-
-3. 后序遍历
-先将左子节点入栈，没有左子节点了，才考虑右子节点的入栈。如果右子节点也没有了，才输出当前节点。
-
-
-难点：如何判断当前节点的右子节点是否已经遍历过了？
-
-
-使用一个指针prev来记录上一个遍历的节点。
-如果当前节点的右子节点为空，或者右子节点已经遍历过了，才输出当前节点。
-否则，将右子节点入栈，然后考虑左子节点的入栈。
-
-vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt;stk;        TreeNode* prev=nullptr;        while(!stk.empty()||root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            if(root-&gt;right==nullptr || root-&gt;right==prev)&#123;                ans.push_back(root-&gt;val);                prev=root;                stk.pop();                root=nullptr; // 这里很重要！否则会因为root不为空而“入栈-出栈”无限循环            &#125;            else&#123;                root=root-&gt;right;            &#125;        &#125;        return ans;    &#125;
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>Binary Tree</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250824 thinking 快速排序</title>
-    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
-    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
-1. 伪代码示例这里是从小到大的顺序排序。
-// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
-
-2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
-2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
-2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>quick sort</tag>
-        <tag>Hoare partition</tag>
       </tags>
   </entry>
   <entry>
@@ -1706,6 +1646,27 @@ int specialPerm(vector&lt;int&gt;&amp; nums) &#123;        const int mod = 1e9+7
         <tag>data structure &amp; algorithm</tag>
         <tag>dynamic programming</tag>
         <tag>state compression</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250824 thinking 快速排序</title>
+    <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
+    <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
+1. 伪代码示例这里是从小到大的顺序排序。
+// input: arr, lo, hi// arr: array to be sorted// lo, hi: the area to be sorted is [lo, hi)// output: sorted arrQuickSort(arr, lo, hi):    if lo &gt;= hi:         return // in this case, no element left in the area, no need to sort    pivot := arr[lo]    left := lo    right := hi    while left &lt; right; do        do            right--        while arr[right] &gt; pivot // right pointer moves to the left until it points to an element smaller than pivot or points to pivot, so right pointer is always safe        do            left++        while left &lt; right and arr[left] &lt; pivot // but left pointer could overflow if there is no control, so it should always be checked with left &lt; right        if left &lt; right; then            swap(arr[left], arr[right])        else             break        end if    end while    swap(arr[lo], arr[right])     QuickSort(arr, lo, right)    QuickSort(arr, right + 1, hi)
+
+2. 解释2.1 左右指针移动的顺序为什么是先右后左？考虑一个例子：[1, 3, 4, 5, 7], 以1为基准进行分区。如果先左后右，则左指针在3处就会停下。然后右指针移动，由于左指针挡着，它便只能移动到3这里，而不是正确的位置1。这时候如果交换3和1，则3的位置就被错误地交换了。
+2.2 为什么循环退出后交换时将pivot和right进行交换而不是left？因为right指针移动的条件是arr[right] &gt; pivot，也就是说当它不移动时候，一定是arr[right]&lt;=pivot。而left指针移动的条件是left &lt; right &amp;&amp; arr[left] &lt; pivot，当循环退出时，我们不能保证一定有arr[left]&gt;=pivot，因为有可能是left &lt; right条件不满足导致的退出。而pivot所指代的元素在最左边，与右边的一个不大于它的元素交换是安全的。 
+2.3 指针移动条件为什么不带”&#x3D;”?这是由left和right的语义所决定的。left是“在pivot的左边”，而right是“在pivot的右边”。
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>quick sort</tag>
+        <tag>Hoare partition</tag>
       </tags>
   </entry>
   <entry>
@@ -1776,6 +1737,45 @@ func subsequenceSumAfterCapping(nums []int, k int) []bool &#123;	slices.Sort(num
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking 二叉树遍历的迭代法</title>
+    <url>/2025/08/24/250824-thinking-%E4%BA%8C%E5%8F%89%E6%A0%91%E9%81%8D%E5%8E%86%E7%9A%84%E8%BF%AD%E4%BB%A3%E6%B3%95/</url>
+    <content><![CDATA[关于二叉树的遍历，有递归法和迭代法两种。递归法简单易懂，但是迭代法较为复杂，需要使用栈来模拟递归的过程。
+这里以“将二叉树按某种顺序遍历输出”为例，介绍迭代法的实现。
+关键在于理解某个节点输出的时机。
+1. 前序遍历
+先输出，再将左子节点入栈。没有左子节点了，才考虑右子节点的入栈。
+
+vector&lt;int&gt; preorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                ans.push_back(root-&gt;val);                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top()-&gt;right;            stk.pop();        &#125;        return ans;    &#125;
+
+2. 中序遍历
+先将左子节点入栈，没有左子节点了，才输出当前节点，然后考虑右子节点的入栈。
+
+vector&lt;int&gt; inorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt; stk;        while(!stk.empty() || root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            stk.pop();            ans.push_back(root-&gt;val);            root=root-&gt;right;        &#125;        return ans;    &#125;
+
+3. 后序遍历
+先将左子节点入栈，没有左子节点了，才考虑右子节点的入栈。如果右子节点也没有了，才输出当前节点。
+
+
+难点：如何判断当前节点的右子节点是否已经遍历过了？
+
+
+使用一个指针prev来记录上一个遍历的节点。
+如果当前节点的右子节点为空，或者右子节点已经遍历过了，才输出当前节点。
+否则，将右子节点入栈，然后考虑左子节点的入栈。
+
+vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int&gt; ans;        stack&lt;TreeNode*&gt;stk;        TreeNode* prev=nullptr;        while(!stk.empty()||root!=nullptr)&#123;            while(root!=nullptr)&#123;                stk.emplace(root);                root=root-&gt;left;            &#125;            root=stk.top();            if(root-&gt;right==nullptr || root-&gt;right==prev)&#123;                ans.push_back(root-&gt;val);                prev=root;                stk.pop();                root=nullptr; // 这里很重要！否则会因为root不为空而“入栈-出栈”无限循环            &#125;            else&#123;                root=root-&gt;right;            &#125;        &#125;        return ans;    &#125;
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>Binary Tree</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250926 thinking 子序列判断</title>
     <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
     <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
@@ -1801,8 +1801,8 @@ func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26
       </categories>
       <tags>
         <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
         <tag>string</tag>
+        <tag>go</tag>
       </tags>
   </entry>
   <entry>
@@ -1881,6 +1881,47 @@ go示例解法
         <tag>data structure &amp; algorithm</tag>
         <tag>go</tag>
         <tag>linkList</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250928-251005 weekly electron</title>
+    <url>/2025/10/05/250928-251005-weekly-electron/</url>
+    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
+0. 项目结构静态网页资源dist应先移动到application项目中。
+.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
+
+1. 项目初始化与安装参考：教程
+但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
+npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
+
+后面运行命令出现网络问题也如此。
+2. 打包对web项目使用npm run build后生成的静态网页进行打包。
+但需要注意：
+
+Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
+
+// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
+
+
+在application项目中，文件加载路径的写法。
+
+const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
+
+但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
+更新后的src&#x2F;App.jsx:
+import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
+
+同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
+import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
+
+再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
+]]></content>
+      <categories>
+        <category>tool</category>
+      </categories>
+      <tags>
+        <tag>electron</tag>
+        <tag>tool</tag>
       </tags>
   </entry>
   <entry>
@@ -2119,49 +2160,8 @@ systemctl restart docker
         <category>tool</category>
       </categories>
       <tags>
+        <tag>tool</tag>
         <tag>docker</tag>
-        <tag>tool</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250928-251005 weekly electron</title>
-    <url>/2025/10/05/250928-251005-weekly-electron/</url>
-    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
-0. 项目结构静态网页资源dist应先移动到application项目中。
-.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
-
-1. 项目初始化与安装参考：教程
-但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
-npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
-
-后面运行命令出现网络问题也如此。
-2. 打包对web项目使用npm run build后生成的静态网页进行打包。
-但需要注意：
-
-Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
-
-// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
-
-
-在application项目中，文件加载路径的写法。
-
-const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
-
-但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
-更新后的src&#x2F;App.jsx:
-import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
-
-同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
-import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
-
-再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
-]]></content>
-      <categories>
-        <category>tool</category>
-      </categories>
-      <tags>
-        <tag>tool</tag>
-        <tag>electron</tag>
       </tags>
   </entry>
   <entry>
@@ -2280,44 +2280,6 @@ americanFactory ..&gt; drink : CreateDrink()
       </tags>
   </entry>
   <entry>
-    <title>251006-251012 weekly Qt</title>
-    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
-    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
-我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
-1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
-需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
-2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
-程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
-
-信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
-槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
-默认情况下：信号与槽是“同步的”。
-
-整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
-2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
-它是体现事件驱动的绝佳例子。
-它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
-可以利用QTimer以及timeout信号来实现定时触发事件。
-以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
-QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
-
-
-2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
-QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
-
-通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
-之后遇到了需要QThread的时候再介绍Qt的线程~
-]]></content>
-      <categories>
-        <category>Qt</category>
-      </categories>
-      <tags>
-        <tag>Projects</tag>
-        <tag>C++</tag>
-        <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251012 record best-time-to-buy-and-sell-stock</title>
     <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
     <content><![CDATA[题目
@@ -2410,6 +2372,74 @@ director ..&gt; product : Construct()
       </tags>
   </entry>
   <entry>
+    <title>251006-251012 weekly Qt</title>
+    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
+    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
+我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
+1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
+需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
+2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
+程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
+
+信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
+槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
+默认情况下：信号与槽是“同步的”。
+
+整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
+2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
+它是体现事件驱动的绝佳例子。
+它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
+可以利用QTimer以及timeout信号来实现定时触发事件。
+以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
+QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
+
+
+2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
+QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
+
+通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
+之后遇到了需要QThread的时候再介绍Qt的线程~
+]]></content>
+      <categories>
+        <category>Qt</category>
+      </categories>
+      <tags>
+        <tag>Projects</tag>
+        <tag>C++</tag>
+        <tag>Qt</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 thinking slider window</title>
+    <url>/2025/10/12/251012-thinking-slider-window/</url>
+    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
+1. 定长滑动窗口只用r即可，l=r-w+1。
+模板：
+for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
+
+
+注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
+
+2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
+l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
+
+3. 例题
+定长滑动窗口
+
+变长滑动窗口
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>thinking</tag>
+        <tag>slider window</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251012 thinking reflect</title>
     <url>/2025/10/12/251012-thinking-reflect/</url>
     <content><![CDATA[最近在用 Gin&#x2F;GORM 尝试写一个后端。受 PostgREST 的启发，我想实现一个更通用的后端：它能运行时自动查询数据库的表结构，并动态生成对应的模型 (Model) 和控制器 (Controller)，从而免去为每张表手动编写重复代码的麻烦。
@@ -2458,36 +2488,6 @@ package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quo
       <tags>
         <tag>go</tag>
         <tag>reflect</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 thinking slider window</title>
-    <url>/2025/10/12/251012-thinking-slider-window/</url>
-    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
-1. 定长滑动窗口只用r即可，l=r-w+1。
-模板：
-for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
-
-
-注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
-
-2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
-l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
-
-3. 例题
-定长滑动窗口
-
-变长滑动窗口
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>thinking</tag>
-        <tag>slider window</tag>
       </tags>
   </entry>
   <entry>
@@ -2704,58 +2704,6 @@ func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;  
       </tags>
   </entry>
   <entry>
-    <title>251018 thinking decorator</title>
-    <url>/2025/10/25/251018-thinking-decorator/</url>
-    <content><![CDATA[1. 什么是装饰器模式装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变原有对象结构的情况下，动态地给对象添加新的功能。
-2. 为什么需要装饰器模式想象一下去咖啡店点单的场景：
-
-一杯基础款咖啡（比如美式）。
-各种调料（比如牛奶、糖、巧克力酱等）。
-
-你可以选择只喝纯的美式，也可以要求加奶，再加糖。
-如果我们用继承来实现“咖啡+调料”的功能，会发生什么？
-我们可能需要创建CoffeeWithMilk CoffeeWithSugar CoffeeWithMilkAndSugar等大量的子类。
-如果再增加一种调料（比如奶油），类的数量就会爆炸式增长。
-同时，如果想给一个已经创建好的Coffee实例动态添加牛奶，使用继承是做不到的，因为继承是静态的。
-但装饰器模式通过组合解决了这些问题：
-
-遵循开闭原则：你可以随时创建新的调料（装饰器），而无需修改任何现有的咖啡（组件）代码。系统对扩展开放，对修改关闭。
-灵活性和动态性：可以在运行时根据需要，任意地、动态地为对象添加一层或多层功能，组合顺序和数量都非常灵活。
-避免子类爆炸：无论有多少种调料，我们只需要为每种调料创建一个装饰器类，而不是为每种组合都创建一个子类。
-
-3. 装饰器模式的实现（go）type Coffee interface &#123;	GetCoffee() string&#125;type Latte struct &#123;&#125;func (l *Latte) GetCoffee() string &#123;	return &quot;Latte&quot;&#125;type CoffeeDecorator struct &#123;    CoffeeOrdered *Coffee    AddCondiment string&#125;func (d *CoffeeDecorator) GetCoffee() string &#123;	return d.CoffeeOrdered.GetCoffee() + &quot; with &quot; + d.AddCondiment&#125;
-
-客户端
-func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeDecorator&#123;CoffeeOrdered: latte, AddCondiment: &quot;Milk&quot;&#125;	latteWithMilkAndSugar := &amp;CoffeeDecorator&#123;CoffeeOrdered: latteWithMilk, AddCondiment: &quot;Sugar&quot;&#125;	fmt.Println(latteWithMilkAndSugar.GetCoffee())&#125;
-类图
-
-    classDiagram
-    class Coffee {
-        &lt;&lt;interface&gt;&gt;
-        +GetCoffee() string
-    }
-    class Latte {
-        +GetCoffee() string
-    }
-    class CoffeeDecorator {
-        +GetCoffee() string
-        +AddCondiment string
-        +CoffeeOrdered *Coffee
-    }
-    Coffee &lt;|.. Latte
-    CoffeeDecorator &quot;1&quot; *-- &quot;1&quot; Coffee
-  ]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Interface Oriented Design</tag>
-        <tag>Decorator Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251018 thinking facade</title>
     <url>/2025/10/25/251018-thinking-facade/</url>
     <content><![CDATA[1. 什么是外观模式外观模式是一种结构型设计模式， 能为程序库、 框架或其他复杂类提供一个简单的接口。
@@ -2808,6 +2756,58 @@ func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
         <tag>go</tag>
         <tag>Interface Oriented Design</tag>
         <tag>Facade Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251018 thinking decorator</title>
+    <url>/2025/10/25/251018-thinking-decorator/</url>
+    <content><![CDATA[1. 什么是装饰器模式装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变原有对象结构的情况下，动态地给对象添加新的功能。
+2. 为什么需要装饰器模式想象一下去咖啡店点单的场景：
+
+一杯基础款咖啡（比如美式）。
+各种调料（比如牛奶、糖、巧克力酱等）。
+
+你可以选择只喝纯的美式，也可以要求加奶，再加糖。
+如果我们用继承来实现“咖啡+调料”的功能，会发生什么？
+我们可能需要创建CoffeeWithMilk CoffeeWithSugar CoffeeWithMilkAndSugar等大量的子类。
+如果再增加一种调料（比如奶油），类的数量就会爆炸式增长。
+同时，如果想给一个已经创建好的Coffee实例动态添加牛奶，使用继承是做不到的，因为继承是静态的。
+但装饰器模式通过组合解决了这些问题：
+
+遵循开闭原则：你可以随时创建新的调料（装饰器），而无需修改任何现有的咖啡（组件）代码。系统对扩展开放，对修改关闭。
+灵活性和动态性：可以在运行时根据需要，任意地、动态地为对象添加一层或多层功能，组合顺序和数量都非常灵活。
+避免子类爆炸：无论有多少种调料，我们只需要为每种调料创建一个装饰器类，而不是为每种组合都创建一个子类。
+
+3. 装饰器模式的实现（go）type Coffee interface &#123;	GetCoffee() string&#125;type Latte struct &#123;&#125;func (l *Latte) GetCoffee() string &#123;	return &quot;Latte&quot;&#125;type CoffeeDecorator struct &#123;    CoffeeOrdered *Coffee    AddCondiment string&#125;func (d *CoffeeDecorator) GetCoffee() string &#123;	return d.CoffeeOrdered.GetCoffee() + &quot; with &quot; + d.AddCondiment&#125;
+
+客户端
+func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeDecorator&#123;CoffeeOrdered: latte, AddCondiment: &quot;Milk&quot;&#125;	latteWithMilkAndSugar := &amp;CoffeeDecorator&#123;CoffeeOrdered: latteWithMilk, AddCondiment: &quot;Sugar&quot;&#125;	fmt.Println(latteWithMilkAndSugar.GetCoffee())&#125;
+类图
+
+    classDiagram
+    class Coffee {
+        &lt;&lt;interface&gt;&gt;
+        +GetCoffee() string
+    }
+    class Latte {
+        +GetCoffee() string
+    }
+    class CoffeeDecorator {
+        +GetCoffee() string
+        +AddCondiment string
+        +CoffeeOrdered *Coffee
+    }
+    Coffee &lt;|.. Latte
+    CoffeeDecorator &quot;1&quot; *-- &quot;1&quot; Coffee
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Decorator Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -3137,5 +3137,78 @@ func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
       <categories>
         <category>record</category>
       </categories>
+  </entry>
+  <entry>
+    <title>251018 thinking flyweight</title>
+    <url>/2025/10/31/251018-thinking-flyweight/</url>
+    <content><![CDATA[1. 什么是享元模式享元模式是一种结构型设计模式，它通过共享相同状态的对象来减少内存占用和提高性能。
+2. 为什么需要享元模式我们用一个“在地图上种树”的例子来理解。
+2.1. 问题：内存爆炸假设要在地图上种 100 万棵树。每棵树都有：
+
+**坐标(x, y)**：每棵树都不同。
+类型信息：如名称（松树）、颜色（绿色）、纹理图片等。类型是有限的，比如只有几种。
+
+如果为每棵树都创建一个包含所有信息的对象，Texture（纹理图片）这份可能很大的数据会被重复存储 100 万次，导致内存爆炸。
+// 传统方式：每个对象都包含所有数据type Tree struct &#123;	X, Y      int	Name      string	Color     string	Texture   []byte // 假设这份数据很大&#125;
+
+该如何解决这个问题？
+2.2. 方案：享元模式享元模式的核心是分离并共享相似对象中的共同部分，以减少内存占用。
+我们将对象的状态分为两种：
+
+**内部状态 (Intrinsic State)**：可共享、不随环境改变的部分。在例子中是 Name, Color, Texture。
+**外部状态 (Extrinsic State)**：不可共享、随环境改变的部分。在例子中是 X, Y 坐标。
+
+实现步骤是创建享元对象（内部状态），通过享元工厂来复用它，并让上下文对象（外部状态）持有对享元的引用。
+// 1. 享元对象：存储共享的【内部状态】type treeType struct &#123;	Name    string	Color   string	Texture []byte // 这份数据被共享&#125;// 2. 享元工厂：确保相同类型的享元只创建一次type treeTypeFactory struct &#123;	types map[string]*treeType&#125;func (f *treeTypeFactory) GetTreeType(name, color string, texture []byte) *treeType &#123;	key := name + &quot;_&quot; + color	if t, ok := f.types[key]; ok &#123;		return t // 已存在，直接返回	&#125;	// 不存在，创建新的并存起来	newType := &amp;treeType&#123;name, color, texture&#125;	f.types[key] = newType	return newType&#125;// 3. 上下文对象：存储【外部状态】和对享元的引用type Tree struct &#123;	X, Y int	Type *treeType // 指向共享的享元对象&#125;type Forest struct &#123;	trees   []*Tree	factory *treeTypeFactory&#125;func (f *Forest) SetFactory() &#123;	f.factory = &amp;treeTypeFactory&#123;		types: make(map[string]*treeType),	&#125;&#125;func (f *Forest) PlantTree(x, y int, name, color string, texture []byte) &#123;	// 从工厂获取共享的 treeType	treeType := f.factory.GetTreeType(name, color, texture)	// 创建 Tree，只存储外部状态和引用	tree := &amp;Tree&#123;X: x, Y: y, Type: treeType&#125;	f.trees = append(f.trees, tree)&#125;func (f *Forest) GetTrees() []*Tree &#123;	return f.trees&#125;
+
+通过这种方式，TreeType 对象（比如“松树”）只会在内存中存在一份，所有松树实例都共享它。内存占用问题迎刃而解。
+
+
+对于某个类 A 的一些在不同实例中基本相同的属性，我们把它们单独拿出来形成一个类 B，并由一个缓存池（享元工厂）来管理。
+新建 A 时，先在缓存池中查找是否已有相同的 B 实例，如果有就复用它，否则创建新的并放入池中。
+最终表现为：多个 A 实例共享同一个 B 对象。
+
+
+3. 享元模式的实现（go）如上。
+类图：
+
+    classDiagram
+    class Forest {
+        -trees: []*Tree
+        -factory: *treeTypeFactory
+        +SetFactory()
+        +PlantTree(x, y, name, color, texture)
+        +GetTrees(): []*Tree
+    }
+    class treeTypeFactory {
+        -types: map[string]*treeType
+        +GetTreeType(name, color, texture): *treeType
+    }
+    class Tree {
+        +X: int
+        +Y: int
+        +Type: *treeType
+    }
+    class treeType {
+        &lt;&lt;Flyweight&gt;&gt;
+        +Name: string
+        +Color: string
+        +Texture: []byte
+    }
+
+    Forest &quot;1&quot; --o &quot;1&quot; treeTypeFactory : uses
+    Forest &quot;1&quot; --* &quot;0..*&quot; Tree : contains
+    Tree &quot;1&quot; --o &quot;1&quot; treeType : references
+    treeTypeFactory &quot;1&quot; ..&gt; &quot;0..*&quot; treeType : creates &amp; manages
+  
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Flyweight Pattern</tag>
+      </tags>
   </entry>
 </search>
