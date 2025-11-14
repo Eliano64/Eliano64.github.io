@@ -1,0 +1,341 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>251114 thinking jwt | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="1. 什么是 JWT？JWT 全称是 JSON Web Token，由三部分组成，用点 . 隔开。例如： xxxxx.yyyyy.zzzzz  Header (头部) - xxxxx  内容 ：记录令牌的类型（就是 JWT）和加密算法（比如 HMAC SHA256）。 作用 ：告诉服务器怎么去解读这张令牌，包括令牌的类型和加密算法。   Payload (载荷) - yyyyy  内容 ：承载声明">
+<meta property="og:type" content="article">
+<meta property="og:title" content="251114 thinking jwt">
+<meta property="og:url" content="https://eliano64.github.io/2025/11/14/251114-thinking-jwt/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="1. 什么是 JWT？JWT 全称是 JSON Web Token，由三部分组成，用点 . 隔开。例如： xxxxx.yyyyy.zzzzz  Header (头部) - xxxxx  内容 ：记录令牌的类型（就是 JWT）和加密算法（比如 HMAC SHA256）。 作用 ：告诉服务器怎么去解读这张令牌，包括令牌的类型和加密算法。   Payload (载荷) - yyyyy  内容 ：承载声明">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2025-11-14T08:19:10.000Z">
+<meta property="article:modified_time" content="2025-11-14T14:02:37.450Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="go">
+<meta property="article:tag" content="jwt">
+<meta property="article:tag" content="javascript">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "251114 thinking jwt",
+  "url": "https://eliano64.github.io/2025/11/14/251114-thinking-jwt/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2025-11-14T08:19:10.000Z",
+  "dateModified": "2025-11-14T14:02:37.450Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://eliano64.github.io/2025/11/14/251114-thinking-jwt/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '251114 thinking jwt',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">251114 thinking jwt</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">251114 thinking jwt</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-14T08:19:10.000Z" title="发表于 2025-11-14 16:19:10">2025-11-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-11-14T14:02:37.450Z" title="更新于 2025-11-14 22:02:37">2025-11-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/base-knowledge/">base knowledge</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.9k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="1-什么是-JWT？"><a href="#1-什么是-JWT？" class="headerlink" title="1. 什么是 JWT？"></a>1. 什么是 JWT？</h1><p>JWT 全称是 JSON Web Token，由三部分组成，用点 . 隔开。例如： xxxxx.yyyyy.zzzzz</p>
+<ol>
+<li><p>Header (头部) - xxxxx</p>
+<ul>
+<li>内容 ：记录令牌的类型（就是 JWT）和加密算法（比如 HMAC SHA256）。</li>
+<li>作用 ：告诉服务器怎么去解读这张令牌，包括令牌的类型和加密算法。</li>
+</ul>
+</li>
+<li><p>Payload (载荷) - yyyyy</p>
+<ul>
+<li>内容 ：承载声明，存放实际的用户信息。一般为Subject(主体标识)、ExpiresAt(过期时间)、IssuedAt(签发时间)、Issuer(签发者)、NotBefore(生效时间)等。这部分内容是公开的，任何人都能解码看到，所以不能放密码等敏感信息。</li>
+<li>作用 ：让服务器知道当前请求是谁发起的，有什么权限。</li>
+</ul>
+</li>
+<li><p>Signature (签名) - zzzzz</p>
+<ul>
+<li>内容 ：由服务器的密钥对前两部分签名，生成的防伪标识。它是通过把头部和载荷组合起来，再加上一个只有服务器知道的“密钥”（Secret），然后用头部声明的加密算法生成的。</li>
+<li>作用 ：<ul>
+<li>防伪 ：客户端无法伪造签名，因为他们没有服务器的“密钥”。</li>
+<li>防篡改 ：如果 载荷 (Payload) 里的任何信息（比如把普通用户ID改成管理员ID）被修改了，那么用同样的密钥算出来的签名就会和原始签名对不上。服务器一校验，就知道信息被改过了，就会拒绝这个请求。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>这种方式是“无状态的”，服务器不需要自己存储 session 信息。</p>
+<h1 id="2-工作流程"><a href="#2-工作流程" class="headerlink" title="2. 工作流程"></a>2. 工作流程</h1><ol>
+<li>登录 ：用户使用账号密码登录。</li>
+<li>签发 ：服务器验证账号密码成功后，生成一个包含用户ID等信息的 JWT（就像办了一张有时效的门禁卡），并把这个 JWT 发送给前端。</li>
+<li>携带 ：前端收到 JWT 后，把它存起来（比如存在浏览器的 localStorage ）。之后每次向服务器发请求，都在请求头 Authorization 里带上这个 JWT，格式通常是 Bearer <token> 。</li>
+<li>验证 ：服务器收到请求后，从请求头里拿出 JWT。用自己保存的密钥去验证这个 JWT 的签名是否正确。<ul>
+<li>如果签名正确，且没过期，服务器就相信这个请求是合法的，并从 JWT 的载荷中获取用户信息，处理请求。</li>
+<li>如果签名错误或已过期，就拒绝请求（返回 401 Unauthorized 错误）。</li>
+</ul>
+</li>
+</ol>
+<p><img src="/../asserts/jwt.png" alt="jwt workflow"></p>
+<h1 id="3-后端签发-验证-JWT（go，gin）"><a href="#3-后端签发-验证-JWT（go，gin）" class="headerlink" title="3. 后端签发&#x2F;验证 JWT（go，gin）"></a>3. 后端签发&#x2F;验证 JWT（go，gin）</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">&quot;net/http&quot;</span></span><br><span class="line">  <span class="string">&quot;os&quot;</span></span><br><span class="line">  <span class="string">&quot;time&quot;</span></span><br><span class="line">  <span class="string">&quot;github.com/gin-gonic/gin&quot;</span></span><br><span class="line">  <span class="string">&quot;github.com/golang-jwt/jwt/v5&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// definition of user struct, in gorm model</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  r := gin.Default()</span><br><span class="line">  secret := []<span class="type">byte</span>(os.Getenv(<span class="string">&quot;JWT_SECRET&quot;</span>))</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 注册路由组，所有 JWT 相关接口都在 /api 下</span></span><br><span class="line">  api := r.Group(<span class="string">&quot;/api&quot;</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 1. 登录接口：验证用户名密码后签发 JWT</span></span><br><span class="line">  api.POST(<span class="string">&quot;/login&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> req <span class="keyword">struct</span>&#123; Username, Password <span class="type">string</span> &#125;</span><br><span class="line">    <span class="keyword">if</span> err := c.BindJSON(&amp;req); err != <span class="literal">nil</span> &#123; </span><br><span class="line">        c.Status(http.StatusBadRequest)</span><br><span class="line">        <span class="keyword">return</span> </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 验证用户名密码（这里简单对比，实际应使用gorm从数据库查询）</span></span><br><span class="line">    <span class="keyword">if</span> req.Username != <span class="string">&quot;user&quot;</span> || req.Password != <span class="string">&quot;1&quot;</span> &#123;</span><br><span class="line">      c.Status(http.StatusUnauthorized)</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 创建一个待签名的 token，签名算法指定为 HS256</span></span><br><span class="line">    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims&#123;</span><br><span class="line">      Subject:   req.Username, <span class="comment">// 用户名/uid作为 subject</span></span><br><span class="line">      ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)), <span class="comment">// 这里设置过期时间1小时后，可以设置为其他值</span></span><br><span class="line">      IssuedAt:  jwt.NewNumericDate(time.Now()),</span><br><span class="line">      NotBefore: jwt.NewNumericDate(time.Now()),</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="comment">// 用密钥签名 token</span></span><br><span class="line">    s, err := token.SignedString(secret);</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123; </span><br><span class="line">        c.JSON(http.StatusInternalServerError, gin.H&#123;<span class="string">&quot;error&quot;</span>: <span class="string">&quot;Error creating token&quot;</span>&#125;)</span><br><span class="line">        <span class="keyword">return</span> </span><br><span class="line">    &#125;</span><br><span class="line">    c.JSON(http.StatusOK, gin.H&#123;<span class="string">&quot;token&quot;</span>: s&#125;)</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 验证受保护接口</span></span><br><span class="line">    <span class="comment">// 中间件：检查请求头 Authorization 是否包含有效的 JWT</span></span><br><span class="line">  auth := <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123;</span><br><span class="line">    h := c.GetHeader(<span class="string">&quot;Authorization&quot;</span>)</span><br><span class="line">    tokenStr := strings.TrimPrefix(h, <span class="string">&quot;Bearer &quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(tokenStr) == <span class="number">0</span> || tokenStr == h &#123; </span><br><span class="line">        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H&#123;<span class="string">&quot;error&quot;</span>: <span class="string">&quot;Invalid token format&quot;</span>&#125;)</span><br><span class="line">        <span class="keyword">return</span> </span><br><span class="line">    &#125;</span><br><span class="line">    claims := &amp;jwt.RegisteredClaims&#123;&#125;</span><br><span class="line">    tok, err := jwt.ParseWithClaims(tokenStr, claims, <span class="function"><span class="keyword">func</span><span class="params">(t *jwt.Token)</span></span> (any, <span class="type">error</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> secret, <span class="literal">nil</span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> || !tok.Valid &#123; </span><br><span class="line">        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H&#123;<span class="string">&quot;error&quot;</span>: <span class="string">&quot;Invalid or expired token&quot;</span>&#125;)</span><br><span class="line">        <span class="keyword">return</span> </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 把用户名设置到上下文，后续处理函数可以从上下文中获取</span></span><br><span class="line">    c.Set(<span class="string">&quot;Subject&quot;</span>, claims.Subject) </span><br><span class="line">    c.Next()</span><br><span class="line">  &#125;</span><br><span class="line">  api.GET(<span class="string">&quot;/me&quot;</span>, auth, <span class="function"><span class="keyword">func</span><span class="params">(c *gin.Context)</span></span> &#123; </span><br><span class="line">    <span class="comment">// 从上下文获取用户名</span></span><br><span class="line">    username, ok := c.Get(<span class="string">&quot;Subject&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> !ok &#123;</span><br><span class="line">      c.JSON(http.StatusInternalServerError, gin.H&#123;<span class="string">&quot;error&quot;</span>: <span class="string">&quot;User claims not found in context&quot;</span>&#125;)</span><br><span class="line">	  <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 这里是根据用户名/uid调用gorm相关查询用户信息的逻辑</span></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    c.JSON(http.StatusOK, gin.H&#123;<span class="string">&quot;username&quot;</span>: username&#125;) <span class="comment">//以json格式返回200状态码以及用户信息，可以根据实际情况添加其他用户信息</span></span><br><span class="line">  &#125;)</span><br><span class="line">  r.Run()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="4-前端存储-使用-JWT（JavaScript）"><a href="#4-前端存储-使用-JWT（JavaScript）" class="headerlink" title="4. 前端存储&#x2F;使用 JWT（JavaScript）"></a>4. 前端存储&#x2F;使用 JWT（JavaScript）</h1><p>这里使用 localStorage；生产更推荐使用 httpOnly+Secure 的 Cookie。</p>
+<ol>
+<li>登录后存储 token</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">fetch</span>(<span class="string">&quot;api/login&quot;</span>,&#123;</span><br><span class="line">  <span class="attr">method</span>:<span class="string">&quot;POST&quot;</span>,</span><br><span class="line">  <span class="attr">headers</span>:&#123;<span class="string">&quot;Content-Type&quot;</span>:<span class="string">&quot;application/json&quot;</span>&#125;,</span><br><span class="line">  <span class="attr">body</span>:<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123;<span class="attr">username</span>:<span class="string">&quot;user&quot;</span>,<span class="attr">password</span>:<span class="string">&quot;1&quot;</span>&#125;)</span><br><span class="line">&#125;).<span class="title function_">then</span>(<span class="function"><span class="params">r</span>=&gt;</span>r.<span class="title function_">json</span>()).<span class="title function_">then</span>(<span class="function"><span class="params">d</span>=&gt;</span><span class="variable language_">localStorage</span>.<span class="title function_">setItem</span>(<span class="string">&quot;token&quot;</span>, d.<span class="property">token</span>))</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>携带 token 访问受保护接口</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> t = <span class="variable language_">localStorage</span>.<span class="title function_">getItem</span>(<span class="string">&quot;token&quot;</span>)</span><br><span class="line"><span class="title function_">fetch</span>(<span class="string">&quot;api/me&quot;</span>,&#123;<span class="attr">headers</span>:&#123;<span class="title class_">Authorization</span>:<span class="string">`Bearer <span class="subst">$&#123;t&#125;</span>`</span>&#125;&#125;)</span><br><span class="line">  .<span class="title function_">then</span>(<span class="function"><span class="params">r</span>=&gt;</span>r.<span class="title function_">json</span>())</span><br><span class="line">  .<span class="title function_">then</span>(<span class="variable language_">console</span>.<span class="property">log</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="5-secret这个字段是干什么的？"><a href="#5-secret这个字段是干什么的？" class="headerlink" title="5. secret这个字段是干什么的？"></a>5. <code>secret</code>这个字段是干什么的？</h1><p><code>secret</code> 是用于签名和验证 JWT 的密钥，可以把它设置成任何你想要的字符串。这个密钥是 JWT 安全性的核心，它扮演着“盐”的角色。</p>
+<p><em>“盐”是什么意思？</em></p>
+<p>在密码学中，“盐”指的是一小段随机的、附加的数据 ，它被加到原始密码上，然后再一起进行哈希（hash）或加密处理。</p>
+<p>比如做一道炒鸡蛋，这道菜的“配方”（哈希算法）是公开的。</p>
+<p>如果没有盐，则鸡蛋（ 原始数据 ）直接下锅炒。因为配方公开，任何人只要拿到鸡蛋，都能炒出和一模一样味道的菜。如果一个黑客知道使用的是“123456”这个“鸡蛋”，他就能轻松“炒”出一模一样的“菜”（哈希值），从而破解密码。</p>
+<p>而现在，在炒鸡蛋时，jwt往里面加了一撮独有的、保密的“盐”。即使别人知道用的是鸡蛋、也知道配方，但因为不知道“盐”，他就永远也炒不出一模一样的味道。</p>
+<p>所以“盐”的核心作用有两个：</p>
+<ol>
+<li>让结果独一无二。即使两个用户使用完全相同的密码（比如都是 123456 ），因为给他们分配了 不同 的“盐”，他们最终存储在数据库里的哈希值也是完全不同的。</li>
+<li>抵御预计算攻击（如“彩虹表”） ：黑客们会提前计算好常用密码（如“123456”、“password”）的哈希值，做成一张大表（彩虹表），甚至直接查表就能反推出原始密码。但如果加了“盐”，原始数据变了，这张彩虹表就完全失效了，因为黑客不可能为每一个可能的“盐”都预先计算一张表。</li>
+</ol>
+<p>在 JWT 的场景里，则：</p>
+<ul>
+<li>“鸡蛋” ：是 JWT 的 Header (头部) 和 Payload (载荷)。</li>
+<li>“盐” ：<code>secret</code> 。</li>
+<li>“烹饪方法” ：是 Header 中指定的签名算法，比如 HMAC-SHA256 。</li>
+<li>“炒鸡蛋” ：就是 JWT 的第三部分 Signature (签名)。</li>
+</ul>
+<p>它保证了：</p>
+<ol>
+<li>真实性 (Authenticity) ：只有知道 <code>secret</code> 这个“盐”的服务器才能制作出味道正确的“菜”（合法的签名）。任何伪造者都做不出来。</li>
+<li>完整性 (Integrity) ：如果有人篡改 Payload 里的内容，由于无法知道 <code>secret</code>，则该jwt的Signature必定和服务器根据篡改后的Payload和<code>secret</code>重新计算出来的Signature不一致。验证签名时就会失败，服务器就会拒绝它。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2025/11/14/251114-thinking-jwt/">https://eliano64.github.io/2025/11/14/251114-thinking-jwt/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://Eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/go/">go</a><a class="post-meta__tags" href="/tags/jwt/">jwt</a><a class="post-meta__tags" href="/tags/javascript/">javascript</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2025/11/14/251114-thinking-observer/" title="251114 thinking observer"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">251114 thinking observer</div></div><div class="info-2"><div class="info-item-1">1. 什么是观察者模式？观察者模式（Observer Pattern）用于在对象状态变化时，通知依赖它的多个观察者，实现一种一对多的订阅关系。被观察者只负责发布事件，不关心有多少观察者、它们如何处理，达到发布方与订阅方的解耦。 2. 为什么需要观察者模式？当一个对象的变化需要联动多个组件时，若直接在对象内部逐个调用这些组件，将产生紧耦合和复杂的依赖。当组件增删或行为变化时，被观察者也不得不调整。通过观察者模式，我们将事件的发布与处理分离：被观察者只负责发出信号，观察者各自处理，从而降低耦合、提高扩展性。 3. 观察者模式的实现（go）1234567891011121314151617181920212223242526272829303132333435363738394041424344type Observer interface &#123;    Update(event string, data any)&#125;type Subject interface &#123;    Register(o Observer)    Unregister(o...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/08/24/250824-thinking-singleton/" title="250824 thinking singleton"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-24</div><div class="info-item-2">250824 thinking singleton</div></div><div class="info-2"><div class="info-item-1">1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。 2. 为什么需要单例模式？在多线程环境下，我们需要多个线程使用同一份资源。 2.1 为什么不使用全局变量？在一些较为简单的环境中，直接使用一些全局变量供所有线程使用是很好的。 但是，如果这个对象是资源密集型的，使用全局变量会导致资源的浪费。而且，简单的全局变量没有提供访问控制（封装），线程可以任意地访问和修改。 而单例模式就可以实现按需创建实例，避免了资源的浪费。而且提供了类封装，确保不会有意外的修改。 3. 单例模式的实现（go）单例模式尤其要注意线程安全。 sync.Once 确保了实例只被创建一次，避免了多线程环境下的竞态条件。 以下是一个懒加载的版本。 中间件代码： 1234567891011121314151617var once sync.Oncetype singleton struct &#123;&#125;var singleInstance *singletonfunc GetInstance()...</div></div></div></a><a class="pagination-related" href="/2025/09/26/250926-thinking-0-1%E8%83%8C%E5%8C%85dp/" title="250926 thinking 0-1背包dp"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-26</div><div class="info-item-2">250926 thinking 0-1背包dp</div></div><div class="info-2"><div class="info-item-1">本文的内容是0-1背包的空间优化、倒序遍历，以及至多&#x2F;恰好&#x2F;至少变体。一些基本概念不再赘述。 1. 空间优化由于它的递推表达式： $$dp[i][c] &#x3D; \max{, dp[i-1][c],; dp[i-1][c-w[i]] + v[i] ,}$$ dp[i][c]: 遍历到第 i 个物品时，若总容量为 c 时能获得的最大价值 可以发现每次更新值时，都是 i-1 更新 i 的，所以完全可以写为： $$dp[c] &#x3D; \max{, dp[c],; dp[c-w[i]] + v[i] ,}$$ 2. 倒序遍历在使用一维数组进行空间优化时，容量 c 必须“倒序遍历”（从最大容量 C 递减到 w[i]）。 Why?  若正序遍历（c 从小到大），在同一轮 i 的更新中，dp[c-w[i]] 已经被本轮 i 更新过，会导致同一物品 i 被复用多次，等价成“完全背包”的效果； 倒序遍历能保证本轮计算依赖的是“上一轮 i-1 的结果”，从而保持 0-1 约束。  更形式化的解释：维护不变式“在处理物品 i 时，所有用于计算的 dp[*] 均来自...</div></div></div></a><a class="pagination-related" href="/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/" title="250926 thinking 子序列判断"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-26</div><div class="info-item-2">250926 thinking 子序列判断</div></div><div class="info-2"><div class="info-item-1">1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。 一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。 现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。” 这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。 比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。 我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。 于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。 2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。 其他nxt[i][c]构建： 1234for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]   ...</div></div></div></a><a class="pagination-related" href="/2025/09/26/250926-thinking-%E5%B7%AE%E5%88%86/" title="250926 thinking 差分"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-09-26</div><div class="info-item-2">250926 thinking 差分</div></div><div class="info-2"><div class="info-item-1">1. 简介对于一个数组a，构造的这样的一个数组d称为a的差分数组：  d[i] = \begin{cases} 0, & \text{if } i = 0 \\ a[i] - a[i-1], & \text{otherwise} \end{cases}   2. 性质 对d构造前缀和数组得到a 对于a的一个下标区间[i,j)对应的元素统一加上一个数c后，则对应的d的变化为：d[i](now)=&gt;d[i](prev)+c d[j](now)=&gt;d[j](prev)-c。  也就是说，差分数组的构造可以将一个区间的变化映射为两个元素的变化。  在实际操作时，还要注意j&#x3D;&#x3D;a.length，此时超出d索引范围（因为在前面的构造中d.length&#x3D;&#x3D;a.length）。因此为了方便，通常让d.length&#x3D;a.length+1，即设置一个dummy。  3. 例题3355.零数组变换I go参考解法：（by 灵神） 1234567891011121314151617func isZeroArray(nums []int,...</div></div></div></a><a class="pagination-related" href="/2025/10/03/251003-thinking-factory-method-abstract-factory/" title="251003 thinking factory method&amp; abstract factory"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-03</div><div class="info-item-2">251003 thinking factory method&amp; abstract factory</div></div><div class="info-2"><div class="info-item-1">1. 工厂方法以点菜为例。 1234567type dish interface&#123; Cook() &#125;type pizza struct&#123;&#125;type burger struct&#123;&#125;func (*pizza) Cook() &#123;  &#125;func (*burger) Cook() &#123;  &#125;  若不用工厂方法，则客户端直连产品，新增产品要改分支，不符合开闭原则。 1234567891011121314func orderDish(typeName string) dish &#123;    switch typeName &#123;    case &quot;pizza&quot;:        d := &amp;pizza&#123;&#125;        d.Cook() // &quot;cook pizza&quot;        return d    case &quot;burger&quot;:        d :=...</div></div></div></a><a class="pagination-related" href="/2025/10/12/251012-thinking-builder/" title="251012 thinking builder"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-12</div><div class="info-item-2">251012 thinking builder</div></div><div class="info-2"><div class="info-item-1">1. 什么是生成器模式？生成器模式（Builder Pattern）是一种创建型设计模式，它将一个复杂对象的构建分成多个步骤，每个步骤可以被重写，因此使得同样的构建过程可以生成不同类型和形式的对象。 2. 为什么需要生成器模式？在一些情况下，我们需要根据不同的需求来创建不同类型的对象。如果使用简单的构造函数，会导致构造函数参数列表过长，或者参数顺序错误的问题。而生成器模式可以将对象的创建过程分解成多个步骤，每个步骤可以根据需求进行定制，从而避免了构造函数参数列表过长的问题。 3. 生成器模式的实现（go）生成器需要两个接口：  Builder接口：是构建对象的接口，定义了构建对象需要哪些方法。 Director接口：定义了使用Builder接口来构建对象的过程。  中间件代码示例： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556type builder interface &#123;    SetPartA()   ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF-JWT%EF%BC%9F"><span class="toc-text">1. 什么是 JWT？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">2. 工作流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E5%90%8E%E7%AB%AF%E7%AD%BE%E5%8F%91-%E9%AA%8C%E8%AF%81-JWT%EF%BC%88go%EF%BC%8Cgin%EF%BC%89"><span class="toc-text">3. 后端签发&#x2F;验证 JWT（go，gin）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E5%89%8D%E7%AB%AF%E5%AD%98%E5%82%A8-%E4%BD%BF%E7%94%A8-JWT%EF%BC%88JavaScript%EF%BC%89"><span class="toc-text">4. 前端存储&#x2F;使用 JWT（JavaScript）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-secret%E8%BF%99%E4%B8%AA%E5%AD%97%E6%AE%B5%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="toc-text">5. secret这个字段是干什么的？</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/14/251114-thinking-jwt/" title="251114 thinking jwt">251114 thinking jwt</a><time datetime="2025-11-14T08:19:10.000Z" title="发表于 2025-11-14 16:19:10">2025-11-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/14/251114-thinking-observer/" title="251114 thinking observer">251114 thinking observer</a><time datetime="2025-11-14T03:34:00.000Z" title="发表于 2025-11-14 11:34:00">2025-11-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/14/251114-thinking-memento/" title="251114 thinking memento">251114 thinking memento</a><time datetime="2025-11-14T03:21:02.000Z" title="发表于 2025-11-14 11:21:02">2025-11-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/14/251114-thinking-mediator/" title="251114 thinking mediator">251114 thinking mediator</a><time datetime="2025-11-14T02:48:39.000Z" title="发表于 2025-11-14 10:48:39">2025-11-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/12/251112-thinking-binary-constraint-matching/" title="251112 thinking binary constraint matching">251112 thinking binary constraint matching</a><time datetime="2025-11-12T13:57:13.000Z" title="发表于 2025-11-12 21:57:13">2025-11-12</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>
