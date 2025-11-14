@@ -176,6 +176,47 @@ func f(x int, lengths []int) bool &#123;    count := 0    for _, l := range leng
       </tags>
   </entry>
   <entry>
+    <title>250728-250803 周记 缓存池项目学习</title>
+    <url>/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。
+1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。
+缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。
+每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时将该元素从哈希表中删除。
+1.1 改进以上的LRU存在着缓存污染、锁的粒度过大的问题。
+缓存污染：当新加进来的一次性的数据很多，导致缓存满时，传统的LRU会直接删除尾部元素。但是，尾部元素可能是热门数据。锁的粒度大：一把大锁锁全局。多线程高并发的访问下，同步等待将是一笔极大的时间开销。
+故考虑以下改进：
+1.1.1 LRU-KLRU-K在普通的LRU的基础上，新增加了一个小的LRU副缓存。当数据进入时，它会先进入副缓存，并访问计数加一。只有当它的访问计数大于等于K时，才会移出副缓存，进入主缓存。
+当主副缓存满时，淘汰机制与普通LRU一致。
+这样就可以避免缓存污染的问题。使得大量进入的一次性数据不会挤出热门数据。
+1.1.2 LRU-Hash与2024-xv6-labs-2中2.2 Buffer cache的思想一致，既然一个链表配全局大锁效率低，那就把链表分成多个小链表，每个小链表即是一个小的lru缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除这个小链表的尾部元素。
+2. LFULFU是Least Frequently Used的缩写，即淘汰使用次数最少的元素。
+缓存的实现使用了一个记录键-值对&lt;key, value&gt;的哈希表a和一个记录频率-列表对&lt;freq, linklist&gt;的哈希表b。哈希表a用于快速查找缓存中的元素，哈希表b用于根据频率高效地维护缓存中的元素。
+每当涉及一个元素的key时，将该元素的频率增加1，并将该元素移动到哈希表b中对应频率的链表头部。移动后若原链表为空则删去。当缓存满时，将哈希表b中频率最低的链表的尾部元素删除。同时将该元素从哈希表a中删除。
+2.1 改进普通LFU存在着新来的元素容易被移出（即使是未来的热门数据）、而过时的热门数据很难被移出的问题，而且访问次数若一直增长，可能会导致上溢。
+同时与普通LRU一样，存在锁的粒度过大的问题。
+改进如下：
+2.1.1 最大平均访问次数限制首先设置一个阈值。当数据访问&#x2F;插入发生时，不仅需要记录当前最小访问次数，还需要计算平均访问次数。然后当平均访问次数超过阈值时，就需要对记录的访问次数进行调整。所有的元素的访问次数减去阈值的一半，操作后小于0者设为1。然后更新记录&lt;freq-linklist&gt;的哈希表，将元素插入对应频率的链表中。
+这样的方式不仅可以避免访问次数的上溢，还可以加快数据的更新，让旧的热点数据”老化”，缓解挤占未来的热点数据空间的问题。
+2.1.2 LFU-Hash同LRU-Hash的思想，分成多个记录&lt;freq-linklist&gt;的小哈希表，每个表即是一个小的lfu缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除频率最低的链表的尾部元素。
+3. ARCARC是Adaptive Replacement Cache的缩写，即自适应替换缓存。
+当访问的数据趋向于访问最近的内容，会更多地命中LRU list；当系统趋向于访问频繁访问的内容时，会更多地命中LFU list。
+LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混合，取长补短。于是就有了结合LRU和LFU的缓存替换算法，即ARC。
+基本思想是，将缓存分成两个部分，一部分是LRU缓存，一部分是LFU缓存，然后每个缓存有一个自己的ghost缓存。
+当新数据进入时，先进入LRU list，并访问次数设为一。当再次访问这个数据时，访问次数增加1。当访问次数达到阈值后，LFU list里也插入这个元素。于是，该数据块不仅仅只保存在LRU的缓存目录中，也将保存到LFU中。所以一个最近的热门数据若有更新应该是两个表同时进行的。
+这样，那些真正被频繁访问的页面将一直呆在缓存中，不会被冷数据的加入而误淘汰，不经常访问的数据会向链表头部移动，最终被淘汰出去。
+当缓存满时，需要淘汰一个元素。淘汰的逻辑与对应的普通LRU和普通LFU一致，只是淘汰出的元素要插入对应的ghost缓存中。ghost缓存的淘汰模式就是简单的FIFO即可。
+这样，访问元素在哪一边ghost中找到，就说明那一边的容量小了而对面的容量大了。对面的容量如果不为0则减一，然后这边的容量加一。否则跳过。
+]]></content>
+      <categories>
+        <category>cache</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>projects</tag>
+        <tag>cache</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250721 thinking 单调栈</title>
     <url>/2025/07/21/250721-thinking-%E5%8D%95%E8%B0%83%E6%A0%88/</url>
     <content><![CDATA[
@@ -233,701 +274,6 @@ for (int i = 0; i &lt; 2 * n; i++) &#123;    // 使用 nums[i % n]    if (i &lt;
         <tag>C++</tag>
         <tag>data structure &amp; algorithm</tag>
         <tag>Monotonic Stack</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250728-250803 周记 缓存池项目学习</title>
-    <url>/2025/08/04/250728-250803-%E5%91%A8%E8%AE%B0-%E7%BC%93%E5%AD%98%E6%B1%A0%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[本周主要跟着代码随想录学习了LRU, LFU, 以及ARC三种缓存替换算法的原理和C++实现。
-1. LRULRU是Least Recently Used的缩写，即淘汰最近最少使用的元素。
-缓存的实现使用了一个哈希表和一个双向链表。哈希表用于快速查找缓存中的元素，双向链表用于维护缓存中的元素顺序。
-每当涉及一个元素的key时，将该元素移动到双向链表的头部。当缓存满时，将双向链表的尾部元素删除。同时将该元素从哈希表中删除。
-1.1 改进以上的LRU存在着缓存污染、锁的粒度过大的问题。
-缓存污染：当新加进来的一次性的数据很多，导致缓存满时，传统的LRU会直接删除尾部元素。但是，尾部元素可能是热门数据。锁的粒度大：一把大锁锁全局。多线程高并发的访问下，同步等待将是一笔极大的时间开销。
-故考虑以下改进：
-1.1.1 LRU-KLRU-K在普通的LRU的基础上，新增加了一个小的LRU副缓存。当数据进入时，它会先进入副缓存，并访问计数加一。只有当它的访问计数大于等于K时，才会移出副缓存，进入主缓存。
-当主副缓存满时，淘汰机制与普通LRU一致。
-这样就可以避免缓存污染的问题。使得大量进入的一次性数据不会挤出热门数据。
-1.1.2 LRU-Hash与2024-xv6-labs-2中2.2 Buffer cache的思想一致，既然一个链表配全局大锁效率低，那就把链表分成多个小链表，每个小链表即是一个小的lru缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除这个小链表的尾部元素。
-2. LFULFU是Least Frequently Used的缩写，即淘汰使用次数最少的元素。
-缓存的实现使用了一个记录键-值对&lt;key, value&gt;的哈希表a和一个记录频率-列表对&lt;freq, linklist&gt;的哈希表b。哈希表a用于快速查找缓存中的元素，哈希表b用于根据频率高效地维护缓存中的元素。
-每当涉及一个元素的key时，将该元素的频率增加1，并将该元素移动到哈希表b中对应频率的链表头部。移动后若原链表为空则删去。当缓存满时，将哈希表b中频率最低的链表的尾部元素删除。同时将该元素从哈希表a中删除。
-2.1 改进普通LFU存在着新来的元素容易被移出（即使是未来的热门数据）、而过时的热门数据很难被移出的问题，而且访问次数若一直增长，可能会导致上溢。
-同时与普通LRU一样，存在锁的粒度过大的问题。
-改进如下：
-2.1.1 最大平均访问次数限制首先设置一个阈值。当数据访问&#x2F;插入发生时，不仅需要记录当前最小访问次数，还需要计算平均访问次数。然后当平均访问次数超过阈值时，就需要对记录的访问次数进行调整。所有的元素的访问次数减去阈值的一半，操作后小于0者设为1。然后更新记录&lt;freq-linklist&gt;的哈希表，将元素插入对应频率的链表中。
-这样的方式不仅可以避免访问次数的上溢，还可以加快数据的更新，让旧的热点数据”老化”，缓解挤占未来的热点数据空间的问题。
-2.1.2 LFU-Hash同LRU-Hash的思想，分成多个记录&lt;freq-linklist&gt;的小哈希表，每个表即是一个小的lfu缓存，各自配置最大容量，并通过一个哈希表（vector即可）统一管理，每个哈希桶配一个锁。每个新来的元素根据key的哈希值插入对应的小链表中。若容量在这之前已满，则同理删除频率最低的链表的尾部元素。
-3. ARCARC是Adaptive Replacement Cache的缩写，即自适应替换缓存。
-当访问的数据趋向于访问最近的内容，会更多地命中LRU list；当系统趋向于访问频繁访问的内容时，会更多地命中LFU list。
-LRU和LFU各有优劣，而实际应用环境更为复杂，需要将两种混合，取长补短。于是就有了结合LRU和LFU的缓存替换算法，即ARC。
-基本思想是，将缓存分成两个部分，一部分是LRU缓存，一部分是LFU缓存，然后每个缓存有一个自己的ghost缓存。
-当新数据进入时，先进入LRU list，并访问次数设为一。当再次访问这个数据时，访问次数增加1。当访问次数达到阈值后，LFU list里也插入这个元素。于是，该数据块不仅仅只保存在LRU的缓存目录中，也将保存到LFU中。所以一个最近的热门数据若有更新应该是两个表同时进行的。
-这样，那些真正被频繁访问的页面将一直呆在缓存中，不会被冷数据的加入而误淘汰，不经常访问的数据会向链表头部移动，最终被淘汰出去。
-当缓存满时，需要淘汰一个元素。淘汰的逻辑与对应的普通LRU和普通LFU一致，只是淘汰出的元素要插入对应的ghost缓存中。ghost缓存的淘汰模式就是简单的FIFO即可。
-这样，访问元素在哪一边ghost中找到，就说明那一边的容量小了而对面的容量大了。对面的容量如果不为0则减一，然后这边的容量加一。否则跳过。
-]]></content>
-      <categories>
-        <category>cache</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>projects</tag>
-        <tag>cache</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250811-250817 周记 linux命令与shell编程学习(1)</title>
-    <url>/2025/08/18/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-1/</url>
-    <content><![CDATA[本周学习了Linux Command Line and Shell Scripting Bible这本书的第一部分到第二部分。这里对一些我自己不熟悉的、我自己觉得比较重要的内容进行记录摘要。
-1. 第一部分 linux命令行1.3 bash shell基础命令1.3.5 列出文件和目录1.3.5.3 过滤输出列表
-模式匹配: 问号(?)代表任意单个字符; 星号(*)代表零个或多个字符。
-方括号代表单个字符位置并给出了该位置上的多个可能的选择。你可以将可能的字符逐一列出,也可以指定字符范围,比如字母范围[a–i]。
-还可以使用惊叹号(!)将不需要的内容排除在外。
-
-1.3.6 处理文件1.3.6.2 复制文件
-cp 命令可以完成文件和目录从文件系统的一个位置复制到另一个位置的操作。 
-cp 命令最基本的用法需要两个参数,即源对象和目标对象:cp source destination。 当参数 source 和 destination 都是文件名时,cp 命令会将源文件复制成一个新的目标文件,并以 destination 命名。新文件在形式上就像全新的文件一样,有新的修改时间。
-如果目标文件已经存在,则 cp 命令 可能并不会提醒你这一点。最好加上-i 选项,强制 shell 询问是否需要覆盖已有文件。
-cp 命令的-R 选项威力强大。可以用它在单个命令中递归地复制整个目录的内容。
-在执行 cp –R 命令之前,目录 NewDocuments 并不存在。它是随着 cp –R 命令被创建的, 整个 Documents 目录中的内容都被复制到其中。注意,新的 NewDocuments 目录中所有的文件都 有对应的新日期。NewDocuments 目录现在已经成了 Documents 目录的完整副本。
-
-1.3.6.3 使用命令行补全
-制表键补全允许你在输入文件名 或目录名的时候,按一下制表键,让 shell 帮你将内容补充完整。
-使用制表键补全的技巧在于要给 shell 提供足够的文件名信息,使其能够将所需文件名与其 他文件名区分开。
-
-1.3.6.4 链接文件
-链接是目录中指 向文件真实位置的占位符。在 Linux 中有两种类型的文件链接: 符号链接，硬链接。
-符号链接(也称为软链接)是一个实实在在的文件,该文件指向存放在虚拟目录结构中某个地方的另一个文件。这两个以符号方式链接在一起的文件彼此的内容并不相同。可以类比为windows系统中的快捷方式。
-要为一个文件创建符号链接,原始文件必须事先存在。使用 ln -s 命令创建符号链接。ln -s test_file slink_test_file
-硬链接创建的是一个独立的虚拟文件,其中包含了原始文件的信息以及位置。但是两者就根本而言是同一个文件。可以理解为“同一文件出现在不同的目录下”。要想创建硬链接,原始文件也必须事先存在,只不过这次使用 ln 命令时不需要再加入额外的选项了:ln test_file hlink_test_file
-
-1.3.6.5 文件重命名
-重命名文件称为移动。mv 命令可以将文件和目录移动到另一个位置或是重新命名：mv old new
-
-1.3.6.6 删除文件
-rm的-i 选项会询问你是否真的要删除该文件。shell 没有回收站或者垃圾箱这样的东西, 文件一旦被删除,就再也找不回来了。所以在使用 rm 命令时,要养成总是加入-i 选项的好习惯。
-
-1.3.7 管理目录1.3.7.1 创建目录
-可以根据需要“批量”地创建目录和子目录。为此,要使用 mkdir 命令的-p 选项, mkdir 命令的-p 选项可以根据需要创建缺失的父目录。
-
-1.3.8 查看文件内容1.3.8.1 查看文件类型
-file 命令是一个方便的小工具,能够探测文件的内部并判断文件类型
-
-3.8.2 查看整个文件
-cat
-
-
-cat 命令是显示文本文件中所有数据的得力工具。
--n 选项会给所有的行加上行号
-如果只想给有文本的行加上行号,可以用-b 选项
-
-
-more
-
-less
-
-
-
-less实为 more 命令的升级版本
-less 命令提供了多个非常实用的特性,能 够实现在文本文件中前后翻动,还有一些高级搜索功能。
-less 命令还可以在完成整个文件的读取之前显示文件的内容。
-
-1.3.8.3 查看部分文件
-tail 命令
-
-
-tail 命令会显示文件最后几行的内容(文件的“尾部”)。在默认情况下,它会显示文件的 末尾 10 行。
-可以向 tail 命令中加入-n 选项来修改所显示的行数，如通过加入-n 2, 使得 tail 命令只显示文件的最后两行
-tail 命令有一个非常酷的特性:-f 选项,该选项允许你在其他进程使用此文件时查看文件 的内容。tail 命令会保持活动状态并持续地显示添加到文件中的内容。这是实时监测系统日志 的绝佳方式。
-
-
-head 命令
-
-
-head 命令会显示文件开头若干行(文件的“头部”)。在默认情况下,它会显示文件前 10 行的文本
-head 命令也支持-n 选项
-这两个命令也允 许简单地在连字符后面直接输入想要显示的行数
-
-1.4 更多的 bash shell 命令1.4.1 监测程序1.4.1.1 探查进程
-ps 命令默认只显示运行在当前终端中属于当前用户的那些进程。
-ps 命令的基本输出显示了程序的进程 ID(process ID,PID)、进程运行在哪个终端(TTY) 及其占用的 CPU 时间。
-如果需要查看系统中运行的所有进程,可以使用-ef 选项组合。-e 选项指定显示系统中运行的所有进程;-f 选项则扩充输出内容以显示一些有用的信息列：
-
-
-
-
-列名
-说明
-
-
-
-UID
-启动该进程的用户
-
-
-PID
-进程 ID
-
-
-PPID
-父进程的 PID(如果该进程是由另一个进程启动的)
-
-
-C
-进程生命期中的 CPU 利用率
-
-
-STIME
-进程启动时的系统时间
-
-
-TTY
-进程是从哪个终端设备启动的
-
-
-TIME
-运行进程的累计 CPU 时间
-
-
-CMD
-启动的程序名称
-
-
-
-如果还想获得更多的信息, 可以使用-l 选项,产生长格式输出。多出的那几列：
-
-
-
-
-列名
-说明
-
-
-
-F
-内核分配给进程的系统标志
-
-
-S
-进程的状态:O - 正在运行S - 休眠R - 可运行,正等待运行Z - 僵化,已终止但找不到其父进程T - 停止
-
-
-PRI
-进程的优先级(数字越大,优先级越低)
-
-
-NI
-谦让度(nice),用于决定优先级
-
-
-ADDR
-进程的内存地址
-
-
-SZ
-进程被换出时所需交换空间的大致大小
-
-
-WCHAN
-进程休眠的内核函数地址
-
-
-
-–forest 选项着实讨人喜欢。该选项能够使用 ASCII 字符来绘制可爱的图表以显示进程的层级信息
-
-1.4.1.2 实时监测进程
-top 命令也可以显示进程信息,但采用的是实时方式
-在默认情况下,top 命令在启动时会按照%CPU 值来对进程进行排序
-
-1.4.1.3 结束进程
-在 Linux 中,进程之间通过信号来通信。
-
-
-
-
-信号
-名称
-描述
-
-
-
-1
-HUP
-挂起
-
-
-2
-INT
-中断
-
-
-3
-QUIT
-结束运行
-
-
-9
-KILL
-无条件终止
-
-
-11
-SEGV
-段错误
-
-
-15
-TERM
-尽可能终止
-
-
-17
-STOP
-无条件停止运行,但不终止
-
-
-18
-TSTP
-停止或暂停,但继续在后台运行
-
-
-19
-CONT
-在 STOP 或 TSTP 之后恢复执行
-
-
-
-在 Linux 中有两个命令可以向运行中的进程发出进程信号:kill 和 pkill。
-
-
-kill
-
-
-kill 命令可以通过 PID 向进程发送信号, 遗憾的是,你只能使用进程的 PID 而不能使用其对应的程序名
-不服管教的进程通常会忽略这个请求。如果要强制终止, 则-s 选项支持指定其他信号(用信号名或信号值)。kill -9 PID
-
-
-pkill
-
-
-pkill 命令可以使用程序名代替 PID 来终止进程,除此之外,pkill 命令 也允许使用通配符
-
-1.4.2 监测磁盘空间1.4.2.1 挂载存储设备
-Linux 文件系统会将所有的磁盘都并入单个虚拟目录。在使用新的存储设备之前,需要将其放在虚拟目录中。这项工作称为挂载(mounting)。
-实际的物理存储设备通过驱动被抽象成 &#x2F;dev&#x2F;xxx 设备文件，用户不能直接用目录树访问它们。必须把它们挂载到虚拟文件系统（VFS）的某个挂载点之后，才能以统一的方式访问和管理。
-
-
-mount
-
-
-用于挂载存储设备的命令叫作 mount。在默认情况下,mount 命令会输出当前系统已挂载 的设备列表。
-如果知道设备分区使用的文件系统类型,可以使用-t &lt;fs-type&gt;过滤输出。
-mount 命令提供了 4 部分信息: 设备文件名, 设备在虚拟目录中的挂载点, 文件系统类型, 已挂载设备的访问状态
-手动挂载设备的基本命令: mount -t type device directory, type 参数指定了磁盘格式化所使用的文件系统类型。示例： mount -t vfat /dev/sdb1 /media/disk
--o 选项允许在挂载文件系统时添加一系列以逗号分隔的额外选项, 如:
-
-
-
-
-选项
-说明
-
-
-
-ro
-以只读形式挂载
-
-
-rw
-以读写形式挂载
-
-
-user
-允许普通用户挂载该文件系统
-
-
-check&#x3D;none
-挂载文件系统时不执行完整性校验
-
-
-loop
-挂载文件
-
-
-
-umount
-
-
-移除可移动设备时,不能直接将设备拔下,应该先卸载。
-umount 命令的格式非常简单:  umount [directory | device ]
-
-1.4.2.2 使用 df 命令
-有时需要知道在某台设备上还有多少磁盘空间。df 命令可以方便地查看所有已挂载磁盘的使用情况
-df 命令会输出内核挂载的所有虚拟文件系统,因此可以使用-t 选项来指定文件系统类型
-该命令的输出: 设备文件位置, 包含多少以 1024 字节为单位的块, 使用了多少以 1024 字节为单位的块, 还有多少以 1024 字节为单位的块可用, 已用空间所占的百分比, 设备挂载点
-常用选项之一是-h,该选项会以人类易读(humanreadable)的形式显示磁盘空间,通常用 M 来替代兆字节,用 G 来替代吉字节
-
-1.4.2.3 使用 du 命令
-du 命令可以显示某个特定目录(默认情况下是当前 目录)的磁盘使用情况。
-下面这些选项能让 du 命令的输出更加清晰易读。
--c:显示所有已列出文件的总大小。
--h:按人类易读格式输出大小,分别用 K 表示千字节、M 表示兆字节、G 表示吉字节。
--s:输出每个参数的汇总信息。
-
-
-
-1.4.3 处理数据文件1.4.3.1 数据排序
-处理大量数据时的一个常用命令是 sort。这是用来对数据进行排序的命令。
-在默认情况下, sort 命令会依据字典序来对文本文件中的数据行进行排序。
-使用-n 选项告诉 sort 命令将数字按值排序
-加入-M 选项,那么 sort 命令就能识别三字符的月份名并正确排序
--r –reverse 逆序排序(升序变成降序)
--c –check 不排序,但检查输入数据是否有序,无序的话就报告
--u –unique 和-c 选项合用时,检查严格排序;不和-c 选项合用时,相同行仅输出一次
-在对按字段分隔的数据进行排序时,-k 选项和-t 选项非常方便。 先使用-t 选项指定字段分隔符,然后使用-k 选项指定排序字段(从1开始)。示例：sort -t &#39;:&#39; -k 3 -n /etc/passwd
-
-1.4.3.2 数据搜索
-grep [options] pattern [file]
-如果要进行反向搜索(输出不匹配指定模式的行),可以使用-v 选项
-如果要显示匹配指定模式的那些行的行号,可以使用-n 选项
-如果只想知道有多少行含有匹配的模式,可以使用-c 选项
-
-1.4.3.3 数据压缩
-gzip 命令会压缩命令行中指定的文件。也可以指定多个文件名或是用通配符来一次性压缩多个文件，压缩后的文件会在原文件名后面添加 .gz 扩展名。
-要解压缩文件,可以使用 gunzip 命令,或者使用 gzcat 命令来查看压缩文件的内容。
-
-1.4.3.4 数据归档
-gzip 命令只能压缩文件，要压缩一个文件夹，需要先归档。
-
-归档工具是 tar 命令tar function [options] object1 object2 ...
-
-常用function: -c –create 创建新的 tar 归档文件 -t –list 列出 tar 归档文件的内容
-
-常用option: -f file 将结果输出到文件(或设备) 
-
-tar -cf test.tar test/ test2/该命令创建了一个名为 test.tar 的归档文件, 包含目录 test 和 test2 的内容。
-
-tar -tf test.tar 该命令列出了(但不提取)tar 文件 test.tar 的内容。
-
-tar -xvf test.tar 该命令从 tar 文件 test.tar 中提取内容。如果创建的时候 tar 文件含有目录结构,则在当前目录中重建该目录的整个结构。
-
-在下载开源软件时经常会看到文件名以.tgz 结尾,这是经 gzip 压缩过的 tar 文件,可以用 tar -zxvf filename.tgz 来提取其中的内容。
-
-tar 命令的操作
-
-
-
-
-
-操作
-长选项
-描 述
-
-
-
--A
-–concatenate
-将一个 tar 归档文件追加到另一个 tar 归档文件末尾
-
-
--c
-–create
-创建新的 tar 归档文件
-
-
--d
-–diff
-检查归档文件和文件系统的不同之处
-
-
-
-–delete
-从 tar 归档文件中删除文件
-
-
--r
-–append
-将文件追加到 tar 归档文件末尾
-
-
--t
-–list
-列出 tar 归档文件的内容
-
-
--u
-–update
-将比 tar 归档文件中已有的同名文件更新的文件追加到该归档文件
-
-
--x
-–extract
-从 tar 归档文件中提取文件
-
-
-
-tar 命令选项
-
-
-
-
-选项
-描述
-
-
-
--C dir
-切换到指定目录
-
-
--f file
-将结果输出到文件(或设备)
-
-
--j
-将输出传给 bzip2 命令进行压缩
-
-
--J
-将输出传给 xz 命令进行压缩
-
-
--p
-保留文件的所有权限
-
-
--v
-在处理文件时显示文件名
-
-
--z
-将输出传给 gzip 命令进行压缩
-
-
--Z
-将输出传给 compress 命令进行压缩
-
-
-1.5 理解 shell1.5.3 理解外部命令和内建命令1.5.3.2 内建命令
-使用命令别名
-
-
-alias 命令是另一个实用的 shell 内建命令。命令别名允许为常用命令及其参数创建另一个名称,从而将输入量减少到最低。alias alias-name=origin
-因为命令别名属于 内建命令,所以别名仅在其被定义的 shell 进程中才有效。
-
-1.6 Linux 环境变量1.6.1 什么是环境变量
-bash shell 中有两种环境变量: 全局变量, 局部变量。
-
-1.6.1.1 全局环境变量
-全局环境变量对于 shell 会话和所有生成的子 shell 都是可见的。局部环境变量则只对创建它 的 shell 可见。
-可以使用 env 命令或 printenv 命令来查看全局变量
-使用 echo 命令显示某个变量的值。在引用某个环境变量时,必须在该变量名前加上美元 符号($)
-
-1.6.2 设置用户自定义变量1.6.2.1 设置局部用户自定义变量
-使用等号为变量赋值,值可以是数值或字符串 my_variable=Hello
-如果用于赋值的字符串包含空格,则必须用单引号或双引号来界定该字符串的起止
-在变量名、等号和值之间没有空格。如果在赋值表达式中加上了空 格,那么 bash shell 会将值视为单独的命令
-
-1.6.2.2 设置全局环境变量
-export my_variable=value
-
-1.6.3 删除环境变量
-删除已有的环境变量。可以用 unset 命令来完成这 个操作。在 unset 命令中引用环境变量时,记住不要使用$。
-如果要用到(doing anything with)变量,就使用$;如果要操作(doing anything to)变量,则不使用$。
-对于 PATH 变量的修改只能持续到退出或重启系统。这种效果并不能一直奏效。
-
-1.6.6 定位系统环境变量
-当你登录 Linux 系统启动 bash shell 时,默认情况下 bash 会在几个文件中查找命令。这些文件 称作启动文件或环境文件。
-
-1.6.6.1 登录 shell
-登录 shell 通常会从 5 个不同的启 动文件中读取命令。  
-&#x2F;etc&#x2F;profile  
-$HOME&#x2F;.bash_profile  
-$HOME&#x2F;.bashrc  
-$HOME&#x2F;.bash_login  
-$HOME&#x2F;.profile
-
-
-&#x2F;etc&#x2F;profile 文件是系统中默认的 bash shell 的主启动文件。系统中的每个用户登录时都会执行这个启动文件。
-其余的启动文件都用于同一个目的:提供用户专属的启动文件来定义该用户所用到的环境 变量。大多数 Linux 发行版只用这 4 个启动文件中的一两个。
-在大多数发行版中,保存个人用户永久性 bash shell 变量的最佳地点是$HOME&#x2F;.bashrc 文件。
-可以把个人的 alias 设置放在$HOME&#x2F;.bashrc 启动文件中,使其效果永久化。
-
-1.7 理解 Linux 文件权限1.7.3 理解文件权限
-1.7.3.2 默认文件权限
-使用3位8进制数来表示权限。
-
-
-
-
-权限
-二进制值
-八进制值
-描述
-
-
-
-—
-000
-0
-没有任何权限
-
-
-–x
-001
-1
-只有执行权限
-
-
--w-
-010
-2
-只有写入权限
-
-
--wx
-011
-3
-有写入和执行权限
-
-
-r–
-100
-4
-只有读取权限
-
-
-r-x
-101
-5
-有读取和执行权限
-
-
-rw-
-110
-6
-有读取和写入权限
-
-
-rwx
-111
-7
-有全部权限(读取、写入和执行)
-
-
-
-umask 命令用来设置新建文件和目录 的默认权限
-umask 值只是个掩码, 把 umask 值从对象的全权限值(full permission)中减掉。对文件而言,全权限值是 666 (所有用户都有读取和写入的权限);对目录而言,全权限值则是 777(所有用户都有读取、写入 和执行权限), 结果就是新建的文件或目录的权限。
-文件不能直接执行。新建文件是普通数据（文本、配置、源码等），不是程序。因此全权限为666
-必须要有 x 权限才能进入目录，否则你即使有 r 也只能列出文件名，看不到内容。
-
-1.7.4 更改安全设置1.7.4.1 修改权限
-chmod 命令可以修改文件和目录的安全设置。chmod options mode file
-mode 参数允许使用八进制模式（推荐）或符号模式来进行安全设置。
-
-1.9 安装软件1.9.1 软件包管理基础
-软件包存储在称为仓库(repository)的服务器上,可以利用本地 Linux 系统中的软件包管理 器通过 Internet 访问,在其中搜索新的软件包,或是更新系统中已安装的软件包。
-
-1.9.2 基于 Debian 的系统
-apt [options] command
-
-1.9.2.1 使用 apt 管理软件包
-apt list 命 令会显示仓库中所有可用的软件包,如果再加入–installed 选项,就可以限制仅输出那些已安装在系统中的软件包
-如果已经知道系统中的某个软件包,希望显示其详细信息,可以使用 show 命令来操作: apt show package_name
-apt show 命令并不会指明软件包是否已经安装。它只根据软件仓库显示该软件包的详细信息。
-
-1.9.2.2 使用 apt 安装软件包
-查找特定的软件包: apt search package_name 
-search 命令的妙处在于不需要在 package_name 周围添加通配符,直接就有通配符的效果。
-如果只想搜索软件包名称,可以加入–name-only 选项。
-安装：apt install package_name 
-可以使用 list 命令的–installed 选项检查安装是否正确。如果在输出中看到了软件包, 那么说明已经安装好了。
-
-1.9.2.3 使用 apt 升级软件
-upgrade 命令可以使用仓库中的任何新版本安全地升级系统中所有的软件包:  apt upgrade
-upgrade 命令在升级过程中不会删除任何软件包。如果必须删除某个软件包才能完成升级, 可以使用以下命令:  apt full-upgrade
-
-1.9.2.4 使用 apt 卸载软件包
-apt 的 remove 命令可以删除软件包,同时保留数据和配置文件。如果要将软件包以及相关 的数据和配置文件全部删除,那么需要使用 purge 命令
-如果确定有依赖关系的软件包不会再有他用,可以使用 autoremove 命令将其删除
-
-1.9.4 使用容器管理软件
-云计算带来了应用程序打包方式的一种新范式:应用程序容器(application container)。应用 程序容器创建了一个环境,其中包含了应用程序运行所需的全部文件,包括运行时库文件。开发 人员随后可以将应用程序容器作为单个软件包分发,保证能够在任何 Linux 系统中正常运行。
-
-1.9.4.1 使用 snap 容器
-使用 snap 命令行工具查询 snap 数据库,显示已安装的 snap 包,以及安装、升级和删除 snap 包。
-snap list 命令查看当前已安装的 snap 应用程序列表
-snap find 命令可以在 snap 仓库中搜索指定程序
-snap info 命令可以查看 snap 应用程序(简称为 snap)的详细信息
-snap install 命令可以安装新的 snap
-如果需要删除某个 snap,使用 snap remove 命令即可
-Snap vs APT 的区别
-
-
-
-
-特性
-APT (Deb 包)
-Snap 包
-
-
-
-软件形式
-.deb 包
-.snap 包
-
-
-依赖管理
-使用系统库，依赖需要由 APT 解决
-自带依赖，几乎无需外部依赖
-
-
-安装来源
-Debian&#x2F;Ubuntu 官方仓库 或 PPA
-Snap Store（集中式）
-
-
-升级机制
-由系统包管理器统一升级
-Snapd 后台自动滚动更新
-
-
-运行环境
-与系统环境强耦合
-运行在容器化沙盒中
-
-
-体积大小
-通常较小（共用系统库）
-较大（自带依赖）
-
-
-安全性
-依赖系统级安全机制
-自带沙盒隔离，更细粒度权限控制
-
-
-启动速度
-快，直接使用系统库
-稍慢，需通过 snapd 启动环境
-
-
-典型应用
-系统级工具、传统软件
-桌面应用、跨发行版的程序
-
-
-TO BE CONTINUED
-]]></content>
-      <categories>
-        <category>tool</category>
-      </categories>
-      <tags>
-        <tag>shell</tag>
-        <tag>reading note</tag>
-        <tag>linux</tag>
-        <tag>Linux Command Line and Shell Scripting Bible</tag>
       </tags>
   </entry>
   <entry>
@@ -1629,6 +975,660 @@ vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int
       </tags>
   </entry>
   <entry>
+    <title>250811-250817 周记 linux命令与shell编程学习(1)</title>
+    <url>/2025/08/18/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-1/</url>
+    <content><![CDATA[本周学习了Linux Command Line and Shell Scripting Bible这本书的第一部分到第二部分。这里对一些我自己不熟悉的、我自己觉得比较重要的内容进行记录摘要。
+1. 第一部分 linux命令行1.3 bash shell基础命令1.3.5 列出文件和目录1.3.5.3 过滤输出列表
+模式匹配: 问号(?)代表任意单个字符; 星号(*)代表零个或多个字符。
+方括号代表单个字符位置并给出了该位置上的多个可能的选择。你可以将可能的字符逐一列出,也可以指定字符范围,比如字母范围[a–i]。
+还可以使用惊叹号(!)将不需要的内容排除在外。
+
+1.3.6 处理文件1.3.6.2 复制文件
+cp 命令可以完成文件和目录从文件系统的一个位置复制到另一个位置的操作。 
+cp 命令最基本的用法需要两个参数,即源对象和目标对象:cp source destination。 当参数 source 和 destination 都是文件名时,cp 命令会将源文件复制成一个新的目标文件,并以 destination 命名。新文件在形式上就像全新的文件一样,有新的修改时间。
+如果目标文件已经存在,则 cp 命令 可能并不会提醒你这一点。最好加上-i 选项,强制 shell 询问是否需要覆盖已有文件。
+cp 命令的-R 选项威力强大。可以用它在单个命令中递归地复制整个目录的内容。
+在执行 cp –R 命令之前,目录 NewDocuments 并不存在。它是随着 cp –R 命令被创建的, 整个 Documents 目录中的内容都被复制到其中。注意,新的 NewDocuments 目录中所有的文件都 有对应的新日期。NewDocuments 目录现在已经成了 Documents 目录的完整副本。
+
+1.3.6.3 使用命令行补全
+制表键补全允许你在输入文件名 或目录名的时候,按一下制表键,让 shell 帮你将内容补充完整。
+使用制表键补全的技巧在于要给 shell 提供足够的文件名信息,使其能够将所需文件名与其 他文件名区分开。
+
+1.3.6.4 链接文件
+链接是目录中指 向文件真实位置的占位符。在 Linux 中有两种类型的文件链接: 符号链接，硬链接。
+符号链接(也称为软链接)是一个实实在在的文件,该文件指向存放在虚拟目录结构中某个地方的另一个文件。这两个以符号方式链接在一起的文件彼此的内容并不相同。可以类比为windows系统中的快捷方式。
+要为一个文件创建符号链接,原始文件必须事先存在。使用 ln -s 命令创建符号链接。ln -s test_file slink_test_file
+硬链接创建的是一个独立的虚拟文件,其中包含了原始文件的信息以及位置。但是两者就根本而言是同一个文件。可以理解为“同一文件出现在不同的目录下”。要想创建硬链接,原始文件也必须事先存在,只不过这次使用 ln 命令时不需要再加入额外的选项了:ln test_file hlink_test_file
+
+1.3.6.5 文件重命名
+重命名文件称为移动。mv 命令可以将文件和目录移动到另一个位置或是重新命名：mv old new
+
+1.3.6.6 删除文件
+rm的-i 选项会询问你是否真的要删除该文件。shell 没有回收站或者垃圾箱这样的东西, 文件一旦被删除,就再也找不回来了。所以在使用 rm 命令时,要养成总是加入-i 选项的好习惯。
+
+1.3.7 管理目录1.3.7.1 创建目录
+可以根据需要“批量”地创建目录和子目录。为此,要使用 mkdir 命令的-p 选项, mkdir 命令的-p 选项可以根据需要创建缺失的父目录。
+
+1.3.8 查看文件内容1.3.8.1 查看文件类型
+file 命令是一个方便的小工具,能够探测文件的内部并判断文件类型
+
+3.8.2 查看整个文件
+cat
+
+
+cat 命令是显示文本文件中所有数据的得力工具。
+-n 选项会给所有的行加上行号
+如果只想给有文本的行加上行号,可以用-b 选项
+
+
+more
+
+less
+
+
+
+less实为 more 命令的升级版本
+less 命令提供了多个非常实用的特性,能 够实现在文本文件中前后翻动,还有一些高级搜索功能。
+less 命令还可以在完成整个文件的读取之前显示文件的内容。
+
+1.3.8.3 查看部分文件
+tail 命令
+
+
+tail 命令会显示文件最后几行的内容(文件的“尾部”)。在默认情况下,它会显示文件的 末尾 10 行。
+可以向 tail 命令中加入-n 选项来修改所显示的行数，如通过加入-n 2, 使得 tail 命令只显示文件的最后两行
+tail 命令有一个非常酷的特性:-f 选项,该选项允许你在其他进程使用此文件时查看文件 的内容。tail 命令会保持活动状态并持续地显示添加到文件中的内容。这是实时监测系统日志 的绝佳方式。
+
+
+head 命令
+
+
+head 命令会显示文件开头若干行(文件的“头部”)。在默认情况下,它会显示文件前 10 行的文本
+head 命令也支持-n 选项
+这两个命令也允 许简单地在连字符后面直接输入想要显示的行数
+
+1.4 更多的 bash shell 命令1.4.1 监测程序1.4.1.1 探查进程
+ps 命令默认只显示运行在当前终端中属于当前用户的那些进程。
+ps 命令的基本输出显示了程序的进程 ID(process ID,PID)、进程运行在哪个终端(TTY) 及其占用的 CPU 时间。
+如果需要查看系统中运行的所有进程,可以使用-ef 选项组合。-e 选项指定显示系统中运行的所有进程;-f 选项则扩充输出内容以显示一些有用的信息列：
+
+
+
+
+列名
+说明
+
+
+
+UID
+启动该进程的用户
+
+
+PID
+进程 ID
+
+
+PPID
+父进程的 PID(如果该进程是由另一个进程启动的)
+
+
+C
+进程生命期中的 CPU 利用率
+
+
+STIME
+进程启动时的系统时间
+
+
+TTY
+进程是从哪个终端设备启动的
+
+
+TIME
+运行进程的累计 CPU 时间
+
+
+CMD
+启动的程序名称
+
+
+
+如果还想获得更多的信息, 可以使用-l 选项,产生长格式输出。多出的那几列：
+
+
+
+
+列名
+说明
+
+
+
+F
+内核分配给进程的系统标志
+
+
+S
+进程的状态:O - 正在运行S - 休眠R - 可运行,正等待运行Z - 僵化,已终止但找不到其父进程T - 停止
+
+
+PRI
+进程的优先级(数字越大,优先级越低)
+
+
+NI
+谦让度(nice),用于决定优先级
+
+
+ADDR
+进程的内存地址
+
+
+SZ
+进程被换出时所需交换空间的大致大小
+
+
+WCHAN
+进程休眠的内核函数地址
+
+
+
+–forest 选项着实讨人喜欢。该选项能够使用 ASCII 字符来绘制可爱的图表以显示进程的层级信息
+
+1.4.1.2 实时监测进程
+top 命令也可以显示进程信息,但采用的是实时方式
+在默认情况下,top 命令在启动时会按照%CPU 值来对进程进行排序
+
+1.4.1.3 结束进程
+在 Linux 中,进程之间通过信号来通信。
+
+
+
+
+信号
+名称
+描述
+
+
+
+1
+HUP
+挂起
+
+
+2
+INT
+中断
+
+
+3
+QUIT
+结束运行
+
+
+9
+KILL
+无条件终止
+
+
+11
+SEGV
+段错误
+
+
+15
+TERM
+尽可能终止
+
+
+17
+STOP
+无条件停止运行,但不终止
+
+
+18
+TSTP
+停止或暂停,但继续在后台运行
+
+
+19
+CONT
+在 STOP 或 TSTP 之后恢复执行
+
+
+
+在 Linux 中有两个命令可以向运行中的进程发出进程信号:kill 和 pkill。
+
+
+kill
+
+
+kill 命令可以通过 PID 向进程发送信号, 遗憾的是,你只能使用进程的 PID 而不能使用其对应的程序名
+不服管教的进程通常会忽略这个请求。如果要强制终止, 则-s 选项支持指定其他信号(用信号名或信号值)。kill -9 PID
+
+
+pkill
+
+
+pkill 命令可以使用程序名代替 PID 来终止进程,除此之外,pkill 命令 也允许使用通配符
+
+1.4.2 监测磁盘空间1.4.2.1 挂载存储设备
+Linux 文件系统会将所有的磁盘都并入单个虚拟目录。在使用新的存储设备之前,需要将其放在虚拟目录中。这项工作称为挂载(mounting)。
+实际的物理存储设备通过驱动被抽象成 &#x2F;dev&#x2F;xxx 设备文件，用户不能直接用目录树访问它们。必须把它们挂载到虚拟文件系统（VFS）的某个挂载点之后，才能以统一的方式访问和管理。
+
+
+mount
+
+
+用于挂载存储设备的命令叫作 mount。在默认情况下,mount 命令会输出当前系统已挂载 的设备列表。
+如果知道设备分区使用的文件系统类型,可以使用-t &lt;fs-type&gt;过滤输出。
+mount 命令提供了 4 部分信息: 设备文件名, 设备在虚拟目录中的挂载点, 文件系统类型, 已挂载设备的访问状态
+手动挂载设备的基本命令: mount -t type device directory, type 参数指定了磁盘格式化所使用的文件系统类型。示例： mount -t vfat /dev/sdb1 /media/disk
+-o 选项允许在挂载文件系统时添加一系列以逗号分隔的额外选项, 如:
+
+
+
+
+选项
+说明
+
+
+
+ro
+以只读形式挂载
+
+
+rw
+以读写形式挂载
+
+
+user
+允许普通用户挂载该文件系统
+
+
+check&#x3D;none
+挂载文件系统时不执行完整性校验
+
+
+loop
+挂载文件
+
+
+
+umount
+
+
+移除可移动设备时,不能直接将设备拔下,应该先卸载。
+umount 命令的格式非常简单:  umount [directory | device ]
+
+1.4.2.2 使用 df 命令
+有时需要知道在某台设备上还有多少磁盘空间。df 命令可以方便地查看所有已挂载磁盘的使用情况
+df 命令会输出内核挂载的所有虚拟文件系统,因此可以使用-t 选项来指定文件系统类型
+该命令的输出: 设备文件位置, 包含多少以 1024 字节为单位的块, 使用了多少以 1024 字节为单位的块, 还有多少以 1024 字节为单位的块可用, 已用空间所占的百分比, 设备挂载点
+常用选项之一是-h,该选项会以人类易读(humanreadable)的形式显示磁盘空间,通常用 M 来替代兆字节,用 G 来替代吉字节
+
+1.4.2.3 使用 du 命令
+du 命令可以显示某个特定目录(默认情况下是当前 目录)的磁盘使用情况。
+下面这些选项能让 du 命令的输出更加清晰易读。
+-c:显示所有已列出文件的总大小。
+-h:按人类易读格式输出大小,分别用 K 表示千字节、M 表示兆字节、G 表示吉字节。
+-s:输出每个参数的汇总信息。
+
+
+
+1.4.3 处理数据文件1.4.3.1 数据排序
+处理大量数据时的一个常用命令是 sort。这是用来对数据进行排序的命令。
+在默认情况下, sort 命令会依据字典序来对文本文件中的数据行进行排序。
+使用-n 选项告诉 sort 命令将数字按值排序
+加入-M 选项,那么 sort 命令就能识别三字符的月份名并正确排序
+-r –reverse 逆序排序(升序变成降序)
+-c –check 不排序,但检查输入数据是否有序,无序的话就报告
+-u –unique 和-c 选项合用时,检查严格排序;不和-c 选项合用时,相同行仅输出一次
+在对按字段分隔的数据进行排序时,-k 选项和-t 选项非常方便。 先使用-t 选项指定字段分隔符,然后使用-k 选项指定排序字段(从1开始)。示例：sort -t &#39;:&#39; -k 3 -n /etc/passwd
+
+1.4.3.2 数据搜索
+grep [options] pattern [file]
+如果要进行反向搜索(输出不匹配指定模式的行),可以使用-v 选项
+如果要显示匹配指定模式的那些行的行号,可以使用-n 选项
+如果只想知道有多少行含有匹配的模式,可以使用-c 选项
+
+1.4.3.3 数据压缩
+gzip 命令会压缩命令行中指定的文件。也可以指定多个文件名或是用通配符来一次性压缩多个文件，压缩后的文件会在原文件名后面添加 .gz 扩展名。
+要解压缩文件,可以使用 gunzip 命令,或者使用 gzcat 命令来查看压缩文件的内容。
+
+1.4.3.4 数据归档
+gzip 命令只能压缩文件，要压缩一个文件夹，需要先归档。
+
+归档工具是 tar 命令tar function [options] object1 object2 ...
+
+常用function: -c –create 创建新的 tar 归档文件 -t –list 列出 tar 归档文件的内容
+
+常用option: -f file 将结果输出到文件(或设备) 
+
+tar -cf test.tar test/ test2/该命令创建了一个名为 test.tar 的归档文件, 包含目录 test 和 test2 的内容。
+
+tar -tf test.tar 该命令列出了(但不提取)tar 文件 test.tar 的内容。
+
+tar -xvf test.tar 该命令从 tar 文件 test.tar 中提取内容。如果创建的时候 tar 文件含有目录结构,则在当前目录中重建该目录的整个结构。
+
+在下载开源软件时经常会看到文件名以.tgz 结尾,这是经 gzip 压缩过的 tar 文件,可以用 tar -zxvf filename.tgz 来提取其中的内容。
+
+tar 命令的操作
+
+
+
+
+
+操作
+长选项
+描 述
+
+
+
+-A
+–concatenate
+将一个 tar 归档文件追加到另一个 tar 归档文件末尾
+
+
+-c
+–create
+创建新的 tar 归档文件
+
+
+-d
+–diff
+检查归档文件和文件系统的不同之处
+
+
+
+–delete
+从 tar 归档文件中删除文件
+
+
+-r
+–append
+将文件追加到 tar 归档文件末尾
+
+
+-t
+–list
+列出 tar 归档文件的内容
+
+
+-u
+–update
+将比 tar 归档文件中已有的同名文件更新的文件追加到该归档文件
+
+
+-x
+–extract
+从 tar 归档文件中提取文件
+
+
+
+tar 命令选项
+
+
+
+
+选项
+描述
+
+
+
+-C dir
+切换到指定目录
+
+
+-f file
+将结果输出到文件(或设备)
+
+
+-j
+将输出传给 bzip2 命令进行压缩
+
+
+-J
+将输出传给 xz 命令进行压缩
+
+
+-p
+保留文件的所有权限
+
+
+-v
+在处理文件时显示文件名
+
+
+-z
+将输出传给 gzip 命令进行压缩
+
+
+-Z
+将输出传给 compress 命令进行压缩
+
+
+1.5 理解 shell1.5.3 理解外部命令和内建命令1.5.3.2 内建命令
+使用命令别名
+
+
+alias 命令是另一个实用的 shell 内建命令。命令别名允许为常用命令及其参数创建另一个名称,从而将输入量减少到最低。alias alias-name=origin
+因为命令别名属于 内建命令,所以别名仅在其被定义的 shell 进程中才有效。
+
+1.6 Linux 环境变量1.6.1 什么是环境变量
+bash shell 中有两种环境变量: 全局变量, 局部变量。
+
+1.6.1.1 全局环境变量
+全局环境变量对于 shell 会话和所有生成的子 shell 都是可见的。局部环境变量则只对创建它 的 shell 可见。
+可以使用 env 命令或 printenv 命令来查看全局变量
+使用 echo 命令显示某个变量的值。在引用某个环境变量时,必须在该变量名前加上美元 符号($)
+
+1.6.2 设置用户自定义变量1.6.2.1 设置局部用户自定义变量
+使用等号为变量赋值,值可以是数值或字符串 my_variable=Hello
+如果用于赋值的字符串包含空格,则必须用单引号或双引号来界定该字符串的起止
+在变量名、等号和值之间没有空格。如果在赋值表达式中加上了空 格,那么 bash shell 会将值视为单独的命令
+
+1.6.2.2 设置全局环境变量
+export my_variable=value
+
+1.6.3 删除环境变量
+删除已有的环境变量。可以用 unset 命令来完成这 个操作。在 unset 命令中引用环境变量时,记住不要使用$。
+如果要用到(doing anything with)变量,就使用$;如果要操作(doing anything to)变量,则不使用$。
+对于 PATH 变量的修改只能持续到退出或重启系统。这种效果并不能一直奏效。
+
+1.6.6 定位系统环境变量
+当你登录 Linux 系统启动 bash shell 时,默认情况下 bash 会在几个文件中查找命令。这些文件 称作启动文件或环境文件。
+
+1.6.6.1 登录 shell
+登录 shell 通常会从 5 个不同的启 动文件中读取命令。  
+&#x2F;etc&#x2F;profile  
+$HOME&#x2F;.bash_profile  
+$HOME&#x2F;.bashrc  
+$HOME&#x2F;.bash_login  
+$HOME&#x2F;.profile
+
+
+&#x2F;etc&#x2F;profile 文件是系统中默认的 bash shell 的主启动文件。系统中的每个用户登录时都会执行这个启动文件。
+其余的启动文件都用于同一个目的:提供用户专属的启动文件来定义该用户所用到的环境 变量。大多数 Linux 发行版只用这 4 个启动文件中的一两个。
+在大多数发行版中,保存个人用户永久性 bash shell 变量的最佳地点是$HOME&#x2F;.bashrc 文件。
+可以把个人的 alias 设置放在$HOME&#x2F;.bashrc 启动文件中,使其效果永久化。
+
+1.7 理解 Linux 文件权限1.7.3 理解文件权限
+1.7.3.2 默认文件权限
+使用3位8进制数来表示权限。
+
+
+
+
+权限
+二进制值
+八进制值
+描述
+
+
+
+—
+000
+0
+没有任何权限
+
+
+–x
+001
+1
+只有执行权限
+
+
+-w-
+010
+2
+只有写入权限
+
+
+-wx
+011
+3
+有写入和执行权限
+
+
+r–
+100
+4
+只有读取权限
+
+
+r-x
+101
+5
+有读取和执行权限
+
+
+rw-
+110
+6
+有读取和写入权限
+
+
+rwx
+111
+7
+有全部权限(读取、写入和执行)
+
+
+
+umask 命令用来设置新建文件和目录 的默认权限
+umask 值只是个掩码, 把 umask 值从对象的全权限值(full permission)中减掉。对文件而言,全权限值是 666 (所有用户都有读取和写入的权限);对目录而言,全权限值则是 777(所有用户都有读取、写入 和执行权限), 结果就是新建的文件或目录的权限。
+文件不能直接执行。新建文件是普通数据（文本、配置、源码等），不是程序。因此全权限为666
+必须要有 x 权限才能进入目录，否则你即使有 r 也只能列出文件名，看不到内容。
+
+1.7.4 更改安全设置1.7.4.1 修改权限
+chmod 命令可以修改文件和目录的安全设置。chmod options mode file
+mode 参数允许使用八进制模式（推荐）或符号模式来进行安全设置。
+
+1.9 安装软件1.9.1 软件包管理基础
+软件包存储在称为仓库(repository)的服务器上,可以利用本地 Linux 系统中的软件包管理 器通过 Internet 访问,在其中搜索新的软件包,或是更新系统中已安装的软件包。
+
+1.9.2 基于 Debian 的系统
+apt [options] command
+
+1.9.2.1 使用 apt 管理软件包
+apt list 命 令会显示仓库中所有可用的软件包,如果再加入–installed 选项,就可以限制仅输出那些已安装在系统中的软件包
+如果已经知道系统中的某个软件包,希望显示其详细信息,可以使用 show 命令来操作: apt show package_name
+apt show 命令并不会指明软件包是否已经安装。它只根据软件仓库显示该软件包的详细信息。
+
+1.9.2.2 使用 apt 安装软件包
+查找特定的软件包: apt search package_name 
+search 命令的妙处在于不需要在 package_name 周围添加通配符,直接就有通配符的效果。
+如果只想搜索软件包名称,可以加入–name-only 选项。
+安装：apt install package_name 
+可以使用 list 命令的–installed 选项检查安装是否正确。如果在输出中看到了软件包, 那么说明已经安装好了。
+
+1.9.2.3 使用 apt 升级软件
+upgrade 命令可以使用仓库中的任何新版本安全地升级系统中所有的软件包:  apt upgrade
+upgrade 命令在升级过程中不会删除任何软件包。如果必须删除某个软件包才能完成升级, 可以使用以下命令:  apt full-upgrade
+
+1.9.2.4 使用 apt 卸载软件包
+apt 的 remove 命令可以删除软件包,同时保留数据和配置文件。如果要将软件包以及相关 的数据和配置文件全部删除,那么需要使用 purge 命令
+如果确定有依赖关系的软件包不会再有他用,可以使用 autoremove 命令将其删除
+
+1.9.4 使用容器管理软件
+云计算带来了应用程序打包方式的一种新范式:应用程序容器(application container)。应用 程序容器创建了一个环境,其中包含了应用程序运行所需的全部文件,包括运行时库文件。开发 人员随后可以将应用程序容器作为单个软件包分发,保证能够在任何 Linux 系统中正常运行。
+
+1.9.4.1 使用 snap 容器
+使用 snap 命令行工具查询 snap 数据库,显示已安装的 snap 包,以及安装、升级和删除 snap 包。
+snap list 命令查看当前已安装的 snap 应用程序列表
+snap find 命令可以在 snap 仓库中搜索指定程序
+snap info 命令可以查看 snap 应用程序(简称为 snap)的详细信息
+snap install 命令可以安装新的 snap
+如果需要删除某个 snap,使用 snap remove 命令即可
+Snap vs APT 的区别
+
+
+
+
+特性
+APT (Deb 包)
+Snap 包
+
+
+
+软件形式
+.deb 包
+.snap 包
+
+
+依赖管理
+使用系统库，依赖需要由 APT 解决
+自带依赖，几乎无需外部依赖
+
+
+安装来源
+Debian&#x2F;Ubuntu 官方仓库 或 PPA
+Snap Store（集中式）
+
+
+升级机制
+由系统包管理器统一升级
+Snapd 后台自动滚动更新
+
+
+运行环境
+与系统环境强耦合
+运行在容器化沙盒中
+
+
+体积大小
+通常较小（共用系统库）
+较大（自带依赖）
+
+
+安全性
+依赖系统级安全机制
+自带沙盒隔离，更细粒度权限控制
+
+
+启动速度
+快，直接使用系统库
+稍慢，需通过 snapd 启动环境
+
+
+典型应用
+系统级工具、传统软件
+桌面应用、跨发行版的程序
+
+
+TO BE CONTINUED
+]]></content>
+      <categories>
+        <category>tool</category>
+      </categories>
+      <tags>
+        <tag>shell</tag>
+        <tag>reading note</tag>
+        <tag>linux</tag>
+        <tag>Linux Command Line and Shell Scripting Bible</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250824 thinking 快速排序</title>
     <url>/2025/08/25/250824-thinking-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</url>
     <content><![CDATA[快速排序的Hoare分区法的基本思想与流程是简单明晰的，但是有很多细节需要注意，例如是左指针先动还是右指针先动、指针移动条件等。稍有不慎，就可能甚至导致死循环。
@@ -1671,6 +1671,54 @@ vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int
         <tag>data structure &amp; algorithm</tag>
         <tag>mathematics</tag>
         <tag>sieve of Eratosthenes</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 反悔堆</title>
+    <url>/2025/09/26/250926-thinking-%E5%8F%8D%E6%82%94%E5%A0%86/</url>
+    <content><![CDATA[反悔是贪心的一种策略，用于在当前可能不是全局最优解时，“反思”已做过的选择。
+而对于这样的策略，常使用堆来辅助实现。具体来说就是将已做的选择按照某种规则放入最大堆中。“反悔”就是“撤销”堆顶的选择，即代价最大的选择。
+用最大堆在约束触发时“撤销&#x2F;替换”当前集合里最差的那个已选项。
+1. 示例LCP30. 魔塔游戏
+magicTower(nums[0..n-1], hp)&#123;    declare a empty max heap, named heap.    ans := 0    for num in nums; do        if num &lt; 0; then            heap.push(num) // push the negative number into the heap, so that we can recover the choice later if needed        fi        hp += num        if hp &lt;= 0; then            if heap.isEmpty(); then //cannot recover                return -1            fi            ans++            hp -= heap.pop() // recover the smallest negative number, namely the most costly choice        fi    end    return ans&#125;]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>greedy</tag>
+        <tag>heap</tag>
+        <tag>rollback</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 子序列判断</title>
+    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
+    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
+一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
+现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
+这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
+比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
+我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
+于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
+2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
+其他nxt[i][c]构建：
+for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
+
+对于一个字符串$e_i$判断:
+idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
+
+3. 例题匹配子序列的单词数
+给出go的解法示例
+func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>go</tag>
       </tags>
   </entry>
   <entry>
@@ -1782,54 +1830,6 @@ func subsequenceSumAfterCapping(nums []int, k int) []bool &#123;	slices.Sort(num
       </tags>
   </entry>
   <entry>
-    <title>250926 thinking 反悔堆</title>
-    <url>/2025/09/26/250926-thinking-%E5%8F%8D%E6%82%94%E5%A0%86/</url>
-    <content><![CDATA[反悔是贪心的一种策略，用于在当前可能不是全局最优解时，“反思”已做过的选择。
-而对于这样的策略，常使用堆来辅助实现。具体来说就是将已做的选择按照某种规则放入最大堆中。“反悔”就是“撤销”堆顶的选择，即代价最大的选择。
-用最大堆在约束触发时“撤销&#x2F;替换”当前集合里最差的那个已选项。
-1. 示例LCP30. 魔塔游戏
-magicTower(nums[0..n-1], hp)&#123;    declare a empty max heap, named heap.    ans := 0    for num in nums; do        if num &lt; 0; then            heap.push(num) // push the negative number into the heap, so that we can recover the choice later if needed        fi        hp += num        if hp &lt;= 0; then            if heap.isEmpty(); then //cannot recover                return -1            fi            ans++            hp -= heap.pop() // recover the smallest negative number, namely the most costly choice        fi    end    return ans&#125;]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>greedy</tag>
-        <tag>heap</tag>
-        <tag>rollback</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250926 thinking 子序列判断</title>
-    <url>/2025/09/26/250926-thinking-%E5%AD%90%E5%BA%8F%E5%88%97%E5%88%A4%E6%96%AD/</url>
-    <content><![CDATA[1. 介绍引例：有一个字符串t。现有若干字符集合$s_i$，需要判断对于每一个$s_i$，它的每一个元素是否在t中出现。
-一种方式是，对于t中的所有字符建立一个map。然后对于一个$s_i$中的每一个元素c，若map[c]都判断为存在，则$s_i$的每一个元素都在t中出现，否则不是。
-现在将问题换为“有一个字符串t。现有一个字符串集合$s$，需要判断对于每一个元素$e_i$，它是否是t的子序列。”
-这个时候，不仅仅要考虑字符的存在与否了，还要考虑字符之间的相对位置关系。
-比方说，t=aaabbb，e=ba。判断e是否是t的子序列时，我们还要判断在t的b后面的元素中是否还有a。
-我们使用的map得能够“屏蔽”在t的某个元素前面的所有元素的存在性。
-于是使用nxt，nxt[i][c]: t中下标不小于i的元素中出现c的最小下标。
-2. 解释将nxt[t.length][c]初始化一个很大的值BIG，作为判断存在依据。
-其他nxt[i][c]构建：
-for i in t.length-1 to 0; do    copy nxt[i+1] to nxt[i]    nxt[i][t[i]] = iend loop
-
-对于一个字符串$e_i$判断:
-idx := 0for c in e_i; do    idx = nxt[idx][c]    if idx == BIG; then        c does not exist in t[idx:]=&gt; e_i is not a substring of t.    else         idx++ # for next search should begin at idx+1    fiend loop
-
-3. 例题匹配子序列的单词数
-给出go的解法示例
-func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26]int,len(s)+1)    for i := range nxt[len(s)]&#123;        nxt[len(s)][i] = 2147483647    &#125;    for i:=len(s)-1;i&gt;=0;i--&#123;        nxt[i] = nxt[i+1] //nxt是数组的slice,nxt[i]是数组类型。数组是值类型，可以直接这样赋值        nxt[i][s[i]-&#x27;a&#x27;]=i    &#125;    ans := 0    for _,str := range words&#123;        idx := 0        for _,c := range str&#123;            idx = nxt[idx][c-&#x27;a&#x27;]            if(idx==2147483647)&#123;                ans--                break            &#125;            idx++        &#125;        ans++    &#125;    return ans&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>go</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250926 thinking 差分</title>
     <url>/2025/09/26/250926-thinking-%E5%B7%AE%E5%88%86/</url>
     <content><![CDATA[1. 简介对于一个数组a，构造的这样的一个数组d称为a的差分数组：
@@ -1859,34 +1859,6 @@ func isZeroArray(nums []int, queries [][]int) bool &#123;	diff := make([]int, le
         <tag>data structure &amp; algorithm</tag>
         <tag>go</tag>
         <tag>difference</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250926 thinking 翻转链表</title>
-    <url>/2025/09/26/250926-thinking-%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8/</url>
-    <content><![CDATA[1. 操作以这道题为实例。
-对链表的某一部分进行翻转时，需要记录以下这几个节点：
-
-p0: 发生翻转区域的前置节点，这个是为了区域翻转后的连接（循环结束，p0.next为翻转后区间的最后一个元素）。为了统一处理（因为原链表有的翻转区域没有前置节点），先构造dummy=ListNode&#123;next: head&#125;。这样的话，翻转后的链表的头节点即为dummy.next。p0可能为dummy。
-cur: 当前遍历到的节点，循环结束，cur为区域后的第一个元素
-pre: 当前遍历到的节点的原链表中的上一个节点，在翻转后就是next。在最初翻转前为nullptr,循环结束，pre为翻转后的区域的第一个元素
-nxt: 当前遍历到的节点的原链表中的下一个节点，下一个cur，在翻转后它的next就是pre。
-
-操作如下：
-cur := p0.nextpre := nullptrfor cur in area; do    nxt := cur.next    cur.next = pre    pre = cur    cur = nxtend loop// one loop only change one &quot;next&quot;// end loop, cur is next node for this area at the timep0.next.next=cur // set next pointer of the reversed area&#x27;s last node  p0.next=pre // previous node&#x27;s next pointer points to the first node 
-
-2. 例题25.k个一组翻转链表
-这个题的有一个关键：找到每一个翻转区间的p0。它实际就是上一个区间未翻转时的第一个节点。
-go示例解法
-/** * Definition for singly-linked list. * type ListNode struct &#123; *     Val int *     Next *ListNode * &#125; */func reverseKGroup(head *ListNode, k int) *ListNode &#123;    cnt := 0    for p:=head;p!=nil;p=p.Next&#123;        cnt++    &#125;    dummy := &amp;ListNode&#123;0,head&#125;    p0 := dummy    for ; cnt&gt;=k ; cnt-=k &#123;        cur := p0.Next        var pre *ListNode        nextp := p0.Next        for i:=0;i&lt;k;i++&#123;            nxt := cur.Next            cur.Next = pre            pre = cur            cur = nxt        &#125;        p0.Next.Next=cur        p0.Next = pre        p0=nextp    &#125;     return dummy.Next&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
-        <tag>linkList</tag>
       </tags>
   </entry>
   <entry>
@@ -2130,6 +2102,75 @@ systemctl restart docker
       </tags>
   </entry>
   <entry>
+    <title>250928-251005 weekly electron</title>
+    <url>/2025/10/05/250928-251005-weekly-electron/</url>
+    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
+0. 项目结构静态网页资源dist应先移动到application项目中。
+.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
+
+1. 项目初始化与安装参考：教程
+但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
+npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
+
+后面运行命令出现网络问题也如此。
+2. 打包对web项目使用npm run build后生成的静态网页进行打包。
+但需要注意：
+
+Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
+
+// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
+
+
+在application项目中，文件加载路径的写法。
+
+const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
+
+但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
+更新后的src&#x2F;App.jsx:
+import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
+
+同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
+import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
+
+再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
+]]></content>
+      <categories>
+        <category>tool</category>
+      </categories>
+      <tags>
+        <tag>tool</tag>
+        <tag>electron</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 翻转链表</title>
+    <url>/2025/09/26/250926-thinking-%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8/</url>
+    <content><![CDATA[1. 操作以这道题为实例。
+对链表的某一部分进行翻转时，需要记录以下这几个节点：
+
+p0: 发生翻转区域的前置节点，这个是为了区域翻转后的连接（循环结束，p0.next为翻转后区间的最后一个元素）。为了统一处理（因为原链表有的翻转区域没有前置节点），先构造dummy=ListNode&#123;next: head&#125;。这样的话，翻转后的链表的头节点即为dummy.next。p0可能为dummy。
+cur: 当前遍历到的节点，循环结束，cur为区域后的第一个元素
+pre: 当前遍历到的节点的原链表中的上一个节点，在翻转后就是next。在最初翻转前为nullptr,循环结束，pre为翻转后的区域的第一个元素
+nxt: 当前遍历到的节点的原链表中的下一个节点，下一个cur，在翻转后它的next就是pre。
+
+操作如下：
+cur := p0.nextpre := nullptrfor cur in area; do    nxt := cur.next    cur.next = pre    pre = cur    cur = nxtend loop// one loop only change one &quot;next&quot;// end loop, cur is next node for this area at the timep0.next.next=cur // set next pointer of the reversed area&#x27;s last node  p0.next=pre // previous node&#x27;s next pointer points to the first node 
+
+2. 例题25.k个一组翻转链表
+这个题的有一个关键：找到每一个翻转区间的p0。它实际就是上一个区间未翻转时的第一个节点。
+go示例解法
+/** * Definition for singly-linked list. * type ListNode struct &#123; *     Val int *     Next *ListNode * &#125; */func reverseKGroup(head *ListNode, k int) *ListNode &#123;    cnt := 0    for p:=head;p!=nil;p=p.Next&#123;        cnt++    &#125;    dummy := &amp;ListNode&#123;0,head&#125;    p0 := dummy    for ; cnt&gt;=k ; cnt-=k &#123;        cur := p0.Next        var pre *ListNode        nextp := p0.Next        for i:=0;i&lt;k;i++&#123;            nxt := cur.Next            cur.Next = pre            pre = cur            cur = nxt        &#125;        p0.Next.Next=cur        p0.Next = pre        p0=nextp    &#125;     return dummy.Next&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>go</tag>
+        <tag>linkList</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251003 thinking factory method&amp; abstract factory</title>
     <url>/2025/10/03/251003-thinking-factory-method-abstract-factory/</url>
     <content><![CDATA[1. 工厂方法以点菜为例。
@@ -2280,64 +2321,6 @@ QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒�
         <tag>Projects</tag>
         <tag>C++</tag>
         <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 record best-time-to-buy-and-sell-stock</title>
-    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
-    <content><![CDATA[题目
-int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
-
-这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
-]]></content>
-      <categories>
-        <category>record</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>Record</tag>
-        <tag>leetcode</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250928-251005 weekly electron</title>
-    <url>/2025/10/05/250928-251005-weekly-electron/</url>
-    <content><![CDATA[尝试使用electron将React生成的静态网页打包成桌面应用。
-0. 项目结构静态网页资源dist应先移动到application项目中。
-.├── application│   ├── package.json│   └── main.js├── dist|    └── index.html└── web    ├── package.json    ├── vite.config.js    ├── src       ├── App.jsx       └── components           └── Navigation.jsx   
-
-1. 项目初始化与安装参考：教程
-但是在安装时出现问题，是网络的原因。运行以下命令后安装，解决：
-npm config set registry https://registry.npmmirror.com; $env:ELECTRON_MIRROR = &quot;https://npmmirror.com/mirrors/electron/&quot;
-
-后面运行命令出现网络问题也如此。
-2. 打包对web项目使用npm run build后生成的静态网页进行打包。
-但需要注意：
-
-Vite 的构建产物默认使用以 “&#x2F;” 开头的资源路径（如 &#x2F;assets&#x2F;…），在 Electron 以 file:&#x2F;&#x2F; 加载本地文件时，这种绝对路径会解析到磁盘根目录。因此应该改为：
-
-// vite.config.jsimport &#123; defineConfig &#125; from &#x27;vite&#x27;import react from &#x27;@vitejs/plugin-react&#x27;// https://vite.dev/config/export default defineConfig(&#123;  plugins: [react()],  base: &#x27;./&#x27;,&#125;)
-
-
-在application项目中，文件加载路径的写法。
-
-const &#123; app, BrowserWindow &#125; = require(&#x27;electron/main&#x27;)const path = require(&#x27;path&#x27;)const createWindow = () =&gt; &#123;  const win = new BrowserWindow(&#123;    width: 800,    height: 600  &#125;)    win.loadFile(path.join(__dirname, &#x27;..&#x27;, &#x27;dist&#x27;, &#x27;index.html&#x27;));&#125;app.whenReady().then(() =&gt; &#123;  createWindow()  app.on(&#x27;activate&#x27;, () =&gt; &#123;    if (BrowserWindow.getAllWindows().length === 0) &#123;      createWindow()    &#125;  &#125;)&#125;)app.on(&#x27;window-all-closed&#x27;, () =&gt; &#123;  if (process.platform !== &#x27;darwin&#x27;) &#123;    app.quit()  &#125;&#125;)
-
-但即使是这样，路由也会出现问题。发现是由于src源文件中React Router没有配置好。
-更新后的src&#x2F;App.jsx:
-import &#123; BrowserRouter, HashRouter, Routes, Route &#125; from &#x27;react-router-dom&#x27;import &#123; Container &#125; from &#x27;react-bootstrap&#x27;import Navigation from &#x27;./components/Navigation&#x27;import Home from &#x27;./pages/Home&#x27;import Books from &#x27;./pages/Books&#x27;import Borrowings from &#x27;./pages/Borrowings&#x27;import &#x27;bootstrap/dist/css/bootstrap.min.css&#x27;import &#x27;./App.css&#x27;const RouterComponent = window.location.protocol === &#x27;file:&#x27; ? HashRouter : BrowserRouterfunction App() &#123;  return (    &lt;RouterComponent&gt;      &lt;Navigation /&gt;      &lt;Container className=&quot;mt-3&quot;&gt;        &lt;Routes&gt;          &lt;Route path=&quot;/&quot; element=&#123;&lt;Home /&gt;&#125; /&gt;          &lt;Route path=&quot;/books&quot; element=&#123;&lt;Books /&gt;&#125; /&gt;          &lt;Route path=&quot;/borrowings&quot; element=&#123;&lt;Borrowings /&gt;&#125; /&gt;        &lt;/Routes&gt;      &lt;/Container&gt;    &lt;/RouterComponent&gt;  )&#125;export default App
-
-同时在Navigation组件中，注意LinkContainer 包裹品牌区，避免 file:&#x2F;&#x2F; 下 href&#x3D;”&#x2F;“ 的问题。
-import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;import &#123; LinkContainer &#125; from &#x27;react-router-bootstrap&#x27;function Navigation() &#123;  return (    &lt;Navbar bg=&quot;dark&quot; variant=&quot;dark&quot; expand=&quot;lg&quot;&gt;      &lt;Container&gt;        &lt;LinkContainer to=&quot;/&quot;&gt;          &lt;Navbar.Brand&gt;图书管理系统&lt;/Navbar.Brand&gt;        &lt;/LinkContainer&gt;        &lt;Navbar.Toggle aria-controls=&quot;basic-navbar-nav&quot; /&gt;        &lt;Navbar.Collapse id=&quot;basic-navbar-nav&quot;&gt;          &lt;Nav className=&quot;me-auto&quot;&gt;            &lt;LinkContainer to=&quot;/&quot;&gt;              &lt;Nav.Link&gt;首页&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/books&quot;&gt;              &lt;Nav.Link&gt;图书管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;            &lt;LinkContainer to=&quot;/borrowings&quot;&gt;              &lt;Nav.Link&gt;借阅管理&lt;/Nav.Link&gt;            &lt;/LinkContainer&gt;          &lt;/Nav&gt;        &lt;/Navbar.Collapse&gt;      &lt;/Container&gt;    &lt;/Navbar&gt;  )&#125;export default Navigation
-
-再重新npm run build生成静态网页, 并将dist目录移动到application项目中。
-]]></content>
-      <categories>
-        <category>tool</category>
-      </categories>
-      <tags>
-        <tag>tool</tag>
-        <tag>electron</tag>
       </tags>
   </entry>
   <entry>
@@ -2498,6 +2481,63 @@ l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    
       </tags>
   </entry>
   <entry>
+    <title>251018 thinking adapter</title>
+    <url>/2025/10/18/251018-thinking-adapter/</url>
+    <content><![CDATA[1. 什么是适配器模式？适配器模式（Adapter Pattern）是一种结构型设计模式，它允许将一个类的接口转换为客户端期望的另一个接口。适配器模式使得原本由于接口不兼容而不能一起工作的类可以协同工作。
+就像 “USB-C 转 3.5mm 音频” 转换器。很多新款手机（被适配者 Adaptee）取消了传统的 3.5mm 耳机孔，只提供 USB-C 接口。如果你想使用旧的 3.5mm 插头耳机（客户端 Client），就会遇到接口不兼容的问题。
+此时，这个转换器就充当了适配器（Adapter）的角色。它将手机的 USB-C 接口转换为耳机（客户端）所期望的 3.5mm 音频插孔。通过这个小小的转换器，耳机无需任何改动，就能在新手机上继续使用，适配器完美地弥合了两者之间的接口差异。
+2. 为什么需要适配器模式？在软件开发中，我们经常会遇到以下几种情况，这时适配器模式就显得尤为重要：
+
+复用现有代码：当一个已存在的类功能很强大，能满足你的大部分需求，但它的接口与你当前系统要求的接口不一致时。重写这个类会耗费大量时间且容易引入错误，而使用适配器则可以在不改变原有代码的基础上，将其“包装”成你需要的样子。
+
+集成第三方库或遗留系统：第三方库或老旧系统的接口通常无法修改。如果它们的接口与你的系统不兼容，适配器可以作为中间层，将这些外部接口转换为系统内部统一的、标准的接口，从而实现无缝集成。
+
+解耦客户端与具体实现：客户端代码只依赖于一个标准的目标接口（Target），而不需要关心背后真正干活的类（Adaptee）是谁，它的接口长什么样。这样一来，当底层的具体实现需要更换时，只需要更换或修改对应的适配器，而客户端代码完全不受影响，增强了系统的灵活性和可维护性。
+
+
+总而言之，适配器模式遵循了“开闭原则”（对扩展开放，对修改关闭），它允许我们在不修改现有代码的情况下，通过增加新的适配器类来扩展系统的功能。
+3. 适配器模式的实现（go）假设我们有一个音乐播放器 MusicPlayer，它依赖一个 Player 接口来播放音乐。
+// Player是我们期望的目标接口 (Target)type Player interface &#123;    PlayMusic()&#125;
+
+现在，我们有一个现成的、无法修改的第三方音频库 AwesomePlayer，但它的播放方法是 PlaySound，与我们的 Player 接口不兼容。
+// AwesomePlayer 是一个已存在的、接口不兼容的类 (Adaptee)type AwesomePlayer struct&#123;&#125;func (p *AwesomePlayer) PlaySound() &#123;    fmt.Println(&quot;Playing sound with AwesomePlayer&quot;)&#125;
+
+为了让 MusicPlayer 能使用 AwesomePlayer，我们创建一个适配器 AwesomePlayerAdapter。
+// AwesomePlayerAdapter 是适配器 (Adapter)type AwesomePlayerAdapter struct &#123;    adaptee *AwesomePlayer // 持有被适配的对象&#125;// NewAwesomePlayerAdapter 创建一个新的适配器实例func NewAwesomePlayerAdapter(adaptee *AwesomePlayer) *AwesomePlayerAdapter &#123;    return &amp;AwesomePlayerAdapter&#123;adaptee: adaptee&#125;&#125;// PlayMusic 实现了 Player 接口，内部调用被适配者的 PlaySound 方法func (a *AwesomePlayerAdapter) PlayMusic() &#123;    a.adaptee.PlaySound()&#125;
+
+现在，客户端代码可以像这样使用：
+func main() &#123;    // 创建被适配的对象    awesomePlayer := &amp;AwesomePlayer&#123;&#125;        // 创建适配器，并将其传入    var player Player = NewAwesomePlayerAdapter(awesomePlayer)        // 客户端通过统一的 PlayMusic 接口进行播放，无需关心底层实现    player.PlayMusic() // 输出: Playing sound with AwesomePlayer&#125;
+
+在这个例子中，AwesomePlayerAdapter 成功地将 AwesomePlayer 的 PlaySound 接口转换为了 Player 接口所期望的 PlayMusic 接口，使得客户端可以无缝地使用这个第三方库。
+类图：
+
+    classDiagram
+    class Player {
+        &lt;&lt;interface&gt;&gt;
+        +PlayMusic()
+    }
+    class AwesomePlayer {
+        +PlaySound()
+    }
+    class AwesomePlayerAdapter {
+        -adaptee: AwesomePlayer
+        +PlayMusic()
+    }
+    Player &lt;|.. AwesomePlayerAdapter
+    AwesomePlayerAdapter &quot;1&quot; *-- &quot;1&quot; AwesomePlayer
+    AwesomePlayerAdapter ..&gt; AwesomePlayer : PlayMusic() call PlaySound()
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Adapter Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251017-thinking-prototype</title>
     <url>/2025/10/17/251017-thinking-prototype/</url>
     <content><![CDATA[1. 什么是原型模式？一言以蔽之，原型模式（Prototype Pattern）是一种创建型设计模式，它允许客户端直接调用Clone方法来创建一个与已有实例完全一致的新的实例，而不需要知道已有实例的构造函数以及构造参数。
@@ -2610,63 +2650,6 @@ func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#12
       </tags>
   </entry>
   <entry>
-    <title>251018 thinking adapter</title>
-    <url>/2025/10/18/251018-thinking-adapter/</url>
-    <content><![CDATA[1. 什么是适配器模式？适配器模式（Adapter Pattern）是一种结构型设计模式，它允许将一个类的接口转换为客户端期望的另一个接口。适配器模式使得原本由于接口不兼容而不能一起工作的类可以协同工作。
-就像 “USB-C 转 3.5mm 音频” 转换器。很多新款手机（被适配者 Adaptee）取消了传统的 3.5mm 耳机孔，只提供 USB-C 接口。如果你想使用旧的 3.5mm 插头耳机（客户端 Client），就会遇到接口不兼容的问题。
-此时，这个转换器就充当了适配器（Adapter）的角色。它将手机的 USB-C 接口转换为耳机（客户端）所期望的 3.5mm 音频插孔。通过这个小小的转换器，耳机无需任何改动，就能在新手机上继续使用，适配器完美地弥合了两者之间的接口差异。
-2. 为什么需要适配器模式？在软件开发中，我们经常会遇到以下几种情况，这时适配器模式就显得尤为重要：
-
-复用现有代码：当一个已存在的类功能很强大，能满足你的大部分需求，但它的接口与你当前系统要求的接口不一致时。重写这个类会耗费大量时间且容易引入错误，而使用适配器则可以在不改变原有代码的基础上，将其“包装”成你需要的样子。
-
-集成第三方库或遗留系统：第三方库或老旧系统的接口通常无法修改。如果它们的接口与你的系统不兼容，适配器可以作为中间层，将这些外部接口转换为系统内部统一的、标准的接口，从而实现无缝集成。
-
-解耦客户端与具体实现：客户端代码只依赖于一个标准的目标接口（Target），而不需要关心背后真正干活的类（Adaptee）是谁，它的接口长什么样。这样一来，当底层的具体实现需要更换时，只需要更换或修改对应的适配器，而客户端代码完全不受影响，增强了系统的灵活性和可维护性。
-
-
-总而言之，适配器模式遵循了“开闭原则”（对扩展开放，对修改关闭），它允许我们在不修改现有代码的情况下，通过增加新的适配器类来扩展系统的功能。
-3. 适配器模式的实现（go）假设我们有一个音乐播放器 MusicPlayer，它依赖一个 Player 接口来播放音乐。
-// Player是我们期望的目标接口 (Target)type Player interface &#123;    PlayMusic()&#125;
-
-现在，我们有一个现成的、无法修改的第三方音频库 AwesomePlayer，但它的播放方法是 PlaySound，与我们的 Player 接口不兼容。
-// AwesomePlayer 是一个已存在的、接口不兼容的类 (Adaptee)type AwesomePlayer struct&#123;&#125;func (p *AwesomePlayer) PlaySound() &#123;    fmt.Println(&quot;Playing sound with AwesomePlayer&quot;)&#125;
-
-为了让 MusicPlayer 能使用 AwesomePlayer，我们创建一个适配器 AwesomePlayerAdapter。
-// AwesomePlayerAdapter 是适配器 (Adapter)type AwesomePlayerAdapter struct &#123;    adaptee *AwesomePlayer // 持有被适配的对象&#125;// NewAwesomePlayerAdapter 创建一个新的适配器实例func NewAwesomePlayerAdapter(adaptee *AwesomePlayer) *AwesomePlayerAdapter &#123;    return &amp;AwesomePlayerAdapter&#123;adaptee: adaptee&#125;&#125;// PlayMusic 实现了 Player 接口，内部调用被适配者的 PlaySound 方法func (a *AwesomePlayerAdapter) PlayMusic() &#123;    a.adaptee.PlaySound()&#125;
-
-现在，客户端代码可以像这样使用：
-func main() &#123;    // 创建被适配的对象    awesomePlayer := &amp;AwesomePlayer&#123;&#125;        // 创建适配器，并将其传入    var player Player = NewAwesomePlayerAdapter(awesomePlayer)        // 客户端通过统一的 PlayMusic 接口进行播放，无需关心底层实现    player.PlayMusic() // 输出: Playing sound with AwesomePlayer&#125;
-
-在这个例子中，AwesomePlayerAdapter 成功地将 AwesomePlayer 的 PlaySound 接口转换为了 Player 接口所期望的 PlayMusic 接口，使得客户端可以无缝地使用这个第三方库。
-类图：
-
-    classDiagram
-    class Player {
-        &lt;&lt;interface&gt;&gt;
-        +PlayMusic()
-    }
-    class AwesomePlayer {
-        +PlaySound()
-    }
-    class AwesomePlayerAdapter {
-        -adaptee: AwesomePlayer
-        +PlayMusic()
-    }
-    Player &lt;|.. AwesomePlayerAdapter
-    AwesomePlayerAdapter &quot;1&quot; *-- &quot;1&quot; AwesomePlayer
-    AwesomePlayerAdapter ..&gt; AwesomePlayer : PlayMusic() call PlaySound()
-  ]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Adapter Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251018 thinking composite</title>
     <url>/2025/10/25/251018-thinking-composite/</url>
     <content><![CDATA[1. 什么是组合模式组合模式（Composite Pattern）是一种结构型设计模式，它允许你将对象组合成树形结构以表示“部分-整体”的层次关系。组合模式使得客户端可以统一地处理个别对象和对象组合。
@@ -2708,58 +2691,6 @@ func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;  
         <tag>go</tag>
         <tag>Composite Pattern</tag>
         <tag>Interface Oriented Design</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251018 thinking decorator</title>
-    <url>/2025/10/25/251018-thinking-decorator/</url>
-    <content><![CDATA[1. 什么是装饰器模式装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变原有对象结构的情况下，动态地给对象添加新的功能。
-2. 为什么需要装饰器模式想象一下去咖啡店点单的场景：
-
-一杯基础款咖啡（比如美式）。
-各种调料（比如牛奶、糖、巧克力酱等）。
-
-你可以选择只喝纯的美式，也可以要求加奶，再加糖。
-如果我们用继承来实现“咖啡+调料”的功能，会发生什么？
-我们可能需要创建CoffeeWithMilk CoffeeWithSugar CoffeeWithMilkAndSugar等大量的子类。
-如果再增加一种调料（比如奶油），类的数量就会爆炸式增长。
-同时，如果想给一个已经创建好的Coffee实例动态添加牛奶，使用继承是做不到的，因为继承是静态的。
-但装饰器模式通过组合解决了这些问题：
-
-遵循开闭原则：你可以随时创建新的调料（装饰器），而无需修改任何现有的咖啡（组件）代码。系统对扩展开放，对修改关闭。
-灵活性和动态性：可以在运行时根据需要，任意地、动态地为对象添加一层或多层功能，组合顺序和数量都非常灵活。
-避免子类爆炸：无论有多少种调料，我们只需要为每种调料创建一个装饰器类，而不是为每种组合都创建一个子类。
-
-3. 装饰器模式的实现（go）type Coffee interface &#123;	GetCoffee() string&#125;type Latte struct &#123;&#125;func (l *Latte) GetCoffee() string &#123;	return &quot;Latte&quot;&#125;type CoffeeDecorator struct &#123;    CoffeeOrdered *Coffee    AddCondiment string&#125;func (d *CoffeeDecorator) GetCoffee() string &#123;	return d.CoffeeOrdered.GetCoffee() + &quot; with &quot; + d.AddCondiment&#125;
-
-客户端
-func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeDecorator&#123;CoffeeOrdered: latte, AddCondiment: &quot;Milk&quot;&#125;	latteWithMilkAndSugar := &amp;CoffeeDecorator&#123;CoffeeOrdered: latteWithMilk, AddCondiment: &quot;Sugar&quot;&#125;	fmt.Println(latteWithMilkAndSugar.GetCoffee())&#125;
-类图
-
-    classDiagram
-    class Coffee {
-        &lt;&lt;interface&gt;&gt;
-        +GetCoffee() string
-    }
-    class Latte {
-        +GetCoffee() string
-    }
-    class CoffeeDecorator {
-        +GetCoffee() string
-        +AddCondiment string
-        +CoffeeOrdered *Coffee
-    }
-    Coffee &lt;|.. Latte
-    CoffeeDecorator &quot;1&quot; *-- &quot;1&quot; Coffee
-  ]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Interface Oriented Design</tag>
-        <tag>Decorator Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -2815,6 +2746,75 @@ func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
         <tag>go</tag>
         <tag>Interface Oriented Design</tag>
         <tag>Facade Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251018 thinking decorator</title>
+    <url>/2025/10/25/251018-thinking-decorator/</url>
+    <content><![CDATA[1. 什么是装饰器模式装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变原有对象结构的情况下，动态地给对象添加新的功能。
+2. 为什么需要装饰器模式想象一下去咖啡店点单的场景：
+
+一杯基础款咖啡（比如美式）。
+各种调料（比如牛奶、糖、巧克力酱等）。
+
+你可以选择只喝纯的美式，也可以要求加奶，再加糖。
+如果我们用继承来实现“咖啡+调料”的功能，会发生什么？
+我们可能需要创建CoffeeWithMilk CoffeeWithSugar CoffeeWithMilkAndSugar等大量的子类。
+如果再增加一种调料（比如奶油），类的数量就会爆炸式增长。
+同时，如果想给一个已经创建好的Coffee实例动态添加牛奶，使用继承是做不到的，因为继承是静态的。
+但装饰器模式通过组合解决了这些问题：
+
+遵循开闭原则：你可以随时创建新的调料（装饰器），而无需修改任何现有的咖啡（组件）代码。系统对扩展开放，对修改关闭。
+灵活性和动态性：可以在运行时根据需要，任意地、动态地为对象添加一层或多层功能，组合顺序和数量都非常灵活。
+避免子类爆炸：无论有多少种调料，我们只需要为每种调料创建一个装饰器类，而不是为每种组合都创建一个子类。
+
+3. 装饰器模式的实现（go）type Coffee interface &#123;	GetCoffee() string&#125;type Latte struct &#123;&#125;func (l *Latte) GetCoffee() string &#123;	return &quot;Latte&quot;&#125;type CoffeeDecorator struct &#123;    CoffeeOrdered *Coffee    AddCondiment string&#125;func (d *CoffeeDecorator) GetCoffee() string &#123;	return d.CoffeeOrdered.GetCoffee() + &quot; with &quot; + d.AddCondiment&#125;
+
+客户端
+func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeDecorator&#123;CoffeeOrdered: latte, AddCondiment: &quot;Milk&quot;&#125;	latteWithMilkAndSugar := &amp;CoffeeDecorator&#123;CoffeeOrdered: latteWithMilk, AddCondiment: &quot;Sugar&quot;&#125;	fmt.Println(latteWithMilkAndSugar.GetCoffee())&#125;
+类图
+
+    classDiagram
+    class Coffee {
+        &lt;&lt;interface&gt;&gt;
+        +GetCoffee() string
+    }
+    class Latte {
+        +GetCoffee() string
+    }
+    class CoffeeDecorator {
+        +GetCoffee() string
+        +AddCondiment string
+        +CoffeeOrdered *Coffee
+    }
+    Coffee &lt;|.. Latte
+    CoffeeDecorator &quot;1&quot; *-- &quot;1&quot; Coffee
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Decorator Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 record best-time-to-buy-and-sell-stock</title>
+    <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
+    <content><![CDATA[题目
+int maxProfit(vector&lt;int&gt;&amp; prices) &#123;    int lo = prices[0]    int ans = 0    for(int i=1;i&lt;prices.size();i++)&#123;        ans = max(ans,prices[i]-lo)        lo = min(lo,prices[i])    &#125;    return ans&#125;
+
+这个模板可以用于：寻找不单增数组的元素与该元素前面的所有元素之差的最大值。
+]]></content>
+      <categories>
+        <category>record</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>Record</tag>
+        <tag>leetcode</tag>
       </tags>
   </entry>
   <entry>
@@ -3219,123 +3219,6 @@ func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
       </tags>
   </entry>
   <entry>
-    <title>251031 thinking proxy</title>
-    <url>/2025/10/31/251031-thinking-proxy/</url>
-    <content><![CDATA[1. 什么是代理模式代理模式是一种结构型设计模式，它通过引入一个代理对象来控制对另一个对象的访问。代理对象可以在客户端和目标对象之间添加额外的功能，如延迟加载、访问控制、日志记录等。
-2. 为什么需要代理模式代理模式的核心价值在于在不改变原始对象（目标对象）代码的前提下，增加额外的控制和功能。它像一个中介，隔离了客户端和真实对象，并在中间“做手脚”。
-3. 代理模式的实现 (Go)我们用 Go 实现一个保护代理的例子。假设我们有一个 Web 服务器，希望通过一个 Nginx 代理来限制用户的访问速率。
-
-客户端、代理和真实服务都应遵循同一个接口，这样代理才能“伪装”成真实服务。
-
-// Server 是代理和真实服务器的通用接口type Server interface &#123;	HandleRequest(url, method string) (int, string)&#125;
-
-
-创建真实服务 (RealSubject)
-
-这是我们真正要保护的后端应用。
-// Application 是我们的后端真实服务type Application struct&#123;&#125;func (a *Application) HandleRequest(url, method string) (int, string) &#123;	if url == &quot;/app/status&quot; &amp;&amp; method == &quot;GET&quot; &#123;		return 200, &quot;Ok&quot;	&#125;	if url == &quot;/create/user&quot; &amp;&amp; method == &quot;POST&quot; &#123;		return 201, &quot;User Created&quot;	&#125;	return 404, &quot;Not Found&quot;&#125;
-
-
-创建代理 (Proxy)
-
-Nginx 代理持有对真实服务的引用，并在处理请求前增加了速率限制的逻辑。
-import &quot;fmt&quot;// Nginx 是一个代理，它控制对 Application 的访问type Nginx struct &#123;	application      *Application	maxAllowedReq    int	rateLimiter      map[string]int&#125;func NewNginxServer() *Nginx &#123;	return &amp;Nginx&#123;		application:      &amp;Application&#123;&#125;,		maxAllowedReq:    2,		rateLimiter:      make(map[string]int),	&#125;&#125;// checkRateLimit 检查并更新请求速率func (n *Nginx) checkRateLimit(url string) bool &#123;	n.rateLimiter[url]++	if n.rateLimiter[url] &gt; n.maxAllowedReq &#123;		return false // 超出速率限制	&#125;	return true&#125;// HandleRequest 代理的核心方法func (n *Nginx) HandleRequest(url, method string) (int, string) &#123;	// 在转发请求前，执行额外的逻辑（访问控制）	if !n.checkRateLimit(url) &#123;		return 429, &quot;Too Many Requests&quot;	&#125;	// 将请求转发给真实服务	return n.application.HandleRequest(url, method)&#125;
-
-
-客户端调用
-
-客户端只与代理（Nginx）交互，并不知道真实服务（Application）的存在。
-func main() &#123;	nginx := NewNginxServer()	// 第一次请求 /app/status	code, body := nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第二次请求 /app/status	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第三次请求 /app/status，将被限流	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)&#125;
-
-类图
-
-    classDiagram
-    class Client
-    class Server {
-        &lt;&lt;interface&gt;&gt;
-        +HandleRequest(url, method)
-    }
-    class Application {
-        +HandleRequest(url, method)
-    }
-    class Nginx {
-        -application: *Application
-        -maxAllowedReq: int
-        -rateLimiter: map
-        +HandleRequest(url, method)
-        -checkRateLimit(url): bool
-    }
-
-    Client --&gt; Server : uses
-    Server &lt;|.. Application : implements
-    Server &lt;|.. Nginx : implements
-    Nginx o-- Application : aggregates
-  
-
-
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Proxy Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251101 record closest-equal-element-queries</title>
-    <url>/2025/11/01/251101-record-closest-equal-element-queries/</url>
-    <content><![CDATA[题目
-vector&lt;int&gt; solveQueries(vector&lt;int&gt;&amp; nums, vector&lt;int&gt;&amp; queries) &#123;        map&lt;int,vector&lt;int&gt;&gt;mp;        for(int i=0;i&lt;nums.size();++i)&#123;            mp[nums[i]].push_back(i);        &#125;        int n = queries.size();        vector&lt;int&gt;ans(n,-1);        for(int j=0;j&lt;n;++j)&#123;            int q = queries[j];            auto &amp; vec = mp[nums[q]];            if(vec.size()==1)&#123;                continue;            &#125;            int idx = ranges::lower_bound(vec,q)-vec.begin();                        ans[j] = min((vec[(idx+1)%vec.size()]-vec[idx]+nums.size())%nums.size(),(vec[idx] - vec[(idx-1+vec.size())%vec.size()]+nums.size())%nums.size());        &#125;        return ans;    &#125;
-跟它类似的还有比如981. 基于时间的键值存储
-这类题型的本质是：对于某个属性相同的元素，需要在它们的位置序列中进行高效查找。
-流程：
-
-    flowchart TD
-    A[开始：读取输入数据] --&gt; B[建立值-vector映射表]
-    B --&gt; C{遍历原数组&#x2F;序列}
-    C --&gt; D[将每个元素的值作为key&lt;br&#x2F;&gt;将其序号加入对应的vector]
-    D --&gt; E{是否遍历完成?}
-    E --&gt;|否| C
-    E --&gt;|是| F[处理查询]
-    
-    F --&gt; G{遍历每个查询}
-    G --&gt; H[获取查询的目标值]
-    H --&gt; I{映射表中是否存在该值?}
-    I --&gt;|否| J[返回-1或默认值]
-    I --&gt;|是| K[获取该值对应的位置序列]
-    K --&gt; L[在位置序列上进行二分查找]
-    L --&gt; M[使用lower_bound&#x2F;upper_bound&lt;br&#x2F;&gt;找到合适的位置]
-    M --&gt; N[检查前后相邻位置]
-    N --&gt; O[计算距离&#x2F;时间差&lt;br&#x2F;&gt;选择最优解]
-    O --&gt; P[记录查询结果]
-    P --&gt; Q{是否处理完所有查询?}
-    Q --&gt;|否| G
-    Q --&gt;|是| R[返回所有查询结果]
-    
-    J --&gt; Q
-    
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style L fill:#fff3e0
-    style R fill:#e8f5e8
-    
-    classDef keyStep fill:#ffeb3b,stroke:#f57f17,stroke-width:2px
-    class B,L keyStep
-  
-]]></content>
-      <categories>
-        <category>record</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>Record</tag>
-        <tag>leetcode</tag>
-        <tag>binary-search</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251108 thinking chain-of-responsibility</title>
     <url>/2025/11/08/251108-thinking-chain-of-responsibility/</url>
     <content><![CDATA[1. 什么是责任链模式？责任链模式（Chain of Responsibility Pattern）是一种行为型设计模式，它将请求的发送者和接收者解耦，将这些处理者连成一条链。链上的每个处理者都有一个成员变量来保存对于下一处理者的引用。除了处理请求外，处理者还负责沿着链传递请求。请求会在链上移动，直至所有处理者都有机会对其进行处理，或是中途退出。
@@ -3406,49 +3289,120 @@ h1 := &amp;Handler1&#123;&#125;h2 := &amp;Handler2&#123;&#125;h1.SetNext(h2)c :=
       </tags>
   </entry>
   <entry>
-    <title>251108 thinking command</title>
-    <url>/2025/11/08/251108-thinking-command/</url>
-    <content><![CDATA[1. 什么是命令模式命令模式是一种行为设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化。简单来说，就是将请求的发送者和请求的具体操作完全解耦。
-2. 为什么需要命令模式？命令模式的核心价值在于解耦。如果没有命令模式，调用者（比如一个按钮 Button）需要直接引用并调用一个具体的操作（比如一个文档 Document 的 save() 方法）。这会导致 Button 和 Document 紧密耦合，Button 无法被复用到其他操作上。
-通过引入命令对象，调用者不再关心命令的接收者是谁，也不关心操作如何执行。它只知道“我需要执行这个命令”。
-这样的话，调用者和接收者之间没有任何直接引用，各自可以独立变化。而且添加新的命令非常容易，只需创建新的具体命令类，而无需修改现有代码，符合开放&#x2F;封闭原则。
-3. 命令模式的实现 (Go)中间件：
-// Command 接口定义了一个执行操作的方法type Command interface &#123;    Execute(receiver *Receiver)&#125;// Receiver 是请求的接收者，它知道如何执行与请求相关的操作type Receiver struct &#123;    //...&#125;func (r *Receiver) Action() &#123;    // 执行具体的操作&#125;// Command1 是一个具体的命令类，它实现了 Command 接口type Command1 struct &#123;    //...&#125;func (c *Command1) Execute(r *Receiver) &#123;    r.Action()&#125;// Invoker 是请求的发送者，它持有一个 Command 对象  type Invoker struct &#123;    command *Command&#125;func (i *Invoker) SetCommand(command *Command) &#123;    i.command = command&#125;// ExecuteCommand 是 Invoker 用来间接执行命令的方法func (i *Invoker) ExecuteCommand(r *Receiver) &#123;    i.command.Execute(r)&#125;
+    <title>251101 record closest-equal-element-queries</title>
+    <url>/2025/11/01/251101-record-closest-equal-element-queries/</url>
+    <content><![CDATA[题目
+vector&lt;int&gt; solveQueries(vector&lt;int&gt;&amp; nums, vector&lt;int&gt;&amp; queries) &#123;        map&lt;int,vector&lt;int&gt;&gt;mp;        for(int i=0;i&lt;nums.size();++i)&#123;            mp[nums[i]].push_back(i);        &#125;        int n = queries.size();        vector&lt;int&gt;ans(n,-1);        for(int j=0;j&lt;n;++j)&#123;            int q = queries[j];            auto &amp; vec = mp[nums[q]];            if(vec.size()==1)&#123;                continue;            &#125;            int idx = ranges::lower_bound(vec,q)-vec.begin();                        ans[j] = min((vec[(idx+1)%vec.size()]-vec[idx]+nums.size())%nums.size(),(vec[idx] - vec[(idx-1+vec.size())%vec.size()]+nums.size())%nums.size());        &#125;        return ans;    &#125;
+跟它类似的还有比如981. 基于时间的键值存储
+这类题型的本质是：对于某个属性相同的元素，需要在它们的位置序列中进行高效查找。
+流程：
 
-客户端
-receiver := &amp;Receiver&#123;&#125;command := &amp;Command1&#123;&#125;invoker := &amp;Invoker&#123;&#125;invoker.SetCommand(command)invoker.ExecuteCommand(receiver)
+    flowchart TD
+    A[开始：读取输入数据] --&gt; B[建立值-vector映射表]
+    B --&gt; C{遍历原数组&#x2F;序列}
+    C --&gt; D[将每个元素的值作为key&lt;br&#x2F;&gt;将其序号加入对应的vector]
+    D --&gt; E{是否遍历完成?}
+    E --&gt;|否| C
+    E --&gt;|是| F[处理查询]
+    
+    F --&gt; G{遍历每个查询}
+    G --&gt; H[获取查询的目标值]
+    H --&gt; I{映射表中是否存在该值?}
+    I --&gt;|否| J[返回-1或默认值]
+    I --&gt;|是| K[获取该值对应的位置序列]
+    K --&gt; L[在位置序列上进行二分查找]
+    L --&gt; M[使用lower_bound&#x2F;upper_bound&lt;br&#x2F;&gt;找到合适的位置]
+    M --&gt; N[检查前后相邻位置]
+    N --&gt; O[计算距离&#x2F;时间差&lt;br&#x2F;&gt;选择最优解]
+    O --&gt; P[记录查询结果]
+    P --&gt; Q{是否处理完所有查询?}
+    Q --&gt;|否| G
+    Q --&gt;|是| R[返回所有查询结果]
+    
+    J --&gt; Q
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style L fill:#fff3e0
+    style R fill:#e8f5e8
+    
+    classDef keyStep fill:#ffeb3b,stroke:#f57f17,stroke-width:2px
+    class B,L keyStep
+  
+]]></content>
+      <categories>
+        <category>record</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>Record</tag>
+        <tag>leetcode</tag>
+        <tag>binary-search</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251031 thinking proxy</title>
+    <url>/2025/10/31/251031-thinking-proxy/</url>
+    <content><![CDATA[1. 什么是代理模式代理模式是一种结构型设计模式，它通过引入一个代理对象来控制对另一个对象的访问。代理对象可以在客户端和目标对象之间添加额外的功能，如延迟加载、访问控制、日志记录等。
+2. 为什么需要代理模式代理模式的核心价值在于在不改变原始对象（目标对象）代码的前提下，增加额外的控制和功能。它像一个中介，隔离了客户端和真实对象，并在中间“做手脚”。
+3. 代理模式的实现 (Go)我们用 Go 实现一个保护代理的例子。假设我们有一个 Web 服务器，希望通过一个 Nginx 代理来限制用户的访问速率。
 
-类图：
+客户端、代理和真实服务都应遵循同一个接口，这样代理才能“伪装”成真实服务。
+
+// Server 是代理和真实服务器的通用接口type Server interface &#123;	HandleRequest(url, method string) (int, string)&#125;
+
+
+创建真实服务 (RealSubject)
+
+这是我们真正要保护的后端应用。
+// Application 是我们的后端真实服务type Application struct&#123;&#125;func (a *Application) HandleRequest(url, method string) (int, string) &#123;	if url == &quot;/app/status&quot; &amp;&amp; method == &quot;GET&quot; &#123;		return 200, &quot;Ok&quot;	&#125;	if url == &quot;/create/user&quot; &amp;&amp; method == &quot;POST&quot; &#123;		return 201, &quot;User Created&quot;	&#125;	return 404, &quot;Not Found&quot;&#125;
+
+
+创建代理 (Proxy)
+
+Nginx 代理持有对真实服务的引用，并在处理请求前增加了速率限制的逻辑。
+import &quot;fmt&quot;// Nginx 是一个代理，它控制对 Application 的访问type Nginx struct &#123;	application      *Application	maxAllowedReq    int	rateLimiter      map[string]int&#125;func NewNginxServer() *Nginx &#123;	return &amp;Nginx&#123;		application:      &amp;Application&#123;&#125;,		maxAllowedReq:    2,		rateLimiter:      make(map[string]int),	&#125;&#125;// checkRateLimit 检查并更新请求速率func (n *Nginx) checkRateLimit(url string) bool &#123;	n.rateLimiter[url]++	if n.rateLimiter[url] &gt; n.maxAllowedReq &#123;		return false // 超出速率限制	&#125;	return true&#125;// HandleRequest 代理的核心方法func (n *Nginx) HandleRequest(url, method string) (int, string) &#123;	// 在转发请求前，执行额外的逻辑（访问控制）	if !n.checkRateLimit(url) &#123;		return 429, &quot;Too Many Requests&quot;	&#125;	// 将请求转发给真实服务	return n.application.HandleRequest(url, method)&#125;
+
+
+客户端调用
+
+客户端只与代理（Nginx）交互，并不知道真实服务（Application）的存在。
+func main() &#123;	nginx := NewNginxServer()	// 第一次请求 /app/status	code, body := nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第二次请求 /app/status	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第三次请求 /app/status，将被限流	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)&#125;
+
+类图
 
     classDiagram
-    class Invoker {
-        -command: *Command
-        +SetCommand(command: *Command)
-        +ExecuteCommand(receiver: *Receiver)
-    }
-    class Command {
+    class Client
+    class Server {
         &lt;&lt;interface&gt;&gt;
-        +Execute(receiver: *Receiver)
+        +HandleRequest(url, method)
     }
-    class Command1 {
-        +Execute(receiver: *Receiver)
+    class Application {
+        +HandleRequest(url, method)
     }
-    class Receiver {
-        &#x2F;&#x2F;...
-        +Action()
+    class Nginx {
+        -application: *Application
+        -maxAllowedReq: int
+        -rateLimiter: map
+        +HandleRequest(url, method)
+        -checkRateLimit(url): bool
     }
-    Invoker &quot;*&quot; o--&gt; &quot;*&quot; Command: holds
-    Command1  ..&gt;  Receiver: executes
-    Command1 ..|&gt; Command : implements
-  ]]></content>
+
+    Client --&gt; Server : uses
+    Server &lt;|.. Application : implements
+    Server &lt;|.. Nginx : implements
+    Nginx o-- Application : aggregates
+  
+
+
+]]></content>
       <categories>
         <category>Design Pattern</category>
       </categories>
       <tags>
-        <tag>Interface Oriented Programming</tag>
         <tag>Design Pattern</tag>
         <tag>go</tag>
-        <tag>Command Pattern</tag>
+        <tag>Proxy Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -3517,6 +3471,52 @@ func main() &#123;	// 构造一棵二叉树	//      4	//     / \	//    2   5	// 
       </tags>
   </entry>
   <entry>
+    <title>251108 thinking command</title>
+    <url>/2025/11/08/251108-thinking-command/</url>
+    <content><![CDATA[1. 什么是命令模式命令模式是一种行为设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化。简单来说，就是将请求的发送者和请求的具体操作完全解耦。
+2. 为什么需要命令模式？命令模式的核心价值在于解耦。如果没有命令模式，调用者（比如一个按钮 Button）需要直接引用并调用一个具体的操作（比如一个文档 Document 的 save() 方法）。这会导致 Button 和 Document 紧密耦合，Button 无法被复用到其他操作上。
+通过引入命令对象，调用者不再关心命令的接收者是谁，也不关心操作如何执行。它只知道“我需要执行这个命令”。
+这样的话，调用者和接收者之间没有任何直接引用，各自可以独立变化。而且添加新的命令非常容易，只需创建新的具体命令类，而无需修改现有代码，符合开放&#x2F;封闭原则。
+3. 命令模式的实现 (Go)中间件：
+// Command 接口定义了一个执行操作的方法type Command interface &#123;    Execute(receiver *Receiver)&#125;// Receiver 是请求的接收者，它知道如何执行与请求相关的操作type Receiver struct &#123;    //...&#125;func (r *Receiver) Action() &#123;    // 执行具体的操作&#125;// Command1 是一个具体的命令类，它实现了 Command 接口type Command1 struct &#123;    //...&#125;func (c *Command1) Execute(r *Receiver) &#123;    r.Action()&#125;// Invoker 是请求的发送者，它持有一个 Command 对象  type Invoker struct &#123;    command *Command&#125;func (i *Invoker) SetCommand(command *Command) &#123;    i.command = command&#125;// ExecuteCommand 是 Invoker 用来间接执行命令的方法func (i *Invoker) ExecuteCommand(r *Receiver) &#123;    i.command.Execute(r)&#125;
+
+客户端
+receiver := &amp;Receiver&#123;&#125;command := &amp;Command1&#123;&#125;invoker := &amp;Invoker&#123;&#125;invoker.SetCommand(command)invoker.ExecuteCommand(receiver)
+
+类图：
+
+    classDiagram
+    class Invoker {
+        -command: *Command
+        +SetCommand(command: *Command)
+        +ExecuteCommand(receiver: *Receiver)
+    }
+    class Command {
+        &lt;&lt;interface&gt;&gt;
+        +Execute(receiver: *Receiver)
+    }
+    class Command1 {
+        +Execute(receiver: *Receiver)
+    }
+    class Receiver {
+        &#x2F;&#x2F;...
+        +Action()
+    }
+    Invoker &quot;*&quot; o--&gt; &quot;*&quot; Command: holds
+    Command1  ..&gt;  Receiver: executes
+    Command1 ..|&gt; Command : implements
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Command Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251112 thinking binary constraint matching</title>
     <url>/2025/11/12/251112-thinking-binary-constraint-matching/</url>
     <content><![CDATA[1. 抽象受到力扣1. 两数之和以及类似问题的启发，抽象出如下模板：
@@ -3537,6 +3537,61 @@ func main() &#123;	// 构造一棵二叉树	//      4	//     / \	//    2   5	// 
         <tag>data structure &amp; algorithm</tag>
         <tag>go</tag>
         <tag>hash table</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251114 thinking mediator</title>
+    <url>/2025/11/14/251114-thinking-mediator/</url>
+    <content><![CDATA[1. 什么是中介者模式？中介者模式（Mediator Pattern）通过引入一个“中介者”对象来封装对象之间的交互，使多个对象不需要显式引用彼此，改为只与中介者通信。它将协作编排从同事对象中抽离出来，降低耦合并集中管理交互规则。
+2. 为什么需要中介者模式？一个复杂的软件系统，若每个对象都与其他许多对象直接关联，则它们之间产生了紧密的耦合。这种设计的后果是，对任何一个对象的修改都可能引发连锁反应，迫使其他相关对象也得跟着改动，这便是“牵一发而动全身”的困境。系统的维护成本因此急剧攀升。
+更糟糕的是，完整的业务流程被切割得支离破碎，散落在各个对象的实现中。想要理解一个完整的协作过程，开发者不得不深入多个类，追踪复杂的调用链，这使得系统的整体行为变得难以把握，也让新功能的添加或问题排查变得困难。同时，由于每个对象都和它的“同事们”绑得太死，想把它单独拿出来在别处复用也几乎不可能。
+中介者模式正是为了解开这个“死结”而提出的。它引入了一个中心协调者——“中介者”，所有对象不再互相直接通信，而是统一与中介者对话。中介者负责接收消息，并根据既定规则将其分发给正确的对象。这样，原本混乱的网状结构被重构为清晰的“星型结构”，所有复杂的交互逻辑都集中到了中介者内部。通过这种方式，对象之间得以解耦，系统也因此变得更加清晰、易于维护和扩展。
+3. 中介者模式的实现（go）下面用一个简化的聊天室演示中介者如何协调用户之间的消息传递。
+package mainimport (    &quot;fmt&quot;)type Mediator interface &#123;    Register(c Colleague)    Send(from string, to string, msg string)    Broadcast(from string, msg string)&#125;type Colleague interface &#123;    Name() string    Receive(from string, msg string)    Send(to string, msg string)    Broadcast(msg string)&#125;type ChatRoom struct &#123;    members map[string]Colleague&#125;func NewChatRoom() *ChatRoom &#123;    return &amp;ChatRoom&#123;members: make(map[string]Colleague)&#125;&#125;func (r *ChatRoom) Register(c Colleague) &#123;    r.members[c.Name()] = c&#125;func (r *ChatRoom) Send(from string, to string, msg string) &#123;    if m, ok := r.members[to]; ok &#123;        m.Receive(from, msg)    &#125;&#125;func (r *ChatRoom) Broadcast(from string, msg string) &#123;    for name, m := range r.members &#123;        if name == from &#123;            continue        &#125;        m.Receive(from, msg)    &#125;&#125;type User struct &#123;    name string    room *ChatRoom&#125;func NewUser(name string, room *ChatRoom) *User &#123;    return &amp;User&#123;name: name, room: room&#125;&#125;func (u *User) Name() string &#123; return u.name &#125;func (u *User) Receive(from string, msg string) &#123;    fmt.Printf(&quot;[%s] &lt;- %s: %s\n&quot;, u.name, from, msg)&#125;func (u *User) Send(to string, msg string) &#123;    u.room.Send(u.name, to, msg)&#125;func (u *User) Broadcast(msg string) &#123;    u.room.Broadcast(u.name, msg)&#125;func main() &#123;    room := NewChatRoom()    alice := NewUser(&quot;alice&quot;, room)    bob := NewUser(&quot;bob&quot;, room)    eve := NewUser(&quot;eve&quot;, room)    room.Register(alice)    room.Register(bob)    room.Register(eve)    alice.Send(&quot;bob&quot;, &quot;Hi Bob&quot;)    bob.Send(&quot;alice&quot;, &quot;Hi Alice&quot;)    eve.Broadcast(&quot;Hello everyone&quot;)&#125;
+
+要点：用户之间不直接互相引用，交互规则集中在 ChatRoom。当需要增加记录审计、敏感词过滤、分组路由时，仅需扩展中介者。
+类图：
+
+    classDiagram
+class mediator {
+    &lt;&lt;interface&gt;&gt;
+    +Register(c colleague)
+    +Send(from,to,msg)
+    +Broadcast(from,msg)
+}
+class concreteMediator {
+    +Register(c colleague)
+    +Send(from,to,msg)
+    +Broadcast(from,msg)
+}
+class colleague {
+    &lt;&lt;interface&gt;&gt;
+    +Name() string
+    +Receive(from,msg)
+    +Send(to,msg)
+    +Broadcast(msg)
+}
+class concreteColleague {
+    +Name() string
+    +Receive(from,msg)
+    +Send(to,msg)
+    +Broadcast(msg)
+}
+
+mediator &lt;|.. concreteMediator
+colleague &lt;|.. concreteColleague
+concreteMediator --&gt; colleague : Register()
+concreteColleague --&gt; mediator : Send()&#x2F;Broadcast()
+concreteMediator --&gt; concreteColleague : Send()&#x2F;Broadcast()
+  
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Mediator Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -3623,61 +3678,6 @@ const t = localStorage.getItem(&quot;token&quot;)fetch(&quot;api/me&quot;,&#123;
         <tag>go</tag>
         <tag>jwt</tag>
         <tag>javascript</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251114 thinking mediator</title>
-    <url>/2025/11/14/251114-thinking-mediator/</url>
-    <content><![CDATA[1. 什么是中介者模式？中介者模式（Mediator Pattern）通过引入一个“中介者”对象来封装对象之间的交互，使多个对象不需要显式引用彼此，改为只与中介者通信。它将协作编排从同事对象中抽离出来，降低耦合并集中管理交互规则。
-2. 为什么需要中介者模式？一个复杂的软件系统，若每个对象都与其他许多对象直接关联，则它们之间产生了紧密的耦合。这种设计的后果是，对任何一个对象的修改都可能引发连锁反应，迫使其他相关对象也得跟着改动，这便是“牵一发而动全身”的困境。系统的维护成本因此急剧攀升。
-更糟糕的是，完整的业务流程被切割得支离破碎，散落在各个对象的实现中。想要理解一个完整的协作过程，开发者不得不深入多个类，追踪复杂的调用链，这使得系统的整体行为变得难以把握，也让新功能的添加或问题排查变得困难。同时，由于每个对象都和它的“同事们”绑得太死，想把它单独拿出来在别处复用也几乎不可能。
-中介者模式正是为了解开这个“死结”而提出的。它引入了一个中心协调者——“中介者”，所有对象不再互相直接通信，而是统一与中介者对话。中介者负责接收消息，并根据既定规则将其分发给正确的对象。这样，原本混乱的网状结构被重构为清晰的“星型结构”，所有复杂的交互逻辑都集中到了中介者内部。通过这种方式，对象之间得以解耦，系统也因此变得更加清晰、易于维护和扩展。
-3. 中介者模式的实现（go）下面用一个简化的聊天室演示中介者如何协调用户之间的消息传递。
-package mainimport (    &quot;fmt&quot;)type Mediator interface &#123;    Register(c Colleague)    Send(from string, to string, msg string)    Broadcast(from string, msg string)&#125;type Colleague interface &#123;    Name() string    Receive(from string, msg string)    Send(to string, msg string)    Broadcast(msg string)&#125;type ChatRoom struct &#123;    members map[string]Colleague&#125;func NewChatRoom() *ChatRoom &#123;    return &amp;ChatRoom&#123;members: make(map[string]Colleague)&#125;&#125;func (r *ChatRoom) Register(c Colleague) &#123;    r.members[c.Name()] = c&#125;func (r *ChatRoom) Send(from string, to string, msg string) &#123;    if m, ok := r.members[to]; ok &#123;        m.Receive(from, msg)    &#125;&#125;func (r *ChatRoom) Broadcast(from string, msg string) &#123;    for name, m := range r.members &#123;        if name == from &#123;            continue        &#125;        m.Receive(from, msg)    &#125;&#125;type User struct &#123;    name string    room *ChatRoom&#125;func NewUser(name string, room *ChatRoom) *User &#123;    return &amp;User&#123;name: name, room: room&#125;&#125;func (u *User) Name() string &#123; return u.name &#125;func (u *User) Receive(from string, msg string) &#123;    fmt.Printf(&quot;[%s] &lt;- %s: %s\n&quot;, u.name, from, msg)&#125;func (u *User) Send(to string, msg string) &#123;    u.room.Send(u.name, to, msg)&#125;func (u *User) Broadcast(msg string) &#123;    u.room.Broadcast(u.name, msg)&#125;func main() &#123;    room := NewChatRoom()    alice := NewUser(&quot;alice&quot;, room)    bob := NewUser(&quot;bob&quot;, room)    eve := NewUser(&quot;eve&quot;, room)    room.Register(alice)    room.Register(bob)    room.Register(eve)    alice.Send(&quot;bob&quot;, &quot;Hi Bob&quot;)    bob.Send(&quot;alice&quot;, &quot;Hi Alice&quot;)    eve.Broadcast(&quot;Hello everyone&quot;)&#125;
-
-要点：用户之间不直接互相引用，交互规则集中在 ChatRoom。当需要增加记录审计、敏感词过滤、分组路由时，仅需扩展中介者。
-类图：
-
-    classDiagram
-class mediator {
-    &lt;&lt;interface&gt;&gt;
-    +Register(c colleague)
-    +Send(from,to,msg)
-    +Broadcast(from,msg)
-}
-class concreteMediator {
-    +Register(c colleague)
-    +Send(from,to,msg)
-    +Broadcast(from,msg)
-}
-class colleague {
-    &lt;&lt;interface&gt;&gt;
-    +Name() string
-    +Receive(from,msg)
-    +Send(to,msg)
-    +Broadcast(msg)
-}
-class concreteColleague {
-    +Name() string
-    +Receive(from,msg)
-    +Send(to,msg)
-    +Broadcast(msg)
-}
-
-mediator &lt;|.. concreteMediator
-colleague &lt;|.. concreteColleague
-concreteMediator --&gt; colleague : Register()
-concreteColleague --&gt; mediator : Send()&#x2F;Broadcast()
-concreteMediator --&gt; concreteColleague : Send()&#x2F;Broadcast()
-  
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Mediator Pattern</tag>
       </tags>
   </entry>
   <entry>
