@@ -1,0 +1,21 @@
+@startuml
+Interface Strategy {
+    - executeStrategy(data)
+}
+struct Context {
+    + S: *Strategy
+    + Execute(data) : call S.executeStrategy(data)
+}
+struct StrategyA {
+    - compress(data)
+}
+struct StrategyB {
+    - compress(data)
+}
+
+StrategyA ..|> Strategy : Implements
+StrategyB ..|> Strategy : Implements
+Context o--> Strategy : refer
+Context --> StrategyA : Execute 
+Context --> StrategyB : Execute 
+@enduml

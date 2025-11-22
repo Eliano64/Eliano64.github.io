@@ -1,0 +1,47 @@
+@startuml
+' left to right direction
+hide empty description
+
+' ' 全局样式优化
+' skinparam backgroundColor #FFFFFF
+' skinparam shadowing true
+' skinparam dpi 140
+
+' skinparam state {
+'   BackgroundColor #F9FAFB
+'   BorderColor #666666
+'   FontColor #111111
+'   FontSize 13
+'   RoundCorner 12
+' }
+' skinparam arrow {
+'   Color #333333
+'   Thickness 1.2
+'   FontSize 12
+' }
+
+' 状态定义（带轻微分色，增强可读性）
+state "No Item" as NoItem 
+state "Has Item" as HasItem
+state "Item Requested" as ItemRequested 
+state "Has Money" as HasMoney 
+
+' 更规范的初始分支（使用 choice 伪状态）
+state InitChoice <<choice>>
+[*] --> InitChoice
+InitChoice --> NoItem : itemCount == 0
+NoItem : addItem(n)
+InitChoice --> HasItem : itemCount > 0
+
+' 主流程走向（从左到右）
+HasItem --> ItemRequested : requestItem()
+ItemRequested --> HasMoney : insertMoney()
+HasMoney --> HasItem : dispenseItem() > 0
+HasMoney --> NoItem : dispenseItem() == 0
+
+' 补充补货与空转逻辑
+NoItem --> HasItem : addItem(n)
+HasItem : itemCount > 0
+HasItem --> HasItem : addItem(n)
+
+@enduml

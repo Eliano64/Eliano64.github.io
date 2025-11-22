@@ -1,0 +1,21 @@
+@startuml
+hide empty description
+
+interface interface1 {
+    + method()
+}
+
+class Template<T : interface1> {
+    - impl: T
+    + Execute()
+}
+
+class Struct1 {
+    + method()
+}
+
+Struct1 ..|> interface1 : Implements
+Template *--> interface1 : embed
+Template ..> interface1 : execute
+
+@enduml

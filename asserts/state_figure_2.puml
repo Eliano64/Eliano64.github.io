@@ -1,0 +1,58 @@
+@startuml
+hide empty description
+' skinparam backgroundColor #FFFFFF
+' skinparam shadowing true
+' skinparam dpi 140
+' skinparam class {
+'   BackgroundColor #F9FAFB
+'   BorderColor #666666
+'   FontColor #111111
+'   FontSize 13
+'   RoundCorner 12
+' }
+
+' title State Pattern（Go 风格：接口 + 上下文持有状态）
+
+' note as N1
+' 小写标识代表包私有（Go）；接口用 <<interface>> 表示
+' 具体状态通过“实现接口”关联（非继承）
+' end note
+
+interface state {
+  - stateExecute(): error
+}
+
+entity Client
+
+
+struct context {
+  - s: state
+  + someData: Client Read Only\n                  State Read Write
+  + Execute(): call setState
+  + InitAll(): init context and state
+  - setState(s: state)
+}
+
+' note right of context
+' Factory（包外）:
+' NewContext(initData: any) : *context
+' 根据初始数据设置初始状态
+' end note
+
+Client -left-> context : Init and execute
+
+struct stateA{
+    - c : *context
+}
+struct stateB{
+    - c : *context
+}
+
+state <|.. stateA : Implements
+state <|.. stateB : Implements
+
+context o--> state : refer
+context -- stateA : Execute \nand setSomeData
+context -- stateB : Execute \nand setSomeData
+
+@enduml
