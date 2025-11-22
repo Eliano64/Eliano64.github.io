@@ -931,6 +931,23 @@ TO BE CONTINUED
       </tags>
   </entry>
   <entry>
+    <title>250824 thinking Trie</title>
+    <url>/2025/08/24/250824-thinking-Trie/</url>
+    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
+C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
+class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>string</tag>
+        <tag>Trie</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250811-250817 周记 linux命令与shell编程学习(2)</title>
     <url>/2025/08/19/250811-250817-%E5%91%A8%E8%AE%B0-linux%E5%91%BD%E4%BB%A4%E4%B8%8Eshell%E7%BC%96%E7%A8%8B%E5%AD%A6%E4%B9%A0-2/</url>
     <content><![CDATA[2. 第二部分 shell 脚本编程基础2.11 构建基础脚本2.11.2 创建 shell 脚本文件
@@ -1538,23 +1555,6 @@ cron 时间表允许使用特定值、取值范围(比如 1-5)或者通配符(*)
       </tags>
   </entry>
   <entry>
-    <title>250824 thinking Trie</title>
-    <url>/2025/08/24/250824-thinking-Trie/</url>
-    <content><![CDATA[字典树（Trie）是一种树形数据结构，用于高效地存储和检索字符串数据集中的键。每个节点有26个子节点，子节点的序号分别代表26个字母。因此，从根节点到某个节点的路径表示一个字符串。有时候，每个节点会有一个标记，用于表示是否为一个字符串的结束。如果一个节点的标记为true，那么从根节点到该节点的路径表示的字符串就是一个单词。
-C++示例以下是一个简单的C++实现，支持插入、搜索和前缀搜索。
-class Node &#123;public:    int end;    vector&lt;unique_ptr&lt;Node&gt;&gt; son;    Node():end(0),son(26)&#123;&#125;;&#125;;class Trie &#123;public:    unique_ptr&lt;Node&gt; root;    Trie() &#123;        root=make_unique&lt;Node&gt;();    &#125;        void insert(string word) &#123;        Node* cur=root.get();        for(auto chr: word)&#123;            if(cur-&gt;son[chr-&#x27;a&#x27;]==nullptr)                cur-&gt;son[chr-&#x27;a&#x27;]=make_unique&lt;Node&gt;();            cur=cur-&gt;son[chr-&#x27;a&#x27;].get();        &#125;        cur-&gt;end=1;    &#125;        bool search(string word) &#123;        Node* cur = root.get();        for (char c : word) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return cur-&gt;end==1;    &#125;        bool startsWith(string prefix) &#123;        Node* cur = root.get();        for (char c : prefix) &#123;            c -= &#x27;a&#x27;;            if (cur-&gt;son[c] == nullptr) &#123;                 return false;            &#125;            cur = cur-&gt;son[c].get();        &#125;        return true;    &#125;&#125;;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>C++</tag>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>string</tag>
-        <tag>Trie</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250824 thinking singleton</title>
     <url>/2025/08/24/250824-thinking-singleton/</url>
     <content><![CDATA[1. 什么是单例模式？单例模式（Singleton Pattern）是一种创建型设计模式，它确保一个类只有一个实例，并提供一个全局访问点来访问该实例。
@@ -1674,24 +1674,6 @@ vector&lt;int&gt; postorderTraversal(TreeNode* root) &#123;        vector&lt;int
       </tags>
   </entry>
   <entry>
-    <title>250926 thinking 反悔堆</title>
-    <url>/2025/09/26/250926-thinking-%E5%8F%8D%E6%82%94%E5%A0%86/</url>
-    <content><![CDATA[反悔是贪心的一种策略，用于在当前可能不是全局最优解时，“反思”已做过的选择。
-而对于这样的策略，常使用堆来辅助实现。具体来说就是将已做的选择按照某种规则放入最大堆中。“反悔”就是“撤销”堆顶的选择，即代价最大的选择。
-用最大堆在约束触发时“撤销&#x2F;替换”当前集合里最差的那个已选项。
-1. 示例LCP30. 魔塔游戏
-magicTower(nums[0..n-1], hp)&#123;    declare a empty max heap, named heap.    ans := 0    for num in nums; do        if num &lt; 0; then            heap.push(num) // push the negative number into the heap, so that we can recover the choice later if needed        fi        hp += num        if hp &lt;= 0; then            if heap.isEmpty(); then //cannot recover                return -1            fi            ans++            hp -= heap.pop() // recover the smallest negative number, namely the most costly choice        fi    end    return ans&#125;]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>greedy</tag>
-        <tag>heap</tag>
-        <tag>rollback</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>250824 thinking 状压dp</title>
     <url>/2025/08/24/250824-thinking-%E7%8A%B6%E5%8E%8Bdp/</url>
     <content><![CDATA[状压dp使用二进制数来表示状态，将当前已选元素的集合表示为一个二进制数。适用于需要枚举每一种排列进行判断、且最大的$n$有$10&lt;n&lt;20$的题目。状压dp能使得时间复杂度从暴力搜索的$O(n!)$降到$O(n*2^n)$(相邻无关)或者$O(n^2 * 2^n)$(相邻相关)。
@@ -1730,6 +1712,24 @@ int specialPerm(vector&lt;int&gt;&amp; nums) &#123;        const int mod = 1e9+7
         <tag>data structure &amp; algorithm</tag>
         <tag>dynamic programming</tag>
         <tag>state compression</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>250926 thinking 反悔堆</title>
+    <url>/2025/09/26/250926-thinking-%E5%8F%8D%E6%82%94%E5%A0%86/</url>
+    <content><![CDATA[反悔是贪心的一种策略，用于在当前可能不是全局最优解时，“反思”已做过的选择。
+而对于这样的策略，常使用堆来辅助实现。具体来说就是将已做的选择按照某种规则放入最大堆中。“反悔”就是“撤销”堆顶的选择，即代价最大的选择。
+用最大堆在约束触发时“撤销&#x2F;替换”当前集合里最差的那个已选项。
+1. 示例LCP30. 魔塔游戏
+magicTower(nums[0..n-1], hp)&#123;    declare a empty max heap, named heap.    ans := 0    for num in nums; do        if num &lt; 0; then            heap.push(num) // push the negative number into the heap, so that we can recover the choice later if needed        fi        hp += num        if hp &lt;= 0; then            if heap.isEmpty(); then //cannot recover                return -1            fi            ans++            hp -= heap.pop() // recover the smallest negative number, namely the most costly choice        fi    end    return ans&#125;]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>greedy</tag>
+        <tag>heap</tag>
+        <tag>rollback</tag>
       </tags>
   </entry>
   <entry>
@@ -1830,6 +1830,34 @@ func numMatchingSubseq(s string, words []string) int &#123;    nxt := make([][26
       </tags>
   </entry>
   <entry>
+    <title>250926 thinking 翻转链表</title>
+    <url>/2025/09/26/250926-thinking-%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8/</url>
+    <content><![CDATA[1. 操作以这道题为实例。
+对链表的某一部分进行翻转时，需要记录以下这几个节点：
+
+p0: 发生翻转区域的前置节点，这个是为了区域翻转后的连接（循环结束，p0.next为翻转后区间的最后一个元素）。为了统一处理（因为原链表有的翻转区域没有前置节点），先构造dummy=ListNode&#123;next: head&#125;。这样的话，翻转后的链表的头节点即为dummy.next。p0可能为dummy。
+cur: 当前遍历到的节点，循环结束，cur为区域后的第一个元素
+pre: 当前遍历到的节点的原链表中的上一个节点，在翻转后就是next。在最初翻转前为nullptr,循环结束，pre为翻转后的区域的第一个元素
+nxt: 当前遍历到的节点的原链表中的下一个节点，下一个cur，在翻转后它的next就是pre。
+
+操作如下：
+cur := p0.nextpre := nullptrfor cur in area; do    nxt := cur.next    cur.next = pre    pre = cur    cur = nxtend loop// one loop only change one &quot;next&quot;// end loop, cur is next node for this area at the timep0.next.next=cur // set next pointer of the reversed area&#x27;s last node  p0.next=pre // previous node&#x27;s next pointer points to the first node 
+
+2. 例题25.k个一组翻转链表
+这个题的有一个关键：找到每一个翻转区间的p0。它实际就是上一个区间未翻转时的第一个节点。
+go示例解法
+/** * Definition for singly-linked list. * type ListNode struct &#123; *     Val int *     Next *ListNode * &#125; */func reverseKGroup(head *ListNode, k int) *ListNode &#123;    cnt := 0    for p:=head;p!=nil;p=p.Next&#123;        cnt++    &#125;    dummy := &amp;ListNode&#123;0,head&#125;    p0 := dummy    for ; cnt&gt;=k ; cnt-=k &#123;        cur := p0.Next        var pre *ListNode        nextp := p0.Next        for i:=0;i&lt;k;i++&#123;            nxt := cur.Next            cur.Next = pre            pre = cur            cur = nxt        &#125;        p0.Next.Next=cur        p0.Next = pre        p0=nextp    &#125;     return dummy.Next&#125;
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>go</tag>
+        <tag>linkList</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>250926 thinking 差分</title>
     <url>/2025/09/26/250926-thinking-%E5%B7%AE%E5%88%86/</url>
     <content><![CDATA[1. 简介对于一个数组a，构造的这样的一个数组d称为a的差分数组：
@@ -1859,34 +1887,6 @@ func isZeroArray(nums []int, queries [][]int) bool &#123;	diff := make([]int, le
         <tag>data structure &amp; algorithm</tag>
         <tag>go</tag>
         <tag>difference</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>250926 thinking 翻转链表</title>
-    <url>/2025/09/26/250926-thinking-%E7%BF%BB%E8%BD%AC%E9%93%BE%E8%A1%A8/</url>
-    <content><![CDATA[1. 操作以这道题为实例。
-对链表的某一部分进行翻转时，需要记录以下这几个节点：
-
-p0: 发生翻转区域的前置节点，这个是为了区域翻转后的连接（循环结束，p0.next为翻转后区间的最后一个元素）。为了统一处理（因为原链表有的翻转区域没有前置节点），先构造dummy=ListNode&#123;next: head&#125;。这样的话，翻转后的链表的头节点即为dummy.next。p0可能为dummy。
-cur: 当前遍历到的节点，循环结束，cur为区域后的第一个元素
-pre: 当前遍历到的节点的原链表中的上一个节点，在翻转后就是next。在最初翻转前为nullptr,循环结束，pre为翻转后的区域的第一个元素
-nxt: 当前遍历到的节点的原链表中的下一个节点，下一个cur，在翻转后它的next就是pre。
-
-操作如下：
-cur := p0.nextpre := nullptrfor cur in area; do    nxt := cur.next    cur.next = pre    pre = cur    cur = nxtend loop// one loop only change one &quot;next&quot;// end loop, cur is next node for this area at the timep0.next.next=cur // set next pointer of the reversed area&#x27;s last node  p0.next=pre // previous node&#x27;s next pointer points to the first node 
-
-2. 例题25.k个一组翻转链表
-这个题的有一个关键：找到每一个翻转区间的p0。它实际就是上一个区间未翻转时的第一个节点。
-go示例解法
-/** * Definition for singly-linked list. * type ListNode struct &#123; *     Val int *     Next *ListNode * &#125; */func reverseKGroup(head *ListNode, k int) *ListNode &#123;    cnt := 0    for p:=head;p!=nil;p=p.Next&#123;        cnt++    &#125;    dummy := &amp;ListNode&#123;0,head&#125;    p0 := dummy    for ; cnt&gt;=k ; cnt-=k &#123;        cur := p0.Next        var pre *ListNode        nextp := p0.Next        for i:=0;i&lt;k;i++&#123;            nxt := cur.Next            cur.Next = pre            pre = cur            cur = nxt        &#125;        p0.Next.Next=cur        p0.Next = pre        p0=nextp    &#125;     return dummy.Next&#125;
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
-        <tag>linkList</tag>
       </tags>
   </entry>
   <entry>
@@ -2171,44 +2171,6 @@ import &#123; Navbar, Nav, Container &#125; from &#x27;react-bootstrap&#x27;impo
       </tags>
   </entry>
   <entry>
-    <title>251006-251012 weekly Qt</title>
-    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
-    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
-我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
-1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
-需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
-2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
-程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
-
-信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
-槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
-默认情况下：信号与槽是“同步的”。
-
-整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
-2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
-它是体现事件驱动的绝佳例子。
-它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
-可以利用QTimer以及timeout信号来实现定时触发事件。
-以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
-QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
-
-
-2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
-QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
-
-通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
-之后遇到了需要QThread的时候再介绍Qt的线程~
-]]></content>
-      <categories>
-        <category>Qt</category>
-      </categories>
-      <tags>
-        <tag>Projects</tag>
-        <tag>C++</tag>
-        <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251003 thinking factory method&amp; abstract factory</title>
     <url>/2025/10/03/251003-thinking-factory-method-abstract-factory/</url>
     <content><![CDATA[1. 工厂方法以点菜为例。
@@ -2324,6 +2286,44 @@ americanFactory ..&gt; drink : CreateDrink()
       </tags>
   </entry>
   <entry>
+    <title>251006-251012 weekly Qt</title>
+    <url>/2025/10/12/251006-251012-weekly-Qt/</url>
+    <content><![CDATA[最近在做一个简单的桌宠，以下记录我对C++ Qt的一些理解。
+我认为，一个Qt应用主要围绕两大块：同步的UI初始化与异步的事件循环。
+1. 同步的UI初始化Qt 窗口（或任何 QWidget）的生命周期始于其构造函数。在这里，我们以常规的、同步的方式完成所有UI布局和初始属性设置。这部分代码会一次性执行完毕，构建出窗口的静态初始外观。用时可以忽略不计。
+需要延时触发&#x2F;用户事件驱动的部分就需要Qt特别的事件处理机制————信号与槽来实现。
+2. 异步的事件循环静态的UI只有在响应外部变化（如用户点击、网络数据到达、定时器触发）时才具有生命力。Qt 通过一个持续运行的事件循环 (Event Loop) 来管理这一切。
+程序在完成同步初始化后，会交出控制权给事件循环。事件循环负责监听各种事件源，并将它们派发给相应的对象。而信号与槽 (Signals &amp; Slots) 机制，正是 Qt 对这种异步模型优雅、类型安全的封装。
+
+信号Signal：当某个对象的状态发生改变（如 QPushButton 被点击），它会 emit 一个信号。信号本身不关心谁会接收它。
+槽Slot：一个普通的成员函数，用于响应信号。当它与一个信号 connect 后，一旦信号发出，这个槽函数就会被事件循环调度执行。
+默认情况下：信号与槽是“同步的”。
+
+整个流程是：事件发生 → 对象发射信号 → 事件循环 → 调度已连接的槽函数执行。
+2.1. 定时触发QTimer是Qt提供的一个定时器类，在其线程的事件循环中定期投递 timeout 事件，随后触发信号。
+它是体现事件驱动的绝佳例子。
+它不在当前代码流里“等待”，而是向事件循环注册一个未来的任务。
+可以利用QTimer以及timeout信号来实现定时触发事件。
+以下代码并不会阻塞，start() 只是告诉事件循环“请每隔1000毫秒，帮我把 timer 的 timeout 信号发出来”。
+QTimer *timer = new QTimer(this);connect(timer, &amp;QTimer::timeout, this, &amp;MyClass::onTimeout);timer-&gt;start(1000); // 非阻塞，立即返回
+
+
+2.2. 单次延时触发QTimer::singleShot 是一个更便捷的静态函数，它请求事件循环“在1000毫秒后，帮我执行一次这个 Lambda 函数”。这对于实现“稍后执行”的逻辑非常有用。
+QTimer::singleShot(1000, this, [this]()&#123;    // 这部分代码将在 1 秒后由事件循环调用&#125;);
+
+通过这种方式，复杂的异步逻辑被分解为一系列由事件驱动的、简短的槽函数调用，避免了回调地狱，也让代码结构保持清晰。
+之后遇到了需要QThread的时候再介绍Qt的线程~
+]]></content>
+      <categories>
+        <category>Qt</category>
+      </categories>
+      <tags>
+        <tag>Projects</tag>
+        <tag>C++</tag>
+        <tag>Qt</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251012 record best-time-to-buy-and-sell-stock</title>
     <url>/2025/10/12/251012-record-best-time-to-buy-and-sell-stock/</url>
     <content><![CDATA[题目
@@ -2389,6 +2389,36 @@ package mainimport (	&quot;encoding/json&quot;	&quot;fmt&quot;	&quot;reflect&quo
       <tags>
         <tag>go</tag>
         <tag>reflect</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251012 thinking slider window</title>
+    <url>/2025/10/12/251012-thinking-slider-window/</url>
+    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
+1. 定长滑动窗口只用r即可，l=r-w+1。
+模板：
+for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
+
+
+注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
+
+2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
+l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
+
+3. 例题
+定长滑动窗口
+
+变长滑动窗口
+
+
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>thinking</tag>
+        <tag>slider window</tag>
       </tags>
   </entry>
   <entry>
@@ -2465,36 +2495,6 @@ director ..&gt; product : Construct()
         <tag>Design Pattern</tag>
         <tag>go</tag>
         <tag>Builder Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251012 thinking slider window</title>
-    <url>/2025/10/12/251012-thinking-slider-window/</url>
-    <content><![CDATA[核心思想：使用两个指针l和r表示窗口的左右边界。r表示即将入窗口的元素，l表示即将出窗口的元素。这种出和入只发生在窗口特定的位置，与队列相似。
-1. 定长滑动窗口只用r即可，l=r-w+1。
-模板：
-for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    l = r - w + 1    if l &lt; 0; then        continue    fi    // update (loop i)    update window state    // exit, prepare for the next loop (for loop i+1)    l++done
-
-
-注意：出窗口的操作要在更新窗口状态之后。这样，当r指代的元素入窗口时，由r推出的l所指代的元素会在下一轮循环开始之前出窗口。相应的，在下一轮循环i+1时，上一个r推出的l所指代的元素在i+1之前就出了窗口。确保状态更新时i+1的出入都发生过了。
-
-2. 变长滑动窗口需要l和r两个指针。r表示所有即将入窗口的元素，l表示被淘汰的、即将出窗口的元素。
-l := 0for r in (0..n-1); do    // enter (loop i)    arr[r] enters the window    // need someone to exit? (loop i)    if [check_exit]; then        delete arr[l] from window state        l++    fi    // update (loop i)    update window statedone
-
-3. 例题
-定长滑动窗口
-
-变长滑动窗口
-
-
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>thinking</tag>
-        <tag>slider window</tag>
       </tags>
   </entry>
   <entry>
@@ -2590,6 +2590,50 @@ func main() &#123;    // 创建被适配的对象    awesomePlayer := &amp;Aweso
       </tags>
   </entry>
   <entry>
+    <title>251018 thinking composite</title>
+    <url>/2025/10/25/251018-thinking-composite/</url>
+    <content><![CDATA[1. 什么是组合模式组合模式（Composite Pattern）是一种结构型设计模式，它允许你将对象组合成树形结构以表示“部分-整体”的层次关系。组合模式使得客户端可以统一地处理个别对象和对象组合。
+2. 为什么需要组合模式组合最主要的功能是在整个树状结构上递归调用方法并对结果进行汇总。
+3. 组合模式的实现（go）假定一个文件系统，其中包含文件和目录。目录可以包含其他文件和目录。
+现在我们需要搜索文件系统中是否包含某个文件。
+type Component interface &#123;	Search(keyword string)&#125;type Directory struct &#123;	Name     string	children []Component&#125;func (d *Directory) Search(keyword string) &#123;	if d.Name == keyword &#123;		fmt.Println(&quot;find directory:&quot;, d.Name)		return	&#125;	for _, child := range d.children &#123;		child.Search(keyword)	&#125;&#125;// add 方法用于添加子组件func (d *Directory) Add(child Component) &#123;	d.children = append(d.children, child)&#125;type File struct &#123;	Name string&#125;func (f *File) Search(keyword string) &#123;	if f.Name == keyword &#123;		fmt.Println(&quot;find file:&quot;, f.Name)		return	&#125;&#125;
+
+客户端代码
+func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;    dir1 := &amp;Directory&#123;Name: &quot;dir1&quot;&#125;    dir2 := &amp;Directory&#123;Name: &quot;dir2&quot;&#125;    file1 := &amp;File&#123;Name: &quot;file1&quot;&#125;    file2 := &amp;File&#123;Name: &quot;file2&quot;&#125;    root.Add(dir1)    root.Add(dir2)    dir1.Add(file1)    dir2.Add(file2)    root.Search(&quot;file1&quot;)    root.Search(&quot;file2&quot;)    root.Search(&quot;dir1&quot;)    root.Search(&quot;dir2&quot;)&#125;   
+
+类图
+
+    classDiagram
+    class Component {
+        &lt;&lt;interface&gt;&gt;
+        +Search(keyword string)
+    }
+    class Directory {
+        +Name string
+        -children []Component
+        +Add(child Component)
+        +Search(keyword string)
+    }
+    class File {
+        +Name string
+        +Search(keyword string)
+    }
+    Component &lt;|.. Directory
+    Component &lt;|.. File
+    Directory &quot;1&quot; o-- &quot;n&quot; Component
+  
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Composite Pattern</tag>
+        <tag>Interface Oriented Design</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251018 thinking bridge</title>
     <url>/2025/10/18/251018-thinking-bridge/</url>
     <content><![CDATA[1. 什么是桥接模式？桥接模式（Bridge Pattern）是一种结构型设计模式，它的核心思想是将抽象部分与它的实现部分分离，使它们都可以独立地变化。
@@ -2667,50 +2711,6 @@ func main() &#123;	// 创建具体的实现对象	red := &amp;RedColor&#123;&#12
       </tags>
   </entry>
   <entry>
-    <title>251018 thinking composite</title>
-    <url>/2025/10/25/251018-thinking-composite/</url>
-    <content><![CDATA[1. 什么是组合模式组合模式（Composite Pattern）是一种结构型设计模式，它允许你将对象组合成树形结构以表示“部分-整体”的层次关系。组合模式使得客户端可以统一地处理个别对象和对象组合。
-2. 为什么需要组合模式组合最主要的功能是在整个树状结构上递归调用方法并对结果进行汇总。
-3. 组合模式的实现（go）假定一个文件系统，其中包含文件和目录。目录可以包含其他文件和目录。
-现在我们需要搜索文件系统中是否包含某个文件。
-type Component interface &#123;	Search(keyword string)&#125;type Directory struct &#123;	Name     string	children []Component&#125;func (d *Directory) Search(keyword string) &#123;	if d.Name == keyword &#123;		fmt.Println(&quot;find directory:&quot;, d.Name)		return	&#125;	for _, child := range d.children &#123;		child.Search(keyword)	&#125;&#125;// add 方法用于添加子组件func (d *Directory) Add(child Component) &#123;	d.children = append(d.children, child)&#125;type File struct &#123;	Name string&#125;func (f *File) Search(keyword string) &#123;	if f.Name == keyword &#123;		fmt.Println(&quot;find file:&quot;, f.Name)		return	&#125;&#125;
-
-客户端代码
-func main() &#123;    root := &amp;Directory&#123;Name: &quot;root&quot;&#125;    dir1 := &amp;Directory&#123;Name: &quot;dir1&quot;&#125;    dir2 := &amp;Directory&#123;Name: &quot;dir2&quot;&#125;    file1 := &amp;File&#123;Name: &quot;file1&quot;&#125;    file2 := &amp;File&#123;Name: &quot;file2&quot;&#125;    root.Add(dir1)    root.Add(dir2)    dir1.Add(file1)    dir2.Add(file2)    root.Search(&quot;file1&quot;)    root.Search(&quot;file2&quot;)    root.Search(&quot;dir1&quot;)    root.Search(&quot;dir2&quot;)&#125;   
-
-类图
-
-    classDiagram
-    class Component {
-        &lt;&lt;interface&gt;&gt;
-        +Search(keyword string)
-    }
-    class Directory {
-        +Name string
-        -children []Component
-        +Add(child Component)
-        +Search(keyword string)
-    }
-    class File {
-        +Name string
-        +Search(keyword string)
-    }
-    Component &lt;|.. Directory
-    Component &lt;|.. File
-    Directory &quot;1&quot; o-- &quot;n&quot; Component
-  
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Composite Pattern</tag>
-        <tag>Interface Oriented Design</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251018 thinking decorator</title>
     <url>/2025/10/25/251018-thinking-decorator/</url>
     <content><![CDATA[1. 什么是装饰器模式装饰器模式（Decorator Pattern）是一种结构型设计模式，它允许你在不改变原有对象结构的情况下，动态地给对象添加新的功能。
@@ -2760,6 +2760,61 @@ func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeD
         <tag>go</tag>
         <tag>Interface Oriented Design</tag>
         <tag>Decorator Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251025 thinking facade</title>
+    <url>/2025/10/25/251025-thinking-facade/</url>
+    <content><![CDATA[1. 什么是外观模式外观模式是一种结构型设计模式， 能为程序库、 框架或其他复杂类提供一个简单的接口。
+2. 为什么需要外观模式外观模式的主要目的是简化复杂系统的使用。它通过提供一个简单的接口，隐藏系统的复杂性，使客户端代码更易于理解和使用。
+3. 外观模式的实现（go）以计算机开机为例，展示外观模式的实现。
+// 子系统：CPUtype CPU struct&#123;&#125;func (c *CPU) Start()    &#123; fmt.Println(&quot;CPU: start&quot;) &#125;func (c *CPU) Shutdown() &#123; fmt.Println(&quot;CPU: shutdown&quot;) &#125;// 子系统：内存type Memory struct&#123;&#125;func (m *Memory) LoadOS() &#123; fmt.Println(&quot;Memory: load OS into memory&quot;) &#125;func (m *Memory) Clear()  &#123; fmt.Println(&quot;Memory: clear&quot;) &#125;// 子系统：磁盘type Disk struct&#123;&#125;func (d *Disk) ReadBootSector() &#123; fmt.Println(&quot;Disk: read boot sector&quot;) &#125;// 外观：计算机type ComputerFacade struct &#123;	cpu  *CPU	mem  *Memory	disk *Disk&#125;func NewComputerFacade() *ComputerFacade &#123;	return &amp;ComputerFacade&#123;		cpu:  &amp;CPU&#123;&#125;,		mem:  &amp;Memory&#123;&#125;,		disk: &amp;Disk&#123;&#125;,	&#125;&#125;// 对外暴露的简化接口：开机流程func (c *ComputerFacade) PowerOn() &#123;	fmt.Println(&quot;== PowerOn ==&quot;)	c.disk.ReadBootSector()	c.cpu.Start()	c.mem.LoadOS()	fmt.Println(&quot;System is up.&quot;)&#125;// 对外暴露的简化接口：关机流程func (c *ComputerFacade) PowerOff() &#123;	fmt.Println(&quot;== PowerOff ==&quot;)	c.cpu.Shutdown()	c.mem.Clear()	fmt.Println(&quot;System is down.&quot;)&#125;
+
+客户端
+func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
+
+类图
+
+    classDiagram
+    class CPU {
+        +Start()
+        +Shutdown()
+    }
+    class Memory {
+        +LoadOS()
+        +Clear()
+    }
+    class Disk {
+        +ReadBootSector()
+    }
+    class ComputerFacade {
+        -cpu: CPU
+        -mem: Memory
+        -disk: Disk
+        +NewComputerFacade()
+        +PowerOn()
+        +PowerOff()
+    }
+    ComputerFacade *-- CPU : uses
+    ComputerFacade *-- Memory : uses
+    ComputerFacade *-- Disk : uses
+    ComputerFacade ..&gt; CPU : Start()
+    ComputerFacade ..&gt; Memory : LoadOS()
+    ComputerFacade ..&gt; Disk : ReadBootSector()
+    ComputerFacade ..&gt; CPU : Shutdown()
+    ComputerFacade ..&gt; Memory : Clear()
+  
+
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Facade Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -3091,46 +3146,57 @@ func main() &#123;	latte := &amp;Latte&#123;&#125;	latteWithMilk := &amp;CoffeeD
       </categories>
   </entry>
   <entry>
-    <title>251025 thinking facade</title>
-    <url>/2025/10/25/251025-thinking-facade/</url>
-    <content><![CDATA[1. 什么是外观模式外观模式是一种结构型设计模式， 能为程序库、 框架或其他复杂类提供一个简单的接口。
-2. 为什么需要外观模式外观模式的主要目的是简化复杂系统的使用。它通过提供一个简单的接口，隐藏系统的复杂性，使客户端代码更易于理解和使用。
-3. 外观模式的实现（go）以计算机开机为例，展示外观模式的实现。
-// 子系统：CPUtype CPU struct&#123;&#125;func (c *CPU) Start()    &#123; fmt.Println(&quot;CPU: start&quot;) &#125;func (c *CPU) Shutdown() &#123; fmt.Println(&quot;CPU: shutdown&quot;) &#125;// 子系统：内存type Memory struct&#123;&#125;func (m *Memory) LoadOS() &#123; fmt.Println(&quot;Memory: load OS into memory&quot;) &#125;func (m *Memory) Clear()  &#123; fmt.Println(&quot;Memory: clear&quot;) &#125;// 子系统：磁盘type Disk struct&#123;&#125;func (d *Disk) ReadBootSector() &#123; fmt.Println(&quot;Disk: read boot sector&quot;) &#125;// 外观：计算机type ComputerFacade struct &#123;	cpu  *CPU	mem  *Memory	disk *Disk&#125;func NewComputerFacade() *ComputerFacade &#123;	return &amp;ComputerFacade&#123;		cpu:  &amp;CPU&#123;&#125;,		mem:  &amp;Memory&#123;&#125;,		disk: &amp;Disk&#123;&#125;,	&#125;&#125;// 对外暴露的简化接口：开机流程func (c *ComputerFacade) PowerOn() &#123;	fmt.Println(&quot;== PowerOn ==&quot;)	c.disk.ReadBootSector()	c.cpu.Start()	c.mem.LoadOS()	fmt.Println(&quot;System is up.&quot;)&#125;// 对外暴露的简化接口：关机流程func (c *ComputerFacade) PowerOff() &#123;	fmt.Println(&quot;== PowerOff ==&quot;)	c.cpu.Shutdown()	c.mem.Clear()	fmt.Println(&quot;System is down.&quot;)&#125;
+    <title>251031 thinking proxy</title>
+    <url>/2025/10/31/251031-thinking-proxy/</url>
+    <content><![CDATA[1. 什么是代理模式代理模式是一种结构型设计模式，它通过引入一个代理对象来控制对另一个对象的访问。代理对象可以在客户端和目标对象之间添加额外的功能，如延迟加载、访问控制、日志记录等。
+2. 为什么需要代理模式代理模式的核心价值在于在不改变原始对象（目标对象）代码的前提下，增加额外的控制和功能。它像一个中介，隔离了客户端和真实对象，并在中间“做手脚”。
+3. 代理模式的实现 (Go)我们用 Go 实现一个保护代理的例子。假设我们有一个 Web 服务器，希望通过一个 Nginx 代理来限制用户的访问速率。
 
-客户端
-func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
+客户端、代理和真实服务都应遵循同一个接口，这样代理才能“伪装”成真实服务。
+
+// Server 是代理和真实服务器的通用接口type Server interface &#123;	HandleRequest(url, method string) (int, string)&#125;
+
+
+创建真实服务 (RealSubject)
+
+这是我们真正要保护的后端应用。
+// Application 是我们的后端真实服务type Application struct&#123;&#125;func (a *Application) HandleRequest(url, method string) (int, string) &#123;	if url == &quot;/app/status&quot; &amp;&amp; method == &quot;GET&quot; &#123;		return 200, &quot;Ok&quot;	&#125;	if url == &quot;/create/user&quot; &amp;&amp; method == &quot;POST&quot; &#123;		return 201, &quot;User Created&quot;	&#125;	return 404, &quot;Not Found&quot;&#125;
+
+
+创建代理 (Proxy)
+
+Nginx 代理持有对真实服务的引用，并在处理请求前增加了速率限制的逻辑。
+import &quot;fmt&quot;// Nginx 是一个代理，它控制对 Application 的访问type Nginx struct &#123;	application      *Application	maxAllowedReq    int	rateLimiter      map[string]int&#125;func NewNginxServer() *Nginx &#123;	return &amp;Nginx&#123;		application:      &amp;Application&#123;&#125;,		maxAllowedReq:    2,		rateLimiter:      make(map[string]int),	&#125;&#125;// checkRateLimit 检查并更新请求速率func (n *Nginx) checkRateLimit(url string) bool &#123;	n.rateLimiter[url]++	if n.rateLimiter[url] &gt; n.maxAllowedReq &#123;		return false // 超出速率限制	&#125;	return true&#125;// HandleRequest 代理的核心方法func (n *Nginx) HandleRequest(url, method string) (int, string) &#123;	// 在转发请求前，执行额外的逻辑（访问控制）	if !n.checkRateLimit(url) &#123;		return 429, &quot;Too Many Requests&quot;	&#125;	// 将请求转发给真实服务	return n.application.HandleRequest(url, method)&#125;
+
+
+客户端调用
+
+客户端只与代理（Nginx）交互，并不知道真实服务（Application）的存在。
+func main() &#123;	nginx := NewNginxServer()	// 第一次请求 /app/status	code, body := nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第二次请求 /app/status	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第三次请求 /app/status，将被限流	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)&#125;
 
 类图
 
     classDiagram
-    class CPU {
-        +Start()
-        +Shutdown()
+    class Client
+    class Server {
+        &lt;&lt;interface&gt;&gt;
+        +HandleRequest(url, method)
     }
-    class Memory {
-        +LoadOS()
-        +Clear()
+    class Application {
+        +HandleRequest(url, method)
     }
-    class Disk {
-        +ReadBootSector()
+    class Nginx {
+        -application: *Application
+        -maxAllowedReq: int
+        -rateLimiter: map
+        +HandleRequest(url, method)
+        -checkRateLimit(url): bool
     }
-    class ComputerFacade {
-        -cpu: CPU
-        -mem: Memory
-        -disk: Disk
-        +NewComputerFacade()
-        +PowerOn()
-        +PowerOff()
-    }
-    ComputerFacade *-- CPU : uses
-    ComputerFacade *-- Memory : uses
-    ComputerFacade *-- Disk : uses
-    ComputerFacade ..&gt; CPU : Start()
-    ComputerFacade ..&gt; Memory : LoadOS()
-    ComputerFacade ..&gt; Disk : ReadBootSector()
-    ComputerFacade ..&gt; CPU : Shutdown()
-    ComputerFacade ..&gt; Memory : Clear()
+
+    Client --&gt; Server : uses
+    Server &lt;|.. Application : implements
+    Server &lt;|.. Nginx : implements
+    Nginx o-- Application : aggregates
   
 
 
@@ -3141,8 +3207,7 @@ func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
       <tags>
         <tag>Design Pattern</tag>
         <tag>go</tag>
-        <tag>Interface Oriented Design</tag>
-        <tag>Facade Pattern</tag>
+        <tag>Proxy Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -3219,71 +3284,6 @@ func main() &#123;	pc := NewComputerFacade()	pc.PowerOn()	pc.PowerOff()&#125;
       </tags>
   </entry>
   <entry>
-    <title>251031 thinking proxy</title>
-    <url>/2025/10/31/251031-thinking-proxy/</url>
-    <content><![CDATA[1. 什么是代理模式代理模式是一种结构型设计模式，它通过引入一个代理对象来控制对另一个对象的访问。代理对象可以在客户端和目标对象之间添加额外的功能，如延迟加载、访问控制、日志记录等。
-2. 为什么需要代理模式代理模式的核心价值在于在不改变原始对象（目标对象）代码的前提下，增加额外的控制和功能。它像一个中介，隔离了客户端和真实对象，并在中间“做手脚”。
-3. 代理模式的实现 (Go)我们用 Go 实现一个保护代理的例子。假设我们有一个 Web 服务器，希望通过一个 Nginx 代理来限制用户的访问速率。
-
-客户端、代理和真实服务都应遵循同一个接口，这样代理才能“伪装”成真实服务。
-
-// Server 是代理和真实服务器的通用接口type Server interface &#123;	HandleRequest(url, method string) (int, string)&#125;
-
-
-创建真实服务 (RealSubject)
-
-这是我们真正要保护的后端应用。
-// Application 是我们的后端真实服务type Application struct&#123;&#125;func (a *Application) HandleRequest(url, method string) (int, string) &#123;	if url == &quot;/app/status&quot; &amp;&amp; method == &quot;GET&quot; &#123;		return 200, &quot;Ok&quot;	&#125;	if url == &quot;/create/user&quot; &amp;&amp; method == &quot;POST&quot; &#123;		return 201, &quot;User Created&quot;	&#125;	return 404, &quot;Not Found&quot;&#125;
-
-
-创建代理 (Proxy)
-
-Nginx 代理持有对真实服务的引用，并在处理请求前增加了速率限制的逻辑。
-import &quot;fmt&quot;// Nginx 是一个代理，它控制对 Application 的访问type Nginx struct &#123;	application      *Application	maxAllowedReq    int	rateLimiter      map[string]int&#125;func NewNginxServer() *Nginx &#123;	return &amp;Nginx&#123;		application:      &amp;Application&#123;&#125;,		maxAllowedReq:    2,		rateLimiter:      make(map[string]int),	&#125;&#125;// checkRateLimit 检查并更新请求速率func (n *Nginx) checkRateLimit(url string) bool &#123;	n.rateLimiter[url]++	if n.rateLimiter[url] &gt; n.maxAllowedReq &#123;		return false // 超出速率限制	&#125;	return true&#125;// HandleRequest 代理的核心方法func (n *Nginx) HandleRequest(url, method string) (int, string) &#123;	// 在转发请求前，执行额外的逻辑（访问控制）	if !n.checkRateLimit(url) &#123;		return 429, &quot;Too Many Requests&quot;	&#125;	// 将请求转发给真实服务	return n.application.HandleRequest(url, method)&#125;
-
-
-客户端调用
-
-客户端只与代理（Nginx）交互，并不知道真实服务（Application）的存在。
-func main() &#123;	nginx := NewNginxServer()	// 第一次请求 /app/status	code, body := nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第二次请求 /app/status	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)	// 第三次请求 /app/status，将被限流	code, body = nginx.HandleRequest(&quot;/app/status&quot;, &quot;GET&quot;)	fmt.Printf(&quot;Url: /app/status, Code: %d, Body: %s\n&quot;, code, body)&#125;
-
-类图
-
-    classDiagram
-    class Client
-    class Server {
-        &lt;&lt;interface&gt;&gt;
-        +HandleRequest(url, method)
-    }
-    class Application {
-        +HandleRequest(url, method)
-    }
-    class Nginx {
-        -application: *Application
-        -maxAllowedReq: int
-        -rateLimiter: map
-        +HandleRequest(url, method)
-        -checkRateLimit(url): bool
-    }
-
-    Client --&gt; Server : uses
-    Server &lt;|.. Application : implements
-    Server &lt;|.. Nginx : implements
-    Nginx o-- Application : aggregates
-  
-
-
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Proxy Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251101 record closest-equal-element-queries</title>
     <url>/2025/11/01/251101-record-closest-equal-element-queries/</url>
     <content><![CDATA[题目
@@ -3333,52 +3333,6 @@ vector&lt;int&gt; solveQueries(vector&lt;int&gt;&amp; nums, vector&lt;int&gt;&am
         <tag>Record</tag>
         <tag>leetcode</tag>
         <tag>binary-search</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251108 thinking command</title>
-    <url>/2025/11/08/251108-thinking-command/</url>
-    <content><![CDATA[1. 什么是命令模式命令模式是一种行为设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化。简单来说，就是将请求的发送者和请求的具体操作完全解耦。
-2. 为什么需要命令模式？命令模式的核心价值在于解耦。如果没有命令模式，调用者（比如一个按钮 Button）需要直接引用并调用一个具体的操作（比如一个文档 Document 的 save() 方法）。这会导致 Button 和 Document 紧密耦合，Button 无法被复用到其他操作上。
-通过引入命令对象，调用者不再关心命令的接收者是谁，也不关心操作如何执行。它只知道“我需要执行这个命令”。
-这样的话，调用者和接收者之间没有任何直接引用，各自可以独立变化。而且添加新的命令非常容易，只需创建新的具体命令类，而无需修改现有代码，符合开放&#x2F;封闭原则。
-3. 命令模式的实现 (Go)中间件：
-// Command 接口定义了一个执行操作的方法type Command interface &#123;    Execute(receiver *Receiver)&#125;// Receiver 是请求的接收者，它知道如何执行与请求相关的操作type Receiver struct &#123;    //...&#125;func (r *Receiver) Action() &#123;    // 执行具体的操作&#125;// Command1 是一个具体的命令类，它实现了 Command 接口type Command1 struct &#123;    //...&#125;func (c *Command1) Execute(r *Receiver) &#123;    r.Action()&#125;// Invoker 是请求的发送者，它持有一个 Command 对象  type Invoker struct &#123;    command *Command&#125;func (i *Invoker) SetCommand(command *Command) &#123;    i.command = command&#125;// ExecuteCommand 是 Invoker 用来间接执行命令的方法func (i *Invoker) ExecuteCommand(r *Receiver) &#123;    i.command.Execute(r)&#125;
-
-客户端
-receiver := &amp;Receiver&#123;&#125;command := &amp;Command1&#123;&#125;invoker := &amp;Invoker&#123;&#125;invoker.SetCommand(command)invoker.ExecuteCommand(receiver)
-
-类图：
-
-    classDiagram
-    class Invoker {
-        -command: *Command
-        +SetCommand(command: *Command)
-        +ExecuteCommand(receiver: *Receiver)
-    }
-    class Command {
-        &lt;&lt;interface&gt;&gt;
-        +Execute(receiver: *Receiver)
-    }
-    class Command1 {
-        +Execute(receiver: *Receiver)
-    }
-    class Receiver {
-        &#x2F;&#x2F;...
-        +Action()
-    }
-    Invoker &quot;*&quot; o--&gt; &quot;*&quot; Command: holds
-    Command1  ..&gt;  Receiver: executes
-    Command1 ..|&gt; Command : implements
-  ]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Interface Oriented Programming</tag>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Command Pattern</tag>
       </tags>
   </entry>
   <entry>
@@ -3452,6 +3406,75 @@ h1 := &amp;Handler1&#123;&#125;h2 := &amp;Handler2&#123;&#125;h1.SetNext(h2)c :=
       </tags>
   </entry>
   <entry>
+    <title>251108 thinking command</title>
+    <url>/2025/11/08/251108-thinking-command/</url>
+    <content><![CDATA[1. 什么是命令模式命令模式是一种行为设计模式，它将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化。简单来说，就是将请求的发送者和请求的具体操作完全解耦。
+2. 为什么需要命令模式？命令模式的核心价值在于解耦。如果没有命令模式，调用者（比如一个按钮 Button）需要直接引用并调用一个具体的操作（比如一个文档 Document 的 save() 方法）。这会导致 Button 和 Document 紧密耦合，Button 无法被复用到其他操作上。
+通过引入命令对象，调用者不再关心命令的接收者是谁，也不关心操作如何执行。它只知道“我需要执行这个命令”。
+这样的话，调用者和接收者之间没有任何直接引用，各自可以独立变化。而且添加新的命令非常容易，只需创建新的具体命令类，而无需修改现有代码，符合开放&#x2F;封闭原则。
+3. 命令模式的实现 (Go)中间件：
+// Command 接口定义了一个执行操作的方法type Command interface &#123;    Execute(receiver *Receiver)&#125;// Receiver 是请求的接收者，它知道如何执行与请求相关的操作type Receiver struct &#123;    //...&#125;func (r *Receiver) Action() &#123;    // 执行具体的操作&#125;// Command1 是一个具体的命令类，它实现了 Command 接口type Command1 struct &#123;    //...&#125;func (c *Command1) Execute(r *Receiver) &#123;    r.Action()&#125;// Invoker 是请求的发送者，它持有一个 Command 对象  type Invoker struct &#123;    command *Command&#125;func (i *Invoker) SetCommand(command *Command) &#123;    i.command = command&#125;// ExecuteCommand 是 Invoker 用来间接执行命令的方法func (i *Invoker) ExecuteCommand(r *Receiver) &#123;    i.command.Execute(r)&#125;
+
+客户端
+receiver := &amp;Receiver&#123;&#125;command := &amp;Command1&#123;&#125;invoker := &amp;Invoker&#123;&#125;invoker.SetCommand(command)invoker.ExecuteCommand(receiver)
+
+类图：
+
+    classDiagram
+    class Invoker {
+        -command: *Command
+        +SetCommand(command: *Command)
+        +ExecuteCommand(receiver: *Receiver)
+    }
+    class Command {
+        &lt;&lt;interface&gt;&gt;
+        +Execute(receiver: *Receiver)
+    }
+    class Command1 {
+        +Execute(receiver: *Receiver)
+    }
+    class Receiver {
+        &#x2F;&#x2F;...
+        +Action()
+    }
+    Invoker &quot;*&quot; o--&gt; &quot;*&quot; Command: holds
+    Command1  ..&gt;  Receiver: executes
+    Command1 ..|&gt; Command : implements
+  ]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Interface Oriented Programming</tag>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Command Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>251112 thinking binary constraint matching</title>
+    <url>/2025/11/12/251112-thinking-binary-constraint-matching/</url>
+    <content><![CDATA[1. 抽象受到力扣1. 两数之和以及类似问题的启发，抽象出如下模板：
+给定一个整数数组arr,令$x,y \in arr$,且$x,y$不能是同一个元素。若$f(x,y)&#x3D;K$，给定$f,K$，求所有满足条件的${x,y}$。
+伪代码如下
+//input : arr, f, K//output : all pairs of x, y in arr such that f(x, y) = K//assumption : f(x,y)=k &lt;=&gt; g(x)=h(y), and g,h both are well-defined functionsalgorithm binary-constraint-matching(arr, K, f):    hash table := empty hash table, value -&gt; list    ans := empty set    for each x in arr; do      if h(x) in hash table; then          for j in hash[h(x)]; do            add (arr[j], x) to ans          end loop      end if      attempt to add index of x to hash table[g(x)]    end loop    return ans
+
+一个易错点在于：应该先尝试加入ans，再尝试加入h(x)到哈希表中。这个顺序是为了避免ans加入重复的元素对。
+2. 例两数之和
+和可被 K 整除的子数组
+和为奇数的子数组数目
+统计美丽子数组数目
+]]></content>
+      <categories>
+        <category>data structure &amp; algorithm</category>
+      </categories>
+      <tags>
+        <tag>data structure &amp; algorithm</tag>
+        <tag>go</tag>
+        <tag>hash table</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251108 thinking iterator</title>
     <url>/2025/11/08/251108-thinking-iterator/</url>
     <content><![CDATA[1. 什么是迭代器模式迭代器模式（Iterator Pattern）是一种行为设计模式，它提供一种方法来顺序访问一个聚合对象（Aggregate Object）中的各个元素，而又无需暴露该对象的内部表示。
@@ -3514,29 +3537,6 @@ func main() &#123;	// 构造一棵二叉树	//      4	//     / \	//    2   5	// 
         <tag>Design Pattern</tag>
         <tag>go</tag>
         <tag>Iterator Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251112 thinking binary constraint matching</title>
-    <url>/2025/11/12/251112-thinking-binary-constraint-matching/</url>
-    <content><![CDATA[1. 抽象受到力扣1. 两数之和以及类似问题的启发，抽象出如下模板：
-给定一个整数数组arr,令$x,y \in arr$,且$x,y$不能是同一个元素。若$f(x,y)&#x3D;K$，给定$f,K$，求所有满足条件的${x,y}$。
-伪代码如下
-//input : arr, f, K//output : all pairs of x, y in arr such that f(x, y) = K//assumption : f(x,y)=k &lt;=&gt; g(x)=h(y), and g,h both are well-defined functionsalgorithm binary-constraint-matching(arr, K, f):    hash table := empty hash table, value -&gt; list    ans := empty set    for each x in arr; do      if h(x) in hash table; then          for j in hash[h(x)]; do            add (arr[j], x) to ans          end loop      end if      attempt to add index of x to hash table[g(x)]    end loop    return ans
-
-一个易错点在于：应该先尝试加入ans，再尝试加入h(x)到哈希表中。这个顺序是为了避免ans加入重复的元素对。
-2. 例两数之和
-和可被 K 整除的子数组
-和为奇数的子数组数目
-统计美丽子数组数目
-]]></content>
-      <categories>
-        <category>data structure &amp; algorithm</category>
-      </categories>
-      <tags>
-        <tag>data structure &amp; algorithm</tag>
-        <tag>go</tag>
-        <tag>hash table</tag>
       </tags>
   </entry>
   <entry>
@@ -3626,105 +3626,6 @@ const t = localStorage.getItem(&quot;token&quot;)fetch(&quot;api/me&quot;,&#123;
       </tags>
   </entry>
   <entry>
-    <title>251114 thinking memento</title>
-    <url>/2025/11/14/251114-thinking-memento/</url>
-    <content><![CDATA[1. 什么是备忘录模式？备忘录模式（Memento Pattern）用于在不破坏封装的前提下，捕获并保存对象的内部状态，以便之后将其恢复。核心思想是：状态快照应对外保持不透明，只有创建它的对象才能读写其内容。
-2. 为什么需要备忘录模式？在需要撤销&#x2F;重做、事务性修改或阶段性试错的场景中，我们希望随时回到某个稳定的历史状态。如果将内部状态直接暴露给外部组件，会破坏封装并引入脆弱耦合。备忘录提供了一种更稳妥的做法：外部只负责保存与传递快照，而不窥视其内容；状态的读写权严格归属于原始对象本身。
-3. 备忘录模式的实现（go）下面的实现采用“封装最严格”的变体：看护者只能看到窄接口 Memento，无法读取或修改状态；只有发起者可以访问具体备忘录以进行恢复。
-type Memento interface&#123; mementoMarker() &#125;type memento struct&#123;    content string    cursor  int&#125;func (m *memento) mementoMarker()&#123;&#125;type Editor struct&#123;    content string    cursor  int&#125;func (e *Editor) SetContent(s string)&#123; e.content = s &#125;func (e *Editor) SetCursor(pos int)&#123; e.cursor = pos &#125;func (e *Editor) Save() Memento &#123; return &amp;memento&#123;content: e.content, cursor: e.cursor&#125; &#125;func (e *Editor) Restore(mem Memento)&#123; mm := mem.(*memento); e.content, e.cursor = mm.content, mm.cursor &#125;type History struct&#123; stack []Memento &#125;func (h *History) Push(m Memento)&#123; h.stack = append(h.stack, m) &#125;func (h *History) Pop() &#123;    if len(h.stack) == 0 &#123; return &#125;    i := len(h.stack)-1    m := h.stack[i]    h.stack = h.stack[:i]&#125;func (h *History) Top() Memento&#123;    if len(h.stack) == 0 &#123; return nil &#125;    return h.stack[len(h.stack)-1]&#125;
-
-客户端代码如下：
-func main()&#123;    e := &amp;Editor&#123;&#125;    h := &amp;History&#123;&#125;    e.SetContent(&quot;a&quot;); e.SetCursor(1); h.Push(e.Save())    e.SetContent(&quot;ab&quot;); e.SetCursor(2); h.Push(e.Save())    e.SetContent(&quot;abc&quot;); e.SetCursor(3)    h.Pop()    m := h.Top()    e.Restore(m)    fmt.Println(e.content, e.cursor)&#125;
-
-输出：
-ab 2
-
-类图：
-
-    classDiagram
-class originator {
-    +Save() Memento
-    +Restore(m Memento)
-}
-class memento {
-    &lt;&lt;interface&gt;&gt;
-}
-class concreteMemento {
-    -state
-}
-class caretaker {
-    +Push(Memento)
-    +Pop() Memento
-    +Top() Memento
-}
-
-originator ..&gt; memento : Save&#x2F;Restore
-memento &lt;|.. concreteMemento
-caretaker o-- memento : stores
-  
-
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Memento Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>251114 thinking observer</title>
-    <url>/2025/11/14/251114-thinking-observer/</url>
-    <content><![CDATA[1. 什么是观察者模式？观察者模式（Observer Pattern）用于在对象状态变化时，通知依赖它的多个观察者，实现一种一对多的订阅关系。被观察者只负责发布事件，不关心有多少观察者、它们如何处理，达到发布方与订阅方的解耦。
-2. 为什么需要观察者模式？当一个对象的变化需要联动多个组件时，若直接在对象内部逐个调用这些组件，将产生紧耦合和复杂的依赖。当组件增删或行为变化时，被观察者也不得不调整。通过观察者模式，我们将事件的发布与处理分离：被观察者只负责发出信号，观察者各自处理，从而降低耦合、提高扩展性。
-3. 观察者模式的实现（go）type Observer interface &#123;    Update(event string, data any)&#125;type Subject interface &#123;    Register(o Observer)    Unregister(o Observer)    Notify(event string, data any)&#125;type Topic struct &#123;    observers []Observer&#125;func (t *Topic) Register(o Observer) &#123;    t.observers = append(t.observers, o)&#125;func (t *Topic) Unregister(o Observer) &#123;    i := -1    for idx, ob := range t.observers &#123;        if ob == o &#123;            i = idx            break        &#125;    &#125;    if i &gt;= 0 &#123;        t.observers = append(t.observers[:i], t.observers[i+1:]...)    &#125;&#125;func (t *Topic) Notify(event string, data any) &#123;    for _, o := range t.observers &#123;        o.Update(event, data)    &#125;&#125;type PrintObserver struct &#123;    name string&#125;func (p *PrintObserver) Update(event string, data any) &#123;    fmt.Printf(&quot;[%s] %s: %v\n&quot;, p.name, event, data)&#125;
-
-客户端代码如下：
-func main() &#123;    t := &amp;Topic&#123;&#125;    a := &amp;PrintObserver&#123;name: &quot;A&quot;&#125;    b := &amp;PrintObserver&#123;name: &quot;B&quot;&#125;    t.Register(a)    t.Register(b)    t.Notify(&quot;price_changed&quot;, 42)    t.Unregister(a)    t.Notify(&quot;price_changed&quot;, 43)&#125;
-
-输出：
-[A] price_changed: 42[B] price_changed: 42[B] price_changed: 43
-
-类图：
-
-    classDiagram
-class subject {
-    &lt;&lt;interface&gt;&gt;
-    +Register(o observer)
-    +Unregister(o observer)
-    +Notify(event,data)
-}
-class concreteSubject {
-    +Register(o observer)
-    +Unregister(o observer)
-    +Notify(event,data)
-}
-class observer {
-    &lt;&lt;interface&gt;&gt;
-    +Update(event,data)
-}
-class concreteObserver {
-    +Update(event,data)
-}
-
-subject &lt;|.. concreteSubject
-observer &lt;|.. concreteObserver
-concreteSubject o--&gt; observer : manages
-  
-
-]]></content>
-      <categories>
-        <category>Design Pattern</category>
-      </categories>
-      <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Interface Oriented Design</tag>
-        <tag>Observer Pattern</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>251114 thinking mediator</title>
     <url>/2025/11/14/251114-thinking-mediator/</url>
     <content><![CDATA[1. 什么是中介者模式？中介者模式（Mediator Pattern）通过引入一个“中介者”对象来封装对象之间的交互，使多个对象不需要显式引用彼此，改为只与中介者通信。它将协作编排从同事对象中抽离出来，降低耦合并集中管理交互规则。
@@ -3780,6 +3681,54 @@ concreteMediator --&gt; concreteColleague : Send()&#x2F;Broadcast()
       </tags>
   </entry>
   <entry>
+    <title>251114 thinking memento</title>
+    <url>/2025/11/14/251114-thinking-memento/</url>
+    <content><![CDATA[1. 什么是备忘录模式？备忘录模式（Memento Pattern）用于在不破坏封装的前提下，捕获并保存对象的内部状态，以便之后将其恢复。核心思想是：状态快照应对外保持不透明，只有创建它的对象才能读写其内容。
+2. 为什么需要备忘录模式？在需要撤销&#x2F;重做、事务性修改或阶段性试错的场景中，我们希望随时回到某个稳定的历史状态。如果将内部状态直接暴露给外部组件，会破坏封装并引入脆弱耦合。备忘录提供了一种更稳妥的做法：外部只负责保存与传递快照，而不窥视其内容；状态的读写权严格归属于原始对象本身。
+3. 备忘录模式的实现（go）下面的实现采用“封装最严格”的变体：看护者只能看到窄接口 Memento，无法读取或修改状态；只有发起者可以访问具体备忘录以进行恢复。
+type Memento interface&#123; mementoMarker() &#125;type memento struct&#123;    content string    cursor  int&#125;func (m *memento) mementoMarker()&#123;&#125;type Editor struct&#123;    content string    cursor  int&#125;func (e *Editor) SetContent(s string)&#123; e.content = s &#125;func (e *Editor) SetCursor(pos int)&#123; e.cursor = pos &#125;func (e *Editor) Save() Memento &#123; return &amp;memento&#123;content: e.content, cursor: e.cursor&#125; &#125;func (e *Editor) Restore(mem Memento)&#123; mm := mem.(*memento); e.content, e.cursor = mm.content, mm.cursor &#125;type History struct&#123; stack []Memento &#125;func (h *History) Push(m Memento)&#123; h.stack = append(h.stack, m) &#125;func (h *History) Pop() &#123;    if len(h.stack) == 0 &#123; return &#125;    i := len(h.stack)-1    m := h.stack[i]    h.stack = h.stack[:i]&#125;func (h *History) Top() Memento&#123;    if len(h.stack) == 0 &#123; return nil &#125;    return h.stack[len(h.stack)-1]&#125;
+
+客户端代码如下：
+func main()&#123;    e := &amp;Editor&#123;&#125;    h := &amp;History&#123;&#125;    e.SetContent(&quot;a&quot;); e.SetCursor(1); h.Push(e.Save())    e.SetContent(&quot;ab&quot;); e.SetCursor(2); h.Push(e.Save())    e.SetContent(&quot;abc&quot;); e.SetCursor(3)    h.Pop()    m := h.Top()    e.Restore(m)    fmt.Println(e.content, e.cursor)&#125;
+
+输出：
+ab 2
+
+类图：
+
+    classDiagram
+class originator {
+    +Save() Memento
+    +Restore(m Memento)
+}
+class memento {
+    &lt;&lt;interface&gt;&gt;
+}
+class concreteMemento {
+    -state
+}
+class caretaker {
+    +Push(Memento)
+    +Pop() Memento
+    +Top() Memento
+}
+
+originator ..&gt; memento : Save&#x2F;Restore
+memento &lt;|.. concreteMemento
+caretaker o-- memento : stores
+  
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Memento Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251122 thinking state</title>
     <url>/2025/11/22/251122-thinking-state/</url>
     <content><![CDATA[1. 什么是状态模式状态模式（State Pattern）是一种行为型设计模式，它允许对象在其内部状态改变时改变其行为。状态模式将对象的状态封装成独立的类，使客户端可以透明地切换对象的状态。
@@ -3827,6 +3776,57 @@ FSM 图如下：
       </tags>
   </entry>
   <entry>
+    <title>251114 thinking observer</title>
+    <url>/2025/11/14/251114-thinking-observer/</url>
+    <content><![CDATA[1. 什么是观察者模式？观察者模式（Observer Pattern）用于在对象状态变化时，通知依赖它的多个观察者，实现一种一对多的订阅关系。被观察者只负责发布事件，不关心有多少观察者、它们如何处理，达到发布方与订阅方的解耦。
+2. 为什么需要观察者模式？当一个对象的变化需要联动多个组件时，若直接在对象内部逐个调用这些组件，将产生紧耦合和复杂的依赖。当组件增删或行为变化时，被观察者也不得不调整。通过观察者模式，我们将事件的发布与处理分离：被观察者只负责发出信号，观察者各自处理，从而降低耦合、提高扩展性。
+3. 观察者模式的实现（go）type Observer interface &#123;    Update(event string, data any)&#125;type Subject interface &#123;    Register(o Observer)    Unregister(o Observer)    Notify(event string, data any)&#125;type Topic struct &#123;    observers []Observer&#125;func (t *Topic) Register(o Observer) &#123;    t.observers = append(t.observers, o)&#125;func (t *Topic) Unregister(o Observer) &#123;    i := -1    for idx, ob := range t.observers &#123;        if ob == o &#123;            i = idx            break        &#125;    &#125;    if i &gt;= 0 &#123;        t.observers = append(t.observers[:i], t.observers[i+1:]...)    &#125;&#125;func (t *Topic) Notify(event string, data any) &#123;    for _, o := range t.observers &#123;        o.Update(event, data)    &#125;&#125;type PrintObserver struct &#123;    name string&#125;func (p *PrintObserver) Update(event string, data any) &#123;    fmt.Printf(&quot;[%s] %s: %v\n&quot;, p.name, event, data)&#125;
+
+客户端代码如下：
+func main() &#123;    t := &amp;Topic&#123;&#125;    a := &amp;PrintObserver&#123;name: &quot;A&quot;&#125;    b := &amp;PrintObserver&#123;name: &quot;B&quot;&#125;    t.Register(a)    t.Register(b)    t.Notify(&quot;price_changed&quot;, 42)    t.Unregister(a)    t.Notify(&quot;price_changed&quot;, 43)&#125;
+
+输出：
+[A] price_changed: 42[B] price_changed: 42[B] price_changed: 43
+
+类图：
+
+    classDiagram
+class subject {
+    &lt;&lt;interface&gt;&gt;
+    +Register(o observer)
+    +Unregister(o observer)
+    +Notify(event,data)
+}
+class concreteSubject {
+    +Register(o observer)
+    +Unregister(o observer)
+    +Notify(event,data)
+}
+class observer {
+    &lt;&lt;interface&gt;&gt;
+    +Update(event,data)
+}
+class concreteObserver {
+    +Update(event,data)
+}
+
+subject &lt;|.. concreteSubject
+observer &lt;|.. concreteObserver
+concreteSubject o--&gt; observer : manages
+  
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Observer Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251122 thinking strategy</title>
     <url>/2025/11/22/251122-thinking-strategy/</url>
     <content><![CDATA[1. 什么是策略模式？策略模式（Strategy Pattern）是一种行为设计模式，它定义了一系列算法，并将每个算法封装起来，使它们可以相互替换。策略模式让算法的变化独立于使用算法的客户端。
@@ -3860,6 +3860,36 @@ package mainimport (	&quot;fmt&quot;	&quot;log&quot;	&quot;compression&quot;)fun
       </tags>
   </entry>
   <entry>
+    <title>251122 thinking template</title>
+    <url>/2025/11/22/251122-thinking-template/</url>
+    <content><![CDATA[1. 什么是模板方法模式？模板方法模式（Template Method Pattern）是一种行为设计模式，它在一个方法中定义一个算法的骨架，而将一些步骤的实现延迟到子类中。模板方法使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤。核心便是利用了多态性，父类定义了算法的骨架，子类实现具体的步骤。
+在 Go 语言中，由于没有经典的类继承，模板方法模式通常通过接口和结构体嵌入来模拟。
+2. 为什么需要模板方法模式？当你发现多个类有相似的算法，但只在某些细节上有所不同时，模板方法模式就非常有用。
+
+代码复用：将所有子类中通用的算法逻辑提取到唯一的父类中，避免代码重复。
+框架控制：它定义了一个框架，让子类在不改变框架结构的前提下，填充特定的业务逻辑。这在开发框架或库时非常常见。
+遵循开闭原则：你可以在不修改模板方法的情况下，引入新的子类来扩展功能。
+
+3. 模板方法模式的实现（go）以一个通用的“资源下载器”为例。无论从 HTTP 还是 FTP 下载，其核心流程是固定的：初始化 -&gt; 下载数据 -&gt; 保存文件 -&gt; 清理。其中，具体如何下载数据是可变的。
+package downloaderimport &quot;fmt&quot;type Steps interface &#123;	fetch(uri string) ([]byte, error)	finish()&#125;type Downloader[T Steps] struct &#123;	impl T&#125;// Download 是模板方法，定义了下载资源的流程func (d *Downloader[T]) Download(uri string) &#123;	fmt.Println(&quot;Preparing to download...&quot;)	data, err := d.impl.fetch(uri)	if err != nil &#123;		fmt.Printf(&quot;Download failed: %v\n&quot;, err)		return	&#125;	d.save(data)	d.impl.finish()&#125;func (d *Downloader[T]) save(data []byte) &#123;	fmt.Printf(&quot;Saving data (size: %d bytes) to a file.\n&quot;, len(data))&#125;type HttpDownloader struct&#123;&#125;func (h HttpDownloader) fetch(uri string) ([]byte, error) &#123;	fmt.Printf(&quot;Downloading from HTTP URI: %s\n&quot;, uri)	return []byte(&quot;http data&quot;), nil&#125;func (h HttpDownloader) finish() &#123;	fmt.Println(&quot;HTTP download finished.&quot;)&#125;
+
+客户端通过 Downloader 接口与具体的下载器进行交互，调用模板方法即可。
+package mainimport &quot;downloader&quot;func main() &#123;	httpDownloader := downloader.Downloader[downloader.HttpDownloader]&#123;&#125;	httpDownloader.Download(&quot;http://example.com/file.zip&quot;)&#125;
+
+类图
+
+]]></content>
+      <categories>
+        <category>Design Pattern</category>
+      </categories>
+      <tags>
+        <tag>Design Pattern</tag>
+        <tag>go</tag>
+        <tag>Interface Oriented Design</tag>
+        <tag>Template Method Pattern</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>251122 tool swagger</title>
     <url>/2025/11/22/251122-tool-swagger/</url>
     <content><![CDATA[在后端开发中，接口文档与代码难以同步是常见的问题。Swagger 通过“代码即文档”的方式解决了这一点：开发者编写特定格式的代码注释，工具自动生成标准化的 API 文档和交互式调试页面。
@@ -3867,12 +3897,11 @@ package mainimport (	&quot;fmt&quot;	&quot;log&quot;	&quot;compression&quot;)fun
 1. 环境准备在项目根目下执行安装命令：
 # 1. 安装文档生成器 (CLI)go install github.com/swaggo/swag/cmd/swag@latest# 2. 安装 Gin 适配器go get github.com/swaggo/gin-swagger@latestgo get github.com/swaggo/files@latest
 
-
 2. swagger注释语法详解Swagger 的核心在于写对注释。注释分为全局配置和接口配置。
 2.1 全局配置 (main.go)放在 main 函数上方，用于定义文档的通用信息。
 // @title           项目名称 (如: 支付系统 API)// @version         1.0// @description     这里写项目的详细描述...// @host            localhost:8080// @BasePath        /api/v1func main() &#123; //... &#125;
 
-2.2 接口配置 (Controller)放在 Controller/Handler 函数上方。这是最复杂的部分，请参考下方的语法拆解。
+2.2 接口配置 (Controller)放在 Controller/Handler 函数上方。参考下方的语法拆解。
 基础语法结构:
 // @Key          Value...
 
@@ -3969,35 +3998,12 @@ import (    // ... 其他包    // 1. 引入 swag 依赖    swaggerFiles &quot;g
 
 4.3 第三步：验证访问 http://localhost:8080/swagger/index.html。
 ]]></content>
-  </entry>
-  <entry>
-    <title>251122 thinking template</title>
-    <url>/2025/11/22/251122-thinking-template/</url>
-    <content><![CDATA[1. 什么是模板方法模式？模板方法模式（Template Method Pattern）是一种行为设计模式，它在一个方法中定义一个算法的骨架，而将一些步骤的实现延迟到子类中。模板方法使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤。核心便是利用了多态性，父类定义了算法的骨架，子类实现具体的步骤。
-在 Go 语言中，由于没有经典的类继承，模板方法模式通常通过接口和结构体嵌入来模拟。
-2. 为什么需要模板方法模式？当你发现多个类有相似的算法，但只在某些细节上有所不同时，模板方法模式就非常有用。
-
-代码复用：将所有子类中通用的算法逻辑提取到唯一的父类中，避免代码重复。
-框架控制：它定义了一个框架，让子类在不改变框架结构的前提下，填充特定的业务逻辑。这在开发框架或库时非常常见。
-遵循开闭原则：你可以在不修改模板方法的情况下，引入新的子类来扩展功能。
-
-3. 模板方法模式的实现（go）以一个通用的“资源下载器”为例。无论从 HTTP 还是 FTP 下载，其核心流程是固定的：初始化 -&gt; 下载数据 -&gt; 保存文件 -&gt; 清理。其中，具体如何下载数据是可变的。
-package downloaderimport &quot;fmt&quot;type Steps interface &#123;	fetch(uri string) ([]byte, error)	finish()&#125;type Downloader[T Steps] struct &#123;	impl T&#125;// Download 是模板方法，定义了下载资源的流程func (d *Downloader[T]) Download(uri string) &#123;	fmt.Println(&quot;Preparing to download...&quot;)	data, err := d.impl.fetch(uri)	if err != nil &#123;		fmt.Printf(&quot;Download failed: %v\n&quot;, err)		return	&#125;	d.save(data)	d.impl.finish()&#125;func (d *Downloader[T]) save(data []byte) &#123;	fmt.Printf(&quot;Saving data (size: %d bytes) to a file.\n&quot;, len(data))&#125;type HttpDownloader struct&#123;&#125;func (h HttpDownloader) fetch(uri string) ([]byte, error) &#123;	fmt.Printf(&quot;Downloading from HTTP URI: %s\n&quot;, uri)	return []byte(&quot;http data&quot;), nil&#125;func (h HttpDownloader) finish() &#123;	fmt.Println(&quot;HTTP download finished.&quot;)&#125;
-
-客户端通过 Downloader 接口与具体的下载器进行交互，调用模板方法即可。
-package mainimport &quot;downloader&quot;func main() &#123;	httpDownloader := downloader.Downloader[downloader.HttpDownloader]&#123;&#125;	httpDownloader.Download(&quot;http://example.com/file.zip&quot;)&#125;
-
-类图
-
-]]></content>
       <categories>
-        <category>Design Pattern</category>
+        <category>tool</category>
       </categories>
       <tags>
-        <tag>Design Pattern</tag>
-        <tag>go</tag>
-        <tag>Interface Oriented Design</tag>
-        <tag>Template Method Pattern</tag>
+        <tag>tool</tag>
+        <tag>swagger</tag>
       </tags>
   </entry>
 </search>
