@@ -1,0 +1,29 @@
+@startuml
+interface Element {
+    +Accept(v Visitor)
+}
+struct ElementA {
+    +Accept(v Visitor)
+}
+struct ElementB {
+    +Accept(v Visitor)
+}
+interface Visitor {
+    +VisitElementA(e ElementA)
+    +VisitElementB(e ElementB)
+}
+struct VisitorA {
+    +VisitElementA(e ElementA)
+    +VisitElementB(e ElementB)
+}
+struct VisitorB {
+    +VisitElementA(e ElementA)
+    +VisitElementB(e ElementB)
+}
+VisitorA ..|> Visitor : Implements
+VisitorB ..|> Visitor : Implements
+ElementA ..|> Element : Implements
+ElementB ..|> Element : Implements
+ElementA --> Visitor : call VisitElementA
+ElementB --> Visitor : call VisitElementB
+@enduml
