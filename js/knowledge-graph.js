@@ -132,7 +132,7 @@
         const ideal = link.type === 'category' ? 105 : 78
         const nx = dx / dist
         const ny = dy / dist
-        const springForce = (dist - ideal) * 0.003 * (link.strength || 1)
+        const springForce = (dist - ideal) * 0.03 * (link.strength || 1)
         const relativeVelocity = ((b.vx - a.vx) * nx) + ((b.vy - a.vy) * ny)
         const dampingForce = relativeVelocity * 0.09
         const force = springForce + dampingForce
