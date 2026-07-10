@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="460" viewBox="0 0 980 460" role="img" aria-labelledby="title desc">
+  <title id="title">路由选择和分组转发的关系</title>
+  <desc id="desc">路由选择生成路由表，路由表派生转发表，分组转发按转发表逐包查找输出接口。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill: #f8fafc; }
+    .box { fill: #fff; stroke: #cbd5e1; stroke-width: 2; }
+    .accent { fill: #f0f9ff; stroke: #0284c7; stroke-width: 2.2; }
+    .fast { fill: #ecfdf5; stroke: #059669; stroke-width: 2.2; }
+    .arrow { stroke: #334155; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .dash { stroke: #64748b; stroke-width: 2.4; stroke-dasharray: 7 6; fill: none; marker-end: url(#arrow); }
+    .text { fill: #0f172a; font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; font-size: 19px; }
+    .small { fill: #334155; font-size: 15px; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #020617; }
+      .box { fill: #0f172a; stroke: #334155; }
+      .accent { fill: #082f49; stroke: #38bdf8; }
+      .fast { fill: #052e1a; stroke: #34d399; }
+      .arrow { stroke: #cbd5e1; }
+      .dash { stroke: #94a3b8; }
+      .text { fill: #e5e7eb; }
+      .small { fill: #cbd5e1; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="980" height="460"/>
+  <text class="text" x="490" y="44" text-anchor="middle" font-size="26" font-weight="700">路由选择决定路径，分组转发执行下一跳</text>
+
+  <rect class="accent" x="90" y="112" width="250" height="118" rx="12"/>
+  <text class="text" x="215" y="150" text-anchor="middle" font-weight="700">路由选择 Routing</text>
+  <text class="small" x="215" y="182" text-anchor="middle">根据拓扑、代价、策略</text>
+  <text class="small" x="215" y="207" text-anchor="middle">计算到各目的网络的路径</text>
+
+  <rect class="box" x="420" y="92" width="180" height="82" rx="10"/>
+  <text class="text" x="510" y="128" text-anchor="middle" font-weight="700">路由表</text>
+  <text class="small" x="510" y="154" text-anchor="middle">适合路径计算</text>
+
+  <rect class="fast" x="420" y="232" width="180" height="82" rx="10"/>
+  <text class="text" x="510" y="268" text-anchor="middle" font-weight="700">转发表</text>
+  <text class="small" x="510" y="294" text-anchor="middle">适合快速查找</text>
+
+  <rect class="fast" x="690" y="232" width="220" height="82" rx="10"/>
+  <text class="text" x="800" y="268" text-anchor="middle" font-weight="700">分组转发</text>
+  <text class="small" x="800" y="294" text-anchor="middle">逐个分组查表并输出</text>
+
+  <path class="arrow" d="M340 171 C370 150 385 132 420 132"/>
+  <path class="dash" d="M510 174 V232"/>
+  <path class="arrow" d="M600 273 H690"/>
+
+  <rect class="box" x="708" y="92" width="178" height="72" rx="10"/>
+  <text class="small" x="797" y="122" text-anchor="middle">分组首部中的</text>
+  <text class="small" x="797" y="145" text-anchor="middle">目的地址或转发标识</text>
+  <path class="arrow" d="M797 164 V232"/>
+
+  <text class="small" x="510" y="206" text-anchor="middle">派生/优化</text>
+  <text class="small" x="215" y="262" text-anchor="middle">慢：拓扑变化时计算</text>
+  <text class="small" x="800" y="348" text-anchor="middle">快：每个到达分组都要执行</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="420" viewBox="0 0 860 420" role="img" aria-labelledby="title desc">
+  <title id="title">Array Storage Order</title>
+  <desc id="desc">Row-major and column-major storage order for a two-dimensional array.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { --ink:#17212b; --muted:#5b6876; --line:#334e68; --row:#0f766e; --col:#7c3aed; --cell:#eef6ff; --panel:#fff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink:#e6edf3; --muted:#b8c4cf; --line:#9ccfd8; --row:#5eead4; --col:#c4b5fd; --cell:#16212c; --panel:#0f1720; }
+    }
+    text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: var(--ink); }
+    .label { font-size:18px; font-weight:700; }
+    .small { font-size:14px; fill:var(--muted); }
+    .cell { fill:var(--cell); stroke:var(--line); stroke-width:2; rx:6; }
+    .row { fill:var(--row); }
+    .col { fill:var(--col); }
+    .arrow-row { stroke:var(--row); stroke-width:3; fill:none; marker-end:url(#rowArrow); }
+    .arrow-col { stroke:var(--col); stroke-width:3; fill:none; marker-end:url(#colArrow); }
+  </style>
+  <defs>
+    <marker id="rowArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--row)"/></marker>
+    <marker id="colArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--col)"/></marker>
+  </defs>
+  <text class="label" x="58" y="42">Two-dimensional array b[M][N]</text>
+  <g transform="translate(74 78)">
+    <rect class="cell" x="0" y="0" width="74" height="54"/><text x="18" y="33">b00</text>
+    <rect class="cell" x="74" y="0" width="74" height="54"/><text x="92" y="33">b01</text>
+    <rect class="cell" x="148" y="0" width="74" height="54"/><text x="166" y="33">b02</text>
+    <rect class="cell" x="222" y="0" width="74" height="54"/><text x="240" y="33">b03</text>
+    <rect class="cell" x="0" y="54" width="74" height="54"/><text x="18" y="87">b10</text>
+    <rect class="cell" x="74" y="54" width="74" height="54"/><text x="92" y="87">b11</text>
+    <rect class="cell" x="148" y="54" width="74" height="54"/><text x="166" y="87">b12</text>
+    <rect class="cell" x="222" y="54" width="74" height="54"/><text x="240" y="87">b13</text>
+    <rect class="cell" x="0" y="108" width="74" height="54"/><text x="18" y="141">b20</text>
+    <rect class="cell" x="74" y="108" width="74" height="54"/><text x="92" y="141">b21</text>
+    <rect class="cell" x="148" y="108" width="74" height="54"/><text x="166" y="141">b22</text>
+    <rect class="cell" x="222" y="108" width="74" height="54"/><text x="240" y="141">b23</text>
+    <path class="arrow-row" d="M8 -14 H286"/>
+    <path class="arrow-col" d="M-16 10 V150"/>
+    <text class="small" x="96" y="-24">row-major scans a row first</text>
+    <text class="small" x="-48" y="184">column-major scans a column first</text>
+  </g>
+  <text class="label" x="430" y="98">Row-major address</text>
+  <text x="430" y="132">LOC(b[i][j]) = LOC + (i * N + j) * sizeof(ElemType)</text>
+  <text class="small" x="430" y="158">Use when C-style arrays are stored by row.</text>
+  <text class="label" x="430" y="226">Column-major address</text>
+  <text x="430" y="260">LOC(b[i][j]) = LOC + (j * M + i) * sizeof(ElemType)</text>
+  <text class="small" x="430" y="286">Use when the problem explicitly says column-major.</text>
+  <text class="small" x="58" y="376">Matrix subscripts in math problems often start from 1; C array subscripts start from 0 unless stated otherwise.</text>
+</svg>

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="640" viewBox="0 0 1180 640" role="img" aria-labelledby="title desc">
+  <title id="title">微程序控制器的基本结构</title>
+  <desc id="desc">微程序控制器内部由控制存储器、微指令寄存器、微地址形成部件和微程序计数器组成，IR 的操作码、标志和时钟参与形成后继微地址。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill: #ffffff; }
+    .frame { fill: none; stroke: #334155; stroke-width: 2.2; stroke-dasharray: 10 9; rx: 8; }
+    .box { fill: #f8fafc; stroke: #1f2937; stroke-width: 2.4; rx: 4; }
+    .reg { fill: #eef2ff; stroke: #1f2937; stroke-width: 2.4; rx: 4; }
+    .cm { fill: #ecfeff; stroke: #1f2937; stroke-width: 2.4; rx: 4; }
+    .field-op { fill: #e0f2fe; stroke: #1f2937; stroke-width: 2.2; }
+    .field-rest { fill: #f8fafc; stroke: #1f2937; stroke-width: 2.2; }
+    .text { fill: #0f172a; font: 26px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .label { fill: #0f172a; font: 24px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .small { fill: #334155; font: 19px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .latin { fill: #0f172a; font: 24px Arial, sans-serif; }
+    .wire { stroke: #334155; stroke-width: 2.6; fill: none; marker-end: url(#arrow); }
+    .wire-noarrow { stroke: #334155; stroke-width: 2.6; fill: none; }
+    .arrowhead { fill: #334155; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f172a; }
+      .frame { stroke: #cbd5e1; }
+      .box { fill: #111827; stroke: #e5e7eb; }
+      .reg { fill: #1e1b4b; stroke: #e5e7eb; }
+      .cm { fill: #0f2f2e; stroke: #e5e7eb; }
+      .field-op { fill: #0c4a6e; stroke: #e5e7eb; }
+      .field-rest { fill: #111827; stroke: #e5e7eb; }
+      .text, .label, .latin { fill: #e5e7eb; }
+      .small { fill: #cbd5e1; }
+      .wire, .wire-noarrow { stroke: #cbd5e1; }
+      .arrowhead { fill: #cbd5e1; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="arrowhead" d="M 0 0 L 10 5 L 0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1180" height="640"/>
+
+  <rect class="frame" x="55" y="170" width="1060" height="425"/>
+
+  <!-- IR from main memory -->
+  <text class="label" x="745" y="34" text-anchor="middle">来自主存</text>
+  <path class="wire" d="M745 44 L745 83"/>
+  <rect class="field-op" x="640" y="84" width="90" height="62"/>
+  <rect class="field-rest" x="730" y="84" width="170" height="62"/>
+  <text class="latin" x="685" y="124" text-anchor="middle">OP</text>
+  <text class="latin" x="933" y="124" text-anchor="middle">IR</text>
+
+  <!-- Microaddress formation -->
+  <path class="wire" d="M685 146 L685 193"/>
+  <rect class="box" x="560" y="194" width="335" height="82"/>
+  <text class="text" x="727.5" y="246" text-anchor="middle">微地址形成部件</text>
+  <text class="label" x="1135" y="218" text-anchor="start">标志</text>
+  <path class="wire" d="M1125 214 L895 214"/>
+  <text class="latin" x="1135" y="260" text-anchor="start">CLK</text>
+  <path class="wire" d="M1125 256 L895 256"/>
+
+  <!-- uPC -->
+  <path class="wire" d="M727.5 276 L727.5 332"/>
+  <rect class="reg" x="635" y="333" width="185" height="62"/>
+  <text class="latin" x="727.5" y="373" text-anchor="middle">μPC</text>
+
+  <!-- Control memory -->
+  <path class="wire-noarrow" d="M727.5 395 L727.5 555"/>
+  <path class="wire" d="M727.5 555 L345 555 L345 493"/>
+  <rect class="cm" x="195" y="405" width="300" height="88"/>
+  <text class="text" x="345" y="458" text-anchor="middle">控制存储器</text>
+
+  <!-- microinstruction register -->
+  <path class="wire" d="M345 405 L345 327"/>
+  <rect class="reg" x="145" y="248" width="420" height="78"/>
+  <rect class="reg" x="145" y="248" width="290" height="78"/>
+  <rect class="reg" x="435" y="248" width="130" height="78"/>
+  <text class="latin" x="112" y="295" text-anchor="middle">μIR</text>
+  <text class="text" x="290" y="296" text-anchor="middle">…</text>
+  <text class="text" x="500" y="296" text-anchor="middle">下地址</text>
+
+  <!-- microcommands -->
+  <text class="label" x="248" y="122" text-anchor="middle">微命令</text>
+  <path class="wire" d="M205 248 L205 145"/>
+  <path class="wire" d="M245 248 L245 145"/>
+  <path class="wire" d="M285 248 L285 145"/>
+  <path class="wire" d="M365 248 L365 145"/>
+  <text class="label" x="325" y="202" text-anchor="middle">…</text>
+
+  <!-- next address to formation component -->
+  <path class="wire" d="M565 287 L560 287 C520 287 518 235 560 235"/>
+</svg>

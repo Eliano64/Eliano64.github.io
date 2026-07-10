@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>critical activities</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#0f172a;--muted:#475569;--line:#94a3b8;--hot:#dc2626;--ok:#059669}@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#64748b;--hot:#f87171;--ok:#34d399}}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,sans-serif}.wrap{padding:18px;max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px}.title{font-size:22px;font-weight:750}.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer}.card{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px;margin-top:14px}.note{color:var(--muted);line-height:1.65}.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{border:1px solid var(--line);padding:8px;text-align:center}.hot{background:color-mix(in srgb,var(--hot) 18%,transparent);font-weight:750}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;margin:4px;background:var(--bg)}.crit{border-color:var(--hot);color:var(--hot);font-weight:750}
+</style></head><body><div class="wrap"><div class="top"><div><div class="title">求 e(i)、l(i)、d(i)</div><div class="note" id="cap"></div></div><div><button class="btn" id="prev">上一页</button> <button class="btn" id="next">下一页</button></div></div><div class="card"><div class="note" id="txt"></div><div id="table"></div><h3>关键活动</h3><div id="crit"></div></div></div>
+<script>
+const rows=[
+["a1","V1 -> V2",3,0,1,1,false],["a2","V1 -> V3",2,0,0,0,true],["a3","V2 -> V4",2,3,4,1,false],["a4","V2 -> V5",3,3,4,1,false],["a5","V3 -> V4",4,2,2,0,true],["a6","V3 -> V6",3,2,5,3,false],["a7","V4 -> V6",2,6,6,0,true],["a8","V5 -> V6",1,6,7,1,false]
+];
+const steps=[
+{cap:"先列出每条活动边",n:0,txt:"对每条边都要分别计算。活动边表示一个具体活动，不是普通可达关系。"},
+{cap:"计算 e(i)=ve(起点)",n:1,txt:"活动最早开始时间由起点事件决定。"},
+{cap:"计算 l(i)=vl(终点)-weight",n:2,txt:"活动必须在终点事件最迟发生前完成。"},
+{cap:"计算 d(i)=l(i)-e(i)",n:3,txt:"时间余量为 0 的活动没有拖延余地。"},
+{cap:"得到关键活动和关键路径",n:4,txt:"关键活动为 a2、a5、a7；关键路径为 V1 -> V3 -> V4 -> V6。"}
+];
+let i=0;
+function render(){const s=steps[i];document.getElementById("cap").textContent=s.cap;document.getElementById("txt").textContent=s.txt;document.getElementById("table").innerHTML=`<table class="tbl"><tr><th>活动</th><th>边</th><th>耗时</th><th>e</th><th>l</th><th>d</th><th>关键</th></tr>${rows.map(r=>`<tr class="${s.n>=4&&r[6]?'hot':''}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${s.n>=1?r[3]:""}</td><td>${s.n>=2?r[4]:""}</td><td>${s.n>=3?r[5]:""}</td><td>${s.n>=4?(r[6]?"是":"否"):""}</td></tr>`).join("")}</table>`;document.getElementById("crit").innerHTML=s.n>=4?`<span class="pill crit">a2</span><span class="pill crit">a5</span><span class="pill crit">a7</span><span class="pill crit">V1 -> V3 -> V4 -> V6</span>`:"<span class='pill'>等待计算 d(i)</span>"}
+document.getElementById("prev").onclick=()=>{i=(i+steps.length-1)%steps.length;render()};document.getElementById("next").onclick=()=>{i=(i+1)%steps.length;render()};render();
+</script></body></html>

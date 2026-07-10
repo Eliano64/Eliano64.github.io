@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="380" viewBox="0 0 980 380" role="img" aria-labelledby="title desc">
+  <title id="title">流量控制与接收缓存</title>
+  <desc id="desc">接收方缓存容量限制发送方连续发送数量。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--amber:#fbbf24}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.h{font-size:25px;font-weight:800}.m{fill:var(--muted);font-size:18px}.b{font-size:21px}.line{stroke:var(--line);stroke-width:3;fill:none}.data{stroke:var(--blue);stroke-width:4;marker-end:url(#arrowBlue)}.ack{stroke:var(--green);stroke-width:4;marker-end:url(#arrowGreen)}.wait{stroke:var(--amber);stroke-width:3;stroke-dasharray:8 6}.cell{fill:var(--bg);stroke:var(--line);stroke-width:2}.filled{fill:color-mix(in srgb,var(--blue) 22%,transparent);stroke:var(--blue);stroke-width:2}.free{fill:color-mix(in srgb,var(--green) 18%,transparent);stroke:var(--green);stroke-width:2}.danger{fill:color-mix(in srgb,var(--red) 16%,transparent);stroke:var(--red);stroke-width:2}
+  </style>
+  <defs>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--blue)"/></marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--green)"/></marker>
+  </defs>
+  <rect class="bg" width="980" height="380"/>
+  <rect x="46" y="92" width="180" height="118" rx="8" class="box"/>
+  <text x="136" y="135" text-anchor="middle" class="t h">发送方</text>
+  <text x="136" y="170" text-anchor="middle" class="t m">发送窗口限制</text>
+  <rect x="754" y="74" width="180" height="170" rx="8" class="box"/>
+  <text x="844" y="116" text-anchor="middle" class="t h">接收方</text>
+  <text x="844" y="150" text-anchor="middle" class="t m">接收缓存</text>
+  <g transform="translate(782 170)">
+    <rect x="0" y="0" width="28" height="42" class="filled"/><rect x="34" y="0" width="28" height="42" class="filled"/><rect x="68" y="0" width="28" height="42" class="filled"/><rect x="102" y="0" width="28" height="42" class="free"/>
+    <text x="65" y="70" text-anchor="middle" class="t m">剩余 1 个位置</text>
+  </g>
+  <path d="M226 132 H754" class="data"/>
+  <text x="490" y="112" text-anchor="middle" class="t b">数据连续到达，占用接收缓存</text>
+  <path d="M754 208 H226" class="ack"/>
+  <text x="490" y="244" text-anchor="middle" class="t b">ACK / 可接收额度返回，推动发送窗口</text>
+  <rect x="326" y="288" width="328" height="48" rx="8" class="danger"/>
+  <text x="490" y="319" text-anchor="middle" class="t b">若发送过快，缓存满后正确数据也可能被丢弃</text>
+</svg>

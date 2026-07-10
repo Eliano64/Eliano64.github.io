@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">Router queue congestion</title>
+  <desc id="desc">Packets arrive faster than the output link can transmit, causing queueing delay and packet loss when the buffer is full.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #172033; }
+    .box { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 10; }
+    .queue { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; }
+    .pkt { fill: #bfdbfe; stroke: #2563eb; stroke-width: 1.5; rx: 4; }
+    .drop { fill: #fecaca; stroke: #dc2626; stroke-width: 1.5; rx: 4; }
+    .line { stroke: #475569; stroke-width: 3; marker-end: url(#arrow); }
+    .red { stroke: #dc2626; stroke-width: 3; marker-end: url(#redArrow); }
+    .label { font-size: 20px; font-weight: 700; }
+    .small { font-size: 15px; }
+    @media (prefers-color-scheme: dark) {
+      text { fill: #e5e7eb; }
+      .box { fill: #111827; stroke: #94a3b8; }
+      .queue { fill: #10213f; stroke: #60a5fa; }
+      .pkt { fill: #1e3a8a; stroke: #60a5fa; }
+      .drop { fill: #7f1d1d; stroke: #f87171; }
+      .line { stroke: #cbd5e1; }
+      .red { stroke: #f87171; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+    <marker id="redArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/></marker>
+  </defs>
+  <text x="480" y="38" text-anchor="middle" class="label">路由器队列如何形成拥塞</text>
+  <line x1="40" y1="205" x2="170" y2="205" class="line"/>
+  <text x="105" y="180" text-anchor="middle" class="small">多个输入流</text>
+  <rect x="180" y="135" width="170" height="140" class="box"/>
+  <text x="265" y="168" text-anchor="middle" class="label">路由器</text>
+  <text x="265" y="198" text-anchor="middle" class="small">查表后送往</text>
+  <text x="265" y="223" text-anchor="middle" class="small">同一输出端口</text>
+  <line x1="350" y1="205" x2="430" y2="205" class="line"/>
+  <rect x="440" y="155" width="265" height="100" class="queue"/>
+  <text x="572" y="145" text-anchor="middle" class="small">输出队列 / 缓冲区</text>
+  <rect x="458" y="181" width="36" height="48" class="pkt"/>
+  <rect x="502" y="181" width="36" height="48" class="pkt"/>
+  <rect x="546" y="181" width="36" height="48" class="pkt"/>
+  <rect x="590" y="181" width="36" height="48" class="pkt"/>
+  <rect x="634" y="181" width="36" height="48" class="pkt"/>
+  <rect x="678" y="181" width="18" height="48" class="pkt"/>
+  <line x1="705" y1="205" x2="835" y2="205" class="line"/>
+  <text x="770" y="180" text-anchor="middle" class="small">输出链路速率有限</text>
+  <rect x="815" y="275" width="48" height="40" class="drop"/>
+  <line x1="705" y1="250" x2="812" y2="290" class="red"/>
+  <text x="820" y="340" text-anchor="middle" class="small">队列满后丢包</text>
+  <text x="572" y="295" text-anchor="middle" class="small">队列越长，排队时延越大；队列溢出时发生丢包</text>
+</svg>

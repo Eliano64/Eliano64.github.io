@@ -1,0 +1,37 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BST Delete</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1000px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.explain{font-size:18px;line-height:1.65}.code{font:14px/1.45 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap}svg{width:100%;height:auto}.node{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.cur{stroke:var(--red);stroke-width:5}.succ{fill:#dcfce7;stroke:var(--green);stroke-width:4}.line{stroke:#64748b;stroke-width:2}.t{fill:var(--text);font-weight:700;font-size:16px;text-anchor:middle}@media(prefers-color-scheme:dark){.node{fill:#172554;stroke:#38bdf8}.succ{fill:#12351f}.line{stroke:#94a3b8}}</style></head><body><div class="wrap"><div class="top"><div><h1>BST 删除：两棵子树时用后继替代</h1><div class="hint">删除 key = 50；后继是右子树中最左下结点。</div></div><div><button id="prev">上一步</button> <button id="next">下一步</button></div></div><div class="card"><div class="stage"><svg viewBox="0 0 560 400" id="tree"></svg><div><div class="explain" id="explain"></div><pre class="code">BSTNode *bst_delete(BSTNode *root, int key) {
+      if (root == NULL) return NULL;
+  
+      // 先按 BST 查找规则定位待删结点。
+      if (key < root->key) root->left = bst_delete(root->left, key);
+      else if (key > root->key) root->right = bst_delete(root->right, key);
+      else {
+          // 找到待删结点 root。
+          if (root->left == NULL || root->right == NULL) {
+              // 叶结点或只有一棵子树：用 child 替代 root。
+              BSTNode *child = root->left ? root->left : root->right;
+              free(root);
+              return child;
+          }
+
+          // 有两棵子树：用右子树中的最小结点，即直接后继替代。
+          BSTNode *s = min_node(root->right);
+          root->key = s->key;
+
+          // 删除右子树中原来的后继结点。
+          root->right = bst_delete(root->right, s->key);
+      }
+    return root;
+}</pre></div></div></div></div><script>
+const positions={50:[280,45],26:[170,135],66:[390,135],21:[110,225],30:[230,225],60:[340,225],70:[450,225],68:[410,315]};
+const stepData=[
+{nodes:{...positions},edges:[[50,26],[50,66],[26,21],[26,30],[66,60],[66,70],[70,68]],cur:50,t:"找到待删结点 50。它同时有左、右子树，不能直接用某一棵子树替代。"},
+{nodes:{...positions},edges:[[50,26],[50,66],[26,21],[26,30],[66,60],[66,70],[70,68]],cur:50,succ:60,t:"在 50 的右子树中一直向左，找到直接后继 60。后继一定没有左子树。"},
+{nodes:{...positions,60:[280,45],66:[390,135],70:[450,225],68:[410,315]},edges:[[60,26],[60,66],[26,21],[26,30],[66,70],[70,68]],succ:60,t:"用后继 60 覆盖 50 的关键字。树根变为 60，但右子树中原来的 60 还要删除。"},
+{nodes:{60:[280,45],26:[170,135],66:[390,135],21:[110,225],30:[230,225],70:[450,225],68:[410,315]},edges:[[60,26],[60,66],[26,21],[26,30],[66,70],[70,68]],succ:60,t:"删除右子树中原来的 60。因为它是叶结点，直接删除即可；BST 性质保持。"}
+];let k=0;
+function draw(){const d=stepData[k],svg=document.getElementById('tree');svg.innerHTML='';for(const [a,b]of d.edges){let p=d.nodes[a],q=d.nodes[b];svg.innerHTML+=`<line class="line" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`;}for(const [v,p]of Object.entries(d.nodes)){let cls='node';if(+v===d.cur)cls+=' cur';if(+v===d.succ)cls='succ';svg.innerHTML+=`<circle class="${cls}" cx="${p[0]}" cy="${p[1]}" r="26"/><text class="t" x="${p[0]}" y="${p[1]+6}">${v}</text>`;}explain.textContent=d.t}
+prev.onclick=()=>{k=Math.max(0,k-1);draw()};next.onclick=()=>{k=Math.min(stepData.length-1,k+1);draw()};draw();
+</script></body></html>

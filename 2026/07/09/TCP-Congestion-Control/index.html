@@ -1,0 +1,541 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>TCP Congestion Control | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="拥塞控制要解决的问题拥塞是网络内部的问题——路由器缓存、链路带宽、处理能力等资源不足以承载当前的通信量，导致队列溢出和大量丢包。 拥塞控制与流量控制的目标不同：    维度 流量控制 拥塞控制    要解决的问题 接收方来不及处理 网络来不及转发   范围 点对点 全局   反馈来源 接收方直接通告 rwnd 发送方通过超时、重复 ACK 等推断   拥塞控制的核心思想：试探着增加发送窗口，丢包了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP Congestion Control">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/09/TCP-Congestion-Control/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="拥塞控制要解决的问题拥塞是网络内部的问题——路由器缓存、链路带宽、处理能力等资源不足以承载当前的通信量，导致队列溢出和大量丢包。 拥塞控制与流量控制的目标不同：    维度 流量控制 拥塞控制    要解决的问题 接收方来不及处理 网络来不及转发   范围 点对点 全局   反馈来源 接收方直接通告 rwnd 发送方通过超时、重复 ACK 等推断   拥塞控制的核心思想：试探着增加发送窗口，丢包了">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-09T12:30:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="TransportLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TCP Congestion Control",
+  "url": "https://eliano64.github.io/2026/07/09/TCP-Congestion-Control/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-09T12:30:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/09/TCP-Congestion-Control/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'TCP Congestion Control',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">TCP Congestion Control</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">TCP Congestion Control</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-09T12:30:00.000Z" title="发表于 2026-07-09 20:30:00">2026-07-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.7k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="拥塞控制要解决的问题"><a href="#拥塞控制要解决的问题" class="headerlink" title="拥塞控制要解决的问题"></a>拥塞控制要解决的问题</h1><p><a href="/2026/07/08/Network-Congestion-Control/" class="wikilink">拥塞</a>是<strong>网络内部</strong>的问题——路由器缓存、链路带宽、处理能力等资源不足以承载当前的通信量，导致队列溢出和大量丢包。</p>
+<p>拥塞控制与<a href="/2026/07/09/TCP-Flow-Control/" class="wikilink">流量控制</a>的目标不同：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>流量控制</th>
+<th>拥塞控制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>要解决的问题</td>
+<td>接收方来不及处理</td>
+<td>网络来不及转发</td>
+</tr>
+<tr>
+<td>范围</td>
+<td>点对点</td>
+<td>全局</td>
+</tr>
+<tr>
+<td>反馈来源</td>
+<td>接收方直接通告 rwnd</td>
+<td>发送方通过超时、重复 ACK 等推断</td>
+</tr>
+</tbody></table>
+<p>拥塞控制的核心思想：<strong>试探着增加发送窗口，丢包了就减小，但不应一次砍过头。</strong></p>
+<h2 id="开环控制与闭环控制"><a href="#开环控制与闭环控制" class="headerlink" title="开环控制与闭环控制"></a>开环控制与闭环控制</h2><p>从控制论的角度，拥塞控制分为两类：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>开环控制</th>
+<th>闭环控制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>思路</td>
+<td>设计阶段就保证问题不发生</td>
+<td>运行时根据反馈动态调整</td>
+</tr>
+<tr>
+<td>适用条件</td>
+<td>流量特征可准确规定、性能要求可事先获得</td>
+<td>流量特征不可准确描述、网络不提供资源预留</td>
+</tr>
+<tr>
+<td>因特网选择</td>
+<td>—</td>
+<td>✅ 因特网采用闭环控制</td>
+</tr>
+</tbody></table>
+<p>闭环控制包含三个环节：监测拥塞（何时何地发生）→ 传递拥塞信息（传送到能采取行动的地方）→ 调整网络运行（解决拥塞问题）。</p>
+<h2 id="显式反馈与隐式反馈"><a href="#显式反馈与隐式反馈" class="headerlink" title="显式反馈与隐式反馈"></a>显式反馈与隐式反馈</h2><p>根据拥塞信息的反馈形式，闭环控制又分为两种：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>显式反馈</th>
+<th>隐式反馈</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>信息来源</td>
+<td>拥塞节点（路由器）直接向源站发送拥塞通知</td>
+<td>源站通过观测网络行为自行推断</td>
+</tr>
+<tr>
+<td>典型方式</td>
+<td>ICMP 源站抑制报文、分组中标记拥塞位（如 ECN）</td>
+<td>超时重传、RTT 增大、重复 ACK</td>
+</tr>
+<tr>
+<td>因特网选择</td>
+<td>需要网络层配合，部分机制可用</td>
+<td>✅ <strong>TCP 主要使用隐式反馈</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>TCP 判断拥塞的依据是<strong>超时重传</strong>——在传输质量较好的网络中，因误码丢包的概率远小于 1%，超时重传几乎就意味着网络拥塞。</p>
+</blockquote>
+<h1 id="核心变量"><a href="#核心变量" class="headerlink" title="核心变量"></a>核心变量</h1><h2 id="cwnd、rwnd-与-swnd"><a href="#cwnd、rwnd-与-swnd" class="headerlink" title="cwnd、rwnd 与 swnd"></a>cwnd、rwnd 与 swnd</h2><p>TCP 发送方维护一个<strong>拥塞窗口</strong> <code>cwnd</code>（Congestion Window）。它完全由发送方根据网络反馈自行估算，接收方不知道它的值。</p>
+<p>最终决定发送速率的窗口是：</p>
+<p>$$<br>\text{swnd} &#x3D; \min(\text{cwnd},\ \text{rwnd})<br>$$</p>
+<p>讨论拥塞控制时，通常假设 <code>rwnd</code> 足够大（接收方不构成瓶颈），此时 <code>swnd = cwnd</code>。换言之，在这一假设下，**<code>cwnd</code> 是多少 MSS，就能连续发送多少个 TCP 报文段**。</p>
+<h2 id="ssthresh：慢开始门限"><a href="#ssthresh：慢开始门限" class="headerlink" title="ssthresh：慢开始门限"></a>ssthresh：慢开始门限</h2><p>慢开始门限 <code>ssthresh</code> 将拥塞控制分成两个阶段：</p>
+<p>$$<br>\begin{cases}<br>\text{cwnd} &lt; \text{ssthresh} &amp; \rightarrow \text{慢开始（指数增长）} \[4pt]<br>\text{cwnd} &gt; \text{ssthresh} &amp; \rightarrow \text{拥塞避免（线性增长）}<br>\end{cases}<br>$$</p>
+<p>当 $\text{cwnd}&#x3D;\text{ssthresh}$ 时，慢开始和拥塞避免都可以使用。教材例题中常把“达到门限”作为切换点处理：增长到 <code>ssthresh</code> 后，下一轮按拥塞避免的线性规则继续增长。</p>
+<p><code>ssthresh</code> 的初始值通常较大（如 16 MSS），在发生拥塞后会被重新赋值为当前 <code>cwnd</code> 的一半。</p>
+<h1 id="为什么-cwnd-用-MSS-作单位？发送窗口上限是-MSS-吗？"><a href="#为什么-cwnd-用-MSS-作单位？发送窗口上限是-MSS-吗？" class="headerlink" title="为什么 cwnd 用 MSS 作单位？发送窗口上限是 MSS 吗？"></a>为什么 cwnd 用 MSS 作单位？发送窗口上限是 MSS 吗？</h1><p><strong>发送窗口的上限远大于 MSS。</strong></p>
+<p><strong>MSS（最大报文段长度）限制的是单个 TCP 报文段数据载荷的最大长度</strong>——每个报文段最多携带 MSS 字节的应用数据。对以太网环境，MSS 通常为 1460 字节。</p>
+<p><strong>发送窗口 swnd 限制的是”已发送但未确认”的总数据量</strong>。窗口内可以有多个报文段同时在网络中传输（”在飞”）。cwnd&#x3D;1 时可以连续发 1 个报文段，cwnd&#x3D;24 时可以连续发 24 个报文段。</p>
+<p>用公式表述：</p>
+<p>$$<br>\begin{aligned}<br>\text{每个报文段数据量} &amp;\le \text{MSS} \[4pt]<br>\text{发送窗口总量} &#x3D; \text{swnd} &amp;&#x3D; cwnd \times \text{MSS} \quad (\text{当 } cwnd \text{ 以 MSS 为单位时})<br>\end{aligned}<br>$$</p>
+<p>因此，发送窗口的实际字节上限为：</p>
+<p>$$<br>\text{swnd}<em>{\max} &#x3D; \min(\text{cwnd}</em>{\max},\ \text{rwnd}_{\max})<br>$$</p>
+<p>其中 <code>rwnd</code> 的字段为 16 bit，最大 $2^{16}-1 &#x3D; 65535$ 字节；启用窗口扩大选项后可达约 1 GB。<code>cwnd</code> 没有协议字段限制，完全由算法动态决定。<strong>两者都可以远远大于一个 MSS。</strong></p>
+<p>在拥塞控制的讨论和示例中，为方便理解，通常以 MSS 为单位表示 <code>cwnd</code>（例如”cwnd&#x3D;4”即 $4 \times \text{MSS}$ 字节），但这只是简化计算的单位选择，并不意味着窗口被 MSS 封顶。</p>
+<h1 id="一、慢开始"><a href="#一、慢开始" class="headerlink" title="一、慢开始"></a>一、慢开始</h1><h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>连接刚建立时，发送方完全不知道网络的拥塞状况。若一上来就以大窗口注入数据，极易引发拥塞。更好的策略是<strong>从小到大逐渐试探</strong>。</p>
+<h2 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h2><p>慢开始的核心规则：<strong>每收到一个对新报文段的确认，cwnd 加 1（以 MSS 计）。</strong></p>
+<p>由于每个 RTT 内发出的报文段会在 RTT 结束时得到确认，这个”每 ACK +1”的规则在效果上等价于<strong>每经过一个传输轮次（RTT），cwnd 翻倍</strong>。</p>
+<p>初始 <code>cwnd = 1</code> MSS。</p>
+<table>
+<thead>
+<tr>
+<th>轮次</th>
+<th>cwnd（可发送报文段数）</th>
+<th>本轮发送</th>
+<th>收到 ACK 后 cwnd</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>$1$</td>
+<td>M0</td>
+<td>$1+1 &#x3D; 2$</td>
+</tr>
+<tr>
+<td>2</td>
+<td>$2$</td>
+<td>M1, M2</td>
+<td>$2+2 &#x3D; 4$</td>
+</tr>
+<tr>
+<td>3</td>
+<td>$4$</td>
+<td>M3–M6</td>
+<td>$4+4 &#x3D; 8$</td>
+</tr>
+<tr>
+<td>4</td>
+<td>$8$</td>
+<td>M7–M14</td>
+<td>$8+8 &#x3D; 16$</td>
+</tr>
+</tbody></table>
+<p>“慢开始”其实并不慢——cwnd 从 1 增长到 16 只需 4 个 RTT。当 <code>cwnd</code> 达到 <code>ssthresh</code> 时，停止慢开始，转入拥塞避免。</p>
+<h1 id="二、拥塞避免"><a href="#二、拥塞避免" class="headerlink" title="二、拥塞避免"></a>二、拥塞避免</h1><p>进入拥塞避免阶段后，增长速度大幅放慢：<strong>每经过一个 RTT，cwnd 加 1（以 MSS 计）。</strong></p>
+<table>
+<thead>
+<tr>
+<th>轮次</th>
+<th>cwnd</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5</td>
+<td>$16 \rightarrow 17$</td>
+</tr>
+<tr>
+<td>6</td>
+<td>$17 \rightarrow 18$</td>
+</tr>
+<tr>
+<td>7</td>
+<td>$18 \rightarrow 19$</td>
+</tr>
+<tr>
+<td>$\vdots$</td>
+<td>$\vdots$</td>
+</tr>
+<tr>
+<td>13</td>
+<td>$23 \rightarrow 24$</td>
+</tr>
+</tbody></table>
+<p>拥塞避免使 cwnd 线性增长，网络在接近拥塞点时不会突然崩溃。</p>
+<h2 id="超时后的统一处理（Tahoe）"><a href="#超时后的统一处理（Tahoe）" class="headerlink" title="超时后的统一处理（Tahoe）"></a>超时后的统一处理（Tahoe）</h2><p>当某个发送的报文段超时重传时，发送方判断网络发生了拥塞：</p>
+<ol>
+<li><strong>更新 ssthresh</strong>：$\displaystyle \text{ssthresh} \leftarrow \max!\left(\frac{\text{cwnd}}{2},\ 2\times \text{MSS}\right)$</li>
+<li><strong>重置 cwnd</strong>：$\text{cwnd} \leftarrow 1\text{ MSS}$</li>
+<li><strong>重新执行慢开始</strong></li>
+</ol>
+<p>从 cwnd 曲线上看，这形成了一个”锯齿”——指数上升 → 线性上升 → 骤降至 1 → 指数上升 → 线性上升 → ……</p>
+<p><img src="/assets/tcp-congestion-cwnd-curve.svg" alt="960"></p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||760)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||760)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/tcp-congestion-control-slides.html" style="width:100%;height:760px;border:0" loading="lazy"></iframe>
+</div>
+
+<h1 id="三、快重传"><a href="#三、快重传" class="headerlink" title="三、快重传"></a>三、快重传</h1><h2 id="问题：个别丢包-≠-网络拥塞"><a href="#问题：个别丢包-≠-网络拥塞" class="headerlink" title="问题：个别丢包 ≠ 网络拥塞"></a>问题：个别丢包 ≠ 网络拥塞</h2><p>Tahoe 的问题是：不管丢包原因是什么，只要超时就一刀切，cwnd 砍到 1。但实际网络中有些丢包是<strong>个别报文段因误码丢失</strong>，网络本身没有拥塞。</p>
+<p>快重传的目的是：<strong>收到 3 个重复 ACK 时立即重传，不等超时计时器</strong>。</p>
+<h2 id="机制"><a href="#机制" class="headerlink" title="机制"></a>机制</h2><p>接收方每收到一个失序报文段，就立即发送一个重复 ACK（不延迟），确认号仍指向期望的下一字节。</p>
+<p>发送方计数：当收到<strong>第 3 个重复 ACK</strong> 时，判定对应报文段已丢失，立刻重传——不等超时计时器到时。</p>
+<blockquote>
+<p>为什么是 3 个？1 个重复 ACK 可能是网络中的报文段乱序到达；2 个可能是较大程度的乱序；但连续 3 个重复 ACK 几乎可以确定是丢包了。</p>
+</blockquote>
+<p>快重传使 TCP 在个别丢包时<strong>不触发超时</strong>，因而不会错误地把 cwnd 砍为 1。实践证明，使用快重传可使全网吞吐量提高约 20%。</p>
+<h1 id="四、快恢复"><a href="#四、快恢复" class="headerlink" title="四、快恢复"></a>四、快恢复</h1><p>快恢复与快重传配合使用，是 TCP Reno 的核心改进。</p>
+<h2 id="Reno-的处理（与-Tahoe-对比）"><a href="#Reno-的处理（与-Tahoe-对比）" class="headerlink" title="Reno 的处理（与 Tahoe 对比）"></a>Reno 的处理（与 Tahoe 对比）</h2><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>Tahoe（1988）</th>
+<th>Reno（1990）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>超时重传</strong></td>
+<td>ssthresh ← cwnd&#x2F;2，cwnd ← 1，慢开始</td>
+<td>同 Tahoe</td>
+</tr>
+<tr>
+<td><strong>收到 3 dup ACK</strong></td>
+<td>ssthresh ← cwnd&#x2F;2，cwnd ← 1，慢开始</td>
+<td>ssthresh ← cwnd&#x2F;2，cwnd ← ssthresh + 3，快恢复</td>
+</tr>
+</tbody></table>
+<p>Reno 的逻辑是：收到 3 个重复 ACK 意味着”后续数据已经到达接收方”，说明网络仍然可以正常传输——只是中间丢了一个报文段。不需要把 cwnd 降到 1 从头开始。</p>
+<h2 id="快恢复步骤"><a href="#快恢复步骤" class="headerlink" title="快恢复步骤"></a>快恢复步骤</h2><ol>
+<li>ssthresh ← cwnd &#x2F; 2</li>
+<li>cwnd ← ssthresh + 3（+3 是因为 3 个重复 ACK 意味着有 3 个报文段已经离开网络到达了接收方）</li>
+<li>每额外收到一个重复 ACK，cwnd +&#x3D; 1</li>
+<li>收到<strong>新的累积确认</strong>后：cwnd ← ssthresh，<strong>直接进入拥塞避免</strong>（跳过慢开始）</li>
+</ol>
+<p><img src="/assets/tcp-fast-retransmit-recovery.svg" alt="900"></p>
+<h1 id="四算法总览"><a href="#四算法总览" class="headerlink" title="四算法总览"></a>四算法总览</h1><p><img src="/assets/tcp-congestion-control-overview.svg" alt="960"></p>
+<h1 id="Tahoe-与-Reno-的差异"><a href="#Tahoe-与-Reno-的差异" class="headerlink" title="Tahoe 与 Reno 的差异"></a>Tahoe 与 Reno 的差异</h1><table>
+<thead>
+<tr>
+<th></th>
+<th>Tahoe</th>
+<th>Reno</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>包含算法</td>
+<td>慢开始、拥塞避免</td>
+<td>+ 快重传、快恢复</td>
+</tr>
+<tr>
+<td>超时后</td>
+<td>cwnd→1，慢开始</td>
+<td>cwnd→1，慢开始（同 Tahoe）</td>
+</tr>
+<tr>
+<td>3 dup ACK 后</td>
+<td>cwnd→1，慢开始</td>
+<td>cwnd→ssthresh+3，快恢复 → 拥塞避免</td>
+</tr>
+<tr>
+<td>对个别丢包的效率</td>
+<td>低（不必要的慢开始）</td>
+<td>高（避免不必要回到指数增长）</td>
+</tr>
+</tbody></table>
+<h1 id="与网络层的协作：AQM-与-RED"><a href="#与网络层的协作：AQM-与-RED" class="headerlink" title="与网络层的协作：AQM 与 RED"></a>与网络层的协作：AQM 与 RED</h1><p>TCP 拥塞控制运行在运输层，但它严重依赖网络层路由器的分组丢弃行为。</p>
+<h2 id="尾部丢弃与全局同步"><a href="#尾部丢弃与全局同步" class="headerlink" title="尾部丢弃与全局同步"></a>尾部丢弃与全局同步</h2><p>最简单的路由器策略是 FIFO + <strong>尾部丢弃</strong>：队列满了就把后续到达的分组全部丢弃。</p>
+<p>当多个 TCP 连接的分组恰好经过同一拥塞路由器时，这些连接的发送方<strong>几乎同时超时</strong>，全部 cwnd 降为 1，全部重新慢开始。网络吞吐量剧烈振荡，随后又大量注入数据——这就是<strong>全局同步</strong>。</p>
+<h2 id="主动队列管理-AQM"><a href="#主动队列管理-AQM" class="headerlink" title="主动队列管理 AQM"></a>主动队列管理 AQM</h2><p>AQM 的思路是<strong>主动</strong>在队列还未满时就丢弃分组（或标记拥塞），让 TCP 发送方能<strong>提前</strong>减速。其中最有名的是<strong>随机早期检测 RED</strong>。</p>
+<p>RED 维护两个门限（队列长度的最小门限和最大门限），对每个到达的分组：</p>
+<ul>
+<li>平均队列长度 &lt; 最小门限 → 正常排队（不丢弃）</li>
+<li>平均队列长度 &gt; 最大门限 → 丢弃该分组</li>
+<li>最小门限 ≤ 平均队列长度 ≤ 最大门限 → <strong>以概率 $p$ 随机丢弃</strong></li>
+</ul>
+<p><img src="/assets/tcp-tail-drop-vs-red.svg" alt="960"></p>
+<p>随机丢弃让只有部分 TCP 连接触发超时，不同连接在不同时间点降速，<strong>避免全局同步</strong>，使网络吞吐量保持相对平稳。</p>
+<blockquote>
+<p>IETF 曾推荐在路由器中部署 RED [RFC 2309]，但实际部署中 RED 的参数选择困难，目前并非所有路由器都使用 RED。</p>
+</blockquote>
+<h1 id="拥塞控制总结"><a href="#拥塞控制总结" class="headerlink" title="拥塞控制总结"></a>拥塞控制总结</h1><p>TCP 拥塞控制是一套不断演进的算法族：</p>
+<ol>
+<li><strong>慢开始</strong>：cwnd 从 1 开始，每 ACK +1，实际每 RTT 翻倍，指数增长到 ssthresh 为止</li>
+<li><strong>拥塞避免</strong>：cwnd 超出 ssthresh 后，每 RTT +1，线性缓慢增长</li>
+<li><strong>快重传</strong>：收到 3 个重复 ACK 而非等待超时，即判定丢包并立即重传</li>
+<li><strong>快恢复</strong>：快重传后不将 cwnd 降为 1，而是减半后直接进入拥塞避免</li>
+</ol>
+<p>核心规律：$\text{cwnd}$ 增长（试探网络容量）→ 丢包（容量已到）→ $\text{cwnd}$ 减半（为网络降压）→ 再次增长（继续试探）——形成”锯齿状”的 <strong>AIMD</strong>（Additive Increase, Multiplicative Decrease）模式。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/09/TCP-Congestion-Control/">https://eliano64.github.io/2026/07/09/TCP-Congestion-Control/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/09/TCP-Flow-Control/" title="TCP Flow Control"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">TCP Flow Control</div></div><div class="info-2"><div class="info-item-1">TCP 流量控制TCP 流量控制的目标是：防止发送方发送太快，导致接收方接收缓存溢出而丢包。它不是解决网络拥塞，而是解决接收方的处理能力瓶颈——应用程序一时来不及从接收缓存中取走数据。 流量控制与TCP 可靠传输以及滑动窗口机制紧密配合，但解决的问题不同。可靠传输关注确认、重传和按序交付；流量控制关注接收方的缓存水位。 rwnd：接收窗口通告流量控制的基本方法是：接收方通过 TCP 首部的窗口字段，把自己接收缓存的可用空间大小通告给发送方。 这个值记为 rwnd（receiver window）。 发送方收到报文段后，从中取出确认号 ack 和窗口值 rwnd，结合拥塞窗口 cwnd 构造发送窗口： $$\text{swnd} &#x3D; \min(\text{rwnd}, \text{cwnd})$$ 在仅讨论流量控制时，通常暂不考虑 cwnd，令 $\text{swnd} &#x3D; \text{rwnd}$。 窗口字段为 16 bit，所以 rwnd 最大为 $2^{16}-1 &#x3D; 65535$...</div></div></div></a><a class="pagination-related" href="/2026/07/10/OS-Boot/" title="OS Boot"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">OS Boot</div></div><div class="info-2"><div class="info-item-1">操作系统引导解决的问题是：按下电源后，CPU 如何从一无所有的硬件初始状态，一步步走到操作系统就绪、用户可以开始使用？ 核心矛盾是一个自举问题：要加载操作系统，需要磁盘读写能力和文件系统解析能力；但这些能力本身就是操作系统才提供的。开机时内存是空的，操作系统还没运行——谁来加载操作系统？ 答案是一段极小的固化程序充当起点。它只做最基础的事：从磁盘的固定位置找到下一段稍大的程序，把控制权交过去。每一段程序再找到更大、更完整的下一段，像接力一样逐级放大，直到完整的内核被装入内存并接管整台机器。 引导块引导程序的存放位置是约定好的——在磁盘的某个固定位置。这个位置称为引导块，也叫启动块。  为什么必须是固定位置 开机早期没有操作系统，ROM 中的小程序不能依赖文件系统去”按路径查找”下一段程序。它只能用最简单的规则——比如”去磁盘的第一个扇区”——找到引导程序。所以启动块、MBR、活动分区引导记录等位置都需要硬件或固件级别的约定，不能随意变动。   拥有引导块的磁盘称为**启动磁盘**或**系统磁盘**。  BIOS 引导链  ↻ + −     典型的 BIOS...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6%E8%A6%81%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">拥塞控制要解决的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E7%8E%AF%E6%8E%A7%E5%88%B6%E4%B8%8E%E9%97%AD%E7%8E%AF%E6%8E%A7%E5%88%B6"><span class="toc-text">开环控制与闭环控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E5%8F%8D%E9%A6%88%E4%B8%8E%E9%9A%90%E5%BC%8F%E5%8F%8D%E9%A6%88"><span class="toc-text">显式反馈与隐式反馈</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8F%98%E9%87%8F"><span class="toc-text">核心变量</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#cwnd%E3%80%81rwnd-%E4%B8%8E-swnd"><span class="toc-text">cwnd、rwnd 与 swnd</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ssthresh%EF%BC%9A%E6%85%A2%E5%BC%80%E5%A7%8B%E9%97%A8%E9%99%90"><span class="toc-text">ssthresh：慢开始门限</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-cwnd-%E7%94%A8-MSS-%E4%BD%9C%E5%8D%95%E4%BD%8D%EF%BC%9F%E5%8F%91%E9%80%81%E7%AA%97%E5%8F%A3%E4%B8%8A%E9%99%90%E6%98%AF-MSS-%E5%90%97%EF%BC%9F"><span class="toc-text">为什么 cwnd 用 MSS 作单位？发送窗口上限是 MSS 吗？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%85%A2%E5%BC%80%E5%A7%8B"><span class="toc-text">一、慢开始</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%9C%BA"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95"><span class="toc-text">算法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%8B%A5%E5%A1%9E%E9%81%BF%E5%85%8D"><span class="toc-text">二、拥塞避免</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B6%85%E6%97%B6%E5%90%8E%E7%9A%84%E7%BB%9F%E4%B8%80%E5%A4%84%E7%90%86%EF%BC%88Tahoe%EF%BC%89"><span class="toc-text">超时后的统一处理（Tahoe）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%BF%AB%E9%87%8D%E4%BC%A0"><span class="toc-text">三、快重传</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E4%B8%AA%E5%88%AB%E4%B8%A2%E5%8C%85-%E2%89%A0-%E7%BD%91%E7%BB%9C%E6%8B%A5%E5%A1%9E"><span class="toc-text">问题：个别丢包 ≠ 网络拥塞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%BA%E5%88%B6"><span class="toc-text">机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%BF%AB%E6%81%A2%E5%A4%8D"><span class="toc-text">四、快恢复</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Reno-%E7%9A%84%E5%A4%84%E7%90%86%EF%BC%88%E4%B8%8E-Tahoe-%E5%AF%B9%E6%AF%94%EF%BC%89"><span class="toc-text">Reno 的处理（与 Tahoe 对比）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E6%81%A2%E5%A4%8D%E6%AD%A5%E9%AA%A4"><span class="toc-text">快恢复步骤</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E7%AE%97%E6%B3%95%E6%80%BB%E8%A7%88"><span class="toc-text">四算法总览</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Tahoe-%E4%B8%8E-Reno-%E7%9A%84%E5%B7%AE%E5%BC%82"><span class="toc-text">Tahoe 与 Reno 的差异</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%8E%E7%BD%91%E7%BB%9C%E5%B1%82%E7%9A%84%E5%8D%8F%E4%BD%9C%EF%BC%9AAQM-%E4%B8%8E-RED"><span class="toc-text">与网络层的协作：AQM 与 RED</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%BE%E9%83%A8%E4%B8%A2%E5%BC%83%E4%B8%8E%E5%85%A8%E5%B1%80%E5%90%8C%E6%AD%A5"><span class="toc-text">尾部丢弃与全局同步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E5%8A%A8%E9%98%9F%E5%88%97%E7%AE%A1%E7%90%86-AQM"><span class="toc-text">主动队列管理 AQM</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6%E6%80%BB%E7%BB%93"><span class="toc-text">拥塞控制总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

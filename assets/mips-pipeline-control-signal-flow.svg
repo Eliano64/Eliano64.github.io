@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="430" viewBox="0 0 1120 430" role="img" aria-labelledby="title desc">
+  <title id="title">MIPS 流水线控制信号流动</title>
+  <desc id="desc">展示指令在 ID 阶段译码产生控制信号，控制信号随流水线寄存器向后传递，并在对应阶段使用。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #cbd5e1;
+      --panel: #f8fafc;
+      --if: #dbeafe;
+      --id: #dcfce7;
+      --ex: #fee2e2;
+      --mem: #fef3c7;
+      --wb: #ede9fe;
+      --reg: #e2e8f0;
+      --accent: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #475569;
+        --panel: #111827;
+        --if: #1d4ed8;
+        --id: #166534;
+        --ex: #991b1b;
+        --mem: #92400e;
+        --wb: #5b21b6;
+        --reg: #334155;
+        --accent: #60a5fa;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .title { font: 700 24px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); }
+    .note { font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .box { stroke: var(--line); stroke-width: 1.5; rx: 8; }
+    .if { fill: var(--if); }
+    .id { fill: var(--id); }
+    .ex { fill: var(--ex); }
+    .mem { fill: var(--mem); }
+    .wb { fill: var(--wb); }
+    .reg { fill: var(--reg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; rx: 8; }
+    .head { font: 700 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); text-anchor: middle; }
+    .label { font: 600 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); text-anchor: middle; }
+    .small { font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); text-anchor: middle; }
+    .mono { font: 700 13px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: var(--fg); text-anchor: middle; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+    .thin { fill: none; stroke: var(--line); stroke-width: 2; marker-end: url(#arrowLine); }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.small{fill:#f8fafc}}
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+    </marker>
+    <marker id="arrowLine" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+    </marker>
+  </defs>
+  <rect class="bg" width="1120" height="430" />
+  <text class="title" x="48" y="44">控制信号也要随流水线向后流动</text>
+  <text class="note" x="48" y="72">ID 阶段译码一次，产生后续阶段需要的控制信号；这些控制信号像数据一样被流水线寄存器保存并逐级传递。</text>
+
+  <g transform="translate(48 116)">
+    <rect class="box if" x="0" y="0" width="125" height="80" />
+    <text class="head" x="62.5" y="32">IF</text>
+    <text class="small" x="62.5" y="58">取指</text>
+
+    <rect class="box reg" x="145" y="0" width="80" height="80" />
+    <text class="mono" x="185" y="36">IF/ID</text>
+    <text class="small" x="185" y="58">指令</text>
+
+    <rect class="box id" x="245" y="0" width="150" height="80" />
+    <text class="head" x="320" y="30">ID</text>
+    <text class="small" x="320" y="54">译码 + 读寄存器</text>
+
+    <rect class="box reg" x="415" y="0" width="105" height="80" />
+    <text class="mono" x="467.5" y="31">ID/EX</text>
+    <text class="small" x="467.5" y="54">操作数</text>
+    <text class="small" x="467.5" y="70">EX/MEM/WB 控制</text>
+
+    <rect class="box ex" x="540" y="0" width="125" height="80" />
+    <text class="head" x="602.5" y="30">EX</text>
+    <text class="small" x="602.5" y="54">使用 EX 控制</text>
+
+    <rect class="box reg" x="685" y="0" width="105" height="80" />
+    <text class="mono" x="737.5" y="31">EX/MEM</text>
+    <text class="small" x="737.5" y="54">结果</text>
+    <text class="small" x="737.5" y="70">MEM/WB 控制</text>
+
+    <rect class="box mem" x="810" y="0" width="125" height="80" />
+    <text class="head" x="872.5" y="30">MEM</text>
+    <text class="small" x="872.5" y="54">使用 MEM 控制</text>
+
+    <rect class="box reg" x="955" y="0" width="105" height="80" />
+    <text class="mono" x="1007.5" y="31">MEM/WB</text>
+    <text class="small" x="1007.5" y="54">写回值</text>
+    <text class="small" x="1007.5" y="70">WB 控制</text>
+
+    <path class="thin" d="M 125 40 L 145 40" />
+    <path class="thin" d="M 225 40 L 245 40" />
+    <path class="thin" d="M 395 40 L 415 40" />
+    <path class="thin" d="M 520 40 L 540 40" />
+    <path class="thin" d="M 665 40 L 685 40" />
+    <path class="thin" d="M 790 40 L 810 40" />
+    <path class="thin" d="M 935 40 L 955 40" />
+  </g>
+
+  <g transform="translate(220 246)">
+    <rect class="panel" x="0" y="0" width="220" height="98" />
+    <text class="label" x="110" y="27">ID 产生的控制信号</text>
+    <text class="mono" x="110" y="54">EX: ALUOp, ALUSrc</text>
+    <text class="mono" x="110" y="74">MEM: MemRead, MemWrite</text>
+    <text class="mono" x="110" y="94">WB: RegWrite, MemToReg</text>
+
+    <rect class="panel" x="318" y="0" width="170" height="98" />
+    <text class="label" x="403" y="27">EX 用掉 EX 控制</text>
+    <text class="small" x="403" y="56">剩余 MEM/WB 控制</text>
+    <text class="small" x="403" y="78">继续进入 EX/MEM</text>
+
+    <rect class="panel" x="590" y="0" width="170" height="98" />
+    <text class="label" x="675" y="27">MEM 用掉 MEM 控制</text>
+    <text class="small" x="675" y="56">剩余 WB 控制</text>
+    <text class="small" x="675" y="78">继续进入 MEM/WB</text>
+
+    <path class="arrow" d="M 220 49 L 318 49" />
+    <path class="arrow" d="M 488 49 L 590 49" />
+  </g>
+</svg>

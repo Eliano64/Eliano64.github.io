@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Round Robin Scheduling</title>
+  <style>
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --grid:#cbd5e1; --queue:#e6eef9; --run:#fde68a;
+      --p1:#2563eb; --p2:#0f766e; --p3:#b45309; --p4:#7c3aed;
+      --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --grid:#455366; --queue:#263142; --run:#5b481c;
+        --p1:#7aa2ff; --p2:#62d4c5; --p3:#f6b85f; --p4:#b89cff;
+        --shadow:rgba(0,0,0,.38);
+      }
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:760px; background:var(--bg); color:var(--text); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; display:flex; flex-direction:column; }
+    header { padding:18px 24px 8px; text-align:center; }
+    h1 { margin:0; font-size:24px; }
+    .sub { margin-top:7px; color:var(--muted); font-size:14px; }
+    main { flex:1; padding:10px 22px; display:grid; grid-template-columns:1.16fr .84fr; gap:14px; }
+    .panel { border:1.4px solid var(--line); border-radius:12px; background:var(--panel); box-shadow:0 6px 16px var(--shadow); padding:14px; }
+    svg { width:100%; height:430px; display:block; }
+    .side { display:grid; gap:12px; grid-template-rows:auto 1fr; }
+    .queue { min-height:160px; }
+    .label { color:var(--muted); font-size:14px; margin-bottom:10px; }
+    .qline { display:flex; gap:8px; align-items:center; min-height:54px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--queue); overflow:hidden; }
+    .chip { min-width:72px; text-align:center; color:#fff; font-weight:700; padding:9px 10px; border-radius:8px; border:1px solid var(--line); }
+    .empty { color:var(--muted); }
+    .notes { display:grid; gap:10px; }
+    .note { border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--queue); line-height:1.5; }
+    .note strong { color:var(--p1); }
+    footer { display:flex; align-items:center; justify-content:center; gap:12px; padding:10px 20px 18px; }
+    button { border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; padding:8px 14px; cursor:pointer; font-size:14px; }
+    .count { color:var(--muted); min-width:70px; text-align:center; font-size:14px; }
+    @media (max-width:860px) { body { min-height:920px; } main { grid-template-columns:1fr; } svg { height:390px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RR 时间片轮转：时间片 = 2</h1>
+    <div class="sub">纵轴是进程，横轴是时间；右侧显示当前调度点的就绪队列。</div>
+  </header>
+  <main>
+    <section class="panel"><svg id="chart" viewBox="0 0 760 430" role="img"></svg></section>
+    <section class="side">
+      <section class="panel queue">
+        <div class="label" id="queueTitle"></div>
+        <div class="qline" id="queue"></div>
+      </section>
+      <section class="notes" id="notes"></section>
+    </section>
+  </main>
+  <footer>
+    <button id="prev" type="button">上一页</button>
+    <div class="count" id="count"></div>
+    <button id="next" type="button">下一页</button>
+  </footer>
+  <script>
+    const colors = { P1:"var(--p1)", P2:"var(--p2)", P3:"var(--p3)", P4:"var(--p4)" };
+    const rows = ["P1", "P2", "P3", "P4"];
+    const segments = [
+      ["P1",0,2], ["P2",2,4], ["P1",4,6], ["P3",6,7], ["P2",7,9],
+      ["P4",9,11], ["P1",11,12], ["P4",12,14], ["P4",14,16]
+    ];
+    const slides = [
+      { t:0, run:"P1", queue:[], notes:["0 时刻只有 P1 到达，P1 直接占用 CPU。", "就绪队列为空，因为正在运行的进程不在就绪队列中。"] },
+      { t:2, run:"P2", queue:["P1"], notes:["P2 在 2 时刻到达，同时 P1 的时间片用完。", "同一时刻新进程到达和时间片用完时，先让新进程进入就绪队列，再把 P1 放回队尾，所以队头是 P2。"] },
+      { t:4, run:"P1", queue:["P3","P2"], notes:["P3 在 4 时刻到达，P2 的时间片也在 4 时刻用完。", "先入队 P3，再把 P2 放回队尾；原来等待的 P1 仍在队头，因此运行 P1。"] },
+      { t:6, run:"P3", queue:["P2","P4","P1"], notes:["P4 在 5 时刻到达，P1 仍在运行，暂不调度。", "6 时刻 P1 时间片用完回到队尾，队头 P3 上 CPU。"] },
+      { t:7, run:"P2", queue:["P4","P1"], notes:["P3 只需要 1 个时间单位，没用完整个时间片就完成。", "进程完成会主动放弃 CPU，立即发生调度。"] },
+      { t:9, run:"P4", queue:["P1"], notes:["P2 在 7 到 9 运行完毕。", "队头 P4 上 CPU，P1 继续等待。"] },
+      { t:11, run:"P1", queue:["P4"], notes:["P4 用完一个时间片但还没完成，回到队尾。", "P1 剩余 1 个时间单位，获得 CPU。"] },
+      { t:12, run:"P4", queue:[], notes:["P1 在 12 时刻完成。", "就绪队列只剩 P4，所以 P4 继续运行。"] },
+      { t:14, run:"P4", queue:[], notes:["14 时刻 P4 时间片用完，但就绪队列为空。", "没有别的进程可切换，P4 可以继续运行到 16 时刻完成。"] }
+    ];
+    const requestedStep = Number(new URLSearchParams(location.search).get("step"));
+    let index = Number.isInteger(requestedStep) ? Math.min(Math.max(requestedStep, 0), slides.length - 1) : 0;
+    const svg = document.getElementById("chart");
+    function x(t) { return 95 + t * 38; }
+    function y(p) { return 68 + rows.indexOf(p) * 62; }
+    function draw(slide) {
+      const ticks = [0,2,4,6,7,9,11,12,14,16];
+      const visible = segments.filter(s => s[1] < slide.t || (s[1] === slide.t && s[0] === slide.run));
+      const grid = ticks.map(t => `<line x1="${x(t)}" y1="46" x2="${x(t)}" y2="340" stroke="var(--grid)" stroke-dasharray="4 6"/>`).join("");
+      const rowLines = rows.map(p => `<text x="54" y="${y(p)+20}" fill="var(--text)" font-size="16" font-weight="700" text-anchor="middle">${p}</text><line x1="95" y1="${y(p)+26}" x2="704" y2="${y(p)+26}" stroke="var(--grid)"/>`).join("");
+      const bars = visible.map(([p,s,e]) => {
+        const w = x(e)-x(s);
+        const active = s === slide.t && p === slide.run;
+        return `<rect x="${x(s)}" y="${y(p)}" width="${w}" height="30" rx="5" fill="${colors[p]}" stroke="${active ? "var(--text)" : "var(--line)"}" stroke-width="${active ? 3 : 1}"/><text x="${x(s)+w/2}" y="${y(p)+20}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${s}-${e}</text>`;
+      }).join("");
+      const labels = ticks.map(t => `<text x="${x(t)}" y="374" fill="var(--text)" font-size="12" font-weight="700" text-anchor="middle">${t}</text>`).join("");
+      svg.innerHTML = `<line x1="95" y1="340" x2="704" y2="340" stroke="var(--line)" stroke-width="2"/><line x1="95" y1="46" x2="95" y2="340" stroke="var(--line)" stroke-width="2"/>${grid}${rowLines}${bars}${labels}<text x="400" y="410" fill="var(--muted)" font-size="13" text-anchor="middle">当前运行：${slide.run}；时间片到、进程完成、新进程到达都可能改变队列。</text>`;
+    }
+    function render() {
+      const s = slides[index];
+      draw(s);
+      document.getElementById("queueTitle").textContent = `${s.t} 时刻选中 ${s.run} 后的就绪队列`;
+      document.getElementById("queue").innerHTML = s.queue.length ? s.queue.map(p => `<div class="chip" style="background:${colors[p]}">${p}</div>`).join("") : `<span class="empty">空</span>`;
+      document.getElementById("notes").innerHTML = s.notes.map(n => `<div class="note">${n}</div>`).join("");
+      document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+    }
+    document.getElementById("prev").addEventListener("click", () => { index = (index + slides.length - 1) % slides.length; render(); });
+    document.getElementById("next").addEventListener("click", () => { index = (index + 1) % slides.length; render(); });
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Graph Relation Concepts Table | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="图的关系概念速查表这一组概念都在描述“顶点与边&#x2F;弧的关系”“顶点到顶点能否走到”或“从原图中取出怎样的结构”。复习时先分清：度看边数统计，路径看走法序列，连通性看可达范围，生成结构看保留哪些顶点和边。    概念 适用对象 一句话定义 判定关键词 易错点    度 $TD(v)$ 无向图、有向图 与顶点 $v$ 相关的边或弧的总数 “依附于该顶点” 有向图中 $TD(v)&#x3D;ID">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Graph Relation Concepts Table">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/28/graph-relation-concepts-table/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="图的关系概念速查表这一组概念都在描述“顶点与边&#x2F;弧的关系”“顶点到顶点能否走到”或“从原图中取出怎样的结构”。复习时先分清：度看边数统计，路径看走法序列，连通性看可达范围，生成结构看保留哪些顶点和边。    概念 适用对象 一句话定义 判定关键词 易错点    度 $TD(v)$ 无向图、有向图 与顶点 $v$ 相关的边或弧的总数 “依附于该顶点” 有向图中 $TD(v)&#x3D;ID">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T03:31:30.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.060Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Graph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Graph Relation Concepts Table",
+  "url": "https://eliano64.github.io/2026/06/28/graph-relation-concepts-table/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T03:31:30.000Z",
+  "dateModified": "2026-07-10T07:16:51.060Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/28/graph-relation-concepts-table/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Graph Relation Concepts Table',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Graph Relation Concepts Table</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Graph Relation Concepts Table</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T03:31:30.000Z" title="发表于 2026-06-28 11:31:30">2026-06-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.060Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.8k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="图的关系概念速查表"><a href="#图的关系概念速查表" class="headerlink" title="图的关系概念速查表"></a>图的关系概念速查表</h1><p>这一组概念都在描述“顶点与边&#x2F;弧的关系”“顶点到顶点能否走到”或“从原图中取出怎样的结构”。复习时先分清：度看<strong>边数统计</strong>，路径看<strong>走法序列</strong>，连通性看<strong>可达范围</strong>，生成结构看<strong>保留哪些顶点和边</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>适用对象</th>
+<th>一句话定义</th>
+<th>判定关键词</th>
+<th>易错点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>度 $TD(v)$</td>
+<td>无向图、有向图</td>
+<td>与顶点 $v$ 相关的边或弧的总数</td>
+<td>“依附于该顶点”</td>
+<td>有向图中 $TD(v)&#x3D;ID(v)+OD(v)$</td>
+</tr>
+<tr>
+<td>入度 $ID(v)$</td>
+<td>有向图</td>
+<td>以 $v$ 为终点的弧数</td>
+<td>箭头指向 $v$</td>
+<td>只数进入的弧，不数出去的弧</td>
+</tr>
+<tr>
+<td>出度 $OD(v)$</td>
+<td>有向图</td>
+<td>以 $v$ 为起点的弧数</td>
+<td>箭头从 $v$ 发出</td>
+<td>只数出去的弧，不数进入的弧</td>
+</tr>
+<tr>
+<td>路径</td>
+<td>无向图、有向图</td>
+<td>从一个顶点到另一个顶点的顶点序列</td>
+<td>相邻顶点之间有边或方向正确的弧</td>
+<td>有向图路径要沿弧方向</td>
+</tr>
+<tr>
+<td>回路，也称环</td>
+<td>无向图、有向图</td>
+<td>起点和终点相同的路径</td>
+<td>首尾顶点相同</td>
+<td>回路不一定是简单回路</td>
+</tr>
+<tr>
+<td>简单路径</td>
+<td>无向图、有向图</td>
+<td>顶点不重复出现的路径</td>
+<td>顶点不重复</td>
+<td>起点和终点也不能重复，否则变成回路</td>
+</tr>
+<tr>
+<td>简单回路</td>
+<td>无向图、有向图</td>
+<td>除首尾同一顶点外，其余顶点不重复的回路</td>
+<td>首尾相同，中间不重复</td>
+<td>允许第一个顶点和最后一个顶点相同</td>
+</tr>
+<tr>
+<td>路径长度</td>
+<td>无向图、有向图</td>
+<td>路径上边或弧的数目</td>
+<td>数边，不数点</td>
+<td>经过 $k$ 个顶点的路径长度通常是 $k-1$</td>
+</tr>
+<tr>
+<td>距离</td>
+<td>无向图、有向图</td>
+<td>两点间最短路径的长度</td>
+<td>最短路径</td>
+<td>不存在路径时记为 $\infty$</td>
+</tr>
+<tr>
+<td>连通</td>
+<td>无向图</td>
+<td>两个顶点之间存在路径</td>
+<td>有路径可达</td>
+<td>只用于无向图的普通可达关系</td>
+</tr>
+<tr>
+<td>强连通</td>
+<td>有向图</td>
+<td>两个顶点互相都有路径可达</td>
+<td>双向可达</td>
+<td>$v$ 到 $w$ 可达不代表 $w$ 到 $v$ 可达</td>
+</tr>
+<tr>
+<td>连通图</td>
+<td>无向图</td>
+<td>任意两个顶点都连通</td>
+<td>任意两点可达</td>
+<td>$n$ 个顶点的连通图最少有 $n-1$ 条边</td>
+</tr>
+<tr>
+<td>非连通图</td>
+<td>无向图</td>
+<td>至少有一对顶点不连通</td>
+<td>存在两点不可达</td>
+<td>$n$ 个顶点的非连通图最多有 $C_{n-1}^{2}$ 条边</td>
+</tr>
+<tr>
+<td>强连通图</td>
+<td>有向图</td>
+<td>任意两个顶点都强连通</td>
+<td>任意两点双向可达</td>
+<td>$n$ 个顶点的强连通图最少有 $n$ 条弧</td>
+</tr>
+<tr>
+<td><a href="graph-subgraph.md">子图</a></td>
+<td>无向图、有向图</td>
+<td>从原图中取部分顶点和部分边或弧</td>
+<td>$V’\subseteq V,\ E’\subseteq E$</td>
+<td>选了边或弧，就要同时保留它的端点；有向图还要保留方向</td>
+</tr>
+<tr>
+<td><a href="graph-subgraph.md">生成子图</a></td>
+<td>无向图、有向图</td>
+<td>保留原图全部顶点的子图</td>
+<td>$V(G’)&#x3D;V(G)$</td>
+<td>生成子图不一定连通，也不一定是树</td>
+</tr>
+<tr>
+<td>连通子图</td>
+<td>无向图</td>
+<td>本身连通的子图</td>
+<td>子图内部任意两点可达</td>
+<td>连通子图不一定是连通分量</td>
+</tr>
+<tr>
+<td>连通分量</td>
+<td>无向图</td>
+<td>极大连通子图</td>
+<td>极大、连通</td>
+<td>不是随便取一个连通子图，而是已经不能继续扩大</td>
+</tr>
+<tr>
+<td>强连通分量</td>
+<td>有向图</td>
+<td>极大强连通子图</td>
+<td>极大、强连通</td>
+<td>考手算 SCC 个数时优先用 <a href="/2026/06/28/how-to-calculate-SCC/#kosaraju-手算-scc-个数" class="wikilink">Kosaraju</a> 的两次 DFS；代码分析再看 Tarjan 的 <code>dfn</code>、<code>low</code> 和栈</td>
+</tr>
+<tr>
+<td><a href="spanning-tree.md">生成树</a></td>
+<td>连通无向图</td>
+<td>包含全部顶点的极小连通子图</td>
+<td>全顶点、连通、边尽可能少</td>
+<td>有 $n-1$ 条边；删任一边会非连通，加任一边会成环</td>
+</tr>
+<tr>
+<td><a href="spanning-tree.md">生成森林</a></td>
+<td>非连通无向图</td>
+<td>各连通分量的生成树组成的森林</td>
+<td>每个分量各取一棵生成树</td>
+<td>$n$ 个顶点、$k$ 个连通分量时有 $n-k$ 条边</td>
+</tr>
+<tr>
+<td><a href="minimum-spanning-tree.md">最小生成树</a></td>
+<td>带权无向连通图</td>
+<td>权值总和最小的生成树</td>
+<td>MST、权值和最小</td>
+<td>图不连通时只能求最小生成森林</td>
+</tr>
+<tr>
+<td><a href="minimum-spanning-tree.md">Kruskal</a></td>
+<td>带权无向图</td>
+<td>按边权从小到大选不成环的边</td>
+<td>排序、并查集、避环</td>
+<td>适合稀疏图；选够 $n-1$ 条边停止</td>
+</tr>
+<tr>
+<td><a href="minimum-spanning-tree.md">Prim</a></td>
+<td>带权无向图</td>
+<td>从树集合出发，每次接入最近的外部顶点</td>
+<td><code>lowCost</code>、点扩张</td>
+<td>邻接矩阵朴素实现适合稠密图</td>
+</tr>
+<tr>
+<td><a href="weighted-graph.md">边的权</a></td>
+<td>无向图、有向图</td>
+<td>边或弧上标注的数值</td>
+<td>权值含义由题目给定</td>
+<td>权值可表示距离、费用、概率、时间等不同含义</td>
+</tr>
+<tr>
+<td><a href="weighted-graph.md">带权图，也称网</a></td>
+<td>无向图、有向图</td>
+<td>边或弧带有权值的图</td>
+<td>权值、网</td>
+<td>图结构相同，权值含义不同，最优问题可能不同</td>
+</tr>
+<tr>
+<td><a href="weighted-graph.md">带权路径长度</a></td>
+<td>带权图</td>
+<td>路径上所有边或弧的权值之和</td>
+<td>沿路径求和</td>
+<td>不等于边数；边数是普通路径长度</td>
+</tr>
+<tr>
+<td><a href="shortest-path-algorithms.md">单源最短路径</a></td>
+<td>无向图、有向图、带权图</td>
+<td>从一个源点到其他各顶点的最短路径</td>
+<td>源点、<code>dist</code>、<code>prev</code></td>
+<td>无权图可用 BFS；非负权图常用 Dijkstra</td>
+</tr>
+<tr>
+<td><a href="shortest-path-algorithms.md">每对顶点间最短路径</a></td>
+<td>有向图、无向图、带权图</td>
+<td>求任意两个顶点之间的最短路径</td>
+<td>all-pairs、<code>dist[][]</code>、<code>path[][]</code></td>
+<td>Floyd 可处理负权边，但不能处理负权回路</td>
+</tr>
+<tr>
+<td><a href="shortest-path-algorithms.md">负权回路</a></td>
+<td>带权图</td>
+<td>回路上边权之和为负</td>
+<td>反复绕行、距离不断变小</td>
+<td>存在可达负权回路时，最短路径可能没有定义</td>
+</tr>
+<tr>
+<td><a href="adjacency-matrix.md">邻接矩阵</a></td>
+<td>无向图、有向图、带权图</td>
+<td>用 $\lvert V\rvert\times \lvert V\rvert$ 矩阵表示顶点之间是否有边、弧或权值</td>
+<td>行列都对应顶点编号</td>
+<td>空间只和顶点数有关，不和实际边数有关</td>
+</tr>
+<tr>
+<td><a href="adjacency-matrix.md">无向图邻接矩阵</a></td>
+<td>无向图</td>
+<td>$A[i][j]&#x3D;A[j][i]$，矩阵关于主对角线对称</td>
+<td>对称矩阵</td>
+<td>可以只存主对角线加上三角或下三角</td>
+</tr>
+<tr>
+<td><a href="adjacency-matrix.md">有向图邻接矩阵</a></td>
+<td>有向图</td>
+<td>$A[i][j]$ 表示从 $v_i$ 到 $v_j$ 的弧</td>
+<td>行看出边，列看入边</td>
+<td>$A[i][j]&#x3D;1$ 不代表 $A[j][i]&#x3D;1$</td>
+</tr>
+<tr>
+<td><a href="adjacency-list.md">邻接表</a></td>
+<td>无向图、有向图、带权图</td>
+<td>顶点表顺序存储顶点，每个顶点后接链表保存邻接点</td>
+<td>顺序 + 链式</td>
+<td>表示方式不唯一</td>
+</tr>
+<tr>
+<td><a href="adjacency-list.md">无向图邻接表</a></td>
+<td>无向图</td>
+<td>每条边在两个端点的链表中各存一次</td>
+<td>边结点数 $2\lvert E\rvert$</td>
+<td>顶点度等于对应链表长度</td>
+</tr>
+<tr>
+<td><a href="adjacency-list.md">有向图邻接表</a></td>
+<td>有向图</td>
+<td>每条弧只存到起点的链表中，默认保存出边</td>
+<td>弧结点数 $\lvert E\rvert$</td>
+<td>出度方便，入度和入边需要扫描整个邻接表</td>
+</tr>
+<tr>
+<td><a href="orthogonal-list-and-adjacency-multilist.md">十字链表</a></td>
+<td>有向图</td>
+<td>一个弧结点同时挂入弧尾的出边链和弧头的入边链</td>
+<td><code>firstin</code>、<code>firstout</code></td>
+<td>只用于有向图</td>
+</tr>
+<tr>
+<td><a href="orthogonal-list-and-adjacency-multilist.md">邻接多重表</a></td>
+<td>无向图</td>
+<td>一条无向边只存一个边结点，同时挂入两个端点的边链</td>
+<td><code>iLink</code>、<code>jLink</code></td>
+<td>只用于无向图</td>
+</tr>
+<tr>
+<td><a href="breadth-first-search.md">广度优先搜索</a></td>
+<td>无向图、有向图</td>
+<td>借助队列从起点按层扩展访问顶点</td>
+<td>队列、<code>visited</code>、先发现先扩展</td>
+<td>非连通图需要从未访问顶点继续调用 BFS</td>
+</tr>
+<tr>
+<td><a href="breadth-first-search.md">广度优先生成树</a></td>
+<td>连通图的 BFS 过程</td>
+<td>由 BFS 第一次发现新顶点时经过的边构成</td>
+<td>发现边、层次结构</td>
+<td>邻接表顺序不唯一时，生成树也可能不唯一</td>
+</tr>
+<tr>
+<td><a href="breadth-first-search.md">广度优先生成森林</a></td>
+<td>非连通图的完整 BFS 过程</td>
+<td>各连通分量的 BFS 生成树组成的森林</td>
+<td>多次调用 BFS</td>
+<td>无向图中 BFS 调用次数等于连通分量数</td>
+</tr>
+<tr>
+<td><a href="depth-first-search.md">深度优先搜索</a></td>
+<td>无向图、有向图</td>
+<td>沿未访问邻接点不断深入，走不动再回退</td>
+<td>递归、调用栈、回退</td>
+<td>非连通图需要从未访问顶点继续调用 DFS</td>
+</tr>
+<tr>
+<td><a href="depth-first-search.md">深度优先生成树</a></td>
+<td>连通图的 DFS 过程</td>
+<td>由 DFS 第一次递归进入新顶点时经过的边构成</td>
+<td>递归树边</td>
+<td>邻接表顺序不唯一时，生成树也可能不唯一</td>
+</tr>
+<tr>
+<td><a href="depth-first-search.md">深度优先生成森林</a></td>
+<td>非连通图的完整 DFS 过程</td>
+<td>各连通分量的 DFS 生成树组成的森林</td>
+<td>多次调用 DFS</td>
+<td>无向图中 DFS 调用次数等于连通分量数</td>
+</tr>
+<tr>
+<td><a href="depth-first-search.md">DFS 判有向图环</a></td>
+<td>有向图</td>
+<td>若搜索边指向当前递归栈中的顶点，则存在有向环</td>
+<td><code>VISITING</code>、回边</td>
+<td>不能把指向 <code>DONE</code> 顶点误判为环</td>
+</tr>
+<tr>
+<td><a href="graph-traversal-and-connectivity.md">遍历与连通性</a></td>
+<td>无向图、有向图</td>
+<td>通过 BFS&#x2F;DFS 的覆盖范围和启动次数分析连通关系</td>
+<td><code>visited</code>、调用次数、可达范围</td>
+<td>无向图调用次数等于连通分量数；有向图要按弧方向具体分析</td>
+</tr>
+<tr>
+<td><a href="DAG-and-AOV-network.md">DAG</a></td>
+<td>有向图</td>
+<td>不存在有向环的有向图</td>
+<td>Directed Acyclic Graph、无环</td>
+<td>有拓扑序列当且仅当该有向图是 DAG</td>
+</tr>
+<tr>
+<td><a href="DAG-and-AOV-network.md">表达式 DAG</a></td>
+<td>表达式结构</td>
+<td>合并重复操作数和重复子表达式后的表达式图</td>
+<td>公共子表达式、复用结点</td>
+<td>通常按结构相同合并，不自动做复杂代数化简</td>
+</tr>
+<tr>
+<td><a href="DAG-and-AOV-network.md">AOV 网</a></td>
+<td>有向无环图</td>
+<td>顶点表示活动，边表示活动先后约束</td>
+<td>Activity On Vertex、前驱、后继</td>
+<td>必须无环；有环表示依赖关系矛盾</td>
+</tr>
+<tr>
+<td><a href="topological-sorting.md">拓扑排序</a></td>
+<td>DAG、AOV 网</td>
+<td>使每条路径起点都排在终点前面的顶点序列</td>
+<td>入度为 0、删除出边</td>
+<td>序列不唯一；图有环时不存在拓扑序列</td>
+</tr>
+<tr>
+<td><a href="topological-sorting.md">逆拓扑排序</a></td>
+<td>DAG、AOV 网</td>
+<td>从后继约束末端开始输出的反向拓扑序列</td>
+<td>出度为 0、DFS 退栈前输出</td>
+<td>指向 <code>DONE</code> 顶点不是环</td>
+</tr>
+<tr>
+<td><a href="AOE-network-and-critical-path.md">AOE 网</a></td>
+<td>带权有向无环图</td>
+<td>顶点表示事件，边表示活动，边权表示活动耗时</td>
+<td>Activity On Edge、源点、汇点</td>
+<td>用于求关键路径；活动在边上，不在顶点上</td>
+</tr>
+<tr>
+<td><a href="AOE-network-and-critical-path.md">关键路径</a></td>
+<td>AOE 网</td>
+<td>从源点到汇点的最长路径</td>
+<td><code>ve</code>、<code>vl</code>、<code>e</code>、<code>l</code>、<code>d</code></td>
+<td>关键路径长度是工程最短完成时间</td>
+</tr>
+<tr>
+<td><a href="AOE-network-and-critical-path.md">关键活动</a></td>
+<td>AOE 网</td>
+<td>时间余量为 0 的活动</td>
+<td><code>d(i)=l(i)-e(i)=0</code></td>
+<td>关键活动延期会导致工期延期</td>
+</tr>
+<tr>
+<td><a href="sparse-and-dense-graph.md">稀疏图</a></td>
+<td>无向图、有向图</td>
+<td>边数较少的图</td>
+<td>$\lvert E\rvert&lt;\lvert V\rvert\log\lvert V\rvert$</td>
+<td>这是经验界限，不是绝对定义</td>
+</tr>
+<tr>
+<td><a href="sparse-and-dense-graph.md">稠密图</a></td>
+<td>无向图、有向图</td>
+<td>边数较多的图</td>
+<td>接近完全图边数上界</td>
+<td>常和邻接矩阵适用性一起考</td>
+</tr>
+<tr>
+<td><a href="tree-as-graph-special-form.md">树</a></td>
+<td>无向图</td>
+<td>连通且无回路的无向图</td>
+<td>连通、无环</td>
+<td>树作为数据结构的完整概念见 <a href="/2026/06/27/tree-basic-concepts/" class="wikilink">tree-basic-concepts</a></td>
+</tr>
+<tr>
+<td><a href="tree-as-graph-special-form.md">森林</a></td>
+<td>无向图</td>
+<td>若干棵互不相交的树组成</td>
+<td>每个连通分量是一棵树</td>
+<td>$n$ 个顶点、$k$ 个分量时有 $n-k$ 条边</td>
+</tr>
+<tr>
+<td><a href="tree-as-graph-special-form.md">有向树</a></td>
+<td>有向图</td>
+<td>一个顶点入度为 0，其余顶点入度均为 1</td>
+<td>唯一根、其余入度 1</td>
+<td>只看入度条件时仍要注意题目是否默认连通或可达</td>
+</tr>
+<tr>
+<td><a href="complete-graph.md">无向完全图</a></td>
+<td>无向图</td>
+<td>任意两个不同顶点之间都有边</td>
+<td>两两相连</td>
+<td>边数是 $C_n^2$，不是 $n(n-1)$</td>
+</tr>
+<tr>
+<td><a href="complete-graph.md">有向完全图</a></td>
+<td>有向图</td>
+<td>任意两个不同顶点之间都有方向相反的两条弧</td>
+<td>两两双向相连</td>
+<td>弧数是 $2C_n^2&#x3D;n(n-1)$</td>
+</tr>
+</tbody></table>
+<h2 id="常用公式"><a href="#常用公式" class="headerlink" title="常用公式"></a>常用公式</h2><table>
+<thead>
+<tr>
+<th>图类型</th>
+<th>公式或结论</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无向图</td>
+<td>$\sum_{i&#x3D;1}^{n} TD(v_i)&#x3D;2e$</td>
+<td>每条边被两个端点各统计一次</td>
+</tr>
+<tr>
+<td>有向图</td>
+<td>$\sum_{i&#x3D;1}^{n} ID(v_i)&#x3D;\sum_{i&#x3D;1}^{n} OD(v_i)&#x3D;e$</td>
+<td>每条弧贡献一个入度、一个出度</td>
+</tr>
+<tr>
+<td>有向图</td>
+<td>$\sum_{i&#x3D;1}^{n} TD(v_i)&#x3D;2e$</td>
+<td>总度数仍等于弧数的 $2$ 倍</td>
+</tr>
+<tr>
+<td>连通无向图</td>
+<td>最少 $n-1$ 条边</td>
+<td>极少边连通形态是树</td>
+</tr>
+<tr>
+<td>非连通无向图</td>
+<td>最多 $C_{n-1}^{2}$ 条边</td>
+<td>保留一个孤立顶点，其余顶点构成完全图</td>
+</tr>
+<tr>
+<td>强连通有向图</td>
+<td>最少 $n$ 条弧</td>
+<td>极少弧强连通形态是有向回路</td>
+</tr>
+<tr>
+<td>无向完全图</td>
+<td>$C_n^2&#x3D;\frac{n(n-1)}{2}$ 条边</td>
+<td>任意两个不同顶点之间都有一条边</td>
+</tr>
+<tr>
+<td>有向完全图</td>
+<td>$2C_n^2&#x3D;n(n-1)$ 条弧</td>
+<td>任意两个不同顶点之间都有方向相反的两条弧</td>
+</tr>
+<tr>
+<td>生成树</td>
+<td>$n-1$ 条边</td>
+<td>覆盖连通图全部顶点且边数最少</td>
+</tr>
+<tr>
+<td>生成森林</td>
+<td>$n-k$ 条边</td>
+<td>$n$ 个顶点、$k$ 个连通分量，每个分量各取生成树</td>
+</tr>
+<tr>
+<td>邻接矩阵空间</td>
+<td>$O(\lvert V\rvert^2)$</td>
+<td>只由顶点数决定，适合稠密图</td>
+</tr>
+<tr>
+<td>邻接矩阵求度</td>
+<td>$O(\lvert V\rvert)$</td>
+<td>无向图扫一行或一列；有向图入度扫列、出度扫行</td>
+</tr>
+<tr>
+<td>邻接矩阵路径计数</td>
+<td>$A^n[i][j]$ 是 $i$ 到 $j$ 长度为 $n$ 的路径条数</td>
+<td>只适用于 $0&#x2F;1$ 邻接矩阵的路径计数语境</td>
+</tr>
+<tr>
+<td>邻接表空间</td>
+<td>无向图 $O(\lvert V\rvert+2\lvert E\rvert)$；有向图 $O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>适合稀疏图</td>
+</tr>
+<tr>
+<td>邻接表求度</td>
+<td>无向图度、有向图出度都等于对应链表长度</td>
+<td>有向图入度需要扫描所有链表</td>
+</tr>
+<tr>
+<td>十字链表空间</td>
+<td>$O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>入边和出边都能沿链直接找</td>
+</tr>
+<tr>
+<td>邻接多重表空间</td>
+<td>$O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>每条无向边只保存一个边结点</td>
+</tr>
+<tr>
+<td>BFS 空间</td>
+<td>$O(\lvert V\rvert)$</td>
+<td>辅助队列和 <code>visited</code> 数组</td>
+</tr>
+<tr>
+<td>BFS 邻接矩阵时间</td>
+<td>$O(\lvert V\rvert^2)$</td>
+<td>每个顶点都要扫描一整行邻接矩阵</td>
+</tr>
+<tr>
+<td>BFS 邻接表时间</td>
+<td>$O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>所有顶点访问一次，所有边或弧被扫描有限次</td>
+</tr>
+<tr>
+<td>无向图完整 BFS 调用次数</td>
+<td>连通分量数</td>
+<td>连通图只需调用一次</td>
+</tr>
+<tr>
+<td>DFS 空间</td>
+<td>最坏 $O(\lvert V\rvert)$</td>
+<td>主要来自递归调用栈和 <code>visited</code> 数组</td>
+</tr>
+<tr>
+<td>DFS 邻接矩阵时间</td>
+<td>$O(\lvert V\rvert^2)$</td>
+<td>每个顶点都要扫描一整行邻接矩阵</td>
+</tr>
+<tr>
+<td>DFS 邻接表时间</td>
+<td>$O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>所有顶点访问一次，所有边或弧被扫描有限次</td>
+</tr>
+<tr>
+<td>无向图完整 DFS 调用次数</td>
+<td>连通分量数</td>
+<td>连通图只需调用一次</td>
+</tr>
+<tr>
+<td>BFS 求无权图单源最短路径</td>
+<td>邻接表 $O(\lvert V\rvert+\lvert E\rvert)$，邻接矩阵 $O(\lvert V\rvert^2)$</td>
+<td>第一次访问某顶点时得到最短边数</td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td>$O(\lvert V\rvert^2)$</td>
+<td>邻接矩阵朴素实现；要求无负权边</td>
+</tr>
+<tr>
+<td>Floyd</td>
+<td>$O(\lvert V\rvert^3)$</td>
+<td>求每对顶点间最短路径；可有负权边但不能有负权回路</td>
+</tr>
+<tr>
+<td>SPFA</td>
+<td>最坏 $O(\lvert V\rvert\lvert E\rvert)$</td>
+<td>可处理负权边，并可检测从源点可达的负权回路</td>
+</tr>
+<tr>
+<td>拓扑排序</td>
+<td>邻接表 $O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>每个顶点输出一次，每条边导致一次入度更新</td>
+</tr>
+<tr>
+<td>邻接矩阵拓扑排序</td>
+<td>$O(\lvert V\rvert^2)$</td>
+<td>删除顶点出边时需要扫描矩阵行或列</td>
+</tr>
+<tr>
+<td>稀疏图</td>
+<td>常用经验：$\lvert E\rvert&lt;\lvert V\rvert\log\lvert V\rvert$</td>
+<td>边数较少</td>
+</tr>
+<tr>
+<td>图论中的树</td>
+<td>$n-1$ 条边</td>
+<td>连通且无回路的无向图</td>
+</tr>
+<tr>
+<td>有向树</td>
+<td>一个顶点入度为 $0$，其余顶点入度均为 $1$</td>
+<td>图中的有向树判定</td>
+</tr>
+<tr>
+<td>无向图回路判定</td>
+<td>若 $\lvert E\rvert&gt;n-1$，则一定有回路</td>
+<td>常见边数结论</td>
+</tr>
+</tbody></table>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">快速区分</span></div>
+<div class="callout-content"><p>“连通”只看能否走到；“强连通”看两个方向能否都走到；“分量”强调已经是极大范围；“生成”通常强调覆盖原图全部顶点；“权”强调边或弧上的数值含义。</p>
+</div>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/28/graph-relation-concepts-table/">https://eliano64.github.io/2026/06/28/graph-relation-concepts-table/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/28/graph-connectivity-and-components/" title="Graph Connectivity And Components"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Graph Connectivity And Components</div></div><div class="info-2"><div class="info-item-1">图的连通性与连通分量连通性讨论顶点之间是否“走得到”。无向图看是否有路径，有向图还要看两个方向是否都走得到。 相关概念可配合 图的关系概念速查表 复习。 无向图的连通与连通图在无向图中，若从顶点 $v$ 到顶点 $w$ 存在路径，则称 $v$ 和 $w$ 是连通的。 若图 $G$ 中任意两个顶点都是连通的，则称 $G$ 为连通图；否则称为非连通图。  对于 $n$ 个顶点的无向图：  若 $G$ 是连通图，则最少有 $n-1$ 条边（树）。 若 $G$ 是非连通图，则最多可能有 $C_{n-1}^{2}$ 条边。  非连通图最多边数的理解：为了让图仍然非连通，至少要有一个顶点与其余顶点不连通；其余 $n-1$ 个顶点内部最多构成无向完全图，因此最多有 $C_{n-1}^{2}$ 条边。 有向图的强连通与强连通图在有向图中，若从顶点 $v$ 到顶点 $w$ 有路径，并且从 $w$ 到 $v$ 也有路径，则称 $v$ 和 $w$ 是强连通的。  Warning 只有在有向图中才有强连通图这个概念。   若有向图中任何一对顶点都是强连通的，则称此图为**强连通图**。  对于 $n$...</div></div></div></a><a class="pagination-related" href="/2026/06/28/complete-graph/" title="Complete Graph"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Complete Graph</div></div><div class="info-2"><div class="info-item-1">完全图完全图强调“任意两个不同顶点之间都直接相连”。无向图和有向图的完全图计数不同，关键差别来自边是否有方向。 完全图给出了同顶点数图的边数上界，也常用于理解稀疏图与稠密图。  无向完全图在无向图中，若任意两个不同顶点之间都存在边，则称该图为无向完全图。 若顶点数为 $n$，则每两个顶点确定一条无向边，因此边数为： $$C_n^2&#x3D;\frac{n(n-1)}{2}$$ 一般 $n$ 个顶点的无向图，边数范围为： $$0\le |E|\le C_n^2$$ 其中 $|E|&#x3D;C_n^2$ 时就是无向完全图。 有向完全图在有向图中，若任意两个不同顶点之间都存在方向相反的两条弧，则称该图为有向完全图。 对任意两个不同顶点 $v_i$ 和 $v_j$，有向完全图同时包含： $$\langle v_i,v_j\rangle$$ $$\langle v_j,v_i\rangle$$ 若顶点数为 $n$，则每对不同顶点贡献两条方向相反的弧，因此弧数为： $$2C_n^2&#x3D;n(n-1)$$ 一般 $n$ 个顶点的有向图，弧数范围为： $$0\le |E|\le...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BE%E7%9A%84%E5%85%B3%E7%B3%BB%E6%A6%82%E5%BF%B5%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-text">图的关系概念速查表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%85%AC%E5%BC%8F"><span class="toc-text">常用公式</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

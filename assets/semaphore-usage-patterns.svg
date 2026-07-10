@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" role="img" aria-labelledby="title desc">
+  <title id="title">Semaphore Usage Patterns</title>
+  <desc id="desc">Three typical semaphore uses: mutual exclusion, synchronization, and predecessor relationships.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #334155;
+      --accent: #2563eb;
+      --box: #dbeafe;
+      --ok: #16a34a;
+      --wait: #f59e0b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --line: #cbd5e1;
+        --accent: #60a5fa;
+        --box: #172554;
+        --ok: #34d399;
+        --wait: #fbbf24;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 10; }
+    .title { fill: var(--text); font: 700 25px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .head { fill: var(--text); font: 700 21px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .text { fill: var(--text); font: 18px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .small { fill: var(--muted); font: 16px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .code { fill: var(--text); font: 18px Consolas, "SFMono-Regular", monospace; }
+    .accent { fill: var(--accent); font-weight: 700; }
+    .ok { fill: var(--ok); font-weight: 700; }
+    .wait { fill: var(--wait); font-weight: 700; }
+    .arrow { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+    .dashed { stroke-dasharray: 7 7; }
+    .box { fill: var(--box); stroke: var(--accent); stroke-width: 2; rx: 8; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+  <rect class="bg" width="1080" height="560" />
+  <text class="title" x="40" y="48">信号量的三种基本用法</text>
+
+  <rect class="panel" x="40" y="82" width="312" height="408" />
+  <text class="head" x="66" y="122">互斥：名额只有 1 个</text>
+  <text class="small" x="66" y="154">mutex 初值为 1</text>
+  <rect class="box" x="78" y="186" width="236" height="52" />
+  <text class="code" x="108" y="219">P(mutex)</text>
+  <rect class="box" x="78" y="268" width="236" height="72" />
+  <text class="text" x="132" y="310">临界区</text>
+  <rect class="box" x="78" y="370" width="236" height="52" />
+  <text class="code" x="108" y="403">V(mutex)</text>
+  <path class="arrow" d="M196 238 V262" />
+  <path class="arrow" d="M196 340 V364" />
+  <text class="small" x="66" y="458">同一临界资源对应同一个互斥信号量。</text>
+
+  <rect class="panel" x="384" y="82" width="312" height="408" />
+  <text class="head" x="410" y="122">同步：前 V 后 P</text>
+  <text class="small" x="410" y="154">S 初值通常为 0</text>
+  <rect class="box" x="424" y="190" width="96" height="56" />
+  <text class="code" x="450" y="225">S1</text>
+  <rect class="box" x="560" y="190" width="96" height="56" />
+  <text class="code" x="586" y="225">V(a)</text>
+  <path class="arrow" d="M520 218 H552" />
+  <path class="arrow dashed" d="M608 246 C608 296 474 296 474 346" />
+  <rect class="box" x="424" y="346" width="96" height="56" />
+  <text class="code" x="450" y="381">P(a)</text>
+  <rect class="box" x="560" y="346" width="96" height="56" />
+  <text class="code" x="586" y="381">S2</text>
+  <path class="arrow" d="M520 374 H552" />
+  <text class="small" x="410" y="444">要保证 S2 在 S1 后执行：</text>
+  <text class="small" x="410" y="470">S1 后 V(a)，S2 前 P(a)。</text>
+
+  <rect class="panel" x="728" y="82" width="312" height="408" />
+  <text class="head" x="754" y="122">前驱关系：多级同步</text>
+  <text class="small" x="754" y="154">每条边设置一个同步信号量</text>
+  <rect class="box" x="780" y="190" width="74" height="48" />
+  <text class="code" x="804" y="221">S1</text>
+  <rect class="box" x="914" y="190" width="74" height="48" />
+  <text class="code" x="938" y="221">S2</text>
+  <rect class="box" x="780" y="328" width="74" height="48" />
+  <text class="code" x="804" y="359">S3</text>
+  <rect class="box" x="914" y="328" width="74" height="48" />
+  <text class="code" x="938" y="359">S4</text>
+  <path class="arrow" d="M854 214 H906" />
+  <path class="arrow" d="M817 238 V320" />
+  <path class="arrow" d="M951 238 V320" />
+  <path class="arrow" d="M854 352 H906" />
+  <text class="code accent" x="866" y="207">a</text>
+  <text class="code accent" x="828" y="282">b</text>
+  <text class="code accent" x="962" y="282">c</text>
+  <text class="code accent" x="866" y="345">d</text>
+  <text class="small" x="754" y="428">边 a：S1 后 V(a)，S2 前 P(a)。</text>
+  <text class="small" x="754" y="458">其余边同理。</text>
+</svg>

@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="560" viewBox="0 0 1040 560" role="img" aria-labelledby="title desc">
+  <title id="title">CISC and RISC design comparison</title>
+  <desc id="desc">Comparison of CISC and RISC design ideas: one complex instruction versus multiple simple load-store instructions.</desc>
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      :root {
+        --bg: #ffffff;
+        --fg: #17212b;
+        --muted: #5b6773;
+        --line: #26323d;
+        --panel: #f5f7fb;
+        --blue: #2563eb;
+        --orange: #c2410c;
+        --green: #15803d;
+        --soft-blue: #dbeafe;
+        --soft-orange: #ffedd5;
+        --soft-green: #dcfce7;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1720;
+          --fg: #e8edf2;
+          --muted: #aab5c0;
+          --line: #d7dee6;
+          --panel: #1b2632;
+          --blue: #7cb7ff;
+          --orange: #ffb07c;
+          --green: #7bdc91;
+          --soft-blue: #173963;
+          --soft-orange: #4b2a17;
+          --soft-green: #173d27;
+        }
+      }
+      .bg { fill: var(--bg); }
+      .panel { fill: var(--panel); stroke: var(--line); stroke-width: 2; }
+      .box { fill: var(--bg); stroke: var(--line); stroke-width: 1.6; }
+      .cisc { fill: var(--soft-orange); stroke: var(--orange); stroke-width: 2; }
+      .risc { fill: var(--soft-blue); stroke: var(--blue); stroke-width: 2; }
+      .mem { fill: var(--soft-green); stroke: var(--green); stroke-width: 2; }
+      .title { font: 24px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; font-weight: 700; fill: var(--fg); }
+      .label { font: 20px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--fg); }
+      .small { font: 16px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--muted); }
+      .code { font: 18px Consolas, "Courier New", monospace; fill: var(--fg); }
+      .blue { fill: var(--blue); }
+      .orange { fill: var(--orange); }
+      .green { fill: var(--green); }
+      .arrow { stroke: var(--line); stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrowBlue { stroke: var(--blue); stroke-width: 2.4; fill: none; marker-end: url(#arrowBlue); }
+      .arrowOrange { stroke: var(--orange); stroke-width: 2.4; fill: none; marker-end: url(#arrowOrange); }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--line)"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--blue)"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--orange)"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1040" height="560"/>
+  <text x="520" y="46" text-anchor="middle" class="title">CISC 与 RISC：复杂功能放在哪里</text>
+
+  <rect x="60" y="82" width="430" height="390" rx="10" class="panel"/>
+  <text x="275" y="122" text-anchor="middle" class="title orange">CISC</text>
+  <text x="275" y="150" text-anchor="middle" class="small">复杂功能尽量放进一条机器指令</text>
+
+  <rect x="105" y="190" width="340" height="72" rx="8" class="cisc"/>
+  <text x="275" y="221" text-anchor="middle" class="code">MUL [a], [b], [c]</text>
+  <text x="275" y="247" text-anchor="middle" class="small">一条复杂指令完成取数、运算、写回</text>
+
+  <rect x="120" y="318" width="135" height="58" rx="7" class="mem"/>
+  <text x="188" y="353" text-anchor="middle" class="label">主存</text>
+  <rect x="300" y="318" width="125" height="58" rx="7" class="box"/>
+  <text x="363" y="353" text-anchor="middle" class="label">运算部件</text>
+  <path d="M 188 318 C 185 284 215 266 258 263" class="arrowOrange"/>
+  <path d="M 293 263 C 343 269 365 287 363 318" class="arrowOrange"/>
+  <path d="M 363 376 C 350 410 210 410 188 376" class="arrowOrange"/>
+  <text x="275" y="432" text-anchor="middle" class="small">指令能力强，但指令长度、执行过程、控制逻辑更复杂</text>
+
+  <rect x="550" y="82" width="430" height="390" rx="10" class="panel"/>
+  <text x="765" y="122" text-anchor="middle" class="title blue">RISC</text>
+  <text x="765" y="150" text-anchor="middle" class="small">复杂功能由多条简单、规整指令组合</text>
+
+  <rect x="610" y="185" width="130" height="46" rx="7" class="risc"/>
+  <text x="675" y="214" text-anchor="middle" class="code">LOAD r1, [a]</text>
+  <rect x="610" y="242" width="130" height="46" rx="7" class="risc"/>
+  <text x="675" y="271" text-anchor="middle" class="code">LOAD r2, [b]</text>
+  <rect x="610" y="299" width="130" height="46" rx="7" class="risc"/>
+  <text x="675" y="328" text-anchor="middle" class="code">MUL r3, r1, r2</text>
+  <rect x="610" y="356" width="130" height="46" rx="7" class="risc"/>
+  <text x="675" y="385" text-anchor="middle" class="code">STORE [c], r3</text>
+
+  <rect x="820" y="197" width="110" height="62" rx="7" class="mem"/>
+  <text x="875" y="233" text-anchor="middle" class="label">主存</text>
+  <rect x="820" y="322" width="110" height="62" rx="7" class="box"/>
+  <text x="875" y="358" text-anchor="middle" class="label">寄存器</text>
+  <path d="M 742 208 L 812 220" class="arrowBlue"/>
+  <path d="M 742 265 L 812 232" class="arrowBlue"/>
+  <path d="M 742 322 L 812 344" class="arrowBlue"/>
+  <path d="M 742 379 L 812 250" class="arrowBlue"/>
+  <text x="765" y="432" text-anchor="middle" class="small">只有 Load/Store 访问主存，运算主要在寄存器之间完成</text>
+
+  <text x="520" y="520" text-anchor="middle" class="small">判断主线：CISC 偏向“复杂指令直接做复杂事”；RISC 偏向“简单指令流水化组合完成复杂事”。</text>
+</svg>

@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="760" viewBox="0 0 1180 760" role="img" aria-labelledby="title desc">
+  <title id="title">总线定时方式比较</title>
+  <desc id="desc">用时序图比较同步、异步、半同步和分离式通信。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --text: #172033;
+      --muted: #526070;
+      --line: #8a97a8;
+      --grid: #d7dde6;
+      --panel: #f8fafc;
+      --blue: #2563eb;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+      --purple: #7c3aed;
+      --blue-soft: #dbeafe;
+      --green-soft: #d1fae5;
+      --orange-soft: #ffedd5;
+      --red-soft: #fee2e2;
+      --purple-soft: #ede9fe;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --text: #e5e7eb;
+        --muted: #aab4c3;
+        --line: #687386;
+        --grid: #283243;
+        --panel: #111827;
+        --blue: #60a5fa;
+        --green: #34d399;
+        --orange: #fbbf24;
+        --red: #f87171;
+        --purple: #c084fc;
+        --blue-soft: #172554;
+        --green-soft: #064e3b;
+        --orange-soft: #451a03;
+        --red-soft: #450a0a;
+        --purple-soft: #2e1065;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .title { fill: var(--text); font: 700 28px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .h { fill: var(--text); font: 700 20px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .body { fill: var(--muted); font: 15px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .small { fill: var(--muted); font: 13px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.4; rx: 14; }
+    .grid { stroke: var(--grid); stroke-width: 1; }
+    .axis { stroke: var(--line); stroke-width: 2; }
+    .sig { stroke-width: 5; fill: none; stroke-linecap: square; }
+    .blue { stroke: var(--blue); }
+    .green { stroke: var(--green); }
+    .orange { stroke: var(--orange); }
+    .red { stroke: var(--red); }
+    .purple { stroke: var(--purple); }
+    .fill-blue { fill: var(--blue-soft); stroke: var(--blue); }
+    .fill-green { fill: var(--green-soft); stroke: var(--green); }
+    .fill-orange { fill: var(--orange-soft); stroke: var(--orange); }
+    .fill-red { fill: var(--red-soft); stroke: var(--red); }
+    .fill-purple { fill: var(--purple-soft); stroke: var(--purple); }
+    .tag { stroke-width: 1.5; rx: 8; }
+  </style>
+  <rect class="bg" width="1180" height="760"/>
+  <text class="title" x="52" y="54">总线定时方式</text>
+  <text class="body" x="52" y="84">定时方式规定发送方、接收方在时间上如何配合，本质上是一组通信协议。</text>
+
+  <rect class="panel" x="52" y="118" width="514" height="260"/>
+  <text class="h" x="82" y="154">同步定时</text>
+  <text class="body" x="82" y="182">统一时钟给出固定节奏，地址、命令、数据按预定时刻出现。</text>
+  <g transform="translate(86 232)">
+    <line class="axis" x1="0" y1="0" x2="420" y2="0"/>
+    <line class="grid" x1="40" y1="-22" x2="40" y2="92"/><line class="grid" x1="120" y1="-22" x2="120" y2="92"/>
+    <line class="grid" x1="200" y1="-22" x2="200" y2="92"/><line class="grid" x1="280" y1="-22" x2="280" y2="92"/>
+    <text class="small" x="40" y="-30" text-anchor="middle">T1</text><text class="small" x="120" y="-30" text-anchor="middle">T2</text>
+    <text class="small" x="200" y="-30" text-anchor="middle">T3</text><text class="small" x="280" y="-30" text-anchor="middle">T4</text>
+    <rect class="tag fill-blue" x="18" y="18" width="78" height="34"/><text class="small" x="57" y="40" text-anchor="middle">地址</text>
+    <rect class="tag fill-green" x="100" y="18" width="78" height="34"/><text class="small" x="139" y="40" text-anchor="middle">读命令</text>
+    <rect class="tag fill-orange" x="182" y="18" width="78" height="34"/><text class="small" x="221" y="40" text-anchor="middle">取数据</text>
+    <rect class="tag fill-red" x="264" y="18" width="78" height="34"/><text class="small" x="303" y="40" text-anchor="middle">撤销</text>
+    <text class="small" x="0" y="88">从设备必须在规定时刻准备好数据。</text>
+  </g>
+
+  <rect class="panel" x="614" y="118" width="514" height="260"/>
+  <text class="h" x="644" y="154">异步定时</text>
+  <text class="body" x="644" y="182">没有统一时钟，依靠请求和回答信号握手，周期长度可变。</text>
+  <g transform="translate(650 232)">
+    <text class="small" x="0" y="4">请求</text>
+    <polyline class="sig blue" points="54,18 104,18 104,-8 246,-8 246,18 380,18"/>
+    <text class="small" x="0" y="70">回答</text>
+    <polyline class="sig green" points="54,84 160,84 160,58 296,58 296,84 380,84"/>
+    <line class="grid" x1="104" y1="-24" x2="104" y2="100"/><line class="grid" x1="160" y1="-24" x2="160" y2="100"/>
+    <line class="grid" x1="246" y1="-24" x2="246" y2="100"/><line class="grid" x1="296" y1="-24" x2="296" y2="100"/>
+    <text class="small" x="104" y="126" text-anchor="middle">请求有效</text>
+    <text class="small" x="160" y="144" text-anchor="middle">回答有效</text>
+    <text class="small" x="246" y="126" text-anchor="middle">请求撤销</text>
+    <text class="small" x="296" y="144" text-anchor="middle">回答撤销</text>
+  </g>
+
+  <rect class="panel" x="52" y="428" width="514" height="260"/>
+  <text class="h" x="82" y="464">半同步通信</text>
+  <text class="body" x="82" y="492">仍有统一时钟，但慢速从设备可用 WAIT 插入等待周期。</text>
+  <g transform="translate(86 552)">
+    <line class="axis" x1="0" y1="0" x2="420" y2="0"/>
+    <line class="grid" x1="40" y1="-22" x2="40" y2="96"/><line class="grid" x1="120" y1="-22" x2="120" y2="96"/>
+    <line class="grid" x1="200" y1="-22" x2="200" y2="96"/><line class="grid" x1="280" y1="-22" x2="280" y2="96"/><line class="grid" x1="360" y1="-22" x2="360" y2="96"/>
+    <text class="small" x="40" y="-30" text-anchor="middle">T1</text><text class="small" x="120" y="-30" text-anchor="middle">T2</text>
+    <text class="small" x="200" y="-30" text-anchor="middle">Tw</text><text class="small" x="280" y="-30" text-anchor="middle">T3</text>
+    <text class="small" x="360" y="-30" text-anchor="middle">T4</text>
+    <rect class="tag fill-blue" x="18" y="18" width="78" height="34"/><text class="small" x="57" y="40" text-anchor="middle">地址</text>
+    <rect class="tag fill-green" x="100" y="18" width="78" height="34"/><text class="small" x="139" y="40" text-anchor="middle">命令</text>
+    <rect class="tag fill-purple" x="182" y="18" width="78" height="34"/><text class="small" x="221" y="40" text-anchor="middle">WAIT</text>
+    <rect class="tag fill-orange" x="264" y="18" width="78" height="34"/><text class="small" x="303" y="40" text-anchor="middle">数据</text>
+    <text class="small" x="0" y="92">WAIT 让固定节奏中插入可控等待。</text>
+  </g>
+
+  <rect class="panel" x="614" y="428" width="514" height="260"/>
+  <text class="h" x="644" y="464">分离式通信</text>
+  <text class="body" x="644" y="492">请求和响应拆成两个子周期，从设备准备数据时不占用总线。</text>
+  <g transform="translate(650 552)">
+    <line class="axis" x1="0" y1="54" x2="420" y2="54"/>
+    <rect class="tag fill-blue" x="20" y="20" width="130" height="56"/>
+    <text class="small" x="85" y="44" text-anchor="middle">子周期 1</text>
+    <text class="small" x="85" y="64" text-anchor="middle">主设备发地址/命令</text>
+    <rect class="tag fill-orange" x="170" y="20" width="100" height="56"/>
+    <text class="small" x="220" y="44" text-anchor="middle">准备数据</text>
+    <text class="small" x="220" y="64" text-anchor="middle">不占总线</text>
+    <rect class="tag fill-green" x="292" y="20" width="116" height="56"/>
+    <text class="small" x="350" y="44" text-anchor="middle">子周期 2</text>
+    <text class="small" x="350" y="64" text-anchor="middle">从设备送数据</text>
+    <text class="small" x="20" y="118">主设备不必一直占着总线等待从设备。</text>
+  </g>
+</svg>

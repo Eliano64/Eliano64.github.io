@@ -1,0 +1,464 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Minimum Spanning Tree | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="最小生成树最小生成树（Minimum Spanning Tree, MST）讨论的是：在一个带权无向连通图中，既要让所有顶点连通，又要让选中边的总代价尽可能低。  什么是最小生成树设带权无向连通图为 $G&#x3D;(V,E)$，$R$ 为 $G$ 的所有生成树的集合。对任意生成树 $T$，它的权值是 $T$ 中所有边权值之和： $$w(T)&#x3D;\sum_{e\in T}w(e)$$ 若某">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Minimum Spanning Tree">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/28/minimum-spanning-tree/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="最小生成树最小生成树（Minimum Spanning Tree, MST）讨论的是：在一个带权无向连通图中，既要让所有顶点连通，又要让选中边的总代价尽可能低。  什么是最小生成树设带权无向连通图为 $G&#x3D;(V,E)$，$R$ 为 $G$ 的所有生成树的集合。对任意生成树 $T$，它的权值是 $T$ 中所有边权值之和： $$w(T)&#x3D;\sum_{e\in T}w(e)$$ 若某">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T04:24:30.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.065Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Graph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Minimum Spanning Tree",
+  "url": "https://eliano64.github.io/2026/06/28/minimum-spanning-tree/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T04:24:30.000Z",
+  "dateModified": "2026-07-10T07:16:51.065Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/28/minimum-spanning-tree/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Minimum Spanning Tree',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Minimum Spanning Tree</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Minimum Spanning Tree</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T04:24:30.000Z" title="发表于 2026-06-28 12:24:30">2026-06-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.065Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="最小生成树"><a href="#最小生成树" class="headerlink" title="最小生成树"></a>最小生成树</h1><p>最小生成树（Minimum Spanning Tree, MST）讨论的是：在一个<strong>带权无向连通图</strong>中，既要让所有顶点连通，又要让选中边的总代价尽可能低。</p>
+<p><img src="/assets/minimum-spanning-tree-concepts.svg" alt="最小生成树概念"></p>
+<h2 id="什么是最小生成树"><a href="#什么是最小生成树" class="headerlink" title="什么是最小生成树"></a>什么是最小生成树</h2><p>设带权无向连通图为 $G&#x3D;(V,E)$，$R$ 为 $G$ 的所有<a href="/2026/06/28/spanning-tree/#生成树" class="wikilink">生成树</a>的集合。对任意生成树 $T$，它的权值是 $T$ 中所有边权值之和：</p>
+<p>$$<br>w(T)&#x3D;\sum_{e\in T}w(e)<br>$$</p>
+<p>若某棵生成树 $T$ 满足：</p>
+<p>$$<br>w(T)&#x3D;\min_{T_i\in R}w(T_i)<br>$$</p>
+<p>则 $T$ 称为 $G$ 的<strong>最小生成树</strong>，也称<strong>最小代价树</strong>。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">MST 的对象</span></div>
+<div class="callout-content"><p>最小生成树通常只讨论<strong>带权无向连通图</strong>。<br>“带权”决定有代价可比较；“无向”决定边没有方向限制；“连通”决定存在覆盖全部顶点的一棵生成树。</p>
+</div>
+</div>
+## MST 必须同时满足什么
+
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>覆盖全部顶点</td>
+<td>不能只连接一部分顶点</td>
+</tr>
+<tr>
+<td>连通</td>
+<td>任意两个顶点之间都有路径</td>
+</tr>
+<tr>
+<td>无环</td>
+<td>有环就能删去环上的某条边并仍保持连通，不是生成树的最简形态</td>
+</tr>
+<tr>
+<td>边数为 $n-1$</td>
+<td>这是生成树的固定边数</td>
+</tr>
+<tr>
+<td>边权和最小</td>
+<td>在所有生成树中总代价最低</td>
+</tr>
+</tbody></table>
+<p>这些条件中，前四个保证它是生成树，最后一个保证它是<strong>最小</strong>生成树。</p>
+<h2 id="MST-可能不唯一，但最小权值和唯一"><a href="#MST-可能不唯一，但最小权值和唯一" class="headerlink" title="MST 可能不唯一，但最小权值和唯一"></a>MST 可能不唯一，但最小权值和唯一</h2><p>最小生成树可能有多棵。例如多条边权相同，或者不同生成树恰好得到同一个最小总代价时，就可能出现多棵 MST。</p>
+<p>但要注意：</p>
+<ul>
+<li>MST 的<strong>形状和边集</strong>可能不唯一。</li>
+<li>MST 的<strong>最小权值和</strong>是唯一的，因为“最小值”本身是确定的。</li>
+</ul>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">所有边权相等时</span></div>
+<div class="callout-content"><p>若一个连通无向图中所有边权都相同，则每棵生成树都有 $n-1$ 条边，总代价相同。此时所有生成树都是最小生成树。</p>
+</div>
+</div>
+## 特殊情况
+
+<h3 id="原图本身就是树"><a href="#原图本身就是树" class="headerlink" title="原图本身就是树"></a>原图本身就是树</h3><p>若一个带权无向连通图本身已经是一棵树，那么它只有 $n-1$ 条边，已经没有多余边可删，也没有其他生成树可选。</p>
+<p>所以它的最小生成树就是它本身。</p>
+<h3 id="原图不连通"><a href="#原图不连通" class="headerlink" title="原图不连通"></a>原图不连通</h3><p>非连通图没有覆盖全图的一棵生成树，因此也没有覆盖全图的最小生成树。</p>
+<p>此时只能在每个连通分量内部分别求最小生成树，合起来得到<strong>最小生成森林</strong>。</p>
+<h2 id="和-BFS-DFS-生成树的区别"><a href="#和-BFS-DFS-生成树的区别" class="headerlink" title="和 BFS&#x2F;DFS 生成树的区别"></a>和 BFS&#x2F;DFS 生成树的区别</h2><p><a href="/2026/06/28/breadth-first-search/" class="wikilink">广度优先生成树</a>和<a href="/2026/06/28/depth-first-search/" class="wikilink">深度优先生成树</a>是由遍历过程得到的生成树。它们强调“按什么顺序访问顶点”，不保证边权和最小。</p>
+<p>最小生成树强调“总代价最小”。它不关心 BFS 的层次，也不关心 DFS 的深入顺序，而是要在所有生成树中比较权值和。</p>
+<table>
+<thead>
+<tr>
+<th>生成结构</th>
+<th>来源</th>
+<th>是否考虑权值最小</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BFS 生成树</td>
+<td>BFS 第一次发现顶点的边</td>
+<td>不保证</td>
+</tr>
+<tr>
+<td>DFS 生成树</td>
+<td>DFS 第一次递归进入顶点的边</td>
+<td>不保证</td>
+</tr>
+<tr>
+<td>MST</td>
+<td>所有生成树中权值和最小者</td>
+<td>保证</td>
+</tr>
+</tbody></table>
+<h2 id="Kruskal-算法"><a href="#Kruskal-算法" class="headerlink" title="Kruskal 算法"></a>Kruskal 算法</h2><p>Kruskal 的思路是“按边扩张”：把所有边按权值从小到大排序，每次选择当前最短且不会形成回路的边。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||760)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||760)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/mst-kruskal.html" style="width:100%;height:760px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>核心过程：</p>
+<ol>
+<li>将所有边按权值从小到大排序。</li>
+<li>从小到大枚举边 $(u,v,w)$。</li>
+<li>若 <code>u</code> 和 <code>v</code> 已在同一连通块中，加入这条边会成环，跳过。</li>
+<li>若 <code>u</code> 和 <code>v</code> 不在同一连通块中，选择这条边，并合并两个连通块。</li>
+<li>选够 $n-1$ 条边后停止。</li>
+</ol>
+<p>Kruskal 常用<a href="../posts/union-find.md">并查集</a>判断是否会成环。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXE 1000</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXV 100</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> u;       <span class="comment">// 边的一个端点</span></span><br><span class="line">    <span class="type">int</span> v;       <span class="comment">// 边的另一个端点</span></span><br><span class="line">    <span class="type">int</span> weight;  <span class="comment">// 边权</span></span><br><span class="line">&#125; Edge;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> parent[MAXV];  <span class="comment">// 并查集 parent[x] 表示 x 的父节点或集合代表</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">cmpEdge</span><span class="params">(<span class="type">const</span> <span class="type">void</span> *a, <span class="type">const</span> <span class="type">void</span> *b)</span> &#123;</span><br><span class="line">    <span class="type">const</span> Edge *x = (<span class="type">const</span> Edge *)a;</span><br><span class="line">    <span class="type">const</span> Edge *y = (<span class="type">const</span> Edge *)b;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// qsort 需要比较函数返回负数、0、正数。</span></span><br><span class="line">    <span class="comment">// 这里按边权从小到大排序，保证 Kruskal 总是先尝试较短的边。</span></span><br><span class="line">    <span class="keyword">return</span> x-&gt;weight - y-&gt;weight;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">findRoot</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (parent[x] != x) &#123;</span><br><span class="line">        parent[x] = findRoot(parent[x]);  <span class="comment">// 路径压缩：让 x 直接指向集合代表</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> parent[x];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">unionSet</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span> &#123;</span><br><span class="line">    <span class="type">int</span> rootA = findRoot(a);</span><br><span class="line">    <span class="type">int</span> rootB = findRoot(b);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (rootA == rootB) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;  <span class="comment">// 已在同一集合中，再连会形成回路</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    parent[rootA] = rootB;  <span class="comment">// 合并两个连通块</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">kruskal</span><span class="params">(Edge edges[], <span class="type">int</span> vertexCount, <span class="type">int</span> edgeCount)</span> &#123;</span><br><span class="line">    <span class="type">int</span> selectedEdges = <span class="number">0</span>;  <span class="comment">// 已经选入生成树的边数</span></span><br><span class="line">    <span class="type">int</span> totalWeight = <span class="number">0</span>;    <span class="comment">// 已选边的权值总和</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; vertexCount; ++i) &#123;</span><br><span class="line">        parent[i] = i;  <span class="comment">// 初始时每个顶点自成一个连通块</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    qsort(edges, edgeCount, <span class="keyword">sizeof</span>(Edge), cmpEdge);  <span class="comment">// 先看权值最小的边</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; edgeCount &amp;&amp; selectedEdges &lt; vertexCount - <span class="number">1</span>; ++i) &#123;</span><br><span class="line">        Edge edge = edges[i];  <span class="comment">// 当前正在尝试加入生成树的边</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (unionSet(edge.u, edge.v)) &#123;</span><br><span class="line">            <span class="comment">// 两端原本不连通：选入这条边不会形成回路。</span></span><br><span class="line">            totalWeight += edge.weight;</span><br><span class="line">            ++selectedEdges;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (selectedEdges != vertexCount - <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;  <span class="comment">// 原图不连通，无法得到覆盖全图的生成树</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> totalWeight;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>时间复杂度主要来自边排序：</p>
+<p>$$<br>O(\lvert E\rvert\log\lvert E\rvert)<br>$$</p>
+<p>按边表实现时，需要先把边按权值排序，然后最多检查每条边一次。检查一条边时，要判断两个端点是否已经属于同一连通块；常见写法使用并查集完成这个判断与合并。</p>
+<p>Kruskal 适合边较少的稀疏图。</p>
+<h2 id="Prim-算法"><a href="#Prim-算法" class="headerlink" title="Prim 算法"></a>Prim 算法</h2><p>Prim 的思路是“按点扩张”：从一个起点出发，维护当前生成树到每个外部顶点的最小边权，每次把距离当前树最近的顶点加入树。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||840)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||840)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/mst-prim.html" style="width:100%;height:840px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>核心过程：</p>
+<ol>
+<li>任取一个顶点加入生成树集合。</li>
+<li>对每个未加入顶点，记录它到当前树集合的最小边权 <code>lowCost[v]</code>。</li>
+<li>选择 <code>lowCost</code> 最小的未加入顶点 <code>v</code>，把它加入生成树。</li>
+<li>用 <code>v</code> 的邻接边更新其他未加入顶点的 <code>lowCost</code>。</li>
+<li>重复直到所有顶点都加入。</li>
+</ol>
+<p>朴素 Prim 常用两个数组表达这个过程：</p>
+<table>
+<thead>
+<tr>
+<th>数组</th>
+<th>含义</th>
+<th>更新时机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>isJoin[v]</code> 或 <code>inTree[v]</code></td>
+<td>顶点 <code>v</code> 是否已经加入当前生成树集合</td>
+<td>每轮选出新的最近顶点后置为 <code>true</code></td>
+</tr>
+<tr>
+<td><code>lowCost[v]</code></td>
+<td>顶点 <code>v</code> 到当前生成树集合的最小接入代价</td>
+<td>新顶点加入后，用它的邻接边尝试更新树外顶点</td>
+</tr>
+</tbody></table>
+<p>每一轮有两个扫描动作：</p>
+<ol>
+<li>扫描所有顶点，找到 <code>lowCost</code> 最小且尚未加入树的顶点。</li>
+<li>再扫描所有顶点，用新加入顶点的邻接边更新树外顶点的 <code>lowCost</code>。</li>
+</ol>
+<p>邻接矩阵版本适合稠密图。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXV 100</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INF 1000000000</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">prim</span><span class="params">(<span class="type">int</span> graph[MAXV][MAXV], <span class="type">int</span> vertexCount)</span> &#123;</span><br><span class="line">    <span class="type">int</span> inTree[MAXV] = &#123;<span class="number">0</span>&#125;;  <span class="comment">// inTree[v] == 1 表示顶点 v 已加入生成树</span></span><br><span class="line">    <span class="type">int</span> lowCost[MAXV];       <span class="comment">// lowCost[v] 表示 v 到当前生成树集合的最小边权</span></span><br><span class="line">    <span class="type">int</span> totalWeight = <span class="number">0</span>;     <span class="comment">// 已选生成树边的权值总和</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; vertexCount; ++v) &#123;</span><br><span class="line">        lowCost[v] = graph[<span class="number">0</span>][v];  <span class="comment">// 初始树只含顶点 0，记录各点到顶点 0 的边权</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    inTree[<span class="number">0</span>] = <span class="number">1</span>;  <span class="comment">// 顶点 0 作为起点加入生成树</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> step = <span class="number">1</span>; step &lt; vertexCount; ++step) &#123;</span><br><span class="line">        <span class="type">int</span> nextVertex = <span class="number">-1</span>;  <span class="comment">// 本轮要加入生成树的顶点</span></span><br><span class="line">        <span class="type">int</span> minCost = INF;    <span class="comment">// 当前找到的最小接入边权</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; vertexCount; ++v) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!inTree[v] &amp;&amp; lowCost[v] &lt; minCost) &#123;</span><br><span class="line">                minCost = lowCost[v];</span><br><span class="line">                nextVertex = v;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (nextVertex == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;  <span class="comment">// 找不到能接入树的顶点，说明原图不连通</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        inTree[nextVertex] = <span class="number">1</span>;</span><br><span class="line">        totalWeight += minCost;  <span class="comment">// 选中连接 nextVertex 与当前树的最短边</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; vertexCount; ++v) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!inTree[v] &amp;&amp; graph[nextVertex][v] &lt; lowCost[v]) &#123;</span><br><span class="line">                lowCost[v] = graph[nextVertex][v];  <span class="comment">// 用新顶点更新外部点到树的最近距离</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> totalWeight;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>邻接矩阵朴素 Prim 的时间复杂度为：</p>
+<p>$$<br>O(\lvert V\rvert^2)<br>$$</p>
+<p>因为总共进行 $\lvert V\rvert-1$ 轮，每轮大约两次线性扫描，所以总时间复杂度写作 $O(\lvert V\rvert^2)$。Prim 适合稠密图。</p>
+<h2 id="Kruskal-与-Prim-对比"><a href="#Kruskal-与-Prim-对比" class="headerlink" title="Kruskal 与 Prim 对比"></a>Kruskal 与 Prim 对比</h2><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>扩张对象</th>
+<th>关键结构</th>
+<th>常见实现</th>
+<th>适合图</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Kruskal</td>
+<td>边</td>
+<td>并查集</td>
+<td>边集数组排序</td>
+<td>稀疏图</td>
+</tr>
+<tr>
+<td>Prim</td>
+<td>点</td>
+<td><code>lowCost</code> 数组</td>
+<td>邻接矩阵或优先队列</td>
+<td>稠密图</td>
+</tr>
+</tbody></table>
+<p>两者都基于贪心思想：每一步选一条当前看来最安全的边。差别在于 Kruskal 从全局最小边开始筛选，Prim 从一个已连通顶点集合向外扩张。</p>
+<p>当图中存在多条等权边时，同一带权图用 Prim 和 Kruskal 可能得到边集不同的 MST；即使都使用 Kruskal，不同的等权边排序也可能得到不同的 MST。但只要都是最小生成树，最终权值和相同。</p>
+<h2 id="考试速记"><a href="#考试速记" class="headerlink" title="考试速记"></a>考试速记</h2><ul>
+<li>MST 只在带权无向连通图中讨论。</li>
+<li>MST 是生成树，所以一定有 $n-1$ 条边。</li>
+<li>MST 可能有多个，但最小权值和唯一。</li>
+<li>删去 MST 任意一条边会不连通；加入原图中任意一条额外边会形成回路。</li>
+<li>若原图本身是树，则 MST 就是原图本身。</li>
+<li>非连通图没有生成树，只能求生成森林；带权非连通图对应最小生成森林。</li>
+<li>Prim 按顶点扩张，Kruskal 按边筛选。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/28/minimum-spanning-tree/">https://eliano64.github.io/2026/06/28/minimum-spanning-tree/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/28/how-to-calculate-SCC/" title="How to Calculate SCC"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">How to Calculate SCC</div></div><div class="info-2"><div class="info-item-1">强连通分量的常见求法有 Tarjan 和 Kosaraju。Tarjan 更适合理解代码实现，Kosaraju 更适合手算 SCC 个数。 TarjanTarjan 算法可以在线性时间内求出有向图的强连通分量。它的核心是 DFS 时间戳 dfn、追溯值 low 和一个维护当前搜索路径的栈。 dfn 与 low   数组 含义    dfn[u] 顶点 u 第一次被 DFS 访问到的时间戳   low[u] 从 u 出发，沿 DFS 树边向下走，再通过一条返祖边或栈内边能回到的最小 dfn   直观理解：  dfn 记录访问顺序； low 记录当前顶点所在搜索分支还能向前追溯到哪里； 当 dfn[u] == low[u] 时，u 是某个强连通分量在 DFS 树中的根。  栈的作用Tarjan 只把“已经访问但尚未确定所属 SCC”的顶点留在栈中。 遇到边 u -&gt; v 时：  若 v 没访问过，先 DFS v，回来后用 low[v] 更新 low[u]； 若 v 仍在栈中，说明 u 能到达当前未完成的搜索路径上的某个点，用 dfn[v] 更新 low[u]； 若 v...</div></div></div></a><a class="pagination-related" href="/2026/06/28/weighted-graph/" title="Weighted Graph"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Weighted Graph</div></div><div class="info-2"><div class="info-item-1">边的权、带权图与带权路径长度在图中，边或弧不仅可以表示“有没有关系”，还可以标上一个数值来表示关系的强弱、代价或收益。  边的权在一个图中，每条边都可以标上具有某种含义的数值，这个数值称为该边的权值。 权值不是固定语义，题目会给定它代表什么。解题时先读清“权值表示什么”，再判断要最短、最小、最大还是最优。 带权图，也称网边上带有权值的图称为带权图，也称网。 无向图可以带权，有向图也可以带权：  无向带权图：边 $(u,v)$ 有权值。 有向带权图：弧 $\langle u,v\rangle$ 有权值，方向仍然有效。  带权路径长度当图是带权图时，一条路径上所有边或弧的权值之和，称为该路径的带权路径长度。  Example 例如路径 $P\to G\to R\to Y$若三条边的权值分别是 $50,40,40$，则这条路径的带权路径长度为：$$   50+40+40=130  $$</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91"><span class="toc-text">最小生成树</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91"><span class="toc-text">什么是最小生成树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MST-%E5%8F%AF%E8%83%BD%E4%B8%8D%E5%94%AF%E4%B8%80%EF%BC%8C%E4%BD%86%E6%9C%80%E5%B0%8F%E6%9D%83%E5%80%BC%E5%92%8C%E5%94%AF%E4%B8%80"><span class="toc-text">MST 可能不唯一，但最小权值和唯一</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E5%9B%BE%E6%9C%AC%E8%BA%AB%E5%B0%B1%E6%98%AF%E6%A0%91"><span class="toc-text">原图本身就是树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E5%9B%BE%E4%B8%8D%E8%BF%9E%E9%80%9A"><span class="toc-text">原图不连通</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%92%8C-BFS-DFS-%E7%94%9F%E6%88%90%E6%A0%91%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">和 BFS&#x2F;DFS 生成树的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kruskal-%E7%AE%97%E6%B3%95"><span class="toc-text">Kruskal 算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Prim-%E7%AE%97%E6%B3%95"><span class="toc-text">Prim 算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kruskal-%E4%B8%8E-Prim-%E5%AF%B9%E6%AF%94"><span class="toc-text">Kruskal 与 Prim 对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%80%83%E8%AF%95%E9%80%9F%E8%AE%B0"><span class="toc-text">考试速记</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

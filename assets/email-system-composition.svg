@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" role="img" aria-labelledby="title desc">
+  <title id="title">电子邮件系统组成与协议方向</title><desc id="desc">发送方用户代理通过 SMTP 发送到发送方邮件服务器，再由 SMTP 转发到接收方邮件服务器，接收方用户代理通过 POP3 或 IMAP4 读取。</desc>
+  <defs><marker id="blueArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker><marker id="goldArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#d97706"/></marker></defs>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+:root{color-scheme:light dark}.title{font:700 24px "Microsoft YaHei",sans-serif;fill:#172033}.label{font:700 17px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:14px "Microsoft YaHei",sans-serif;fill:#526174}.box{fill:#fff;stroke:#64748b;stroke-width:2}.ua{fill:#ecfdf5;stroke:#059669}.mail{fill:#eff6ff;stroke:#2563eb}.inbox{fill:#fef3c7;stroke:#d97706}.smtp{stroke:#2563eb;stroke-width:3;marker-end:url(#blueArrow)}.pull{stroke:#d97706;stroke-width:3;marker-end:url(#goldArrow)}.panel{fill:#f8fafc;stroke:#cbd5e1}.blue{fill:#2563eb}.gold{fill:#b45309}@media(prefers-color-scheme:dark){.title,.label{fill:#e5edf5}.sub{fill:#a9b7c6}.box{fill:#121b25}.ua{fill:#123d2d}.mail{fill:#17345a}.inbox{fill:#3c2d0d}.panel{fill:#121b25;stroke:#344354}.blue{fill:#93c5fd}.gold{fill:#fcd34d}}</style>
+  <text x="480" y="40" text-anchor="middle" class="title">电子邮件系统：用户代理、邮件服务器和协议</text>
+  <rect x="28" y="112" width="180" height="88" rx="8" class="box ua"/><text x="118" y="143" text-anchor="middle" class="label">发送方用户代理 UA</text><text x="118" y="168" text-anchor="middle" class="sub">撰写、发送邮件</text>
+  <rect x="276" y="112" width="184" height="88" rx="8" class="box mail"/><text x="368" y="143" text-anchor="middle" class="label">发送方邮件服务器</text><text x="368" y="168" text-anchor="middle" class="sub">邮箱 + 待转发缓存</text>
+  <rect x="528" y="112" width="184" height="88" rx="8" class="box inbox"/><text x="620" y="143" text-anchor="middle" class="label">接收方邮件服务器</text><text x="620" y="168" text-anchor="middle" class="sub">维护接收方邮箱</text>
+  <rect x="780" y="112" width="152" height="88" rx="8" class="box ua"/><text x="856" y="143" text-anchor="middle" class="label">接收方 UA</text><text x="856" y="168" text-anchor="middle" class="sub">读取、管理邮件</text>
+  <line x1="208" y1="156" x2="276" y2="156" class="smtp"/><text x="242" y="141" text-anchor="middle" class="sub blue">SMTP</text>
+  <line x1="460" y1="156" x2="528" y2="156" class="smtp"/><text x="494" y="141" text-anchor="middle" class="sub blue">SMTP</text>
+  <line x1="712" y1="156" x2="780" y2="156" class="pull"/><text x="746" y="141" text-anchor="middle" class="sub gold">POP3 / IMAP4</text>
+  <rect x="28" y="244" width="904" height="146" rx="8" class="panel"/>
+  <text x="480" y="276" text-anchor="middle" class="label">协议分工</text>
+  <circle cx="68" cy="308" r="7" fill="#2563eb"/><text x="90" y="313" class="label blue">SMTP：推送邮件</text><text x="285" y="313" class="sub">发送方 UA → 发送方服务器 → 接收方服务器（TCP 25）</text>
+  <circle cx="68" cy="344" r="7" fill="#d97706"/><text x="90" y="349" class="label gold">POP3 / IMAP4：读取邮件</text><text x="345" y="349" class="sub">接收方 UA 主动从接收方服务器拉取或联机管理（TCP 110 / 143）</text>
+  <text x="480" y="377" text-anchor="middle" class="sub">邮件先到接收方邮件服务器中的邮箱；接收方不必与发送方同时在线</text>
+</svg>

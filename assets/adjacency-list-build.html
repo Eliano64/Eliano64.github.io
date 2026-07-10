@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adjacency List Build</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--ink:#0f172a;--muted:#475569;--line:#cbd5e1;--accent:#2563eb;--hot:#dc2626;--soft:#dbeafe}
+  @media(prefers-color-scheme:dark){:root{--bg:#0b1220;--panel:#111827;--ink:#f8fafc;--muted:#cbd5e1;--line:#334155;--accent:#60a5fa;--hot:#fb7185;--soft:#1e3a8a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif}
+  .deck{min-height:780px;padding:24px;display:grid;grid-template-rows:auto 1fr auto;gap:14px}
+  header,footer{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  h1{font-size:24px;margin:0}.hint{color:var(--muted);font-size:14px}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:center}
+  svg{width:100%;height:auto}.node{fill:var(--panel);stroke:var(--accent);stroke-width:4}.edge{stroke:var(--muted);stroke-width:4;fill:none;stroke-linecap:round}.edge.hot{stroke:var(--hot)}
+  .label{fill:var(--ink);font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
+  .list{display:grid;gap:9px}
+  .row{display:flex;align-items:center;gap:8px;min-height:42px}
+  .head{width:76px;border:1px solid var(--accent);background:var(--soft);border-radius:7px;padding:8px 10px;font-weight:700;text-align:center}
+  .cell{min-width:44px;border:1px solid var(--line);border-radius:7px;padding:8px 12px;text-align:center;background:var(--panel);font-weight:700}
+  .cell.hot{border-color:var(--hot);box-shadow:0 0 0 2px color-mix(in srgb,var(--hot) 35%,transparent)}
+  .arrow{color:var(--muted);font-weight:700}.null{color:var(--muted)}
+  .note{font-size:18px;line-height:1.65}.note strong{color:var(--hot)}
+  button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 14px;font-size:15px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="deck">
+  <header><h1>无向图邻接表：逐边插入</h1><div class="hint">点击卡片或使用按钮翻页</div></header>
+  <main class="stage" id="stage"></main>
+  <footer><button id="prev" type="button">上一页</button><div class="hint" id="count"></div><button id="next" type="button">下一页</button></footer>
+</div>
+<script>
+const vertices=["A","B","C","D","E","F"];
+const edges=[["A","B"],["A","C"],["A","D"],["B","E"],["B","F"],["C","E"],["D","F"]];
+const slides=[
+  {edge:null,note:"建立顶点表：每个顶点表结点保存顶点数据和指向第一条边结点的指针。初始时所有链表为空。"},
+  {edge:["A","B"],note:"插入无向边 AB：在 A 的链表中加入 B，在 B 的链表中加入 A。"},
+  {edge:["A","C"],note:"插入无向边 AC：在 A 的链表中加入 C，在 C 的链表中加入 A。"},
+  {edge:["A","D"],note:"插入无向边 AD：A 的链表继续增加 D，D 的链表增加 A。"},
+  {edge:["B","E"],note:"插入无向边 BE：B 的链表增加 E，E 的链表增加 B。"},
+  {edge:["B","F"],note:"插入无向边 BF：B 的链表增加 F，F 的链表增加 B。"},
+  {edge:["C","E"],note:"插入无向边 CE：C 的链表增加 E，E 的链表增加 C。"},
+  {edge:["D","F"],note:"插入无向边 DF：D 的链表增加 F，F 的链表增加 D。"},
+  {edge:null,note:"无向图每条边会对应两个边结点，所以边结点数量是 <strong>2|E|</strong>，整体空间复杂度为 <strong>O(|V|+2|E|)</strong>。"}
+];
+let index=0;
+function insertedUntil(step){
+  const adj=Object.fromEntries(vertices.map(v=>[v,[]]));
+  for(let i=1;i<=step;i++){
+    const e=slides[i].edge;
+    if(e){adj[e[0]].push(e[1]);adj[e[1]].push(e[0]);}
+  }
+  return adj;
+}
+function isHot(a,b){
+  const e=slides[index].edge;
+  return e&&((e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a));
+}
+function graph(){
+  const p={A:[72,110],B:[200,75],C:[142,232],D:[300,160],E:[240,315],F:[330,292]};
+  const lines=edges.map(e=>`<line class="edge ${isHot(e[0],e[1])?"hot":""}" x1="${p[e[0]][0]}" y1="${p[e[0]][1]}" x2="${p[e[1]][0]}" y2="${p[e[1]][1]}"/>`).join("");
+  const nodes=vertices.map(v=>`<circle class="node" cx="${p[v][0]}" cy="${p[v][1]}" r="26"/><text class="label" x="${p[v][0]}" y="${p[v][1]+1}">${v}</text>`).join("");
+  return `<svg viewBox="0 0 380 380">${lines}${nodes}</svg>`;
+}
+function list(){
+  const adj=insertedUntil(index);
+  return `<div class="list">`+vertices.map(v=>{
+    const cells=adj[v].map(x=>`<span class="arrow">→</span><span class="cell ${slides[index].edge&&slides[index].edge.includes(v)&&slides[index].edge.includes(x)?"hot":""}">${x}</span>`).join("");
+    return `<div class="row"><span class="head">${v}</span>${cells}<span class="arrow">→</span><span class="null">^</span></div>`;
+  }).join("")+`</div>`;
+}
+function render(){
+  document.getElementById("stage").innerHTML=`<div>${graph()}</div><div>${list()}<p class="note">${slides[index].note}</p></div>`;
+  document.getElementById("count").textContent=`${index+1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick=e=>{e.stopPropagation();index=(index-1+slides.length)%slides.length;render();};
+document.getElementById("next").onclick=e=>{e.stopPropagation();index=(index+1)%slides.length;render();};
+document.body.onclick=()=>{index=(index+1)%slides.length;render();};
+render();
+</script>
+</body>
+</html>

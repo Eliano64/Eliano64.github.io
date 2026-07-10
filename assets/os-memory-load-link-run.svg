@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="360" viewBox="0 0 980 360" role="img" aria-labelledby="title desc">
+  <title id="title">Program Build, Load, and Run</title>
+  <desc id="desc">Source files are compiled into object files, linked into a load module, loaded into memory, and translated at run time.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --panel2: #eef2ff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #64748b;
+      --accent: #2563eb;
+      --good: #15803d;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #1e293b;
+        --panel2: #172554;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #94a3b8;
+        --accent: #93c5fd;
+        --good: #86efac;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; rx: 8; }
+    .box2 { fill: var(--panel2); stroke: var(--accent); stroke-width: 1.6; rx: 8; }
+    .title { fill: var(--text); font: 700 18px "Segoe UI", Arial, sans-serif; }
+    .text { fill: var(--text); font: 15px "Segoe UI", Arial, sans-serif; }
+    .small { fill: var(--muted); font: 13px "Segoe UI", Arial, sans-serif; }
+    .arrow { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .accent { fill: var(--accent); font-weight: 700; }
+    .good { fill: var(--good); font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="980" height="360"/>
+  <text class="title" x="40" y="38">从源码到运行中的进程</text>
+  <text class="small" x="40" y="62">编译/链接产生的是装入模块；装入后，CPU 执行时还要把逻辑地址转换为物理地址。</text>
+
+  <rect class="box" x="40" y="100" width="150" height="92"/>
+  <text class="text" x="74" y="132">源代码</text>
+  <text class="small" x="64" y="158">.c / .cpp</text>
+  <text class="small" x="58" y="178">多个源文件</text>
+
+  <path class="arrow" d="M 190 146 H 250"/>
+  <text class="small" x="204" y="132">编译</text>
+
+  <rect class="box" x="250" y="100" width="150" height="92"/>
+  <text class="text" x="284" y="132">目标模块</text>
+  <text class="small" x="294" y="158">.o / .obj</text>
+  <text class="small" x="276" y="178">机器码片段</text>
+
+  <path class="arrow" d="M 400 146 H 460"/>
+  <text class="small" x="414" y="132">链接</text>
+
+  <rect class="box2" x="460" y="92" width="170" height="108"/>
+  <text class="text" x="506" y="124">装入模块</text>
+  <text class="small" x="494" y="150">可执行文件</text>
+  <text class="small" x="486" y="174">完整逻辑地址空间</text>
+
+  <path class="arrow" d="M 630 146 H 700"/>
+  <text class="small" x="646" y="132">装入</text>
+
+  <rect class="box" x="700" y="86" width="220" height="126"/>
+  <text class="text" x="764" y="120">内存中的进程</text>
+  <text class="small" x="730" y="148">代码段 / 数据段 / 栈 / 堆</text>
+  <text class="small" x="730" y="174">仍可能使用逻辑地址</text>
+  <text class="small" x="730" y="196">运行时由硬件完成转换</text>
+
+  <rect class="box" x="252" y="252" width="220" height="64"/>
+  <text class="text" x="282" y="280">静态链接 / 动态链接</text>
+  <text class="small" x="282" y="302">决定模块何时合成完整程序</text>
+
+  <rect class="box" x="552" y="252" width="260" height="64"/>
+  <text class="text" x="586" y="280">绝对装入 / 静态重定位 / 动态重定位</text>
+  <text class="small" x="586" y="302">决定地址何时变成物理地址</text>
+
+  <path class="arrow" d="M 545 200 V 242"/>
+  <path class="arrow" d="M 810 212 V 242"/>
+</svg>

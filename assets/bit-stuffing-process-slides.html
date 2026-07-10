@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>零比特填充过程</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--grid:#cbd5e1;--one:#2563eb;--zero:#16a34a;--hot:#dc2626;--warn:#d97706}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--grid:#334155;--one:#60a5fa;--zero:#4ade80;--hot:#f87171;--warn:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:1040px;margin:0 auto;padding:24px}.top{display:flex;justify-content:space-between;gap:16px}.title{font-size:28px;font-weight:800}.sub{color:var(--muted);margin-top:8px;font-size:15px}.controls{display:flex;gap:8px;flex-wrap:wrap}.controls button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer}.controls button.active{background:var(--one);border-color:var(--one);color:#fff}.card{border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:20px;margin-top:22px}.bits{display:flex;gap:4px;flex-wrap:wrap;margin:22px 0}.bit{width:42px;height:46px;border:1px solid var(--grid);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px}.b1{background:color-mix(in srgb,var(--one) 24%,transparent)}.b0{background:color-mix(in srgb,var(--zero) 22%,transparent)}.insert{outline:3px solid var(--hot)}.flag{background:color-mix(in srgb,var(--warn) 25%,transparent);border-color:var(--warn)}.note{border-left:4px solid var(--hot);padding:12px 14px;background:color-mix(in srgb,var(--hot) 10%,transparent);line-height:1.75}.label{color:var(--muted);font-size:14px;margin-top:12px}.mono{font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div><div class="title">零比特填充：避免载荷伪装成帧定界符</div><div class="sub">定界符示例：01111110。发送方遇到 5 个连续 1 就插入 0。</div></div>
+    <div class="controls"><button data-step="0" class="active">原始载荷</button><button data-step="1">扫描 5 个 1</button><button data-step="2">插入 0</button><button data-step="3">接收端删除</button></div>
+  </div>
+  <section class="card">
+    <div class="label" id="caption"></div>
+    <div class="bits" id="bits"></div>
+    <div class="note" id="note"></div>
+  </section>
+</main>
+<script>
+const steps=[
+ {cap:"原始数据载荷中可能出现 01111110。", bits:"1001111101011111100", hi:[], note:"如果直接发送，接收方可能把载荷中的 01111110 误认为帧边界。"},
+ {cap:"发送方扫描载荷，只要看到连续 5 个 1 就停下来处理。", bits:"1001111101011111100", hi:[3,4,5,6,7,11,12,13,14,15], note:"规则不是等完整定界符出现才处理，而是看到 5 个连续 1 后立即插入 0。"},
+ {cap:"发送方在每组 5 个连续 1 后插入 0。", bits:"10011111010111101100", hi:[8,17], note:"插入的 0 打断了 01111110，因此帧定界符不会在载荷中自然出现。"},
+ {cap:"接收方交付网络层前执行逆操作。", bits:"1001111101011111100", hi:[], note:"接收方每看到 5 个连续 1，就删除其后的填充 0，恢复原始载荷。"}
+];
+const buttons=[...document.querySelectorAll("button")];
+function render(i){
+ const s=steps[i];
+ document.getElementById("caption").textContent=s.cap;
+ document.getElementById("bits").innerHTML=s.bits.split("").map((b,k)=>`<div class="bit ${b==="1"?"b1":"b0"} ${s.hi.includes(k)?"insert":""}">${b}</div>`).join("");
+ document.getElementById("note").innerHTML=s.note.replace(/01111110/g,'<span class="mono">01111110</span>');
+ buttons.forEach((b,k)=>b.classList.toggle("active",k===i));
+}
+buttons.forEach((b,i)=>b.addEventListener("click",()=>render(i)));
+render(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="680" viewBox="0 0 1120 680" role="img" aria-labelledby="title desc">
+  <title id="title">Basic data addressing modes</title>
+  <desc id="desc">Direct, indirect, register, register indirect, immediate and implicit addressing modes.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--text:#111827;--muted:#4b5563;--line:#111827;--inst:#dbeafe;--mem:#dcfce7;--reg:#fef3c7;--data:#fee2e2;--panel:#f8fafc}
+    @media(prefers-color-scheme:dark){:root{--bg:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#e5e7eb;--inst:#1e3a8a;--mem:#14532d;--reg:#713f12;--data:#7f1d1d;--panel:#1f2937}}
+    .bg{fill:var(--bg)}.text{fill:var(--text);font-family:"Segoe UI",Arial,sans-serif}.muted{fill:var(--muted);font-family:"Segoe UI",Arial,sans-serif}
+    .panel{fill:var(--panel);stroke:var(--line);stroke-width:1.4;rx:10}.box{stroke:var(--line);stroke-width:1.5;rx:6}.inst{fill:var(--inst)}.mem{fill:var(--mem)}.reg{fill:var(--reg)}.data{fill:var(--data)}
+    .line{stroke:var(--line);stroke-width:2;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1120" height="680"/>
+  <text class="text" x="42" y="44" font-size="28" font-weight="700">基本数据寻址方式</text>
+  <text class="muted" x="42" y="76" font-size="18">形式地址 A 要经过寻址方式解释，才得到操作数或有效地址 EA。</text>
+
+  <g transform="translate(50,115)">
+    <rect class="panel" width="315" height="145"/>
+    <text class="text" x="20" y="32" font-size="20" font-weight="700">直接寻址</text>
+    <rect class="box inst" x="20" y="55" width="110" height="42"/><text class="text" x="75" y="82" font-size="17" text-anchor="middle">A=100</text>
+    <rect class="box mem" x="190" y="55" width="90" height="42"/><text class="text" x="235" y="82" font-size="17" text-anchor="middle">M[100]</text>
+    <path class="line" d="M130 76 H185"/>
+    <text class="muted" x="20" y="125" font-size="16">EA = A，执行阶段访存 1 次</text>
+  </g>
+
+  <g transform="translate(405,115)">
+    <rect class="panel" width="315" height="145"/>
+    <text class="text" x="20" y="32" font-size="20" font-weight="700">间接寻址</text>
+    <rect class="box inst" x="20" y="55" width="90" height="42"/><text class="text" x="65" y="82" font-size="17" text-anchor="middle">A=100</text>
+    <rect class="box mem" x="135" y="55" width="78" height="42"/><text class="text" x="174" y="82" font-size="16" text-anchor="middle">M[100]</text>
+    <rect class="box data" x="235" y="55" width="60" height="42"/><text class="text" x="265" y="82" font-size="16" text-anchor="middle">数</text>
+    <path class="line" d="M110 76 H130"/><path class="line" d="M213 76 H230"/>
+    <text class="muted" x="20" y="125" font-size="16">EA = (A)，执行阶段访存 2 次</text>
+  </g>
+
+  <g transform="translate(760,115)">
+    <rect class="panel" width="315" height="145"/>
+    <text class="text" x="20" y="32" font-size="20" font-weight="700">寄存器寻址</text>
+    <rect class="box inst" x="20" y="55" width="90" height="42"/><text class="text" x="65" y="82" font-size="17" text-anchor="middle">Ri</text>
+    <rect class="box reg" x="190" y="55" width="90" height="42"/><text class="text" x="235" y="82" font-size="17" text-anchor="middle">Ri 中数</text>
+    <path class="line" d="M110 76 H185"/>
+    <text class="muted" x="20" y="125" font-size="16">操作数在寄存器中，访存 0 次</text>
+  </g>
+
+  <g transform="translate(50,315)">
+    <rect class="panel" width="315" height="145"/>
+    <text class="text" x="20" y="32" font-size="20" font-weight="700">寄存器间接寻址</text>
+    <rect class="box inst" x="20" y="55" width="70" height="42"/><text class="text" x="55" y="82" font-size="17" text-anchor="middle">Ri</text>
+    <rect class="box reg" x="110" y="55" width="80" height="42"/><text class="text" x="150" y="82" font-size="16" text-anchor="middle">(Ri)=100</text>
+    <rect class="box mem" x="215" y="55" width="80" height="42"/><text class="text" x="255" y="82" font-size="16" text-anchor="middle">M[100]</text>
+    <path class="line" d="M90 76 H105"/><path class="line" d="M190 76 H210"/>
+    <text class="muted" x="20" y="125" font-size="16">EA = (Ri)，执行阶段访存 1 次</text>
+  </g>
+
+  <g transform="translate(405,315)">
+    <rect class="panel" width="315" height="145"/>
+    <text class="text" x="20" y="32" font-size="20" font-weight="700">立即寻址</text>
+    <rect class="box inst" x="20" y="55" width="130" height="42"/><text class="text" x="85" y="82" font-size="17" text-anchor="middle">A = #5</text>
+    <rect class="box data" x="190" y="55" width="90" height="42"/><text class="text" x="235" y="82" font-size="17" text-anchor="middle">操作数 5</text>
+    <path class="line" d="M150 76 H185"/>
+    <text class="muted" x="20" y="125" font-size="16">A 本身就是操作数，访存 0 次</text>
+  </g>
+
+  <g transform="translate(760,315)">
+    <rect class="panel" width="315" height="145"/>
+    <text class="text" x="20" y="32" font-size="20" font-weight="700">隐含寻址</text>
+    <rect class="box inst" x="20" y="55" width="95" height="42"/><text class="text" x="67" y="82" font-size="17" text-anchor="middle">OP</text>
+    <rect class="box reg" x="160" y="55" width="125" height="42"/><text class="text" x="222" y="82" font-size="17" text-anchor="middle">ACC / 栈顶</text>
+    <path class="line" d="M115 76 H155"/>
+    <text class="muted" x="20" y="125" font-size="16">操作数位置由指令约定</text>
+  </g>
+
+  <text class="muted" x="55" y="610" font-size="17">图中访存次数只统计执行阶段为取得操作数而访问主存的次数，不统计取指。</text>
+</svg>

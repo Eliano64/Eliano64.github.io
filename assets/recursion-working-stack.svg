@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="420" viewBox="0 0 860 420" role="img" aria-labelledby="title desc">
+  <title id="title">Recursion Working Stack</title>
+  <desc id="desc">Recursive calls push stack frames and returns pop them in reverse order.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --ink:#17212b;
+      --muted:#5b6876;
+      --line:#334e68;
+      --accent:#0f766e;
+      --warn:#b45309;
+      --frame:#eef6ff;
+      --base:#fff7e6;
+      --panel:#ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink:#e6edf3;
+        --muted:#b8c4cf;
+        --line:#9ccfd8;
+        --accent:#5eead4;
+        --warn:#f6c177;
+        --frame:#16212c;
+        --base:#2a2113;
+        --panel:#0f1720;
+      }
+    }
+    text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: var(--ink); }
+    .label { font-size:18px; font-weight:700; }
+    .small { font-size:14px; fill:var(--muted); }
+    .frame { fill:var(--frame); stroke:var(--line); stroke-width:2; rx:8; }
+    .base { fill:var(--base); stroke:var(--warn); stroke-width:2; rx:8; }
+    .stack-wall { stroke:var(--line); stroke-width:3; fill:none; }
+    .push { stroke:var(--accent); stroke-width:3; fill:none; marker-end:url(#pushArrow); }
+    .pop { stroke:var(--warn); stroke-width:3; fill:none; marker-end:url(#popArrow); }
+  </style>
+  <defs>
+    <marker id="pushArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--accent)"/>
+    </marker>
+    <marker id="popArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--warn)"/>
+    </marker>
+  </defs>
+
+  <text class="label" x="58" y="42">Recursive call stack for Factorial(4)</text>
+  <text class="small" x="58" y="70">Each call owns a stack frame: parameter n, local data, return address, and saved context.</text>
+
+  <g transform="translate(118 102)">
+    <path class="stack-wall" d="M0 0 V246 H270 V0"/>
+    <rect class="frame" x="22" y="184" width="226" height="44"/>
+    <rect class="frame" x="22" y="138" width="226" height="44"/>
+    <rect class="frame" x="22" y="92" width="226" height="44"/>
+    <rect class="frame" x="22" y="46" width="226" height="44"/>
+    <rect class="base" x="22" y="0" width="226" height="44"/>
+    <text x="58" y="212">Factorial(4)</text>
+    <text x="58" y="166">Factorial(3)</text>
+    <text x="58" y="120">Factorial(2)</text>
+    <text x="58" y="74">Factorial(1)</text>
+    <text x="58" y="28">Factorial(0)</text>
+    <text class="small" x="284" y="28">top frame</text>
+    <text class="small" x="284" y="218">first call</text>
+  </g>
+
+  <path class="push" d="M482 138 C424 126 402 118 362 108"/>
+  <text class="label" x="500" y="140">call</text>
+  <text class="small" x="500" y="164">push a new frame</text>
+
+  <path class="pop" d="M362 206 C412 220 432 236 482 258"/>
+  <text class="label" x="500" y="260">return</text>
+  <text class="small" x="500" y="284">pop the top frame</text>
+
+  <g transform="translate(590 102)">
+    <text class="label" x="0" y="0">LIFO order</text>
+    <text class="small" x="0" y="34">The last call reaches the base case first.</text>
+    <text class="small" x="0" y="62">The first call can finish only after all inner calls return.</text>
+    <text class="small" x="0" y="112">Depth = number of active calls.</text>
+    <text class="small" x="0" y="140">If each frame is O(1), stack space is O(depth).</text>
+  </g>
+</svg>

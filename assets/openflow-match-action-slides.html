@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenFlow Match Action</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--orange:#ea580c;--red:#dc2626;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--orange:#fb923c;--red:#f87171;--border:#334155}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:0 auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}.steps{display:grid;gap:10px}.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:10px;cursor:pointer}.step.active{outline:2px solid var(--orange)}.step b{display:block}.step span{font-size:14px;color:var(--muted);line-height:1.45}.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:14px}.table{display:grid;grid-template-columns:1.1fr .75fr .75fr;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:12px}.cell{padding:10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-size:14px}.head{font-weight:800;background:color-mix(in srgb,var(--panel),var(--bg) 40%)}.hit{background:color-mix(in srgb,var(--orange),transparent 78%)}.note{margin-top:12px;color:var(--muted);line-height:1.55}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">OpenFlow 流表：匹配 + 动作</div>
+  <div class="layout">
+    <div class="steps" id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 660 230" role="img" aria-label="OpenFlow 匹配动作过程">
+        <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker></defs>
+        <rect x="25" y="85" width="120" height="60" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="85" y="121" text-anchor="middle" fill="var(--text)" font-size="16">输入分组</text>
+        <rect x="220" y="70" width="145" height="90" rx="8" fill="var(--panel)" stroke="var(--orange)" stroke-width="2"/><text x="292" y="108" text-anchor="middle" fill="var(--text)" font-size="16">查流表</text><text x="292" y="132" text-anchor="middle" fill="var(--muted)" font-size="13">多字段匹配</text>
+        <rect x="455" y="70" width="165" height="90" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text id="actionBox" x="537" y="108" text-anchor="middle" fill="var(--text)" font-size="16"></text><text id="actionSub" x="537" y="132" text-anchor="middle" fill="var(--muted)" font-size="13"></text>
+        <line x1="145" y1="115" x2="220" y2="115" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <line x1="365" y1="115" x2="455" y2="115" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+      </svg>
+      <div class="table" id="tbl"></div>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const rows=[
+  ["匹配字段","计数器","动作"],
+  ["入端口=1，目的IP=10.0.1.*","命中次数 +1","转发到端口3"],
+  ["源IP=10.0.2.*，目的IP=10.0.3.*","命中次数 +1","转发到端口2"],
+  ["入端口=4，TCP目的端口=22","命中次数 +1","丢弃"],
+  ["其他分组","可记录","发给控制器或丢弃"]
+];
+const data=[
+["分组进入","交换机收到一个分组，取出可用于匹配的首部字段。","等待匹配","例如入端口、MAC地址、IP地址、运输层端口号都可能参与匹配。",0],
+["查找流表","按流表项匹配字段逐项比较，找到匹配项。","匹配第1条","传统转发通常看目的网络前缀；OpenFlow 可以匹配多层首部字段。",1],
+["更新计数器","命中的流表项计数器更新。","计数器+1","计数器让控制器知道某条流规则的使用情况。",1],
+["执行动作","按命中项动作处理分组。","转发到端口3","动作可以是转发、丢弃、改写首部、负载均衡，或发送给控制器。",1],
+["没有匹配","如果没有流表项匹配，就按缺省规则处理。","发给控制器或丢弃","控制器可据此安装新的流表项，也可以让交换机直接丢弃。",4]
+];
+let i=0;const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{const el=document.createElement("div");el.className="step";el.innerHTML=`<b>${idx+1}. ${d[0]}</b><span>${d[1]}</span>`;el.onclick=()=>{i=idx;render()};steps.appendChild(el)});
+function renderTable(hit){tbl.innerHTML=rows.map((r,idx)=>r.map(c=>`<div class="cell ${idx===0?'head':''} ${idx===hit?'hit':''}">${c}</div>`).join("")).join("")}
+function render(){[...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));renderTable(data[i][4]);actionBox.textContent=data[i][2];actionSub.textContent=i===4?"缺省处理":"执行流表动作";note.textContent=data[i][3]}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script>
+</body>
+</html>

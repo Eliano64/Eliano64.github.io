@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="760" viewBox="0 0 1040 760" role="img" aria-labelledby="title desc">
+  <title id="title">信道复用方式总览</title>
+  <desc id="desc">对比频分复用、时分复用、统计时分复用、波分复用和码分复用的资源划分方式</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--grid:#cbd5e1;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--purple:#7c3aed;--cyan:#0891b2;--red:#dc2626}
+    @media (prefers-color-scheme: dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--grid:#334155;--blue:#60a5fa;--green:#4ade80;--amber:#fbbf24;--purple:#c4b5fd;--cyan:#22d3ee;--red:#f87171}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.grid{stroke:var(--grid);stroke-width:1}.axis{stroke:var(--line);stroke-width:1.8;marker-end:url(#arrow)}.band1{fill:var(--blue);opacity:.82}.band2{fill:var(--green);opacity:.82}.band3{fill:var(--amber);opacity:.82}.band4{fill:var(--purple);opacity:.82}.band5{fill:var(--cyan);opacity:.82}.thin{fill:none;stroke:var(--line);stroke-width:2}.chip{stroke:var(--line);stroke-width:1.2}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.head{font-size:18px;font-weight:700}.small{font-size:14px;fill:var(--muted)}.mark{font-size:13px;font-weight:700;fill:#fff}
+    /* contrast-audit-fix */
+  .mark{fill:#0f172a}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1040" height="760"/>
+  <text x="48" y="54" class="title">信道复用：共享同一传输资源</text>
+  <text x="48" y="82" class="small">复用的核心问题是：多路信号怎样在同一条物理信道上互不混淆。</text>
+
+  <rect x="52" y="112" width="452" height="238" rx="10" class="panel"/>
+  <text x="82" y="148" class="head">频分复用 FDM</text>
+  <text x="82" y="174" class="small">同一时间发送，按频带分开。</text>
+  <g transform="translate(96,205)">
+    <line x1="0" y1="96" x2="340" y2="96" class="axis"/>
+    <line x1="0" y1="96" x2="0" y2="0" class="axis"/>
+    <text x="348" y="101" class="small">频率</text>
+    <rect x="18" y="66" width="70" height="28" class="band1"/><text x="53" y="85" text-anchor="middle" class="mark">用户1</text>
+    <rect x="104" y="42" width="70" height="52" class="band2"/><text x="139" y="72" text-anchor="middle" class="mark">用户2</text>
+    <rect x="190" y="22" width="70" height="72" class="band3"/><text x="225" y="62" text-anchor="middle" class="mark">用户3</text>
+    <rect x="276" y="52" width="44" height="42" class="band4"/><text x="298" y="77" text-anchor="middle" class="mark">4</text>
+  </g>
+
+  <rect x="536" y="112" width="452" height="238" rx="10" class="panel"/>
+  <text x="566" y="148" class="head">时分复用 TDM</text>
+  <text x="566" y="174" class="small">同一频带轮流使用，固定时隙可能空转。</text>
+  <g transform="translate(578,215)">
+    <line x1="0" y1="82" x2="348" y2="82" class="axis"/>
+    <text x="356" y="87" class="small">时间</text>
+    <g>
+      <rect x="0" y="30" width="42" height="52" class="band1 chip"/><text x="21" y="62" text-anchor="middle" class="mark">A</text>
+      <rect x="42" y="30" width="42" height="52" class="band2 chip"/><text x="63" y="62" text-anchor="middle" class="mark">B</text>
+      <rect x="84" y="30" width="42" height="52" class="band3 chip"/><text x="105" y="62" text-anchor="middle" class="mark">C</text>
+      <rect x="126" y="30" width="42" height="52" class="band4 chip"/><text x="147" y="62" text-anchor="middle" class="mark">D</text>
+      <rect x="182" y="30" width="42" height="52" class="band1 chip"/><text x="203" y="62" text-anchor="middle" class="mark">A</text>
+      <rect x="224" y="30" width="42" height="52" class="band2 chip"/><text x="245" y="62" text-anchor="middle" class="mark">B</text>
+      <rect x="266" y="30" width="42" height="52" class="band3 chip"/><text x="287" y="62" text-anchor="middle" class="mark">C</text>
+      <rect x="308" y="30" width="42" height="52" class="band4 chip"/><text x="329" y="62" text-anchor="middle" class="mark">D</text>
+    </g>
+    <path d="M0 12 H168 M182 12 H350" class="thin"/>
+    <text x="84" y="4" text-anchor="middle" class="small">TDM 帧</text>
+    <text x="266" y="4" text-anchor="middle" class="small">TDM 帧</text>
+  </g>
+
+  <rect x="52" y="382" width="452" height="278" rx="10" class="panel"/>
+  <text x="82" y="418" class="head">统计时分复用 STDM</text>
+  <text x="82" y="444" class="small">只给有数据的用户分配时隙，但每个时隙要带地址。</text>
+  <g transform="translate(92,480)">
+    <rect x="0" y="30" width="82" height="52" class="band1 chip"/><text x="41" y="54" text-anchor="middle" class="mark">A 数据</text><text x="41" y="72" text-anchor="middle" class="mark">addr</text>
+    <rect x="82" y="30" width="82" height="52" class="band3 chip"/><text x="123" y="54" text-anchor="middle" class="mark">C 数据</text><text x="123" y="72" text-anchor="middle" class="mark">addr</text>
+    <rect x="164" y="30" width="82" height="52" class="band1 chip"/><text x="205" y="54" text-anchor="middle" class="mark">A 数据</text><text x="205" y="72" text-anchor="middle" class="mark">addr</text>
+    <rect x="246" y="30" width="82" height="52" class="band4 chip"/><text x="287" y="54" text-anchor="middle" class="mark">D 数据</text><text x="287" y="72" text-anchor="middle" class="mark">addr</text>
+    <line x1="0" y1="96" x2="350" y2="96" class="axis"/>
+    <text x="358" y="101" class="small">时间</text>
+  </g>
+
+  <rect x="536" y="382" width="452" height="278" rx="10" class="panel"/>
+  <text x="566" y="418" class="head">波分与码分</text>
+  <text x="566" y="444" class="small">WDM 是光纤中的频分；CDMA 同时同频，用码区分。</text>
+  <g transform="translate(570,474)">
+    <path d="M0 40 C52 0 100 0 150 40 S250 80 300 40" fill="none" stroke="var(--blue)" stroke-width="4"/>
+    <path d="M0 70 C52 30 100 30 150 70 S250 110 300 70" fill="none" stroke="var(--green)" stroke-width="4"/>
+    <path d="M0 100 C52 60 100 60 150 100 S250 140 300 100" fill="none" stroke="var(--amber)" stroke-width="4"/>
+    <text x="318" y="45" class="small">λ1</text><text x="318" y="75" class="small">λ2</text><text x="318" y="105" class="small">λ3</text>
+    <text x="150" y="150" text-anchor="middle" class="small">WDM：不同波长同时通过同一光纤</text>
+  </g>
+  <g transform="translate(566,640)">
+    <text x="0" y="0" class="small">CDMA：时间相同、频带相同，接收端用本站码片序列解码。</text>
+  </g>
+</svg>

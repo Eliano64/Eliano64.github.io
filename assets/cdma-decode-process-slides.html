@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CDMA 叠加与解码过程</title>
+<style>
+:root{--bg:#ffffff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--grid:#cbd5e1;--a:#2563eb;--b:#16a34a;--c:#d97706;--hot:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--grid:#334155;--a:#60a5fa;--b:#4ade80;--c:#fbbf24;--hot:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:1100px;margin:0 auto;padding:24px}.top{display:flex;justify-content:space-between;gap:16px}.title{font-size:28px;font-weight:800}.sub{color:var(--muted);font-size:15px;margin-top:8px}.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.controls button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer}.controls button.active{background:var(--a);border-color:var(--a);color:#fff}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;margin-top:22px}.card{border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:18px}.row{display:grid;grid-template-columns:78px repeat(4,1fr);gap:4px;align-items:center;margin:10px 0}.name{font-weight:800}.cell{height:40px;border:1px solid var(--grid);border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800}.A{background:color-mix(in srgb,var(--a) 22%,transparent)}.B{background:color-mix(in srgb,var(--b) 22%,transparent)}.C{background:color-mix(in srgb,var(--c) 22%,transparent)}.R{background:color-mix(in srgb,var(--hot) 18%,transparent)}.muted{color:var(--muted)}.formula{font-family:Consolas,monospace;font-size:16px;line-height:1.75}.result{border-left:4px solid var(--hot);padding:10px 12px;margin-top:14px;background:color-mix(in srgb,var(--hot) 10%,transparent);line-height:1.7}.pill{display:inline-block;border:1px solid var(--grid);border-radius:999px;padding:4px 9px;margin:3px;color:var(--muted);font-size:13px}
+@media(max-width:860px){.top{display:block}.controls{justify-content:flex-start;margin-top:14px}.grid{grid-template-columns:1fr}.row{grid-template-columns:58px repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">CDMA：叠加后再用本站码片解码</div>
+      <div class="sub">示例取 m=4。A 发送 1，B 发送 0，C 不发送。</div>
+    </div>
+    <div class="controls">
+      <button data-step="0" class="active">码片</button>
+      <button data-step="1">发送</button>
+      <button data-step="2">叠加</button>
+      <button data-step="3">A 解码</button>
+      <button data-step="4">B 解码</button>
+      <button data-step="5">C 解码</button>
+    </div>
+  </div>
+  <section class="grid">
+    <article class="card">
+      <div id="vectors"></div>
+      <div class="result" id="explain"></div>
+    </article>
+    <article class="card">
+      <div class="formula" id="calc"></div>
+    </article>
+  </section>
+</main>
+<script>
+const A=[1,-1,1,-1], B=[1,1,-1,-1], C=[1,1,1,1];
+const sendA=A, sendB=B.map(x=>-x), sendC=[0,0,0,0];
+const R=sendA.map((x,i)=>x+sendB[i]+sendC[i]);
+const steps=[
+ {hi:["A","B","C"], explain:"三个站点的码片向量两两正交。这里只用 4 位方便观察，实际系统码片数通常更长。", calc:"A = (+1,-1,+1,-1)<br>B = (+1,+1,-1,-1)<br>C = (+1,+1,+1,+1)"},
+ {hi:["sendA","sendB"], explain:"A 发送比特 1，所以发送 A；B 发送比特 0，所以发送 -B；C 没有发送数据，记为 0 向量。", calc:"发送 1：发送本站码片序列<br>发送 0：发送本站码片序列反码"},
+ {hi:["sendA","sendB","R"], explain:"信道中看到的是同时发送信号的逐码片叠加。接收端收到 R = A + (-B)。", calc:`R = (${R.join(",")})`},
+ {hi:["A","R"], explain:"A 用自己的码片向量 A 与 R 做规格化内积，结果为 1，因此判定收到比特 1。", calc:`A·R / 4 = (${A.map((x,i)=>`${x}×${R[i]}`).join(" + ")}) / 4 = 1`},
+ {hi:["B","R"], explain:"B 用自己的码片向量 B 与 R 做规格化内积，结果为 -1，因此判定收到比特 0。", calc:`B·R / 4 = (${B.map((x,i)=>`${x}×${R[i]}`).join(" + ")}) / 4 = -1`},
+ {hi:["C","R"], explain:"C 用自己的码片向量 C 与 R 做规格化内积，结果为 0，因此判定没有本站数据。", calc:`C·R / 4 = (${C.map((x,i)=>`${x}×${R[i]}`).join(" + ")}) / 4 = 0`}
+];
+const rows=[["A",A],["B",B],["C",C],["sendA",sendA],["sendB",sendB],["R",R]];
+function row(name,arr,hi){
+  const label={A:"A 码片",B:"B 码片",C:"C 码片",sendA:"A 发 1",sendB:"B 发 0",R:"信道 R"}[name];
+  return `<div class="row"><div class="name ${hi.includes(name)?"":"muted"}">${label}</div>${arr.map(v=>`<div class="cell ${name[0]} ${hi.includes(name)?"":"muted"}">${v>0?`+${v}`:v}</div>`).join("")}</div>`;
+}
+function render(i){
+  const s=steps[i];
+  document.getElementById("vectors").innerHTML=rows.map(r=>row(r[0],r[1],s.hi)).join("");
+  document.getElementById("explain").textContent=s.explain;
+  document.getElementById("calc").innerHTML=s.calc + `<div style="margin-top:16px"><span class="pill">结果 1：收到 1</span><span class="pill">结果 -1：收到 0</span><span class="pill">结果 0：没有本站数据</span></div>`;
+  document.querySelectorAll("button").forEach((b,k)=>b.classList.toggle("active",k===i));
+}
+document.querySelectorAll("button").forEach((b,i)=>b.addEventListener("click",()=>render(i)));
+render(0);
+</script>
+</body>
+</html>

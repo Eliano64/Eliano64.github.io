@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="620" viewBox="0 0 1180 620" role="img" aria-labelledby="title desc">
+  <title id="title">Single bus datapath</title>
+  <desc id="desc">A simplified CPU internal single bus datapath with registers, ALU, MAR, MDR, and control signals.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--ink:#172033;--muted:#5f6c80;--line:#526174;--bus:#345f9f;--box:#fff;--alu:#eef7ee;--mem:#fff2d8;--ctl:#f6eafe}
+    @media (prefers-color-scheme:dark){:root{--bg:#0f1420;--ink:#e7edf7;--muted:#aab6c8;--line:#91a0b5;--bus:#86b7ff;--box:#151c2a;--alu:#18291d;--mem:#302417;--ctl:#2b1c35}}
+    svg{background:var(--bg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    text{fill:var(--ink)} .title{font-size:30px;font-weight:700}.h{font-size:21px;font-weight:700}.small{font-size:15px;fill:var(--muted)}.sig{font-size:14px;fill:var(--muted)}
+    .box{fill:var(--box);stroke:var(--line);stroke-width:2;rx:8}.alu{fill:var(--alu);stroke:var(--line);stroke-width:2}.mem{fill:var(--mem);stroke:var(--line);stroke-width:2;rx:10}.ctl{fill:var(--ctl);stroke:var(--line);stroke-width:2;rx:12}
+    .bus{stroke:var(--bus);stroke-width:9;stroke-linecap:round}.line{stroke:var(--line);stroke-width:2.2;fill:none}.arrow{stroke:var(--line);stroke-width:2.2;fill:none;marker-end:url(#arrow)}.dash{stroke-dasharray:7 6}
+  </style>
+  <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"/></marker></defs>
+  <text x="590" y="44" text-anchor="middle" class="title">CPU 内部单总线数据通路</text>
+  <path d="M110 318 H1020" class="bus"/>
+  <text x="1040" y="324" class="h">Bus</text>
+
+  <rect x="90" y="110" width="90" height="54" class="box"/><text x="135" y="144" text-anchor="middle" class="h">PC</text>
+  <rect x="230" y="110" width="90" height="54" class="box"/><text x="275" y="144" text-anchor="middle" class="h">IR</text>
+  <rect x="370" y="110" width="90" height="54" class="box"/><text x="415" y="144" text-anchor="middle" class="h">R0</text>
+  <rect x="510" y="110" width="90" height="54" class="box"/><text x="555" y="144" text-anchor="middle" class="h">R1</text>
+  <rect x="650" y="110" width="90" height="54" class="box"/><text x="695" y="144" text-anchor="middle" class="h">Y</text>
+  <rect x="790" y="110" width="90" height="54" class="box"/><text x="835" y="144" text-anchor="middle" class="h">Z</text>
+  <rect x="930" y="110" width="90" height="54" class="box"/><text x="975" y="144" text-anchor="middle" class="h">ACC</text>
+
+  <path d="M135 164 V313" class="line"/><path d="M275 164 V313" class="line"/><path d="M415 164 V313" class="line"/><path d="M555 164 V313" class="line"/><path d="M695 164 V313" class="line"/><path d="M835 164 V313" class="line"/><path d="M975 164 V313" class="line"/>
+  <text x="135" y="190" text-anchor="middle" class="sig">PCout/PCin</text>
+  <text x="275" y="190" text-anchor="middle" class="sig">IRin</text>
+  <text x="415" y="190" text-anchor="middle" class="sig">R0out/R0in</text>
+  <text x="555" y="190" text-anchor="middle" class="sig">R1out/R1in</text>
+  <text x="695" y="190" text-anchor="middle" class="sig">Yin</text>
+  <text x="835" y="190" text-anchor="middle" class="sig">Zout/Zin</text>
+  <text x="975" y="190" text-anchor="middle" class="sig">ACCout/ACCin</text>
+
+  <polygon points="540,438 720,438 690,532 570,532" class="alu"/>
+  <text x="630" y="486" text-anchor="middle" class="h">ALU</text>
+  <path d="M695 322 V438" class="arrow"/>
+  <path d="M975 322 C975 386 744 384 700 438" class="arrow"/>
+  <path d="M630 532 C630 566 835 564 835 322" class="arrow"/>
+  <text x="758" y="424" class="small">Add/Sub/And...</text>
+
+  <rect x="120" y="440" width="100" height="54" class="mem"/><text x="170" y="474" text-anchor="middle" class="h">MAR</text>
+  <rect x="280" y="440" width="100" height="54" class="mem"/><text x="330" y="474" text-anchor="middle" class="h">MDR</text>
+  <rect x="120" y="535" width="260" height="54" class="mem"/><text x="250" y="568" text-anchor="middle" class="h">主存</text>
+  <path d="M170 322 V440" class="arrow"/><path d="M330 440 V322" class="arrow"/>
+  <path d="M170 494 V535" class="arrow"/><path d="M330 535 V494" class="arrow"/>
+  <text x="250" y="518" text-anchor="middle" class="small">地址线 / 数据线 / 读写控制</text>
+
+  <rect x="880" y="438" width="190" height="80" class="ctl"/>
+  <text x="975" y="472" text-anchor="middle" class="h">控制部件</text>
+  <text x="975" y="498" text-anchor="middle" class="small">发出 out / in / ALU / Mem 信号</text>
+  <path d="M880 466 C820 410 780 374 735 328" class="arrow dash"/>
+  <text x="590" y="600" text-anchor="middle" class="small">单总线分析重点：同一时刻谁能输出到总线，谁在时钟边沿接收总线内容，ALU 输入和输出是否需要暂存寄存器。</text>
+</svg>

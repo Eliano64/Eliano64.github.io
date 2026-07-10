@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Router Packet Processing</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--red:#dc2626;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--red:#f87171;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}.steps{display:grid;gap:10px}.step{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px}.step.active{outline:2px solid var(--blue)}.step b{display:block}.step span{font-size:14px;color:var(--muted);line-height:1.4}.stage{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}.note{color:var(--muted);line-height:1.55;margin-top:8px}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">普通 IP 数据报进入路由器后的处理</div>
+  <div class="layout">
+    <div class="steps" id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 680 350" role="img" aria-label="路由器处理流程">
+        <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker></defs>
+        <rect id="b1" x="40" y="115" width="120" height="80" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="100" y="150" text-anchor="middle" fill="var(--text)" font-size="16">输入端口</text><text x="100" y="173" text-anchor="middle" fill="var(--muted)" font-size="13">物理/链路</text>
+        <rect id="b2" x="205" y="115" width="120" height="80" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="265" y="150" text-anchor="middle" fill="var(--text)" font-size="16">网络层</text><text x="265" y="173" text-anchor="middle" fill="var(--muted)" font-size="13">查转发表</text>
+        <rect id="b3" x="370" y="115" width="120" height="80" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="430" y="150" text-anchor="middle" fill="var(--text)" font-size="16">交换结构</text><text x="430" y="173" text-anchor="middle" fill="var(--muted)" font-size="13">送到端口</text>
+        <rect id="b4" x="535" y="115" width="120" height="80" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="595" y="150" text-anchor="middle" fill="var(--text)" font-size="16">输出端口</text><text x="595" y="173" text-anchor="middle" fill="var(--muted)" font-size="13">排队/成帧</text>
+        <path d="M0 155 H40" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path d="M160 155 H205" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path d="M325 155 H370" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path d="M490 155 H535" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path d="M655 155 H680" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <text id="caption" x="340" y="270" text-anchor="middle" fill="var(--text)" font-size="18"></text>
+      </svg>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+["接收信号","输入端口的物理层把信号还原成比特流。","先进入输入端口；这里处理的是入接口上的物理信号。"],
+["解帧上交","数据链路层识别帧，去掉帧首部和帧尾部。","路由器转发的是 IP 数据报，不是原来的链路层帧。"],
+["查转发表","网络层按目的 IP 等字段查转发表，确定输出接口或下一跳。","若找不到匹配条目，通常丢弃并可能触发 ICMP 差错报告。"],
+["交换到输出端口","交换结构把分组从输入端口移动到选定输出端口。","这是路由器内部的数据搬运，不是路由选择算法本身。"],
+["排队并发送","输出端口排队，重新封装成适合下一跳链路的帧后发送。","IP 源/目的地址通常不变；链路层 MAC 地址逐跳改变。"]
+];
+let i=0;const ids=[b1,b1,b2,b3,b4];const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{const el=document.createElement("div");el.className="step";el.innerHTML=`<b>${idx+1}. ${d[0]}</b><span>${d[1]}</span>`;el.onclick=()=>{i=idx;render()};steps.appendChild(el)});
+function render(){[...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));[b1,b2,b3,b4].forEach(b=>b.setAttribute("stroke","var(--line)"));ids[i].setAttribute("stroke","var(--blue)");caption.textContent=data[i][0];note.textContent=data[i][2]}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script>
+</body>
+</html>

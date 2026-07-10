@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Distance Vector Update</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--red:#dc2626;--green:#16a34a;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--red:#f87171;--green:#4ade80;--border:#334155}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{width:100%;max-width:980px;margin:0 auto;padding:22px}.title{text-align:center;font-weight:800;font-size:24px;margin-bottom:18px}.grid{display:grid;grid-template-columns:260px 1fr;gap:18px}.steps{display:grid;gap:10px}.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:12px;cursor:pointer}.step.active{outline:2px solid var(--blue)}.step b{display:block;margin-bottom:5px}.step span{font-size:14px;color:var(--muted);line-height:1.45}.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:14px}svg{width:100%;height:auto}.table{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}.card{border:1px solid var(--border);border-radius:8px;padding:10px;background:color-mix(in srgb,var(--panel),var(--bg) 35%)}.card b{display:block;margin-bottom:6px}.card div{font-size:14px;color:var(--muted);line-height:1.45}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">距离-向量更新：经邻居的距离 = 邻居宣告距离 + 到邻居代价</div>
+  <div class="grid">
+    <div class="steps" id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 650 330" role="img" aria-label="距离向量更新示意">
+        <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker></defs>
+        <line x1="145" y1="130" x2="315" y2="130" stroke="var(--line)" stroke-width="3"/>
+        <line x1="315" y1="130" x2="505" y2="130" stroke="var(--line)" stroke-width="3"/>
+        <circle cx="145" cy="130" r="35" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="145" y="137" text-anchor="middle" fill="var(--text)" font-size="20">D</text>
+        <circle cx="315" cy="130" r="35" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="315" y="137" text-anchor="middle" fill="var(--text)" font-size="20">C</text>
+        <rect x="465" y="95" width="80" height="70" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="505" y="136" text-anchor="middle" fill="var(--text)" font-size="18">N2</text>
+        <text x="230" y="112" text-anchor="middle" fill="var(--muted)" font-size="15">代价 1</text>
+        <text x="410" y="112" text-anchor="middle" fill="var(--muted)" font-size="15">C 到 N2 = 4</text>
+        <path id="msg" d="M315 170 C270 230, 190 230, 145 170" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <text id="msgText" x="230" y="235" text-anchor="middle" fill="var(--blue)" font-size="16">C 宣告：到 N2 距离为 4</text>
+        <text id="formula" x="325" y="285" text-anchor="middle" fill="var(--text)" font-size="20">D 计算：1 + 4 = 5</text>
+      </svg>
+      <div class="table">
+        <div class="card"><b>旧条目</b><div id="oldText"></div></div>
+        <div class="card"><b>处理结果</b><div id="newText"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+  ["邻居发送距离向量","C 告诉 D：自己到 N2 的距离为 4。","D 原条目：到 N2 距离为 2，下一跳 C。","消息来自相同下一跳 C，说明原路径的信息已经变化。"],
+  ["先加到邻居的代价","D 到 C 的代价为 1，所以经 C 到 N2 的新距离为 1+4=5。","不能直接拿 4 写入 D 的路由表。","距离向量的更新值必须加上本路由器到邻居的链路代价。"],
+  ["按规则更新","若下一跳相同，无论距离变大还是变小，都更新。","旧：N2，距离 2，下一跳 C。","新：N2，距离 5，下一跳 C。原因是 C 提供的是这条路径的最新消息。"],
+  ["若发现新网络","若 D 原来不知道 N3，而 C 宣告可达 N3，则 D 添加新条目。","旧：没有 N3 条目。","新：N3，距离 = 1 + C 宣告距离，下一跳 C。"]
+];
+let i=0;
+const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{const el=document.createElement("div");el.className="step";el.innerHTML=`<b>${idx+1}. ${d[0]}</b><span>${d[1]}</span>`;el.onclick=()=>{i=idx;render()};steps.appendChild(el)});
+function render(){[...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));oldText.textContent=data[i][2];newText.textContent=data[i][3];formula.textContent=i===3?"D 添加：距离 = 1 + C 宣告距离":"D 计算：1 + 4 = 5";}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" role="img" aria-labelledby="title desc">
+  <title id="title">Signal delivery mechanism</title>
+  <desc id="desc">Signal generation, pending bit, mask, action table, kernel return to user mode, and user handler execution.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #64748b;
+      --line: #94a3b8;
+      --blue: #dbeafe;
+      --green: #dcfce7;
+      --amber: #fef3c7;
+      --red: #fee2e2;
+      --accent: #2563eb;
+      --ok: #059669;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #64748b;
+        --blue: #1e3a8a;
+        --green: #14532d;
+        --amber: #713f12;
+        --red: #7f1d1d;
+        --accent: #60a5fa;
+        --ok: #34d399;
+      }
+    }
+    .bg { fill: var(--bg); }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--fg); }
+    .h { font-size: 21px; font-weight: 700; }
+    .t { font-size: 15px; }
+    .small { font-size: 13px; fill: var(--muted); }
+    .box { stroke: var(--line); stroke-width: 2; rx: 10; }
+    .bit { stroke: var(--line); stroke-width: 1.5; rx: 4; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+    .okarrow { fill: none; stroke: var(--ok); stroke-width: 3; marker-end: url(#okarrow); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="var(--accent)"/>
+    </marker>
+    <marker id="okarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="var(--ok)"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1080" height="560"/>
+
+  <rect class="box" x="50" y="64" width="215" height="130" fill="var(--amber)"/>
+  <text class="h" x="158" y="102" text-anchor="middle">信号来源</text>
+  <text class="t" x="158" y="132" text-anchor="middle">内核 / 终端 / 定时器</text>
+  <text class="t" x="158" y="158" text-anchor="middle">其他进程 kill()</text>
+
+  <rect class="box" x="350" y="42" width="360" height="232" fill="var(--blue)"/>
+  <text class="h" x="530" y="78" text-anchor="middle">目标进程控制信息</text>
+  <text class="small" x="530" y="102" text-anchor="middle">PCB 或相关进程控制结构</text>
+
+  <text class="t" x="395" y="140">pending</text>
+  <g transform="translate(470 122)">
+    <rect class="bit" x="0" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="14" y="19" text-anchor="middle">0</text>
+    <rect class="bit" x="34" y="0" width="28" height="28" fill="var(--red)"/><text class="small" x="48" y="19" text-anchor="middle">1</text>
+    <rect class="bit" x="68" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="82" y="19" text-anchor="middle">0</text>
+    <rect class="bit" x="102" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="116" y="19" text-anchor="middle">0</text>
+    <rect class="bit" x="136" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="150" y="19" text-anchor="middle">...</text>
+  </g>
+  <text class="small" x="640" y="141">某位为 1：该信号待处理</text>
+
+  <text class="t" x="395" y="183">blocked</text>
+  <g transform="translate(470 165)">
+    <rect class="bit" x="0" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="14" y="19" text-anchor="middle">0</text>
+    <rect class="bit" x="34" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="48" y="19" text-anchor="middle">0</text>
+    <rect class="bit" x="68" y="0" width="28" height="28" fill="var(--amber)"/><text class="small" x="82" y="19" text-anchor="middle">1</text>
+    <rect class="bit" x="102" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="116" y="19" text-anchor="middle">0</text>
+    <rect class="bit" x="136" y="0" width="28" height="28" fill="var(--bg)"/><text class="small" x="150" y="19" text-anchor="middle">...</text>
+  </g>
+  <text class="small" x="640" y="184">某位为 1：暂不投递</text>
+
+  <rect class="box" x="395" y="214" width="270" height="38" fill="var(--green)"/>
+  <text class="t" x="530" y="239" text-anchor="middle">处理动作表：默认 / 忽略 / 用户处理函数</text>
+
+  <rect class="box" x="800" y="60" width="220" height="130" fill="var(--green)"/>
+  <text class="h" x="910" y="98" text-anchor="middle">用户处理函数</text>
+  <text class="t" x="910" y="130" text-anchor="middle">由 sigaction 注册</text>
+  <text class="small" x="910" y="158" text-anchor="middle">可改写部分信号动作</text>
+
+  <rect class="box" x="350" y="350" width="360" height="120" fill="var(--red)"/>
+  <text class="h" x="530" y="388" text-anchor="middle">返回用户态前</text>
+  <text class="t" x="530" y="420" text-anchor="middle">检查 pending &amp; ~blocked</text>
+  <text class="small" x="530" y="448" text-anchor="middle">若有未屏蔽待处理信号，则安排处理动作</text>
+
+  <path class="arrow" d="M265 130 L350 130"/>
+  <text class="small" x="308" y="114" text-anchor="middle">设置待处理位</text>
+  <path class="arrow" d="M530 274 L530 350"/>
+  <text class="small" x="602" y="318" text-anchor="middle">内核态执行中</text>
+  <path class="okarrow" d="M710 410 C780 365 820 260 870 190"/>
+  <text class="small" x="818" y="345" text-anchor="middle">投递信号</text>
+  <path class="okarrow" d="M910 190 C850 300 765 420 710 430"/>
+  <text class="small" x="855" y="432" text-anchor="middle">处理后返回原执行流</text>
+</svg>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Binary Insertion Sort</title>
+<style>
+:root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--accent:#2563eb;--ok:#059669;--warn:#d97706;--bad:#dc2626;--purple:#7c3aed}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--accent:#60a5fa;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--purple:#c084fc}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{padding:22px;max-width:1160px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.title{font-weight:800;font-size:22px}.btns{display:flex;gap:8px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:8px 12px;cursor:pointer}.panel{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px;margin-bottom:16px}.array{display:flex;gap:6px;align-items:flex-start;min-height:128px;flex-wrap:wrap}.cell{width:54px;border:2px solid var(--line);background:var(--bg);border-radius:9px;text-align:center;padding:8px 2px;position:relative}.v{font-size:18px;font-weight:800}.i{font-size:11px;color:var(--muted);margin-top:3px}.tag{position:absolute;left:50%;transform:translateX(-50%);bottom:-24px;font-size:12px;font-weight:700}.low{border-color:var(--ok)}.mid{border-color:var(--warn)}.high{border-color:var(--bad)}.cur{box-shadow:0 0 0 3px color-mix(in srgb,var(--purple) 28%,transparent);border-color:var(--purple)}.shift{border-color:var(--accent);transform:translateX(10px)}.hole{border-style:dashed;color:var(--muted)}.note{font-size:16px;line-height:1.75}.code{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-family:Consolas,monospace;font-size:13px;line-height:1.45}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.progress{color:var(--muted);font-size:14px}.hint{color:var(--muted);font-size:14px;margin-top:10px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.cell{width:48px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="title">折半插入排序：在 [low, high) 中找插入位置</div><div id="progress" class="progress"></div></div>
+    <div class="btns"><button id="prev" class="btn">上一步</button><button id="next" class="btn">下一步</button></div>
+  </div>
+  <div class="panel"><div class="array" id="array"></div><div class="hint">示例处理待插入元素 60；查找第一个满足 A[mid] &gt; temp 的位置。</div></div>
+  <div class="grid">
+    <div class="panel note" id="note"></div>
+    <div class="panel code" id="code"></div>
+  </div>
+</div>
+<script>
+const steps=[
+{a:[20,30,40,50,55,60,70,80,60,90,10],cur:8,low:0,mid:4,high:8,n:"A[0, 8) 已有序，A[8]=60 是待插入元素。在左闭右开区间 [low, high) 中找第一个大于 temp 的位置。",c:"temp = A[i];\nlow = 0;\nhigh = i;"},
+{a:[20,30,40,50,55,60,70,80,60,90,10],cur:8,low:5,mid:6,high:8,n:"A[4]=55 不大于 temp，mid 不可能是插入位置。插入位置一定在 mid 右侧，令 low=mid+1。",c:"if (A[mid] <= temp)\n    low = mid + 1;"},
+{a:[20,30,40,50,55,60,70,80,60,90,10],cur:8,low:5,mid:6,high:6,n:"A[6]=70 大于 temp，mid 可能就是第一个大于 temp 的位置，因此保留 mid，令 high=mid。",c:"if (A[mid] > temp)\n    high = mid;"},
+{a:[20,30,40,50,55,60,70,80,60,90,10],cur:8,low:6,mid:5,high:6,n:"继续在 [5, 6) 中查找。我们期待的是 A[mid] > temp；A[5]=60 不满足这个条件，所以令 low=mid+1。",c:"if (A[mid] > temp)\n    high = mid;\nelse\n    low = mid + 1;"},
+{a:[20,30,40,50,55,60,70,80,60,90,10],cur:8,low:6,high:6,n:"此时 low == high，搜索区间 [low, high) 为空。low=6 就是第一个大于 temp 的位置。",c:"while (low < high) 结束\ninsert_pos = low;"},
+{a:[20,30,40,50,55,60,null,70,80,90,10],cur:6,shift:[7,8],n:"把 A[6, 8) 整体右移。折半只减少比较次数，元素移动次数并没有减少。",c:"for (int j = i - 1; j >= low; j--)\n    A[j + 1] = A[j];"},
+{a:[20,30,40,50,55,60,60,70,80,90,10],cur:6,n:"把 temp 写入 low。新 60 位于旧 60 后面，所以算法稳定。",c:"A[low] = temp;"}
+];
+let k=0;
+function render(){
+ const s=steps[k], arr=document.getElementById('array');arr.innerHTML='';
+ s.a.forEach((v,i)=>{const d=document.createElement('div');d.className='cell';if(i===s.low)d.classList.add('low');if(i===s.mid)d.classList.add('mid');if(i===s.high)d.classList.add('high');if(i===s.cur)d.classList.add('cur');if(s.shift?.includes(i))d.classList.add('shift');if(v===null)d.classList.add('hole');let tags=[];if(i===s.low)tags.push('low');if(i===s.mid)tags.push('mid');if(i===s.high)tags.push('high');d.innerHTML=`<div class="v">${v===null?'':v}</div><div class="i">${i}</div><div class="tag">${tags.join('/')}</div>`;arr.appendChild(d)});
+ document.getElementById('note').textContent=s.n;document.getElementById('code').textContent=s.c;document.getElementById('progress').textContent=`${k+1} / ${steps.length}`;
+}
+document.getElementById('prev').onclick=()=>{k=(k-1+steps.length)%steps.length;render()};
+document.getElementById('next').onclick=()=>{k=(k+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

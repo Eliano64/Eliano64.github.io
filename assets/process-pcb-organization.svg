@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" role="img" aria-labelledby="title desc">
+  <title id="title">PCB organization by process state</title>
+  <desc id="desc">The operating system organizes PCB records by running, ready, and blocked states.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--fg:#111827;--muted:#64748b;--line:#94a3b8;--blue:#dbeafe;--green:#dcfce7;--amber:#fef3c7;--red:#fee2e2;--violet:#ede9fe;--accent:#2563eb}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--line:#64748b;--blue:#1e3a8a;--green:#14532d;--amber:#713f12;--red:#7f1d1d;--violet:#4c1d95;--accent:#60a5fa}}
+    .bg{fill:var(--bg)} text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--fg)} .title{font-size:26px;font-weight:700}.h{font-size:19px;font-weight:700}.t{font-size:15px}.small{font-size:13px;fill:var(--muted)}.box{stroke:var(--line);stroke-width:2;rx:10}.pcb{stroke:var(--line);stroke-width:2;rx:8}.arrow{fill:none;stroke:var(--accent);stroke-width:2.5;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--accent)"/></marker></defs>
+  <rect class="bg" width="1100" height="560"/>
+  <text class="title" x="550" y="46" text-anchor="middle">按状态和等待原因组织 PCB</text>
+  <rect class="box" x="55" y="92" width="235" height="126" fill="var(--blue)"/>
+  <text class="h" x="172" y="126" text-anchor="middle">运行指针 / 运行队列</text>
+  <text class="small" x="172" y="152" text-anchor="middle">单 CPU 通常指向一个 PCB</text>
+  <rect class="pcb" x="104" y="172" width="136" height="32" fill="var(--bg)"/><text class="t" x="172" y="194" text-anchor="middle">PCB2 state=运行</text>
+  <rect class="box" x="348" y="92" width="700" height="126" fill="var(--green)"/>
+  <text class="h" x="698" y="126" text-anchor="middle">就绪队列</text>
+  <text class="small" x="698" y="152" text-anchor="middle">已经具备运行条件，只差 CPU</text>
+  <rect class="pcb" x="398" y="172" width="136" height="32" fill="var(--bg)"/><text class="t" x="466" y="194" text-anchor="middle">PCB5 state=就绪</text>
+  <rect class="pcb" x="582" y="172" width="136" height="32" fill="var(--bg)"/><text class="t" x="650" y="194" text-anchor="middle">PCB1 state=就绪</text>
+  <rect class="pcb" x="766" y="172" width="136" height="32" fill="var(--bg)"/><text class="t" x="834" y="194" text-anchor="middle">PCB4 state=就绪</text>
+  <path class="arrow" d="M534 188 L582 188"/><path class="arrow" d="M718 188 L766 188"/>
+  <rect class="box" x="55" y="270" width="993" height="220" fill="var(--amber)"/>
+  <text class="h" x="552" y="306" text-anchor="middle">阻塞队列</text>
+  <text class="small" x="552" y="332" text-anchor="middle">阻塞原因不同，通常进入不同等待队列；事件发生后再移入就绪队列</text>
+  <rect class="box" x="95" y="366" width="435" height="82" fill="var(--red)"/>
+  <text class="h" x="150" y="398">等待事件 A</text>
+  <rect class="pcb" x="250" y="383" width="118" height="32" fill="var(--bg)"/><text class="t" x="309" y="405" text-anchor="middle">PCB3</text>
+  <rect class="pcb" x="400" y="383" width="118" height="32" fill="var(--bg)"/><text class="t" x="459" y="405" text-anchor="middle">PCB7</text>
+  <path class="arrow" d="M368 399 L400 399"/>
+  <rect class="box" x="580" y="366" width="428" height="82" fill="var(--violet)"/>
+  <text class="h" x="635" y="398">等待事件 B</text>
+  <rect class="pcb" x="790" y="383" width="118" height="32" fill="var(--bg)"/><text class="t" x="849" y="405" text-anchor="middle">PCB6</text>
+  <path class="arrow" d="M466 172 C466 146 325 146 240 172"/><text class="small" x="355" y="132" text-anchor="middle">调度：就绪 -> 运行</text>
+  <path class="arrow" d="M172 204 C172 250 315 250 466 204"/><text class="small" x="310" y="252" text-anchor="middle">时间片到 / 被抢占：运行 -> 就绪</text>
+  <path class="arrow" d="M172 204 C138 250 126 304 170 366"/><text class="small" x="101" y="266">等待 I/O / 资源</text>
+  <path class="arrow" d="M459 383 C512 330 582 255 650 204"/><text class="small" x="590" y="284">事件发生：阻塞 -> 就绪</text>
+</svg>

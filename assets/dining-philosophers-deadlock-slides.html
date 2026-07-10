@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dining Philosophers Deadlock</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --line: #cbd5e1;
+      --text: #172033;
+      --muted: #64748b;
+      --blue: #dbeafe;
+      --blue-line: #2563eb;
+      --red: #fee2e2;
+      --red-line: #dc2626;
+      --yellow: #fef3c7;
+      --yellow-line: #d97706;
+      --green: #dcfce7;
+      --green-line: #16a34a;
+      --arrow: #475569;
+      --code-bg: #f1f5f9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --line: #334155;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --blue: #1e3a8a;
+        --blue-line: #60a5fa;
+        --red: #7f1d1d;
+        --red-line: #f87171;
+        --yellow: #713f12;
+        --yellow-line: #fbbf24;
+        --green: #14532d;
+        --green-line: #4ade80;
+        --arrow: #cbd5e1;
+        --code-bg: #020617;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .deck {
+      min-height: 720px;
+      padding: 28px 34px 24px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+    }
+    header { display: flex; justify-content: space-between; align-items: end; gap: 18px; }
+    h1 { margin: 0; font-size: 30px; }
+    .step { color: var(--muted); font-size: 18px; }
+    .stage { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      min-height: 500px;
+    }
+    svg { width: 100%; height: 500px; display: block; }
+    .philo { fill: var(--blue); stroke: var(--blue-line); stroke-width: 2.5; }
+    .philo.wait { fill: var(--red); stroke: var(--red-line); stroke-width: 4; }
+    .stick { fill: var(--yellow); stroke: var(--yellow-line); stroke-width: 2.5; }
+    .held { fill: var(--green); stroke: var(--green-line); stroke-width: 4; }
+    .table { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 8 8; }
+    .wait-arrow { fill: none; stroke: var(--red-line); stroke-width: 3; marker-end: url(#arrow); opacity: 0; }
+    .wait-arrow.on { opacity: 1; }
+    text { fill: var(--text); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .label { text-anchor: middle; dominant-baseline: middle; font-size: 20px; font-weight: 700; }
+    .small { fill: var(--muted); font-size: 16px; text-anchor: middle; dominant-baseline: middle; }
+    h2 { margin: 0 0 14px; font-size: 25px; }
+    p { margin: 0 0 13px; font-size: 20px; line-height: 1.55; }
+    code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; }
+    .state { margin-top: 18px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .box { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); font-size: 18px; min-height: 58px; }
+    .controls { display: flex; justify-content: center; gap: 10px; }
+    button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 9px 14px; font-size: 16px; cursor: pointer; }
+    button:hover { border-color: var(--blue-line); }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <h1>朴素解法如何形成死锁</h1>
+      <div class="step" id="stepLabel"></div>
+    </header>
+    <main class="stage">
+      <section class="panel">
+        <svg viewBox="0 0 560 500" aria-label="哲学家死锁过程图">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="var(--red-line)"/>
+            </marker>
+          </defs>
+          <circle cx="280" cy="255" r="154" class="table"/>
+          <g id="p0"><circle cx="280" cy="70" r="39" class="philo"/><text x="280" y="70" class="label">P0</text></g>
+          <g id="p1"><circle cx="450" cy="195" r="39" class="philo"/><text x="450" y="195" class="label">P1</text></g>
+          <g id="p2"><circle cx="385" cy="405" r="39" class="philo"/><text x="385" y="405" class="label">P2</text></g>
+          <g id="p3"><circle cx="175" cy="405" r="39" class="philo"/><text x="175" y="405" class="label">P3</text></g>
+          <g id="p4"><circle cx="110" cy="195" r="39" class="philo"/><text x="110" y="195" class="label">P4</text></g>
+          <g id="c0" transform="translate(200 112) rotate(145)"><rect x="-30" y="-12" width="60" height="24" rx="10" class="stick"/><text x="0" y="0" class="small">C0</text></g>
+          <g id="c1" transform="translate(360 112) rotate(35)"><rect x="-30" y="-12" width="60" height="24" rx="10" class="stick"/><text x="0" y="0" class="small">C1</text></g>
+          <g id="c2" transform="translate(434 310) rotate(107)"><rect x="-30" y="-12" width="60" height="24" rx="10" class="stick"/><text x="0" y="0" class="small">C2</text></g>
+          <g id="c3" transform="translate(280 438) rotate(0)"><rect x="-30" y="-12" width="60" height="24" rx="10" class="stick"/><text x="0" y="0" class="small">C3</text></g>
+          <g id="c4" transform="translate(126 310) rotate(73)"><rect x="-30" y="-12" width="60" height="24" rx="10" class="stick"/><text x="0" y="0" class="small">C4</text></g>
+          <path id="w0" class="wait-arrow" d="M310 94 C335 100 350 105 360 112"/>
+          <path id="w1" class="wait-arrow" d="M434 225 C432 250 432 280 434 310"/>
+          <path id="w2" class="wait-arrow" d="M355 428 C330 436 305 438 280 438"/>
+          <path id="w3" class="wait-arrow" d="M150 375 C138 350 130 330 126 310"/>
+          <path id="w4" class="wait-arrow" d="M140 164 C160 140 180 125 200 112"/>
+        </svg>
+      </section>
+      <section class="panel">
+        <h2 id="title"></h2>
+        <p id="body1"></p>
+        <p id="body2"></p>
+        <div class="state">
+          <div class="box" id="s1"></div>
+          <div class="box" id="s2"></div>
+          <div class="box" id="s3"></div>
+          <div class="box" id="s4"></div>
+        </div>
+      </section>
+    </main>
+    <nav class="controls">
+      <button id="prev" type="button">上一步</button>
+      <button id="next" type="button">下一步</button>
+    </nav>
+  </div>
+  <script>
+    const steps = [
+      {
+        title: "初始状态",
+        body1: "五支筷子都空闲。朴素写法规定每个哲学家先拿左筷子，再拿右筷子。",
+        body2: "对哲学家 i 来说，左筷子是 <code>C[i]</code>，右筷子是 <code>C[(i+1) mod 5]</code>。",
+        state: ["所有 C 均为 1", "无人占有筷子", "没有等待", "可以开始申请"],
+        held: [], wait: []
+      },
+      {
+        title: "每个人都拿到左筷子",
+        body1: "若五个哲学家并发执行，可能每个人都先成功执行 <code>P(C[i])</code>。",
+        body2: "此时每个人都占有一支筷子，但都还不能吃饭，因为吃饭需要两支筷子。",
+        state: ["P0 持有 C0", "P1 持有 C1", "P2 持有 C2", "P3/P4 也各持一支"],
+        held: ["c0", "c1", "c2", "c3", "c4"], wait: []
+      },
+      {
+        title: "每个人再申请右筷子",
+        body1: "P0 等 C1，P1 等 C2，P2 等 C3，P3 等 C4，P4 等 C0。",
+        body2: "每支被等待的筷子，都正被右边的邻居占有。",
+        state: ["P0 等 P1", "P1 等 P2", "P2 等 P3", "P3 等 P4"],
+        held: ["c0", "c1", "c2", "c3", "c4"], wait: ["w0", "w1", "w2", "w3", "w4"], waitingPhilos: ["p0", "p1", "p2", "p3", "p4"]
+      },
+      {
+        title: "形成循环等待",
+        body1: "五个进程都持有一个资源，同时等待另一个资源，等待关系首尾相接。",
+        body2: "没有任何哲学家能先吃完并释放筷子，所以系统进入死锁。",
+        state: ["持有并等待", "不可剥夺", "循环等待", "死锁"],
+        held: ["c0", "c1", "c2", "c3", "c4"], wait: ["w0", "w1", "w2", "w3", "w4"], waitingPhilos: ["p0", "p1", "p2", "p3", "p4"]
+      }
+    ];
+    const requestedStep = Number(new URLSearchParams(location.search).get("step"));
+    let i = Number.isFinite(requestedStep) ? Math.min(Math.max(requestedStep - 1, 0), steps.length - 1) : 0;
+    const all = ["c0", "c1", "c2", "c3", "c4", "w0", "w1", "w2", "w3", "w4", "p0", "p1", "p2", "p3", "p4"];
+    function render() {
+      const step = steps[i];
+      document.getElementById("stepLabel").textContent = `${i + 1} / ${steps.length}`;
+      document.getElementById("title").innerHTML = step.title;
+      document.getElementById("body1").innerHTML = step.body1;
+      document.getElementById("body2").innerHTML = step.body2;
+      ["s1", "s2", "s3", "s4"].forEach((id, idx) => document.getElementById(id).textContent = step.state[idx]);
+      all.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove("held", "on", "wait");
+        const rect = el.querySelector("rect");
+        const circle = el.querySelector("circle");
+        if (rect) rect.classList.remove("held");
+        if (circle) circle.classList.remove("wait");
+      });
+      step.held.forEach(id => document.querySelector(`#${id} rect`).classList.add("held"));
+      step.wait.forEach(id => document.getElementById(id).classList.add("on"));
+      (step.waitingPhilos || []).forEach(id => document.querySelector(`#${id} circle`).classList.add("wait"));
+    }
+    document.getElementById("prev").addEventListener("click", () => { i = Math.max(0, i - 1); render(); });
+    document.getElementById("next").addEventListener("click", () => { i = Math.min(steps.length - 1, i + 1); render(); });
+    render();
+  </script>
+</body>
+</html>

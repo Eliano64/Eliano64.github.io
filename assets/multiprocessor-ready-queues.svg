@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+  <title id="title">公共就绪队列与私有就绪队列</title>
+  <desc id="desc">左侧展示多个 CPU 共享一个公共就绪队列；右侧展示每个 CPU 拥有自己的私有就绪队列。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --queue:#e6eef9; --cpu:#dbeafe; --cache:#fff7ed; --proc:#2563eb; --proc2:#0f766e; --accent:#b45309;
+      --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --queue:#263142; --cpu:#223553; --cache:#3b3025; --proc:#7aa2ff; --proc2:#62d4c5; --accent:#f6b85f;
+        --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:25px; font-weight:700; }
+    .panel { fill:var(--panel); stroke:var(--line); stroke-width:1.5; rx:16; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .head { fill:var(--text); font-size:20px; font-weight:700; }
+    .label { fill:var(--text); font-size:14px; font-weight:700; }
+    .small { fill:var(--muted); font-size:13px; }
+    .box { fill:var(--queue); stroke:var(--line); stroke-width:1.3; rx:10; }
+    .cpu { fill:var(--cpu); stroke:var(--line); stroke-width:1.3; rx:10; }
+    .cache { fill:var(--cache); stroke:var(--line); stroke-width:1.1; rx:8; }
+    .chip { stroke:var(--line); stroke-width:1; rx:8; }
+    .chipText { fill:#fff; font-size:13px; font-weight:700; }
+    .arrow { stroke:var(--line); stroke-width:2; fill:none; marker-end:url(#arrow); }
+    .lock { fill:var(--accent); font-size:13px; font-weight:700; }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.chipText{fill:#0f172a}}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="560" y="42" text-anchor="middle">多处理机调度的两种就绪队列组织</text>
+
+  <g transform="translate(42 84)">
+    <rect class="panel" x="0" y="0" width="500" height="490"/>
+    <text class="head" x="250" y="38" text-anchor="middle">公共就绪队列</text>
+    <text class="small" x="250" y="64" text-anchor="middle">所有 CPU 共享同一个内核就绪队列</text>
+
+    <rect class="box" x="82" y="92" width="336" height="116"/>
+    <text class="label" x="250" y="118" text-anchor="middle">公共就绪队列</text>
+    <g transform="translate(106 140)">
+      <rect class="chip" x="0" y="0" width="54" height="34" fill="var(--proc)"/><text class="chipText" x="27" y="22" text-anchor="middle">P1</text>
+      <rect class="chip" x="64" y="0" width="54" height="34" fill="var(--proc2)"/><text class="chipText" x="91" y="22" text-anchor="middle">P2</text>
+      <rect class="chip" x="128" y="0" width="54" height="34" fill="var(--proc)"/><text class="chipText" x="155" y="22" text-anchor="middle">P3</text>
+      <rect class="chip" x="192" y="0" width="54" height="34" fill="var(--proc2)"/><text class="chipText" x="219" y="22" text-anchor="middle">P4</text>
+      <rect class="chip" x="256" y="0" width="54" height="34" fill="var(--proc)"/><text class="chipText" x="283" y="22" text-anchor="middle">P5</text>
+    </g>
+    <text class="lock" x="250" y="194" text-anchor="middle">访问共享队列需要互斥</text>
+
+    <g transform="translate(46 286)">
+      <rect class="cpu" x="0" y="0" width="86" height="58"/><text class="label" x="43" y="34" text-anchor="middle">CPU1</text>
+      <rect class="cache" x="0" y="70" width="86" height="42"/><text class="small" x="43" y="96" text-anchor="middle">Cache</text>
+    </g>
+    <g transform="translate(158 286)">
+      <rect class="cpu" x="0" y="0" width="86" height="58"/><text class="label" x="43" y="34" text-anchor="middle">CPU2</text>
+      <rect class="cache" x="0" y="70" width="86" height="42"/><text class="small" x="43" y="96" text-anchor="middle">Cache</text>
+    </g>
+    <g transform="translate(270 286)">
+      <rect class="cpu" x="0" y="0" width="86" height="58"/><text class="label" x="43" y="34" text-anchor="middle">CPU3</text>
+      <rect class="cache" x="0" y="70" width="86" height="42"/><text class="small" x="43" y="96" text-anchor="middle">Cache</text>
+    </g>
+    <g transform="translate(382 286)">
+      <rect class="cpu" x="0" y="0" width="86" height="58"/><text class="label" x="43" y="34" text-anchor="middle">CPU4</text>
+      <rect class="cache" x="0" y="70" width="86" height="42"/><text class="small" x="43" y="96" text-anchor="middle">Cache</text>
+    </g>
+
+    <path class="arrow" d="M250 208 C250 248, 90 240, 89 284"/>
+    <path class="arrow" d="M250 208 C250 246, 202 246, 201 284"/>
+    <path class="arrow" d="M250 208 C250 246, 313 246, 313 284"/>
+    <path class="arrow" d="M250 208 C250 248, 425 240, 425 284"/>
+
+    <text class="small" x="250" y="435" text-anchor="middle">优点：负载容易均衡</text>
+    <text class="small" x="250" y="460" text-anchor="middle">缺点：进程可能频繁换 CPU，亲和性较差</text>
+  </g>
+
+  <g transform="translate(578 84)">
+    <rect class="panel" x="0" y="0" width="500" height="490"/>
+    <text class="head" x="250" y="38" text-anchor="middle">私有就绪队列</text>
+    <text class="small" x="250" y="64" text-anchor="middle">每个 CPU 从自己的队列中选择进程</text>
+
+    <g transform="translate(42 96)">
+      <rect class="cpu" x="0" y="0" width="86" height="54"/><text class="label" x="43" y="32" text-anchor="middle">CPU1</text>
+      <rect class="cache" x="0" y="64" width="86" height="38"/><text class="small" x="43" y="88" text-anchor="middle">Cache</text>
+      <rect class="box" x="-10" y="122" width="106" height="166"/>
+      <text class="small" x="43" y="146" text-anchor="middle">队列1</text>
+      <rect class="chip" x="16" y="162" width="54" height="30" fill="var(--proc)"/><text class="chipText" x="43" y="182" text-anchor="middle">P1</text>
+      <rect class="chip" x="16" y="204" width="54" height="30" fill="var(--proc2)"/><text class="chipText" x="43" y="224" text-anchor="middle">P5</text>
+    </g>
+    <g transform="translate(154 96)">
+      <rect class="cpu" x="0" y="0" width="86" height="54"/><text class="label" x="43" y="32" text-anchor="middle">CPU2</text>
+      <rect class="cache" x="0" y="64" width="86" height="38"/><text class="small" x="43" y="88" text-anchor="middle">Cache</text>
+      <rect class="box" x="-10" y="122" width="106" height="166"/>
+      <text class="small" x="43" y="146" text-anchor="middle">队列2</text>
+      <rect class="chip" x="16" y="162" width="54" height="30" fill="var(--proc2)"/><text class="chipText" x="43" y="182" text-anchor="middle">P2</text>
+      <rect class="chip" x="16" y="204" width="54" height="30" fill="var(--proc)"/><text class="chipText" x="43" y="224" text-anchor="middle">P6</text>
+    </g>
+    <g transform="translate(266 96)">
+      <rect class="cpu" x="0" y="0" width="86" height="54"/><text class="label" x="43" y="32" text-anchor="middle">CPU3</text>
+      <rect class="cache" x="0" y="64" width="86" height="38"/><text class="small" x="43" y="88" text-anchor="middle">Cache</text>
+      <rect class="box" x="-10" y="122" width="106" height="166"/>
+      <text class="small" x="43" y="146" text-anchor="middle">队列3</text>
+      <rect class="chip" x="16" y="162" width="54" height="30" fill="var(--proc)"/><text class="chipText" x="43" y="182" text-anchor="middle">P3</text>
+    </g>
+    <g transform="translate(378 96)">
+      <rect class="cpu" x="0" y="0" width="86" height="54"/><text class="label" x="43" y="32" text-anchor="middle">CPU4</text>
+      <rect class="cache" x="0" y="64" width="86" height="38"/><text class="small" x="43" y="88" text-anchor="middle">Cache</text>
+      <rect class="box" x="-10" y="122" width="106" height="166"/>
+      <text class="small" x="43" y="146" text-anchor="middle">队列4</text>
+      <rect class="chip" x="16" y="162" width="54" height="30" fill="var(--proc2)"/><text class="chipText" x="43" y="182" text-anchor="middle">P4</text>
+      <rect class="chip" x="16" y="204" width="54" height="30" fill="var(--proc)"/><text class="chipText" x="43" y="224" text-anchor="middle">P8</text>
+      <rect class="chip" x="16" y="246" width="54" height="30" fill="var(--proc2)"/><text class="chipText" x="43" y="266" text-anchor="middle">P12</text>
+    </g>
+
+    <text class="small" x="250" y="435" text-anchor="middle">优点：进程更容易留在同一 CPU，Cache 命中更稳定</text>
+    <text class="small" x="250" y="460" text-anchor="middle">缺点：各队列长短可能不同，需要迁移来均衡负载</text>
+  </g>
+</svg>

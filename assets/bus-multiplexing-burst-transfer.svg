@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+  <title id="title">总线复用与突发传输</title>
+  <desc id="desc">展示地址数据复用总线先传地址再传数据，以及突发传输一次给出首地址后连续传多个数据。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #172033;
+      --muted: #64748b;
+      --line: #94a3b8;
+      --box: #f8fafc;
+      --addr: #2563eb;
+      --data: #16a34a;
+      --ctrl: #dc2626;
+      --slot: #e2e8f0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #a8b3c3;
+        --line: #64748b;
+        --box: #111827;
+        --addr: #60a5fa;
+        --data: #4ade80;
+        --ctrl: #f87171;
+        --slot: #1f2937;
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif; }
+    text { fill: var(--fg); }
+    .title { font-size: 30px; font-weight: 700; }
+    .h { font-size: 21px; font-weight: 700; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .label { font-size: 16px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    .box { fill: var(--box); stroke: var(--line); stroke-width: 1.8; rx: 10; }
+    .slot { fill: var(--slot); stroke: var(--line); stroke-width: 1.5; rx: 8; }
+    .addr { fill: color-mix(in srgb, var(--addr) 16%, var(--box)); stroke: var(--addr); }
+    .data { fill: color-mix(in srgb, var(--data) 16%, var(--box)); stroke: var(--data); }
+    .ctrl { fill: color-mix(in srgb, var(--ctrl) 16%, var(--box)); stroke: var(--ctrl); }
+    .line { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .bus { stroke: var(--line); stroke-width: 5; stroke-linecap: round; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+  <rect width="1120" height="620" fill="var(--bg)" />
+  <text class="title" x="54" y="58">总线复用与突发传输</text>
+  <text class="small" x="54" y="90">复用减少物理线数；突发传输减少连续数据块传输时重复给地址的开销。</text>
+
+  <rect class="box" x="62" y="130" width="996" height="200" />
+  <text class="h" x="92" y="170">地址/数据复用</text>
+  <text class="small" x="92" y="204">同一组地址/数据线在不同时间承担不同功能。</text>
+  <line class="bus" x1="110" y1="270" x2="980" y2="270" />
+  <text class="small" x="110" y="250">AD[31:0]</text>
+  <rect class="slot addr" x="260" y="236" width="150" height="68" />
+  <text class="label" x="335" y="270">先传地址</text>
+  <rect class="slot ctrl" x="454" y="236" width="150" height="68" />
+  <text class="label" x="529" y="260">锁存地址</text>
+  <text class="label" x="529" y="282">切换用途</text>
+  <rect class="slot data" x="648" y="236" width="150" height="68" />
+  <text class="label" x="723" y="270">再传数据</text>
+  <path class="line" d="M410 270 H454" />
+  <path class="line" d="M604 270 H648" />
+
+  <rect class="box" x="62" y="370" width="996" height="200" />
+  <text class="h" x="92" y="410">突发传输</text>
+  <text class="small" x="92" y="444">一次给出首地址，随后连续传送多个相邻数据。</text>
+  <g transform="translate(250 474)">
+    <rect class="slot addr" x="0" y="0" width="110" height="60" />
+    <text class="label" x="55" y="30">地址 A</text>
+    <rect class="slot data" x="138" y="0" width="110" height="60" />
+    <text class="label" x="193" y="30">数据 D0</text>
+    <rect class="slot data" x="276" y="0" width="110" height="60" />
+    <text class="label" x="331" y="30">数据 D1</text>
+    <rect class="slot data" x="414" y="0" width="110" height="60" />
+    <text class="label" x="469" y="30">数据 D2</text>
+    <rect class="slot data" x="552" y="0" width="110" height="60" />
+    <text class="label" x="607" y="30">数据 D3</text>
+    <path class="line" d="M110 30 H138" />
+    <path class="line" d="M248 30 H276" />
+    <path class="line" d="M386 30 H414" />
+    <path class="line" d="M524 30 H552" />
+  </g>
+  <text class="small" x="92" y="560">适合连续地址的数据块传输，例如 Cache 块、主存连续字或 I/O 块传输。</text>
+</svg>

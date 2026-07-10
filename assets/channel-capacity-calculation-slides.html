@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>信道容量计算流程</title>
+<style>
+  :root{--bg:#ffffff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--blue-bg:#dbeafe;--green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3c7;--red:#dc2626;--red-bg:#fee2e2}
+  @media (prefers-color-scheme: dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--blue-bg:#1e3a8a;--green:#4ade80;--green-bg:#14532d;--amber:#fbbf24;--amber-bg:#713f12;--red:#f87171;--red-bg:#7f1d1d}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+  .wrap{width:100%;min-height:740px;padding:28px 34px;display:grid;grid-template-rows:auto 1fr auto;gap:18px}
+  h1{margin:0;font-size:28px;line-height:1.2}
+  .stage{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:stretch}
+  .panel{background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:22px}
+  .flow{display:grid;gap:12px}
+  .box{border:2px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--bg);font-size:18px;font-weight:700}
+  .box.active{border-color:var(--blue);background:var(--blue-bg)}
+  .box.warn{border-color:var(--amber);background:var(--amber-bg)}
+  .box.result{border-color:var(--green);background:var(--green-bg)}
+  .arrow{text-align:center;color:var(--muted);font-size:22px;line-height:1}
+  .formula{font-size:25px;font-weight:800;margin:12px 0;color:var(--text)}
+  .small{font-size:16px;color:var(--muted);line-height:1.65}
+  .example{display:none}
+  .example.active{display:block}
+  .steps{display:flex;gap:8px;justify-content:center}
+  button{border:2px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;padding:8px 14px;font-size:15px;cursor:pointer}
+  button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-bg);font-weight:700}
+  code{font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>信道容量计算：先判断限制，再代公式</h1>
+  <div class="stage">
+    <div class="panel">
+      <div class="flow">
+        <div class="box active" id="f1">1. 题目给带宽 W、码元状态数 M？</div>
+        <div class="arrow">↓</div>
+        <div class="box" id="f2">2. 题目给信噪比 S/N 或 dB？</div>
+        <div class="arrow">↓</div>
+        <div class="box" id="f3">3. 若两类条件都给，取更小限制</div>
+        <div class="arrow">↓</div>
+        <div class="box result" id="f4">4. 写出单位：Hz、Baud、b/s</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="example active" data-step="0">
+        <h2>奈奎斯特路线</h2>
+        <p class="small">已知理想低通信道带宽 <code>W=3 kHz</code>，采用 16 种码元状态，问无码间串扰的最高数据率。</p>
+        <div class="formula">R = 2W log₂M</div>
+        <p class="small">先统一单位：<code>W=3000 Hz</code>，<code>M=16</code>。</p>
+        <div class="formula">R = 2 × 3000 × 4 = 24000 b/s</div>
+      </div>
+      <div class="example" data-step="1">
+        <h2>香农路线</h2>
+        <p class="small">已知信道带宽 <code>W=3 kHz</code>，信噪比为 <code>30 dB</code>，问极限信息传输速率。</p>
+        <div class="formula">S/N = 10^(30/10) = 1000</div>
+        <div class="formula">C = 3000 log₂(1+1000)</div>
+        <p class="small">因为 <code>log₂1001 ≈ 10</code>，所以 <code>C ≈ 30000 b/s</code>。</p>
+      </div>
+      <div class="example" data-step="2">
+        <h2>两类限制同时出现</h2>
+        <p class="small">若同一题同时给出 <code>W</code>、<code>M</code> 和信噪比，就分别算奈奎斯特上限与香农上限。</p>
+        <div class="formula">R ≤ min(2W log₂M, W log₂(1+S/N))</div>
+        <p class="small">物理可达速率不能超过两个限制中更小的那个。</p>
+      </div>
+      <div class="example" data-step="3">
+        <h2>易错点</h2>
+        <p class="small">奈奎斯特公式里的 <code>W</code> 是频率带宽，单位 Hz；香农公式中的 dB 不能直接代入，必须先换成普通信噪比。</p>
+        <div class="formula">S/N = 10^(dB/10)</div>
+        <p class="small">计算结果写成 b/s、kb/s 或 Mb/s 时，按计网速率的十进制单位换算。</p>
+      </div>
+    </div>
+  </div>
+  <div class="steps" aria-label="切换步骤">
+    <button type="button" aria-pressed="true" data-step="0">奈氏</button>
+    <button type="button" aria-pressed="false" data-step="1">香农</button>
+    <button type="button" aria-pressed="false" data-step="2">同时给</button>
+    <button type="button" aria-pressed="false" data-step="3">易错点</button>
+  </div>
+</div>
+<script>
+  const buttons=[...document.querySelectorAll('button[data-step]')];
+  const examples=[...document.querySelectorAll('.example')];
+  const boxes=[document.getElementById('f1'),document.getElementById('f2'),document.getElementById('f3'),document.getElementById('f4')];
+  function show(step){
+    buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.step===String(step))));
+    examples.forEach(e=>e.classList.toggle('active',e.dataset.step===String(step)));
+    boxes.forEach((box,i)=>box.classList.toggle('active',i===Number(step)));
+    boxes[2].classList.toggle('warn',Number(step)===2);
+  }
+  buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.step)));
+</script>
+</body>
+</html>

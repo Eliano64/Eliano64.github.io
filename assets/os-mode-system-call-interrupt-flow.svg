@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="470" viewBox="0 0 1040 470" role="img" aria-labelledby="title desc">
+  <title id="title">CPU mode switch, system call, exception, and interrupt flow</title>
+  <desc id="desc">A flow diagram showing user mode code entering kernel mode by trap, exception, or interrupt, then returning to user mode.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #172033;
+      --muted: #64748b;
+      --line: #94a3b8;
+      --user: #dbeafe;
+      --kernel: #dcfce7;
+      --warn: #fee2e2;
+      --accent: #2563eb;
+      --accent2: #16a34a;
+      --accent3: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #64748b;
+        --user: #1e3a8a;
+        --kernel: #14532d;
+        --warn: #7f1d1d;
+        --accent: #60a5fa;
+        --accent2: #4ade80;
+        --accent3: #f87171;
+      }
+    }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--fg); }
+    .bg { fill: var(--bg); }
+    .box { stroke: var(--line); stroke-width: 2; rx: 10; }
+    .title { font-size: 24px; font-weight: 700; }
+    .body { font-size: 17px; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+    .arrow2 { fill: none; stroke: var(--accent2); stroke-width: 3; marker-end: url(#arrow2); }
+    .arrow3 { fill: none; stroke: var(--accent3); stroke-width: 3; marker-end: url(#arrow3); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent2)"/>
+    </marker>
+    <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent3)"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1040" height="470"/>
+  <rect class="box" x="70" y="56" width="900" height="120" fill="var(--user)"/>
+  <text class="title" x="105" y="92">用户态</text>
+  <text class="body" x="105" y="124">运行应用程序，只能执行非特权指令</text>
+  <text class="small" x="105" y="150">系统调用前：准备参数，执行 trap / 访管指令</text>
+  <rect class="box" x="70" y="292" width="900" height="120" fill="var(--kernel)"/>
+  <text class="title" x="105" y="328">内核态</text>
+  <text class="body" x="105" y="360">运行内核程序，可以执行特权指令并访问内核数据结构</text>
+  <text class="small" x="105" y="386">处理系统调用、异常、中断，再返回用户程序或切换到其他进程</text>
+  <rect class="box" x="130" y="206" width="210" height="54" fill="var(--warn)"/>
+  <text class="body" x="235" y="238" text-anchor="middle">异常 / trap</text>
+  <rect class="box" x="415" y="206" width="210" height="54" fill="var(--warn)"/>
+  <text class="body" x="520" y="238" text-anchor="middle">外部中断</text>
+  <rect class="box" x="700" y="206" width="210" height="54" fill="var(--warn)"/>
+  <text class="body" x="805" y="238" text-anchor="middle">非法特权指令</text>
+  <path class="arrow" d="M 235 176 L 235 206"/>
+  <path class="arrow" d="M 235 260 L 235 292"/>
+  <path class="arrow2" d="M 520 176 L 520 206"/>
+  <path class="arrow2" d="M 520 260 L 520 292"/>
+  <path class="arrow3" d="M 805 176 L 805 206"/>
+  <path class="arrow3" d="M 805 260 L 805 292"/>
+  <path class="arrow2" d="M 720 292 C 725 235 725 220 720 176"/>
+  <text class="small" x="752" y="262">中断返回 / 恢复现场</text>
+  <text class="small" x="760" y="286">PSW 状态位回到用户态</text>
+</svg>

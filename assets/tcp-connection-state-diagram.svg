@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="880" viewBox="0 0 1100 880" role="img" aria-labelledby="title desc">
+  <title id="title">TCP connection states with state intervals</title>
+  <desc id="desc">TCP connection states shown as vertical state intervals for client and server, with handshake and close messages crossing between interval boundaries.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:#172033}
+    .label{font-size:23px;font-weight:700}
+    .head{font-size:18px;font-weight:700}
+    .small{font-size:14px}
+    .code{font-family:Consolas,monospace;font-size:14px}
+    .stateText{font-family:Consolas,monospace;font-size:16px;font-weight:700}
+    .state{fill:#f8fafc;stroke:#1f2937;stroke-width:2}
+    .open{fill:#dbeafe}
+    .est{fill:#dcfce7}
+    .close{fill:#fee2e2}
+    .msg{stroke:#2563eb;stroke-width:2.8;fill:none;marker-end:url(#arrB)}
+    .ack{stroke:#16a34a;stroke-width:2.8;fill:none;marker-end:url(#arrG)}
+    .fin{stroke:#dc2626;stroke-width:2.8;fill:none;marker-end:url(#arrR)}
+    .bracket{stroke:#64748b;stroke-width:2;fill:none}
+    .dash{stroke:#64748b;stroke-width:2;stroke-dasharray:6 6;fill:none}
+    @media(prefers-color-scheme:dark){
+      text{fill:#e5e7eb}.state{fill:#111827;stroke:#cbd5e1}.open{fill:#10213f}.est{fill:#0f2b1d}.close{fill:#3b0d0d}
+      .msg{stroke:#60a5fa}.ack{stroke:#4ade80}.fin{stroke:#f87171}.bracket,.dash{stroke:#94a3b8}
+    }
+  </style>
+  <defs>
+    <marker id="arrB" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker>
+    <marker id="arrG" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#16a34a"/></marker>
+    <marker id="arrR" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/></marker>
+  </defs>
+
+  <text x="550" y="40" text-anchor="middle" class="label">TCP 连接状态图：状态区间与报文边界</text>
+  <text x="550" y="68" text-anchor="middle" class="small">典型情形：客户端主动打开、主动关闭；服务器被动打开、被动关闭。时间自上而下。</text>
+
+  <text x="220" y="112" text-anchor="middle" class="head">客户端 A</text>
+  <text x="880" y="112" text-anchor="middle" class="head">服务器 B</text>
+
+  <path d="M70 130 L70 820" class="bracket" marker-end="url(#arrB)"/>
+  <text x="42" y="150" text-anchor="middle" class="small">时间</text>
+  <text x="42" y="170" text-anchor="middle" class="small">向下</text>
+
+  <g id="client">
+    <rect x="145" y="130" width="150" height="60" class="state"/>
+    <text x="220" y="166" text-anchor="middle" class="stateText">CLOSED</text>
+    <rect x="145" y="190" width="150" height="128" class="state open"/>
+    <text x="220" y="248" text-anchor="middle" class="stateText">SYN-</text>
+    <text x="220" y="270" text-anchor="middle" class="stateText">SENT</text>
+    <rect x="145" y="318" width="150" height="150" class="state est"/>
+    <text x="220" y="386" text-anchor="middle" class="stateText">ESTAB-</text>
+    <text x="220" y="408" text-anchor="middle" class="stateText">LISHED</text>
+    <rect x="145" y="468" width="150" height="70" class="state close"/>
+    <text x="220" y="510" text-anchor="middle" class="stateText">FIN-WAIT-1</text>
+    <rect x="145" y="538" width="150" height="100" class="state close"/>
+    <text x="220" y="594" text-anchor="middle" class="stateText">FIN-WAIT-2</text>
+    <rect x="145" y="638" width="150" height="122" class="state close"/>
+    <text x="220" y="692" text-anchor="middle" class="stateText">TIME-</text>
+    <text x="220" y="714" text-anchor="middle" class="stateText">WAIT</text>
+    <rect x="145" y="760" width="150" height="60" class="state"/>
+    <text x="220" y="796" text-anchor="middle" class="stateText">CLOSED</text>
+  </g>
+
+  <g id="server">
+    <rect x="805" y="130" width="150" height="60" class="state"/>
+    <text x="880" y="166" text-anchor="middle" class="stateText">CLOSED</text>
+    <rect x="805" y="190" width="150" height="92" class="state open"/>
+    <text x="880" y="242" text-anchor="middle" class="stateText">LISTEN</text>
+    <rect x="805" y="282" width="150" height="86" class="state open"/>
+    <text x="880" y="320" text-anchor="middle" class="stateText">SYN-</text>
+    <text x="880" y="342" text-anchor="middle" class="stateText">RCVD</text>
+    <rect x="805" y="368" width="150" height="132" class="state est"/>
+    <text x="880" y="428" text-anchor="middle" class="stateText">ESTAB-</text>
+    <text x="880" y="450" text-anchor="middle" class="stateText">LISHED</text>
+    <rect x="805" y="500" width="150" height="108" class="state close"/>
+    <text x="880" y="548" text-anchor="middle" class="stateText">CLOSE-</text>
+    <text x="880" y="570" text-anchor="middle" class="stateText">WAIT</text>
+    <rect x="805" y="608" width="150" height="92" class="state close"/>
+    <text x="880" y="660" text-anchor="middle" class="stateText">LAST-ACK</text>
+    <rect x="805" y="700" width="150" height="60" class="state"/>
+    <text x="880" y="736" text-anchor="middle" class="stateText">CLOSED</text>
+  </g>
+
+  <text x="100" y="178" class="small">主动打开</text>
+  <path d="M95 190 L145 190" class="bracket" marker-end="url(#arrB)"/>
+  <text x="990" y="178" class="small">被动打开</text>
+  <path d="M1005 190 L955 190" class="bracket" marker-end="url(#arrB)"/>
+
+  <path d="M295 190 L805 282" class="msg"/>
+  <text x="550" y="220" text-anchor="middle" class="code">SYN=1, seq=x</text>
+
+  <path d="M805 282 L295 318" class="msg"/>
+  <text x="550" y="288" text-anchor="middle" class="code">SYN=1, ACK=1, seq=y, ack=x+1</text>
+
+  <path d="M295 318 L805 368" class="ack"/>
+  <text x="550" y="350" text-anchor="middle" class="code">ACK=1, seq=x+1, ack=y+1</text>
+
+  <rect x="445" y="400" width="210" height="46" rx="6" class="state est"/>
+  <text x="550" y="429" text-anchor="middle" class="head">数据传送</text>
+  <path d="M445 423 L380 423" class="ack"/>
+  <path d="M655 423 L720 423" class="ack"/>
+
+  <path d="M295 468 L805 500" class="fin"/>
+  <text x="550" y="475" text-anchor="middle" class="code">FIN=1, ACK=1, seq=u, ack=v</text>
+
+  <path d="M805 500 L295 538" class="ack"/>
+  <text x="550" y="525" text-anchor="middle" class="code">ACK=1, seq=v, ack=u+1</text>
+
+  <path d="M805 608 L295 638" class="fin"/>
+  <text x="550" y="615" text-anchor="middle" class="code">FIN=1, ACK=1, seq=w, ack=u+1</text>
+
+  <path d="M295 638 L805 700" class="ack"/>
+  <text x="550" y="675" text-anchor="middle" class="code">ACK=1, seq=u+1, ack=w+1</text>
+
+  <path d="M310 638 C390 665,410 720,310 760" class="dash"/>
+  <text x="365" y="704" class="small">等待 2MSL</text>
+  <text x="1060" y="682" text-anchor="end" class="small">服务器收到最后 ACK</text>
+  <text x="1060" y="704" text-anchor="end" class="small">后进入 CLOSED</text>
+
+  <text x="550" y="850" text-anchor="middle" class="small">每个状态框表示一段持续时间；报文斜线的起点和终点对应状态变化的边界。</text>
+</svg>

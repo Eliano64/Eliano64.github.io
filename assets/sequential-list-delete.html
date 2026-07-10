@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>顺序表删除过程</title>
+  <style>
+    :root{--ink:#17212b;--muted:#5b6876;--line:#334e68;--accent:#0f766e;--warn:#b45309;--bg:#f8fafc;--panel:#fff}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}
+    main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header,footer{padding:18px 28px;background:#fff;border-bottom:1px solid #dbe3ea}footer{border-top:1px solid #dbe3ea;border-bottom:0;display:flex;justify-content:space-between;align-items:center}
+    h1{font-size:24px;margin:0}.slide{display:none;padding:28px;gap:24px;grid-template-columns:1fr 1fr}.slide.active{display:grid}h2{font-size:27px;margin:0 0 12px}p{font-size:18px;line-height:1.65}
+    .panel{background:var(--panel);border:1px solid #d8e1e8;border-radius:8px;padding:20px}.array{display:flex;margin:24px 0 8px}.cell{width:78px;height:62px;border:2px solid var(--line);display:grid;place-items:center;background:#eef6ff;font-size:20px;font-weight:700}.target{outline:4px solid var(--warn);outline-offset:-4px}.move{background:#fef3c7}.empty{background:#f4f6f8;color:#8a96a3;border-style:dashed}.idx{display:flex}.idx span{width:78px;text-align:center;color:var(--muted);font-size:14px}
+    pre{margin:0;background:#111827;color:#e5e7eb;border-radius:8px;padding:18px;overflow:auto;font-size:16px;line-height:1.55}code{font-family:Consolas,monospace}button{border:1px solid #a7b4c2;background:#fff;border-radius:6px;padding:9px 14px;font-size:15px}.count{color:var(--muted)}
+    @media (prefers-color-scheme: dark){:root{--ink:#e6edf3;--muted:#b8c4cf;--line:#9ccfd8;--accent:#5eead4;--warn:#f6c177;--bg:#0f1720;--panel:#16212c}header,footer{background:#111b26;border-color:#2c3a47}.panel{background:var(--panel);border-color:#2c3a47}.cell{background:#16212c;color:#e6edf3}.move{background:#3a2a12}.empty{background:#1b2430;color:#b8c4cf}pre{background:#080d13;color:#e6edf3}button{background:#16212c;color:#e6edf3;border-color:#52616b}}
+  </style>
+</head>
+<body><main>
+  <header><h1>顺序表删除：保存值、前移、缩短表长</h1></header>
+  <section class="slide active"><div class="panel"><h2>1. 定位第 index 个元素</h2><p>删除第 3 位时，数组下标是 <code>index - 1 = 2</code>。</p><div class="array"><div class="cell">a1</div><div class="cell">a2</div><div class="cell target">a3</div><div class="cell">a4</div><div class="cell">a5</div></div><div class="idx"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span></div></div><pre><code>*deletedValue = list->data[index - 1];</code></pre></section>
+  <section class="slide"><div class="panel"><h2>2. 后继元素依次前移</h2><p><code>a4</code> 覆盖 <code>a3</code> 的位置，<code>a5</code> 覆盖 <code>a4</code> 的位置。</p><div class="array"><div class="cell">a1</div><div class="cell">a2</div><div class="cell move">a4</div><div class="cell move">a5</div><div class="cell empty">old</div></div><div class="idx"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span></div></div><pre><code>for (int moveIndex = index; moveIndex < list->length; moveIndex++) {
+    list->data[moveIndex - 1] = list->data[moveIndex];
+}</code></pre></section>
+  <section class="slide"><div class="panel"><h2>3. length 减 1</h2><p>最后一个旧位置不再属于有效线性表内容，是否清空不影响逻辑表。</p><div class="array"><div class="cell">a1</div><div class="cell">a2</div><div class="cell">a4</div><div class="cell">a5</div><div class="cell empty">unused</div></div><div class="idx"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span></div></div><pre><code>list->length--;</code></pre></section>
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main><script>const slides=[...document.querySelectorAll('.slide')];let index=0;const count=document.getElementById('count');function show(i){index=(i+slides.length)%slides.length;slides.forEach((s,n)=>s.classList.toggle('active',n===index));count.textContent=`${index+1} / ${slides.length}`;}prev.onclick=()=>show(index-1);next.onclick=()=>show(index+1);show(0);</script></body></html>

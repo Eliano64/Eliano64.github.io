@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="620" viewBox="0 0 1080 620" role="img" aria-labelledby="title desc">
+  <title id="title">Process state diagram</title>
+  <desc id="desc">Five process states and legal transitions among them.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #64748b;
+      --line: #64748b;
+      --accent: #2563eb;
+      --create: #dbeafe;
+      --ready: #dcfce7;
+      --run: #fef3c7;
+      --block: #fee2e2;
+      --term: #ede9fe;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #94a3b8;
+        --accent: #60a5fa;
+        --create: #1e3a8a;
+        --ready: #14532d;
+        --run: #713f12;
+        --block: #7f1d1d;
+        --term: #4c1d95;
+      }
+    }
+    .bg { fill: var(--bg); }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--fg); }
+    .title { font-size: 28px; font-weight: 700; }
+    .state-title { font-size: 22px; font-weight: 700; }
+    .state-note { font-size: 14px; fill: var(--muted); }
+    .label { font-size: 15px; fill: var(--fg); }
+    .small { font-size: 13px; fill: var(--muted); }
+    .state { stroke: var(--line); stroke-width: 2.2; rx: 16; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+    .thin { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 6 6; marker-end: url(#arrow-muted); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="var(--accent)"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="var(--line)"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1080" height="620"/>
+  <text class="title" x="540" y="52" text-anchor="middle">进程五状态转换图</text>
+
+  <rect class="state" x="70" y="240" width="150" height="88" fill="var(--create)"/>
+  <text class="state-title" x="145" y="276" text-anchor="middle">创建态</text>
+  <text class="state-note" x="145" y="306" text-anchor="middle">建立 PCB</text>
+
+  <rect class="state" x="330" y="240" width="150" height="88" fill="var(--ready)"/>
+  <text class="state-title" x="405" y="276" text-anchor="middle">就绪态</text>
+  <text class="state-note" x="405" y="306" text-anchor="middle">只差 CPU</text>
+
+  <rect class="state" x="590" y="240" width="150" height="88" fill="var(--run)"/>
+  <text class="state-title" x="665" y="276" text-anchor="middle">运行态</text>
+  <text class="state-note" x="665" y="306" text-anchor="middle">正在执行</text>
+
+  <rect class="state" x="590" y="430" width="150" height="88" fill="var(--block)"/>
+  <text class="state-title" x="665" y="466" text-anchor="middle">阻塞态</text>
+  <text class="state-note" x="665" y="496" text-anchor="middle">等待事件</text>
+
+  <rect class="state" x="850" y="240" width="150" height="88" fill="var(--term)"/>
+  <text class="state-title" x="925" y="276" text-anchor="middle">终止态</text>
+  <text class="state-note" x="925" y="306" text-anchor="middle">回收资源</text>
+
+  <path class="arrow" d="M220 284 L330 284"/>
+  <text class="label" x="275" y="262" text-anchor="middle">创建完成</text>
+
+  <path class="arrow" d="M480 270 C520 230 550 230 590 270"/>
+  <text class="label" x="535" y="220" text-anchor="middle">进程调度</text>
+
+  <path class="arrow" d="M590 300 C550 345 520 345 480 300"/>
+  <text class="label" x="535" y="366" text-anchor="middle">时间片到 / 被抢占</text>
+
+  <path class="arrow" d="M665 328 L665 430"/>
+  <text class="label" x="745" y="385" text-anchor="middle">等待 I/O / 资源</text>
+
+  <path class="arrow" d="M590 474 C472 474 405 420 405 328"/>
+  <text class="label" x="465" y="452" text-anchor="middle">等待事件发生</text>
+
+  <path class="arrow" d="M740 284 L850 284"/>
+  <text class="label" x="795" y="262" text-anchor="middle">退出 / 异常 / 被终止</text>
+
+  <path class="thin" d="M665 430 C760 395 795 350 850 315"/>
+  <text class="small" x="815" y="397" text-anchor="middle">被终止也可进入终止态</text>
+
+  <text class="small" x="540" y="580" text-anchor="middle">阻塞态不能直接进入运行态：事件发生后先回到就绪态，再由调度程序决定是否运行。</text>
+</svg>

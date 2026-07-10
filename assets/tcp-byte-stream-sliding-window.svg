@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="430" viewBox="0 0 1040 430" role="img" aria-labelledby="title desc">
+  <title id="title">TCP byte stream sliding window</title>
+  <desc id="desc">TCP uses byte numbers and cumulative acknowledgments to slide the send and receive windows.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:#172033}
+    .label{font-size:22px;font-weight:700}.small{font-size:14px}.mid{font-size:16px;font-weight:700}.code{font-family:Consolas,monospace;font-size:15px}
+    .done{fill:#dcfce7;stroke:#16a34a}.sent{fill:#dbeafe;stroke:#2563eb}.free{fill:#fef3c7;stroke:#d97706}.no{fill:#fee2e2;stroke:#dc2626}.recv{fill:#ede9fe;stroke:#7c3aed}
+    .box{stroke-width:2}.arrow{stroke:#64748b;stroke-width:2.5;fill:none;marker-end:url(#arr)}
+    @media(prefers-color-scheme:dark){text{fill:#e5e7eb}.done{fill:#0f2b1d;stroke:#4ade80}.sent{fill:#10213f;stroke:#60a5fa}.free{fill:#3b2506;stroke:#fbbf24}.no{fill:#3b0d0d;stroke:#f87171}.recv{fill:#211640;stroke:#a78bfa}.arrow{stroke:#94a3b8}}
+  </style>
+  <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+  <text x="520" y="38" text-anchor="middle" class="label">TCP 字节流、发送窗口与累积确认</text>
+
+  <text x="70" y="92" class="mid">发送方</text>
+  <rect x="120" y="110" width="230" height="58" class="box done"/><text x="235" y="145" text-anchor="middle" class="mid">已确认 0-200</text>
+  <rect x="350" y="110" width="210" height="58" class="box sent"/><text x="455" y="145" text-anchor="middle" class="mid">已发送未确认</text>
+  <rect x="560" y="110" width="220" height="58" class="box free"/><text x="670" y="145" text-anchor="middle" class="mid">允许发送</text>
+  <rect x="780" y="110" width="140" height="58" class="box no"/><text x="850" y="145" text-anchor="middle" class="mid">窗口外</text>
+  <text x="120" y="190" class="code">0</text><text x="345" y="190" class="code">201</text><text x="555" y="190" class="code">301</text><text x="775" y="190" class="code">501</text><text x="915" y="190" class="code">...</text>
+
+  <text x="70" y="265" class="mid">接收方</text>
+  <rect x="120" y="285" width="230" height="58" class="box done"/><text x="235" y="320" text-anchor="middle" class="mid">已交付应用 0-200</text>
+  <rect x="350" y="285" width="430" height="58" class="box recv"/><text x="565" y="320" text-anchor="middle" class="mid">接收窗口 rwnd：允许接收 201-500</text>
+  <rect x="780" y="285" width="140" height="58" class="box no"/><text x="850" y="320" text-anchor="middle" class="mid">暂不接收</text>
+  <text x="345" y="365" class="code">201</text><text x="775" y="365" class="code">501</text>
+
+  <path d="M560 205 L560 270" class="arrow"/>
+  <text x="590" y="232" class="code">ACK=301, rwnd=200</text>
+  <text x="590" y="254" class="small">期望 301；允许再接收 200 B</text>
+
+  <text x="520" y="408" text-anchor="middle" class="small">累积确认只确认“连续按序收到”的最高位置；发送窗口按字节序号滑动。</text>
+</svg>

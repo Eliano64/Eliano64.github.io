@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">Circular singly and doubly linked lists</title>
+  <desc id="desc">Separate diagrams for circular singly linked list and circular doubly linked list with head and tail links.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334e68"/>
+    </marker>
+    <marker id="accentArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f766e"/>
+    </marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      .panel{fill:#ffffff;stroke:#d8e1e8;stroke-width:2}
+      .node{fill:#f8fbff;stroke:#334e68;stroke-width:2}
+      .head{fill:#fff7e6;stroke:#ad6800;stroke-width:2}
+      .txt{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:18px;fill:#102a43}
+      .small{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;fill:#52616b}
+      .ptr{stroke:#334e68;stroke-width:2.4;fill:none;marker-end:url(#arrow)}
+      .accent{stroke:#0f766e;stroke-width:2.6;fill:none;marker-end:url(#accentArrow)}
+      @media (prefers-color-scheme: dark){
+        svg{background:#0f1720}
+        .panel{fill:#111b26;stroke:#2c3a47}
+        .node{fill:#16212c;stroke:#9ccfd8}
+        .head{fill:#2a2113;stroke:#f6c177}
+        .txt{fill:#e6edf3}
+        .small{fill:#b8c4cf}
+        .ptr{stroke:#9ccfd8}
+        .accent{stroke:#5eead4}
+      }
+    </style>
+  </defs>
+
+  <text class="txt" x="36" y="38">循环链表的关键：尾结点回到头结点，遍历不能再等 NULL</text>
+  <text class="small" x="36" y="64">单链表只有 next 回环；双链表同时有 tail->next = head 和 head->prior = tail。</text>
+
+  <rect class="panel" x="40" y="92" width="900" height="190" rx="10"/>
+  <text class="txt" x="68" y="126">循环单链表</text>
+  <text class="small" x="68" y="150">带头结点空表：L->next == L；非空表尾结点的 next 指向头结点。</text>
+  <g transform="translate(95 182)">
+    <rect class="head" x="0" y="0" width="92" height="56" rx="8"/><text class="txt" x="29" y="36">头</text>
+    <rect class="node" x="145" y="0" width="92" height="56" rx="8"/><text class="txt" x="177" y="36">a1</text>
+    <rect class="node" x="290" y="0" width="92" height="56" rx="8"/><text class="txt" x="322" y="36">a2</text>
+    <rect class="node" x="435" y="0" width="92" height="56" rx="8"/><text class="txt" x="467" y="36">a3</text>
+    <path class="ptr" d="M92 28 H140"/>
+    <path class="ptr" d="M237 28 H285"/>
+    <path class="ptr" d="M382 28 H430"/>
+    <path class="accent" d="M527 28 C620 28 640 96 430 112 C185 130 45 108 42 61"/>
+    <text class="small" x="546" y="25">tail->next = L</text>
+  </g>
+
+  <rect class="panel" x="40" y="320" width="900" height="205" rx="10"/>
+  <text class="txt" x="68" y="354">循环双链表</text>
+  <text class="small" x="68" y="378">带头结点空表：L->next == L 且 L->prior == L；非空表首尾双向相连。</text>
+  <g transform="translate(95 415)">
+    <rect class="head" x="0" y="0" width="92" height="56" rx="8"/><text class="txt" x="29" y="36">头</text>
+    <rect class="node" x="145" y="0" width="92" height="56" rx="8"/><text class="txt" x="177" y="36">a1</text>
+    <rect class="node" x="290" y="0" width="92" height="56" rx="8"/><text class="txt" x="322" y="36">a2</text>
+    <rect class="node" x="435" y="0" width="92" height="56" rx="8"/><text class="txt" x="467" y="36">a3</text>
+    <path class="ptr" d="M92 20 H140"/>
+    <path class="ptr" d="M237 20 H285"/>
+    <path class="ptr" d="M382 20 H430"/>
+    <path class="ptr" d="M145 40 H98"/>
+    <path class="ptr" d="M290 40 H243"/>
+    <path class="ptr" d="M435 40 H388"/>
+    <path class="accent" d="M527 18 C640 18 650 102 430 122 C185 145 45 112 42 61"/>
+    <path class="accent" d="M0 43 C-78 43 -80 -82 245 -84 C650 -86 660 40 532 42"/>
+    <text class="small" x="546" y="23">tail->next = L</text>
+    <text class="small" x="546" y="50">L->prior = tail</text>
+  </g>
+</svg>

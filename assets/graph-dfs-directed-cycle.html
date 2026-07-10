@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DFS Directed Cycle Detection</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --panel: #f7f8fb;
+    --text: #162033;
+    --muted: #5d687a;
+    --line: #d8dee9;
+    --edge: #9ba6b4;
+    --tree: #16a34a;
+    --back: #dc2626;
+    --cross: #7c3aed;
+    --active: #f59e0b;
+    --seen: #3b82f6;
+    --done: #64748b;
+    --node: #ffffff;
+    --code: #f3f4f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f14;
+      --panel: #121923;
+      --text: #e7edf6;
+      --muted: #a6b0c0;
+      --line: #2a3444;
+      --edge: #657287;
+      --tree: #4ade80;
+      --back: #f87171;
+      --cross: #c4b5fd;
+      --active: #fbbf24;
+      --seen: #60a5fa;
+      --done: #94a3b8;
+      --node: #172033;
+      --code: #111827;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", Arial, sans-serif; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 18px; }
+  .top { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 12px; }
+  h1 { margin: 0; font-size: 22px; }
+  .hint { color: var(--muted); font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  svg { width: 100%; height: 430px; display: block; }
+  marker path { fill: var(--edge); }
+  .edge { stroke: var(--edge); stroke-width: 3; fill: none; marker-end: url(#arrow); }
+  .tree { stroke: var(--tree); stroke-width: 5; fill: none; marker-end: url(#arrowTree); }
+  .back { stroke: var(--back); stroke-width: 5; fill: none; marker-end: url(#arrowBack); }
+  .cross { stroke: var(--cross); stroke-width: 5; fill: none; marker-end: url(#arrowCross); }
+  .node { fill: var(--node); stroke: var(--edge); stroke-width: 3; }
+  .visiting { stroke: var(--seen); }
+  .active { fill: var(--active); stroke: var(--active); }
+  .done { stroke: var(--done); }
+  text { fill: var(--text); font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+  .explain { line-height: 1.65; font-size: 15px; }
+  pre { margin: 10px 0 0; padding: 12px; overflow: auto; border-radius: 8px; background: var(--code); border: 1px solid var(--line); font-size: 13px; line-height: 1.5; }
+  .legend { display: grid; gap: 8px; margin-top: 12px; }
+  .tag { display: inline-flex; align-items: center; gap: 8px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; border: 3px solid var(--edge); }
+  .dot.visiting { border-color: var(--seen); }
+  .dot.done { border-color: var(--done); }
+  .controls { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  button:hover { border-color: var(--seen); }
+  .counter { color: var(--muted); font-family: Consolas, monospace; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } svg { height: 360px; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div>
+      <h1>DFS 判断有向图是否有环</h1>
+      <div class="hint">关键不是“访问过”，而是“仍在当前递归栈中”。</div>
+    </div>
+    <div class="counter" id="counter"></div>
+  </div>
+  <section class="grid">
+    <div class="panel" id="stage"></div>
+    <div class="panel">
+      <div class="explain" id="explain"></div>
+      <div class="legend">
+        <span class="tag"><span class="dot visiting"></span>visiting：正在当前 DFS 路径中</span>
+        <span class="tag"><span class="dot done"></span>done：该点所有后继已处理完</span>
+        <span class="tag"><span style="display:inline-block;width:22px;height:0;border-top:4px solid var(--cross);"></span>指向 DONE：不直接判环</span>
+      </div>
+      <pre id="code"></pre>
+    </div>
+  </section>
+  <div class="controls">
+    <button id="prev" type="button">上一页</button>
+    <button id="next" type="button">下一页</button>
+  </div>
+</main>
+<script>
+const nodes = {1:[120,215], 2:[280,120], 3:[460,215], 4:[280,320], 5:[610,320]};
+const edges = [[1,2],[2,3],[3,5],[3,4],[4,5],[4,2]];
+const slides = [
+  {title:"从 1 进入 DFS", active:1, visiting:[1], done:[], tree:[], back:null, cross:null, explain:"DFS 开始时把 1 标记为 VISITING，表示它已经在当前递归路径上。", code:"state[1] = VISITING;"},
+  {title:"沿 1 -> 2 -> 3 深入", active:3, visiting:[1,2,3], done:[], tree:[[1,2],[2,3]], back:null, cross:null, explain:"每进入一个新顶点，就把它压入当前递归路径。此时路径是 1 -> 2 -> 3。", code:"state[2] = VISITING;\nstate[3] = VISITING;"},
+  {title:"3 先进入 5", active:5, visiting:[1,2,3,5], done:[], tree:[[1,2],[2,3],[3,5]], back:null, cross:null, explain:"这里故意让 3 先检查邻接点 5。5 进入递归栈后，也是 VISITING。", code:"if (state[5] == UNVISITED) {\n    DFS(5);\n}"},
+  {title:"5 处理完，变成 DONE", active:3, visiting:[1,2,3], done:[5], tree:[[1,2],[2,3],[3,5]], back:null, cross:null, explain:"假设 5 没有能继续深入的未访问后继，DFS(5) 结束。退出递归前把 5 标记为 DONE，它已经不在当前递归栈中。", code:"// DFS(5) 的所有后继处理完\nstate[5] = DONE;\nreturn false;"},
+  {title:"另一条边指向 DONE，不算环", active:4, visiting:[1,2,3,4], done:[5], tree:[[1,2],[2,3],[3,5],[3,4]], back:null, cross:[4,5], explain:"现在 3 继续进入 4。若 4 有一条边指向 5，因为 5 是 DONE，不在当前递归路径中，所以这条边不能说明存在从 5 回到 4 的路径，也不能判为环。", code:"if (state[5] == DONE) {\n    continue;      // 指向已处理完顶点，不是有向环\n}"},
+  {title:"4 指向 2，发现回到递归栈", active:4, visiting:[1,2,3,4], done:[5], tree:[[1,2],[2,3],[3,5],[3,4]], back:[4,2], cross:null, explain:"边 4 -> 2 指向的 2 仍是 VISITING。当前递归路径中已有 2 -> 3 -> 4，又存在 4 -> 2，因此形成有向环。", code:"if (state[2] == VISITING) {\n    return true;   // 找到有向环\n}"},
+  {title:"结论：看递归栈，不只看访问过", active:null, visiting:[1,2,3,4], done:[5], tree:[[1,2],[2,3],[3,5],[3,4]], back:[4,2], cross:[4,5], explain:"同样是指向已经发现过的顶点，指向 DONE 不算环，指向 VISITING 才算环。区别就在于该顶点是否仍在当前 DFS 递归栈中。", code:"UNVISITED: 还没发现，可以递归进入\nVISITING : 仍在当前路径，指向它就是有向环\nDONE     : 已经处理完，指向它不直接构成环"}
+];
+let index = 0;
+function hasEdge(list, a, b) { return list.some(([x,y]) => x === a && y === b); }
+function render() {
+  const s = slides[index];
+  const marker = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowTree" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path style="fill:var(--tree)" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowBack" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path style="fill:var(--back)" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowCross" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path style="fill:var(--cross)" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>`;
+  const edgeMarkup = edges.map(([a,b]) => {
+    const [x1,y1] = nodes[a], [x2,y2] = nodes[b];
+    const cls = s.back && s.back[0] === a && s.back[1] === b ? "back" : s.cross && s.cross[0] === a && s.cross[1] === b ? "cross" : hasEdge(s.tree,a,b) ? "tree" : "edge";
+    return `<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  }).join("");
+  const nodeMarkup = Object.entries(nodes).map(([id,pos]) => {
+    const v = Number(id);
+    const cls = ["node", s.visiting.includes(v) ? "visiting" : "", s.done.includes(v) ? "done" : "", s.active === v ? "active" : ""].join(" ");
+    return `<circle class="${cls}" cx="${pos[0]}" cy="${pos[1]}" r="25"/><text x="${pos[0]}" y="${pos[1]}">${id}</text>`;
+  }).join("");
+  document.getElementById("stage").innerHTML = `<svg viewBox="0 0 700 430" aria-label="${s.title}">${marker}${edgeMarkup}${nodeMarkup}</svg>`;
+  document.getElementById("explain").innerHTML = `<strong>${s.title}</strong><br>${s.explain}`;
+  document.getElementById("code").textContent = s.code;
+  document.getElementById("counter").textContent = `${index + 1} / ${slides.length}`;
+}
+function step(delta) { index = (index + delta + slides.length) % slides.length; render(); }
+document.getElementById("prev").addEventListener("click", event => { event.stopPropagation(); step(-1); });
+document.getElementById("next").addEventListener("click", event => { event.stopPropagation(); step(1); });
+document.body.addEventListener("click", () => step(1));
+document.addEventListener("keydown", event => {
+  if (event.key === "ArrowLeft") step(-1);
+  if (event.key === "ArrowRight" || event.key === " ") step(1);
+});
+render();
+</script>
+</body>
+</html>

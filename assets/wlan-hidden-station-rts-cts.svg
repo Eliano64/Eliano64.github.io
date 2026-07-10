@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img" aria-label="Hidden station and RTS CTS">
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    svg { background: transparent; font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { fill: #111827; font-size: 25px; font-weight: 700; }
+    .text { fill: #334155; font-size: 18px; }
+    .small { fill: #475569; font-size: 15px; }
+    .node { fill: #ffffff; stroke: #64748b; stroke-width: 2.2; }
+    .ap { fill: #2563eb; stroke: #0f172a; stroke-width: 2; }
+    .rangeA { fill: #60a5fa; opacity: .16; stroke: #3b82f6; stroke-width: 2; }
+    .rangeB { fill: #fb923c; opacity: .16; stroke: #f97316; stroke-width: 2; }
+    .line { stroke: #64748b; stroke-width: 2.5; fill: none; }
+    .rts { stroke: #2563eb; stroke-width: 4; fill: none; marker-end: url(#blueArrow); }
+    .cts { stroke: #f97316; stroke-width: 4; fill: none; marker-end: url(#orangeArrow); }
+    .call { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 2; }
+    @media (prefers-color-scheme: dark) {
+      .title { fill: #f8fafc; }
+      .text { fill: #cbd5e1; }
+      .small { fill: #94a3b8; }
+      .node { fill: #111827; stroke: #94a3b8; }
+      .ap { fill: #3b82f6; stroke: #bfdbfe; }
+      .rangeA { opacity: .22; stroke: #60a5fa; }
+      .rangeB { opacity: .22; stroke: #fb923c; }
+      .line { stroke: #94a3b8; }
+      .call { fill: #0f172a; stroke: #475569; }
+    }
+  </style>
+  <defs>
+    <marker id="blueArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="orangeArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#f97316"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="42" text-anchor="middle" class="title">隐藏站问题与 RTS/CTS</text>
+  <ellipse cx="310" cy="245" rx="210" ry="145" class="rangeA"/>
+  <ellipse cx="670" cy="245" rx="210" ry="145" class="rangeB"/>
+  <text x="250" y="112" text-anchor="middle" class="small">A 的信号范围</text>
+  <text x="730" y="112" text-anchor="middle" class="small">B 的信号范围</text>
+
+  <circle cx="245" cy="245" r="38" class="node"/>
+  <text x="245" y="252" text-anchor="middle" class="text">A</text>
+  <circle cx="735" cy="245" r="38" class="node"/>
+  <text x="735" y="252" text-anchor="middle" class="text">B</text>
+  <circle cx="490" cy="245" r="42" class="ap"/>
+  <text x="490" y="253" text-anchor="middle" fill="#fff" font-size="20" font-weight="700">AP</text>
+
+  <line x1="283" y1="245" x2="448" y2="245" class="line"/>
+  <line x1="532" y1="245" x2="697" y2="245" class="line"/>
+  <line x1="283" y1="300" x2="697" y2="300" stroke="#ef4444" stroke-width="3" stroke-dasharray="10 8"/>
+  <text x="490" y="329" text-anchor="middle" class="small">A 与 B 彼此听不到，但都能听到 AP</text>
+
+  <path d="M280 210 C345 155 415 160 463 215" class="rts"/>
+  <text x="370" y="158" text-anchor="middle" class="small">RTS：A -> AP</text>
+  <path d="M517 215 C585 145 660 150 715 212" class="cts"/>
+  <text x="635" y="158" text-anchor="middle" class="small">CTS：AP -> B 可听到</text>
+
+  <rect x="120" y="405" width="740" height="66" rx="12" class="call"/>
+  <text x="490" y="432" text-anchor="middle" class="text">B 听不到 A 的 RTS，但能听到 AP 的 CTS。</text>
+  <text x="490" y="458" text-anchor="middle" class="text">B 根据 CTS 中的持续时间设置 NAV，暂时不发送，避免干扰 AP 接收 A 的数据。</text>
+</svg>

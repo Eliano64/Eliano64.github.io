@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="330" viewBox="0 0 980 330" role="img" aria-labelledby="title desc">
+  <title id="title">序号空间与窗口约束</title>
+  <desc id="desc">发送窗口和接收窗口之和不能超过序号空间。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--text:#172033;--muted:#64748b;--line:#334155;--panel:#f8fafc;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--panel:#111827;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+    .bg{fill:var(--bg)}.t{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-size:18px}.h{font-size:24px;font-weight:800}.ring{fill:none;stroke:var(--line);stroke-width:3}.send{fill:color-mix(in srgb,var(--blue) 22%,transparent);stroke:var(--blue);stroke-width:2}.recv{fill:color-mix(in srgb,var(--green) 22%,transparent);stroke:var(--green);stroke-width:2}.bad{fill:color-mix(in srgb,var(--red) 16%,transparent);stroke:var(--red);stroke-width:2}
+  </style>
+  <rect class="bg" width="980" height="330"/>
+  <text x="60" y="48" class="t h">n bit 序号字段</text>
+  <text x="60" y="82" class="t m">序号空间共有 2^n 个位置，序号循环使用。</text>
+  <g transform="translate(120 112)">
+    <rect x="0" y="0" width="78" height="58" class="send"/><text x="39" y="37" text-anchor="middle" class="t h">0</text>
+    <rect x="78" y="0" width="78" height="58" class="send"/><text x="117" y="37" text-anchor="middle" class="t h">1</text>
+    <rect x="156" y="0" width="78" height="58" class="send"/><text x="195" y="37" text-anchor="middle" class="t h">2</text>
+    <rect x="234" y="0" width="78" height="58" class="send"/><text x="273" y="37" text-anchor="middle" class="t h">3</text>
+    <rect x="312" y="0" width="78" height="58" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="351" y="37" text-anchor="middle" class="t h">4</text>
+    <rect x="390" y="0" width="78" height="58" class="recv"/><text x="429" y="37" text-anchor="middle" class="t h">5</text>
+    <rect x="468" y="0" width="78" height="58" class="recv"/><text x="507" y="37" text-anchor="middle" class="t h">6</text>
+    <rect x="546" y="0" width="78" height="58" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="585" y="37" text-anchor="middle" class="t h">7</text>
+  </g>
+  <text x="276" y="208" text-anchor="middle" class="t m">发送方可能还会重传的旧分组</text>
+  <text x="604" y="208" text-anchor="middle" class="t m">接收方愿意接收的新分组</text>
+  <text x="490" y="270" text-anchor="middle" class="t h">W_T + W_R ≤ 2^n</text>
+  <text x="490" y="300" text-anchor="middle" class="t m">两个窗口不能在循环序号上重叠，否则新旧分组可能无法区分。</text>
+</svg>

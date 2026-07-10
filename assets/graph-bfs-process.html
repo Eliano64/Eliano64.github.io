@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BFS Queue Process</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --panel: #f6f8fb;
+    --text: #152033;
+    --muted: #5f6b7d;
+    --edge: #9aa4b2;
+    --tree: #16a34a;
+    --active: #f59e0b;
+    --seen: #3b82f6;
+    --node: #ffffff;
+    --line: #d8dee9;
+    --code: #f3f4f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f14;
+      --panel: #121923;
+      --text: #e7edf6;
+      --muted: #a7b2c3;
+      --edge: #626f82;
+      --tree: #4ade80;
+      --active: #fbbf24;
+      --seen: #60a5fa;
+      --node: #172033;
+      --line: #2a3444;
+      --code: #111827;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Arial, sans-serif;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 18px; }
+  .top { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 12px; }
+  h1 { font-size: 22px; margin: 0; }
+  .hint { color: var(--muted); font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  svg { width: 100%; height: 420px; display: block; }
+  .edge { stroke: var(--edge); stroke-width: 3; fill: none; }
+  .tree { stroke: var(--tree); stroke-width: 5; fill: none; }
+  .node { fill: var(--node); stroke: var(--edge); stroke-width: 3; }
+  .seen { stroke: var(--seen); }
+  .active { fill: var(--active); stroke: var(--active); }
+  text { fill: var(--text); font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+  .queue { display: flex; gap: 8px; flex-wrap: wrap; min-height: 48px; padding: 8px; border: 1px dashed var(--line); border-radius: 8px; }
+  .q { min-width: 42px; height: 34px; display: grid; place-items: center; border-radius: 7px; background: color-mix(in srgb, var(--seen), transparent 82%); border: 1px solid var(--seen); font-family: Consolas, monospace; font-weight: 700; }
+  .visited { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 10px; }
+  .v { padding: 7px 0; border: 1px solid var(--line); border-radius: 7px; text-align: center; font-family: Consolas, monospace; }
+  .v.on { border-color: var(--seen); background: color-mix(in srgb, var(--seen), transparent 82%); }
+  .explain { line-height: 1.65; font-size: 15px; }
+  pre { margin: 10px 0 0; padding: 12px; overflow: auto; border-radius: 8px; background: var(--code); border: 1px solid var(--line); font-size: 13px; line-height: 1.5; }
+  .controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+  button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  button:hover { border-color: var(--seen); }
+  .counter { color: var(--muted); font-family: Consolas, monospace; }
+  @media (max-width: 820px) {
+    .grid { grid-template-columns: 1fr; }
+    svg { height: 350px; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div>
+      <h1>BFS 队列推进过程</h1>
+      <div class="hint">点击卡片或按钮翻页；示例从顶点 2 出发，邻接点按链表顺序访问。</div>
+    </div>
+    <div class="counter" id="counter"></div>
+  </div>
+  <section class="grid">
+    <div class="panel" id="stage"></div>
+    <div class="panel">
+      <div class="explain" id="explain"></div>
+      <h2 style="font-size:16px;margin:16px 0 8px;">队列</h2>
+      <div class="queue" id="queue"></div>
+      <h2 style="font-size:16px;margin:16px 0 8px;">visited</h2>
+      <div class="visited" id="visited"></div>
+      <pre id="code"></pre>
+    </div>
+  </section>
+  <div class="controls">
+    <button id="prev" type="button">上一页</button>
+    <button id="next" type="button">下一页</button>
+  </div>
+</main>
+<script>
+const nodes = {
+  1: [205, 145], 2: [90, 215], 3: [360, 170], 4: [500, 170],
+  5: [205, 300], 6: [335, 270], 7: [500, 270], 8: [620, 270]
+};
+const edges = [[1,2],[1,5],[2,6],[6,3],[6,7],[3,4],[3,7],[4,7],[4,8],[7,8]];
+const slides = [
+  {
+    title: "初始化",
+    active: null,
+    seen: [],
+    tree: [],
+    queue: [],
+    explain: "所有 visited 初始为 false。BFS 的第一件事不是扫描全图，而是先选定一个起始顶点。",
+    code: "for (int i = 0; i < G->vertexCount; ++i) {\n    visited[i] = false;\n}"
+  },
+  {
+    title: "起点 2 入队",
+    active: 2,
+    seen: [2],
+    tree: [],
+    queue: [2],
+    explain: "访问起点 2，立刻标记 visited[2]，然后让 2 入队。标记要早于入队后的扩展，避免同一个顶点被不同边重复入队。",
+    code: "Visit(2);\nvisited[2] = true;\nEnQueue(&queue, 2);"
+  },
+  {
+    title: "2 出队，发现 1 和 6",
+    active: 2,
+    seen: [1,2,6],
+    tree: [[2,1],[2,6]],
+    queue: [1,6],
+    explain: "队头 2 出队，依次检查 2 的邻接点。1 和 6 没访问过，所以访问、标记、入队，并记录发现边。",
+    code: "DeQueue(&queue, &vertex);       // vertex = 2\nfor (w = FirstNeighbor(G, vertex); w >= 0; w = NextNeighbor(G, vertex, w)) {\n    if (!visited[w]) {\n        Visit(w);\n        visited[w] = true;\n        EnQueue(&queue, w);\n    }\n}"
+  },
+  {
+    title: "1 出队，发现 5",
+    active: 1,
+    seen: [1,2,5,6],
+    tree: [[2,1],[2,6],[1,5]],
+    queue: [6,5],
+    explain: "1 的邻接点有 2 和 5。2 已访问，跳过；5 未访问，入队。BFS 只在第一次发现顶点时记录树边。",
+    code: "vertex = 1;\n// 2 已访问：跳过\n// 5 未访问：Visit + visited + EnQueue"
+  },
+  {
+    title: "6 出队，发现 3 和 7",
+    active: 6,
+    seen: [1,2,3,5,6,7],
+    tree: [[2,1],[2,6],[1,5],[6,3],[6,7]],
+    queue: [5,3,7],
+    explain: "6 的邻接点按当前邻接表顺序检查。若链表写成 2, 3, 7，则 3 会先于 7 入队；如果写成 2, 7, 3，后续序列就会改变。",
+    code: "vertex = 6;\n// 2 已访问：跳过\n// 3 未访问：入队\n// 7 未访问：入队"
+  },
+  {
+    title: "5 出队，没有新顶点",
+    active: 5,
+    seen: [1,2,3,5,6,7],
+    tree: [[2,1],[2,6],[1,5],[6,3],[6,7]],
+    queue: [3,7],
+    explain: "5 只有邻接点 1，而 1 已访问。此时不改变队列，只继续处理下一个队头。",
+    code: "vertex = 5;\n// 1 已访问：跳过"
+  },
+  {
+    title: "3 出队，发现 4",
+    active: 3,
+    seen: [1,2,3,4,5,6,7],
+    tree: [[2,1],[2,6],[1,5],[6,3],[6,7],[3,4]],
+    queue: [7,4],
+    explain: "3 的邻接点 4、6、7 中，6 和 7 已访问，只有 4 是第一次发现，因此记录树边 3-4。",
+    code: "vertex = 3;\n// 4 未访问：入队\n// 6、7 已访问：跳过"
+  },
+  {
+    title: "7 出队，发现 8",
+    active: 7,
+    seen: [1,2,3,4,5,6,7,8],
+    tree: [[2,1],[2,6],[1,5],[6,3],[6,7],[3,4],[7,8]],
+    queue: [4,8],
+    explain: "7 的邻接点中，8 是未访问顶点，入队。到这里所有顶点已被标记，但队列还未空，算法仍要把队列处理完。",
+    code: "vertex = 7;\n// 8 未访问：入队"
+  },
+  {
+    title: "4、8 出队，BFS 结束",
+    active: 8,
+    seen: [1,2,3,4,5,6,7,8],
+    tree: [[2,1],[2,6],[1,5],[6,3],[6,7],[3,4],[7,8]],
+    queue: [],
+    explain: "最后 4 和 8 的邻接点都已访问。队列为空，本次 BFS 调用结束，遍历序列为 2, 1, 6, 5, 3, 7, 4, 8。",
+    code: "while (!QueueEmpty(queue)) {\n    DeQueue(&queue, &vertex);\n    // 扫描 vertex 的所有邻接点\n}"
+  }
+];
+let index = 0;
+
+function hasEdge(list, a, b) {
+  return list.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+}
+
+function render() {
+  const s = slides[index];
+  const edgeMarkup = edges.map(([a,b]) => {
+    const [x1,y1] = nodes[a], [x2,y2] = nodes[b];
+    const cls = hasEdge(s.tree, a, b) ? "tree" : "edge";
+    return `<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  }).join("");
+  const nodeMarkup = Object.entries(nodes).map(([id, pos]) => {
+    const v = Number(id);
+    const cls = ["node", s.seen.includes(v) ? "seen" : "", s.active === v ? "active" : ""].join(" ");
+    return `<circle class="${cls}" cx="${pos[0]}" cy="${pos[1]}" r="24"/><text x="${pos[0]}" y="${pos[1]}">${id}</text>`;
+  }).join("");
+  document.getElementById("stage").innerHTML = `<svg viewBox="0 0 700 420" aria-label="${s.title}">${edgeMarkup}${nodeMarkup}</svg>`;
+  document.getElementById("explain").innerHTML = `<strong>${s.title}</strong><br>${s.explain}`;
+  document.getElementById("queue").innerHTML = s.queue.length ? s.queue.map(v => `<div class="q">${v}</div>`).join("") : `<span class="hint">empty</span>`;
+  document.getElementById("visited").innerHTML = [1,2,3,4,5,6,7,8].map(v => `<div class="v ${s.seen.includes(v) ? "on" : ""}">${v}</div>`).join("");
+  document.getElementById("code").textContent = s.code;
+  document.getElementById("counter").textContent = `${index + 1} / ${slides.length}`;
+}
+function step(delta) {
+  index = (index + delta + slides.length) % slides.length;
+  render();
+}
+document.getElementById("prev").addEventListener("click", event => { event.stopPropagation(); step(-1); });
+document.getElementById("next").addEventListener("click", event => { event.stopPropagation(); step(1); });
+document.body.addEventListener("click", () => step(1));
+document.addEventListener("keydown", event => {
+  if (event.key === "ArrowLeft") step(-1);
+  if (event.key === "ArrowRight" || event.key === " ") step(1);
+});
+render();
+</script>
+</body>
+</html>

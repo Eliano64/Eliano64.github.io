@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">串行 并行 异步传输</title>
+  <desc id="desc">展示串行传输、并行传输和异步传输起止位</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--blue-bg:#dbeafe;--green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3c7;--bit:#e2e8f0}
+    @media (prefers-color-scheme: dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--blue-bg:#1e3a8a;--green:#4ade80;--green-bg:#14532d;--amber:#fbbf24;--amber-bg:#713f12;--bit:#334155}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.host{fill:var(--blue-bg);stroke:var(--blue);stroke-width:2}.wire{stroke:var(--line);stroke-width:3}.arrow{stroke:var(--green);stroke-width:3;marker-end:url(#arrow)}.bit{fill:var(--bit);stroke:var(--line);stroke-width:1.4}.start{fill:var(--amber-bg);stroke:var(--amber);stroke-width:1.6}.stop{fill:var(--green-bg);stroke:var(--green);stroke-width:1.6}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.label{font-size:21px;font-weight:700}.small{font-size:15px;fill:var(--muted)}.bitText{font-size:15px;font-weight:700}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="var(--green)"/></marker></defs>
+  <rect class="bg" width="980" height="560"/>
+  <text x="50" y="54" class="title">传输方式：串行、并行、异步</text>
+  <rect x="55" y="82" width="870" height="130" rx="10" class="panel"/>
+  <text x="90" y="120" class="label">串行传输</text>
+  <rect x="210" y="125" width="95" height="50" rx="8" class="host"/><text x="257" y="156" text-anchor="middle" class="small">发送端</text>
+  <rect x="680" y="125" width="95" height="50" rx="8" class="host"/><text x="727" y="156" text-anchor="middle" class="small">接收端</text>
+  <line x1="315" y1="150" x2="670" y2="150" class="wire"/>
+  <path d="M360 150 H420" class="arrow"/><path d="M455 150 H515" class="arrow"/><path d="M550 150 H610" class="arrow"/>
+  <text x="490" y="194" text-anchor="middle" class="small">一条数据线，按时间顺序逐位发送</text>
+  <rect x="55" y="235" width="870" height="130" rx="10" class="panel"/>
+  <text x="90" y="272" class="label">并行传输</text>
+  <rect x="210" y="280" width="95" height="50" rx="8" class="host"/><text x="257" y="311" text-anchor="middle" class="small">发送端</text>
+  <rect x="680" y="280" width="95" height="50" rx="8" class="host"/><text x="727" y="311" text-anchor="middle" class="small">接收端</text>
+  <g>
+    <line x1="315" y1="272" x2="670" y2="272" class="wire"/><line x1="315" y1="294" x2="670" y2="294" class="wire"/><line x1="315" y1="316" x2="670" y2="316" class="wire"/><line x1="315" y1="338" x2="670" y2="338" class="wire"/>
+    <path d="M390 272 H450" class="arrow"/><path d="M390 294 H450" class="arrow"/><path d="M390 316 H450" class="arrow"/><path d="M390 338 H450" class="arrow"/>
+  </g>
+  <text x="490" y="354" text-anchor="middle" class="small">多条数据线同时发送多个比特，距离长时同步和串扰更难控制</text>
+  <rect x="55" y="388" width="870" height="130" rx="10" class="panel"/>
+  <text x="90" y="426" class="label">异步传输</text>
+  <g transform="translate(245,428)">
+    <rect x="0" y="0" width="55" height="42" class="start"/><text x="27" y="27" text-anchor="middle" class="bitText">起始</text>
+    <rect x="55" y="0" width="45" height="42" class="bit"/><text x="77" y="27" text-anchor="middle" class="bitText">1</text>
+    <rect x="100" y="0" width="45" height="42" class="bit"/><text x="122" y="27" text-anchor="middle" class="bitText">0</text>
+    <rect x="145" y="0" width="45" height="42" class="bit"/><text x="167" y="27" text-anchor="middle" class="bitText">1</text>
+    <rect x="190" y="0" width="45" height="42" class="bit"/><text x="212" y="27" text-anchor="middle" class="bitText">1</text>
+    <rect x="235" y="0" width="45" height="42" class="bit"/><text x="257" y="27" text-anchor="middle" class="bitText">0</text>
+    <rect x="280" y="0" width="55" height="42" class="stop"/><text x="307" y="27" text-anchor="middle" class="bitText">停止</text>
+  </g>
+  <text x="490" y="500" text-anchor="middle" class="small">每个字符前后加入同步信息，用起始位重新校准接收时机</text>
+</svg>

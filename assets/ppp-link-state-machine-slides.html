@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PPP Link State Machine</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #94a3b8;
+      --border: #cbd5e1;
+      --blue: #2563eb;
+      --green: #059669;
+      --orange: #ea580c;
+      --red: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #020617;
+        --panel: #0f172a;
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+        --line: #64748b;
+        --border: #475569;
+        --blue: #60a5fa;
+        --green: #34d399;
+        --orange: #fb923c;
+        --red: #f87171;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+    .wrap {
+      width: min(1100px, 100vw);
+      margin: 0 auto;
+      padding: 18px 24px 14px;
+    }
+    h1 {
+      margin: 0 0 14px;
+      text-align: center;
+      font-size: 28px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+    }
+    .steps { display: grid; gap: 9px; }
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 92%, var(--blue));
+      padding: 10px 12px;
+      min-height: 62px;
+    }
+    .step.active {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--blue) 28%, transparent);
+    }
+    .step b { display: block; margin-bottom: 4px; font-size: 15px; }
+    .step span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .stage {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      padding: 10px;
+      min-height: 455px;
+    }
+    svg { display: block; width: 100%; height: 345px; }
+    .caption {
+      margin: 8px auto 0;
+      max-width: 780px;
+      min-height: 42px;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.55;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    button {
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 18px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>PPP 链路状态机</h1>
+    <div class="layout">
+      <div class="steps" id="steps"></div>
+      <div class="stage">
+        <svg viewBox="0 0 760 345" aria-label="PPP state machine">
+          <defs>
+            <marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"></path>
+            </marker>
+          </defs>
+          <g id="arrows" stroke="var(--line)" stroke-width="3" fill="none" marker-end="url(#arrow)">
+            <path d="M157 172 L235 172"/>
+            <path d="M327 172 L405 172"/>
+            <path d="M497 172 L575 172"/>
+            <path d="M615 212 C540 292 260 292 120 212"/>
+          </g>
+          <g id="fail" opacity="0" stroke="var(--red)" stroke-width="3" fill="none" marker-end="url(#arrow)">
+            <path d="M276 136 C275 78 130 72 100 132"/>
+            <path d="M450 136 C470 80 650 80 630 132"/>
+          </g>
+          <g id="states">
+            <rect id="idle" x="55" y="132" width="102" height="80" rx="12" fill="var(--panel)" stroke="var(--border)" stroke-width="2"/>
+            <rect id="establish" x="235" y="132" width="92" height="80" rx="12" fill="var(--panel)" stroke="var(--border)" stroke-width="2"/>
+            <rect id="auth" x="405" y="132" width="92" height="80" rx="12" fill="var(--panel)" stroke="var(--border)" stroke-width="2"/>
+            <rect id="network" x="575" y="132" width="92" height="80" rx="12" fill="var(--panel)" stroke="var(--border)" stroke-width="2"/>
+            <rect id="open" x="320" y="42" width="120" height="70" rx="12" fill="var(--panel)" stroke="var(--border)" stroke-width="2"/>
+            <rect id="term" x="320" y="242" width="120" height="70" rx="12" fill="var(--panel)" stroke="var(--border)" stroke-width="2"/>
+            <path d="M621 132 C592 70 497 75 440 77" stroke="var(--line)" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+            <path d="M380 112 L380 242" stroke="var(--line)" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+          </g>
+          <text x="106" y="180" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">静止</text>
+          <text x="281" y="180" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">建立</text>
+          <text x="451" y="180" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">鉴别</text>
+          <text x="621" y="180" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">网络</text>
+          <text x="380" y="84" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">打开</text>
+          <text x="380" y="284" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700">终止</text>
+          <text x="194" y="155" text-anchor="middle" fill="var(--muted)" font-size="13">物理连接</text>
+          <text x="366" y="155" text-anchor="middle" fill="var(--muted)" font-size="13">LCP 成功</text>
+          <text x="536" y="155" text-anchor="middle" fill="var(--muted)" font-size="13">鉴别成功</text>
+          <text x="510" y="82" text-anchor="middle" fill="var(--muted)" font-size="13">NCP 完成</text>
+          <text x="488" y="270" text-anchor="middle" fill="var(--muted)" font-size="13">故障或终止请求</text>
+        </svg>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="prev" type="button">上一步</button>
+      <button id="next" type="button">下一步</button>
+    </div>
+  </div>
+  <script>
+    const slides = [
+      { title: "1. 静止", nav: "物理连接还未建立。", body: "链路开始和结束都处于静止状态。此时两端之间还没有可用的物理层连接。", active: "idle" },
+      { title: "2. 建立", nav: "LCP 协商链路参数。", body: "物理层连接可用后进入建立状态。LCP 协商最大帧长、鉴别方式等链路参数。", active: "establish" },
+      { title: "3. 鉴别", nav: "可选的身份鉴别。", body: "若 LCP 协商要求鉴别，则进入鉴别状态。可使用 PAP 或 CHAP；若不需要鉴别，可跳过。", active: "auth" },
+      { title: "4. 网络", nav: "NCP 配置网络层协议。", body: "鉴别成功后进入网络状态。NCP 针对具体网络层协议进行配置，例如 IPCP 配置 IP。", active: "network" },
+      { title: "5. 打开", nav: "可以传输网络层数据。", body: "NCP 配置完成后进入打开状态。此时 PPP 链路可以封装并传输网络层 PDU。", active: "open" },
+      { title: "6. 终止", nav: "故障或请求结束链路。", body: "出现故障或一端请求终止时进入终止状态。链路释放后回到静止状态。", active: "term" }
+    ];
+    const params = new URLSearchParams(location.search);
+    let index = Number(params.get("step") || 0);
+    if (!Number.isInteger(index) || index < 0 || index >= slides.length) index = 0;
+    const steps = document.getElementById("steps");
+    slides.forEach((s, i) => {
+      const div = document.createElement("div");
+      div.className = "step";
+      div.innerHTML = `<b>${s.title}</b><span>${s.nav}</span>`;
+      div.addEventListener("click", () => { index = i; render(); });
+      steps.appendChild(div);
+    });
+    function render() {
+      for (const id of ["idle", "establish", "auth", "network", "open", "term"]) {
+        const el = document.getElementById(id);
+        el.setAttribute("stroke", id === slides[index].active ? "var(--blue)" : "var(--border)");
+        el.setAttribute("stroke-width", id === slides[index].active ? "4" : "2");
+        el.setAttribute("fill", id === slides[index].active ? "color-mix(in srgb, var(--blue) 18%, var(--panel))" : "var(--panel)");
+      }
+      document.getElementById("caption").textContent = slides[index].body;
+      document.querySelectorAll(".step").forEach((el, i) => el.classList.toggle("active", i === index));
+    }
+    document.getElementById("prev").addEventListener("click", () => { index = (index + slides.length - 1) % slides.length; render(); });
+    document.getElementById("next").addEventListener("click", () => { index = (index + 1) % slides.length; render(); });
+    render();
+  </script>
+</body>
+</html>

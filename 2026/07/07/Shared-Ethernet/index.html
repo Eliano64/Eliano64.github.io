@@ -1,0 +1,571 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Shared Ethernet | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="以太网与 IEEE 802局域网 LAN 是覆盖范围较小、通常由一个单位自行建设和管理的计算机网络，例如实验室、办公室、教学楼或园区内部网络。局域网常见特点是：传输距离较短、速率较高、误码率较低，并且多个站点经常共享同一个广播范围。 IEEE 802 标准面向局域网和城域网。它把局域网的数据链路层分为两个子层：    子层 作用    LLC 子层 向网络层提供统一接口，屏蔽不同局域网 MAC 机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shared Ethernet">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/07/Shared-Ethernet/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="以太网与 IEEE 802局域网 LAN 是覆盖范围较小、通常由一个单位自行建设和管理的计算机网络，例如实验室、办公室、教学楼或园区内部网络。局域网常见特点是：传输距离较短、速率较高、误码率较低，并且多个站点经常共享同一个广播范围。 IEEE 802 标准面向局域网和城域网。它把局域网的数据链路层分为两个子层：    子层 作用    LLC 子层 向网络层提供统一接口，屏蔽不同局域网 MAC 机">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-07T10:13:05.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="DataLinkLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Shared Ethernet",
+  "url": "https://eliano64.github.io/2026/07/07/Shared-Ethernet/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-07T10:13:05.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/07/Shared-Ethernet/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Shared Ethernet',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Shared Ethernet</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Shared Ethernet</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-07T10:13:05.000Z" title="发表于 2026-07-07 18:13:05">2026-07-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.3k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="以太网与-IEEE-802"><a href="#以太网与-IEEE-802" class="headerlink" title="以太网与 IEEE 802"></a>以太网与 IEEE 802</h1><p>局域网 LAN 是覆盖范围较小、通常由一个单位自行建设和管理的计算机网络，例如实验室、办公室、教学楼或园区内部网络。局域网常见特点是：传输距离较短、速率较高、误码率较低，并且多个站点经常共享同一个广播范围。</p>
+<p>IEEE 802 标准面向局域网和城域网。它把局域网的数据链路层分为两个子层：</p>
+<table>
+<thead>
+<tr>
+<th>子层</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LLC 子层</td>
+<td>向网络层提供统一接口，屏蔽不同局域网 MAC 机制的差异</td>
+</tr>
+<tr>
+<td>MAC 子层</td>
+<td>处理成帧、MAC 地址、介质访问控制、差错检测等与具体局域网有关的问题</td>
+</tr>
+</tbody></table>
+<p><img src="/assets/ieee-802-lan-sublayers.svg" alt="760"></p>
+<p>以太网最初来自 DIX Ethernet V2 标准。IEEE 802.3 在此基础上制定以太网标准。实际网络设备通常兼容 Ethernet V2 帧和 IEEE 802.3 相关规范。</p>
+<p>以太网向上提供的是<strong>无连接、不可靠的帧传输服务</strong>。</p>
+<ul>
+<li>无连接：发送帧之前不先建立数据链路层连接。</li>
+<li>不可靠：接收方用 FCS 检测差错，发现错帧就丢弃；以太网本身不确认、不重传、不保证按序交付。</li>
+<li>尽最大努力交付：没有检测出错误的帧才向上交付，可靠性通常由高层协议处理。</li>
+</ul>
+<p>802.11 无线链路误码率较高，数据链路层会使用确认机制；传统以太网链路质量较好，数据链路层通常不做可靠传输。</p>
+<h1 id="高速以太网的发展"><a href="#高速以太网的发展" class="headerlink" title="高速以太网的发展"></a>高速以太网的发展</h1><p>以太网后来从 10 Mb&#x2F;s 发展到百兆、千兆、万兆以及更高速率。它们仍然沿用以太网帧格式和 IEEE 802.3 的基本体系，但高速化后逐渐脱离共享介质争用。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>典型特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100BASE-T</td>
+<td>又称快速以太网，速率 100 Mb&#x2F;s；仍使用 IEEE 802.3 帧格式。若使用集线器和半双工链路，仍可使用 CSMA&#x2F;CD；若使用交换机全双工链路，则不使用 CSMA&#x2F;CD</td>
+</tr>
+<tr>
+<td>千兆以太网</td>
+<td>速率 1 Gb&#x2F;s；全双工时不使用 CSMA&#x2F;CD。半双工兼容场景中曾引入载波延伸、分组突发来维持碰撞检测约束</td>
+</tr>
+<tr>
+<td>10GE</td>
+<td>10 Gb&#x2F;s，以全双工为主，不使用 CSMA&#x2F;CD；开始面向城域网和广域网主干等场景</td>
+</tr>
+<tr>
+<td>40GE&#x2F;100GE</td>
+<td>只工作在全双工方式，不使用 CSMA&#x2F;CD；仍使用 IEEE 802.3 帧格式并保留最小帧长、最大帧长规则</td>
+</tr>
+</tbody></table>
+<p>因此，CSMA&#x2F;CD 是共享式、半双工以太网时代的核心机制；现代交换式全双工以太网不再需要它。</p>
+<h1 id="共享式以太网"><a href="#共享式以太网" class="headerlink" title="共享式以太网"></a>共享式以太网</h1><p>共享式以太网的特点是：多个站点共享同一个传输介质，同一时刻只允许一个站点成功发送帧。若两个站点同时发送，信号会在共享介质上叠加，接收方无法还原出正确帧，这就是碰撞。</p>
+<p>早期共享式以太网使用同轴电缆形成总线。后来出现使用集线器和双绞线的星型结构。集线器 Hub 工作在物理层，只会把一个端口收到的比特信号再生并转发到其他端口；它不识别 MAC 地址，不检查帧，不学习转发表，也不隔离碰撞域。</p>
+<p>因此，使用集线器的星型以太网，物理连线看起来像星型，逻辑上仍然像一条共享总线，所有站点仍在同一个碰撞域中。</p>
+<p><img src="/assets/shared-ethernet-collision-domain.svg" alt="900"></p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p><strong>碰撞域</strong>是可能互相碰撞的一组站点范围。一个碰撞域中，任意时刻只能有一个站点成功发送帧。集线器不隔离碰撞域，交换机端口可以隔离碰撞域。</p>
+</div>
+</div>
+# 网络适配器与 MAC 地址
+
+<p>网络适配器也称网卡。主机通过网卡接入局域网，帧的发送、接收、封装、校验和 MAC 地址识别通常由网卡完成。</p>
+<p>MAC 地址是数据链路层地址，用来标识局域网中的网络接口。常见 MAC 地址长 48 bit，通常写成 6 个十六进制字节，例如 <code>00-1A-2B-3C-4D-5E</code>。</p>
+<p>共享式以太网中，所有站点都能收到信道上的帧，但网卡会检查目的 MAC 地址。只有目的 MAC 地址匹配自己、目的地址为广播地址，或网卡处于特殊接收模式时，主机才会向上交付该帧。</p>
+<p>MAC 地址并不只有“某台主机的地址”一种情况。按照目的地址的含义，可以分成：</p>
+<table>
+<thead>
+<tr>
+<th>地址类型</th>
+<th>含义</th>
+<th>典型形式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单播地址</td>
+<td>标识一个网络接口</td>
+<td>普通网卡 MAC 地址</td>
+</tr>
+<tr>
+<td>多播地址</td>
+<td>标识一组接收接口</td>
+<td>发送给某个多播组</td>
+</tr>
+<tr>
+<td>广播地址</td>
+<td>发送给局域网内所有站点</td>
+<td><code>FF-FF-FF-FF-FF-FF</code></td>
+</tr>
+</tbody></table>
+<p>按照管理方式，又可以区分为：</p>
+<table>
+<thead>
+<tr>
+<th>地址类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全球管理地址</td>
+<td>由 IEEE 分配地址块，厂商写入网卡，通常具有全球唯一性</td>
+</tr>
+<tr>
+<td>本地管理地址</td>
+<td>由本地管理员或系统软件设置，不保证全球唯一</td>
+</tr>
+</tbody></table>
+<p>从位标志角度看，MAC 地址中有两个容易混淆的标志位：</p>
+<table>
+<thead>
+<tr>
+<th>标志位</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>I&#x2F;G 位</td>
+<td>Individual&#x2F;Group，指出地址是单个接口地址还是组地址</td>
+</tr>
+<tr>
+<td>G&#x2F;L 位</td>
+<td>Global&#x2F;Local，指出地址是全球管理地址还是本地管理地址</td>
+</tr>
+</tbody></table>
+<p>这些分类主要影响接收方如何判断“这个帧是否应该交给我”。普通单播帧只交给目标接口；广播帧会被同一广播域内所有站点接收；多播帧交给加入对应多播组的接口。</p>
+<h1 id="以太网-MAC-帧"><a href="#以太网-MAC-帧" class="headerlink" title="以太网 MAC 帧"></a>以太网 MAC 帧</h1><p>常见 Ethernet V2 MAC 帧格式如下：</p>
+<p><img src="/assets/ethernet-mac-frame-format.svg" alt="900"></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th align="right">长度</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目的地址</td>
+<td align="right">6 B</td>
+<td>接收方 MAC 地址，广播地址为 <code>FF-FF-FF-FF-FF-FF</code></td>
+</tr>
+<tr>
+<td>源地址</td>
+<td align="right">6 B</td>
+<td>发送方 MAC 地址</td>
+</tr>
+<tr>
+<td>类型</td>
+<td align="right">2 B</td>
+<td>标明上层协议，例如 IPv4、ARP、IPv6</td>
+</tr>
+<tr>
+<td>数据</td>
+<td align="right">46-1500 B</td>
+<td>上层交付的数据；不足 46 B 时需要填充</td>
+</tr>
+<tr>
+<td>FCS</td>
+<td align="right">4 B</td>
+<td>CRC 检错码，用于检测帧在传输中是否出错</td>
+</tr>
+</tbody></table>
+<p>以太网帧最小长度为 64 B，最大长度通常为 1518 B。这 64 B 包括目的地址、源地址、类型、数据和 FCS，不包括物理层前导码。</p>
+<h1 id="CSMA-CD"><a href="#CSMA-CD" class="headerlink" title="CSMA&#x2F;CD"></a>CSMA&#x2F;CD</h1><p>共享式以太网使用 CSMA&#x2F;CD：Carrier Sense Multiple Access with Collision Detection，载波监听多址接入&#x2F;碰撞检测。</p>
+<p>这个名字可以拆开理解：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CS</td>
+<td>发送前监听信道，若信道忙则等待</td>
+</tr>
+<tr>
+<td>MA</td>
+<td>多个站点接入同一共享介质</td>
+</tr>
+<tr>
+<td>CD</td>
+<td>发送过程中继续检测碰撞，发现碰撞就停止发送</td>
+</tr>
+</tbody></table>
+<p>CSMA&#x2F;CD 的发送过程可以分成两条分支：没有碰撞时直接发送完成；发生碰撞时停止、干扰、退避、重发。</p>
+<ol>
+<li>发送前监听信道。<ol>
+<li>若信道忙，继续监听，直到信道空闲。</li>
+</ol>
+</li>
+<li>信道空闲后，等待<strong>帧间最小间隔</strong>，再开始发送。</li>
+<li>发送过程中继续监听信道，边发送边检测碰撞。</li>
+<li>若发送完成前没有检测到碰撞，本帧发送成功。<ol>
+<li>若检测到碰撞，立即停止发送正常帧，并发送<strong>干扰信号</strong>。</li>
+<li>执行截断二进制指数退避，等待随机时间后重新竞争信道。</li>
+</ol>
+</li>
+</ol>
+<ul>
+<li><p>帧间最小间隔是相邻两帧之间必须保留的最短空闲时间。经典以太网规定它为 96 bit time。它给接收站点和网络接口留出处理上一帧、准备下一帧的时间。</p>
+</li>
+<li><p>干扰信号 jam signal 是碰撞后发送的一小段特殊比特序列，用来强化碰撞影响，使同一碰撞域内其他站点也能明确检测到碰撞。经典以太网中常按 32 bit 干扰信号理解。</p>
+</li>
+</ul>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||760)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||760)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/csma-cd-send-process-slides.html" style="width:100%;height:760px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>CSMA&#x2F;CD 只能减少碰撞、检测碰撞、处理碰撞，不能彻底消除碰撞。原因是信号传播需要时间：一个站点监听到本端信道空闲时，远端站点发出的信号可能还没有传播到本端。</p>
+<h1 id="争用期"><a href="#争用期" class="headerlink" title="争用期"></a>争用期</h1><p>设共享总线两端最远站点之间的单程传播时延为 $\tau$。最坏情况是：</p>
+<ol>
+<li>站点 A 开始发送。</li>
+<li>A 的信号快到达最远端 B 时，B 还没有检测到 A 的信号，于是也开始发送。</li>
+<li>A 和 B 的信号在 B 附近发生碰撞。</li>
+<li>碰撞造成的异常信号再从 B 附近传播回 A。</li>
+</ol>
+<p>因此，A 最迟要经过约 $2\tau$ 才能知道自己发送的帧是否发生碰撞。这个时间称为<strong>争用期</strong>或<strong>碰撞窗口</strong>。</p>
+<p><img src="/assets/csma-cd-contention-period.svg" alt="900"></p>
+<p>图中横轴是时间，纵向上下两条线分别表示站点 A 和站点 B。蓝线表示 A 的信号从 A 传播到 B；橙线表示 B 在还没听到 A 之前也开始发送；红线表示碰撞造成的异常信号传播回 A。红线不是“原来的数据帧倒着走”，而是碰撞这一事件的影响沿共享介质返回发送端。</p>
+<p>结论很关键：发送站点从开始发送算起，经过一个争用期仍未检测到碰撞，就可以认为本次发送不会再发生碰撞。</p>
+<h1 id="最小帧长"><a href="#最小帧长" class="headerlink" title="最小帧长"></a>最小帧长</h1><p>为了让发送方在发送完帧之前还能检测到碰撞，以太网要求：</p>
+<p>$$<br>T_{\text{send}} \ge 2\tau<br>$$</p>
+<p>其中 $T_{\text{send}}$ 是发送完整帧所需的发送时延。换成帧长：</p>
+<p>$$<br>L_{\min} &#x3D; R \times 2\tau<br>$$</p>
+<p>10 Mb&#x2F;s 共享式以太网规定争用期为 $51.2\mu s$，也就是 512 bit time。因此最小帧长为：</p>
+<p>$$<br>10\text{ Mb&#x2F;s} \times 51.2\mu s &#x3D; 512\text{ bit}&#x3D;64\text{ B}<br>$$</p>
+<p>如果接收站点收到长度小于 64 B 的以太网帧，通常可判定它是碰撞导致的异常残帧，应丢弃。</p>
+<h1 id="截断二进制指数退避"><a href="#截断二进制指数退避" class="headerlink" title="截断二进制指数退避"></a>截断二进制指数退避</h1><p>检测到碰撞后，多个站点如果立刻重发，很容易再次同时发送并再次碰撞。退避算法的目标是：让发生碰撞的站点各自随机等待一段时间，把再次发送的时刻错开。</p>
+<p>基本退避时间取一个争用期，即 512 bit time。对 10 Mb&#x2F;s 以太网来说，512 bit time 就是 $51.2\mu s$。</p>
+<p>第 $m$ 次碰撞后：</p>
+<p>$$<br>k&#x3D;\min(m,10)<br>$$</p>
+<p>站点从下面的整数集合中随机选一个 $r$：</p>
+<p>$$<br>r \in {0,1,2,\cdots,2^k-1}<br>$$</p>
+<p>然后等待：</p>
+<p>$$<br>r \times 512 \text{ bit time}<br>$$</p>
+<p>这就是“二进制指数”的含义：碰撞次数越多，$2^k$ 越大，可选的退避时隙范围越大，多个站点再次选到同一个发送时刻的概率越低。</p>
+<p>“截断”指 $k$ 最大只取到 10，退避范围不会无限扩大。若同一帧连续发送失败达到 16 次，以太网会放弃发送该帧，并向上层报告失败。</p>
+<p>举例：</p>
+<table>
+<thead>
+<tr>
+<th align="right">碰撞次数 $m$</th>
+<th align="right">$k$</th>
+<th>可选 $r$</th>
+<th>等待时间</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td align="right">1</td>
+<td>0 或 1</td>
+<td>$0$ 或 $1$ 个争用期</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">2</td>
+<td>0 到 3</td>
+<td>$0$ 到 $3$ 个争用期</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">3</td>
+<td>0 到 7</td>
+<td>$0$ 到 $7$ 个争用期</td>
+</tr>
+<tr>
+<td align="right">10</td>
+<td align="right">10</td>
+<td>0 到 1023</td>
+<td>$0$ 到 $1023$ 个争用期</td>
+</tr>
+<tr>
+<td align="right">11 到 16</td>
+<td align="right">10</td>
+<td>0 到 1023</td>
+<td>退避范围不再扩大</td>
+</tr>
+</tbody></table>
+<h1 id="共享式以太网的局限"><a href="#共享式以太网的局限" class="headerlink" title="共享式以太网的局限"></a>共享式以太网的局限</h1><p>共享式以太网的根本限制来自共享介质：</p>
+<ul>
+<li>同一碰撞域内任意时刻只能有一个站点成功发送。</li>
+<li>站点越多，碰撞概率越高。</li>
+<li>链路越长，传播时延越大，争用期越长，最小帧长和性能约束越明显。</li>
+<li>使用集线器扩展物理范围会扩大碰撞域。</li>
+<li>CSMA&#x2F;CD 要求边发送边检测，因此共享式以太网只能半双工工作。</li>
+</ul>
+<p>交换式以太网用交换机端口隔离碰撞域，并在全双工链路上消除共享介质争用。</p>
+<h2 id="信道利用率"><a href="#信道利用率" class="headerlink" title="信道利用率"></a>信道利用率</h2><p>共享式以太网的信道利用率受传播时延和碰撞影响。直观地说，站点真正发送数据帧的时间越长，争用、传播和碰撞处理占的比例越小；传播时延越大，站点越多，碰撞和等待带来的开销越明显。</p>
+<p>常用参数：</p>
+<p>$$<br>a&#x3D;\frac{\tau}{T_0}<br>$$</p>
+<p>其中 $\tau$ 是端到端单程传播时延，$T_0$ 是发送一帧所需时间。$a$ 越小，说明传播时延相对于帧发送时间越小，信道利用率越高。要让 $a$ 小，就要限制共享式以太网的物理范围，减少端到端传播时延。</p>
+<p>这解释了两个结论：</p>
+<ul>
+<li>共享式以太网的总线长度不能太长，否则争用期变长，碰撞检测和最小帧长约束更严重。</li>
+<li>以太网最初更适合局域网，而不适合直接作为广域网技术。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/07/Shared-Ethernet/">https://eliano64.github.io/2026/07/07/Shared-Ethernet/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/07/Media-Access-Control/" title="Media Access Control"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Media Access Control</div></div><div class="info-2"><div class="info-item-1">介质访问控制介质访问控制 MAC 要解决的是：多个站点共享同一条广播信道时，谁可以在什么时候发送数据。 如果一条链路只连接两个节点，例如点对点链路，那么发送方和接收方明确，通常不需要复杂的 MAC 机制。若多个站点共用同一传输介质，例如早期总线以太网、无线局域网、令牌环网，就必须协调发送权，否则多个站点同时发送会产生碰撞或互相干扰。  MAC 方法可以先分成三类：    方法 核心思想 典型技术 特点    信道划分 先把信道资源切开，每个站点使用自己的资源片 FDM、TDM、WDM、CDM&#x2F;CDMA 冲突少，但资源可能被空闲站点浪费   随机访问 站点有数据就争用信道，冲突后再处理 ALOHA、CSMA、CSMA&#x2F;CD、CSMA&#x2F;CA 灵活，适合突发流量，但可能发生冲突   轮询访问 用集中轮询或令牌传递决定发送顺序 轮询、令牌传递 发送权明确，但控制开销较高   信道划分介质访问控制信道划分把共享信道预先分成若干互不干扰的资源片。站点只在分配给自己的资源片中发送，因此不需要每次发送前争抢信道。  频分复用、时分复用、统计时分复用、波分复用见...</div></div></div></a><a class="pagination-related" href="/2026/07/07/Switched-Ethernet/" title="Switched Ethernet And Switches"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Switched Ethernet And Switches</div></div><div class="info-2"><div class="info-item-1">交换式以太网共享式以太网把多个站点放在同一个碰撞域中。交换式以太网使用交换机连接站点，每个交换机端口通常形成独立链路。若端口直接连接主机或另一台交换机，该链路可工作在全双工方式，不再争用共享介质，也就不需要 CSMA&#x2F;CD。  交换机工作在数据链路层。它不是简单地转发比特，而是接收完整帧，检查帧，读取 MAC 地址，并根据交换表决定如何处理帧。  交换机提高性能的原因  隔离碰撞域：每个端口独立，减少或消除碰撞。 支持全双工：直接连接主机或交换机时，收发可同时进行。 并行交换：交换机内部交换结构可以让多对端口同时转发不同帧。       Note 交换机隔离碰撞域，但默认不隔离广播域。广播帧仍会被交换机泛洪到同一 VLAN 内的其他端口。   # 网桥与交换机  网桥 Bridge 和以太网交换机 Switch 都工作在数据链路层，都根据 MAC 地址转发帧。可以把交换机理解为多端口、高性能、硬件化实现的网桥。    设备 工作层次 主要依据 典型行为    集线器 物理层 比特信号 一个端口进，其他端口出   网桥 数据链路层 MAC...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A5%E5%A4%AA%E7%BD%91%E4%B8%8E-IEEE-802"><span class="toc-text">以太网与 IEEE 802</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AB%98%E9%80%9F%E4%BB%A5%E5%A4%AA%E7%BD%91%E7%9A%84%E5%8F%91%E5%B1%95"><span class="toc-text">高速以太网的发展</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E5%BC%8F%E4%BB%A5%E5%A4%AA%E7%BD%91"><span class="toc-text">共享式以太网</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A5%E5%A4%AA%E7%BD%91-MAC-%E5%B8%A7"><span class="toc-text">以太网 MAC 帧</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CSMA-CD"><span class="toc-text">CSMA&#x2F;CD</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%89%E7%94%A8%E6%9C%9F"><span class="toc-text">争用期</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%B0%8F%E5%B8%A7%E9%95%BF"><span class="toc-text">最小帧长</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%88%AA%E6%96%AD%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%8C%87%E6%95%B0%E9%80%80%E9%81%BF"><span class="toc-text">截断二进制指数退避</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E5%BC%8F%E4%BB%A5%E5%A4%AA%E7%BD%91%E7%9A%84%E5%B1%80%E9%99%90"><span class="toc-text">共享式以太网的局限</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E9%81%93%E5%88%A9%E7%94%A8%E7%8E%87"><span class="toc-text">信道利用率</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

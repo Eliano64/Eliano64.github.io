@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSPF LSDB Sync</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--orange:#ea580c;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--orange:#fb923c;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}.steps{display:grid;gap:10px}.step{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px}.step.active{outline:2px solid var(--orange)}.step b{display:block}.step span{font-size:14px;color:var(--muted);line-height:1.4}.stage{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}.note{color:var(--muted);line-height:1.55;margin-top:8px}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">OSPF 邻接建立与 LSDB 同步</div>
+  <div class="layout">
+    <div class="steps" id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 660 350" role="img" aria-label="OSPF 同步过程">
+        <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker></defs>
+        <line x1="190" y1="75" x2="190" y2="300" stroke="var(--line)" stroke-width="2"/>
+        <line x1="470" y1="75" x2="470" y2="300" stroke="var(--line)" stroke-width="2"/>
+        <rect x="135" y="35" width="110" height="50" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="190" y="66" text-anchor="middle" fill="var(--text)" font-size="18">R1</text>
+        <rect x="415" y="35" width="110" height="50" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="470" y="66" text-anchor="middle" fill="var(--text)" font-size="18">R2</text>
+        <g id="msgs"></g>
+      </svg>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+["Hello","发现并维护邻居可达性。","Hello 分组用于建立和维护邻居关系。"],
+["DD","交换 LSDB 摘要。","数据库描述分组只给出摘要，让对方判断自己缺什么。"],
+["LSR","请求缺少的 LSA。","发现缺项后，用链路状态请求分组索取详细内容。"],
+["LSU","发送详细链路状态。","链路状态更新分组携带对方缺少的 LSA。"],
+["LSAck","确认收到更新。","确认后，两端 LSDB 逐步同步，形成完全邻接。"],
+["洪泛更新","链路变化或定期更新。","链路状态变化时，更新会在区域内洪泛，并由各路由器更新 LSDB。"]
+];
+let i=0;const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{const el=document.createElement("div");el.className="step";el.innerHTML=`<b>${idx+1}. ${d[0]}</b><span>${d[1]}</span>`;el.onclick=()=>{i=idx;render()};steps.appendChild(el)});
+function arrow(y,fromLeft,label){const x1=fromLeft?190:470,x2=fromLeft?470:190;return `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/><text x="330" y="${y-10}" text-anchor="middle" fill="var(--blue)" font-size="17">${label}</text>`}
+function render(){[...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));let html="";for(let k=0;k<=i;k++){html+=arrow(115+k*34,k===4?false:true,data[k][0])}msgs.innerHTML=html;note.textContent=data[i][2]}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script>
+</body>
+</html>

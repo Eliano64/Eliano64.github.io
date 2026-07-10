@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BST Delete Leaf</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #fff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --blue: #2563eb;
+      --red: #dc2626;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #334155;
+        --blue: #60a5fa;
+        --red: #f87171;
+      }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: auto;
+      padding: 22px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 14px;
+    }
+
+    .explain {
+      min-height: 70px;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .code {
+      font: 14px/1.45 Consolas, monospace;
+      white-space: pre-wrap;
+      overflow: auto;
+      background: rgba(148, 163, 184, .12);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .edge {
+      stroke: #64748b;
+      stroke-width: 2;
+    }
+
+    .edge-cut {
+      stroke: var(--red);
+      stroke-width: 3;
+      stroke-dasharray: 8 6;
+    }
+
+    .node {
+      fill: #e0f2fe;
+      stroke: #0284c7;
+      stroke-width: 2;
+    }
+
+    .target {
+      fill: #fee2e2;
+      stroke: var(--red);
+      stroke-width: 4;
+    }
+
+    .gone {
+      fill: transparent;
+      stroke: var(--red);
+      stroke-width: 3;
+      stroke-dasharray: 6 5;
+    }
+
+    .text {
+      fill: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .label {
+      fill: var(--muted);
+      font-size: 13px;
+      text-anchor: middle;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .edge {
+        stroke: #94a3b8;
+      }
+
+      .node {
+        fill: #172554;
+        stroke: #38bdf8;
+      }
+
+      .target {
+        fill: #3f1d1d;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .stage {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>BST 删除叶结点</h1>
+        <div class="hint">删除 key = 21；叶结点没有子树，父结点对应孩子指针改为空。</div>
+      </div>
+      <div>
+        <button id="prev">上一步</button>
+        <button id="next">下一步</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="stage">
+        <svg viewBox="0 0 520 360" id="tree"></svg>
+        <div>
+          <div class="explain" id="explain"></div>
+          <pre class="code">if (root->left == NULL || root->right == NULL) {
+    // 叶结点时 left 和 right 都是 NULL。
+    // 因而 child 也为 NULL。
+    BSTNode *child = root->left != NULL ? root->left : root->right;
+
+    free(root);
+
+    // 返回 NULL，让父结点对应的 left/right 被改为空。
+    return child;
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const nodes = {
+      50: [260, 45],
+      26: [160, 135],
+      66: [360, 135],
+      21: [90, 225],
+      30: [230, 225],
+      60: [330, 225],
+      70: [430, 225]
+    };
+    const edges = [[50, 26], [50, 66], [26, 21], [26, 30], [66, 60], [66, 70]];
+    const steps = [
+      { target: 21, text: "按 BST 查找规则定位到 21。它没有左孩子，也没有右孩子，是叶结点。" },
+      { target: 21, cut: true, text: "递归返回 child。由于 21 是叶结点，child = NULL；父结点 26 的 left 将被改为 NULL。" },
+      { removed: true, text: "释放 21 后，它从树中消失。其他结点的相对大小关系没有改变，BST 性质保持。" }
+    ];
+    let index = 0;
+
+    function draw() {
+      const step = steps[index];
+      const svg = document.getElementById("tree");
+      const explain = document.getElementById("explain");
+      svg.innerHTML = "";
+
+      for (const [a, b] of edges) {
+        if (step.removed && b === 21) {
+          continue;
+        }
+        const p = nodes[a];
+        const q = nodes[b];
+        const cls = step.cut && b === 21 ? "edge-cut" : "edge";
+        svg.innerHTML += `<line class="${cls}" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`;
+      }
+
+      for (const [value, point] of Object.entries(nodes)) {
+        if (step.removed && Number(value) === 21) {
+          continue;
+        }
+        const cls = Number(value) === step.target ? "target" : "node";
+        svg.innerHTML += `<circle class="${cls}" cx="${point[0]}" cy="${point[1]}" r="26"/>`;
+        svg.innerHTML += `<text class="text" x="${point[0]}" y="${point[1] + 6}">${value}</text>`;
+      }
+
+      if (step.cut) {
+        svg.innerHTML += `<text class="label" x="114" y="196">26->left = NULL</text>`;
+      }
+
+      explain.textContent = step.text;
+    }
+
+    document.getElementById("prev").onclick = () => {
+      index = Math.max(0, index - 1);
+      draw();
+    };
+    document.getElementById("next").onclick = () => {
+      index = Math.min(steps.length - 1, index + 1);
+      draw();
+    };
+    draw();
+  </script>
+</body>
+</html>

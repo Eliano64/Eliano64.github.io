@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="420" viewBox="0 0 1180 420" role="img" aria-labelledby="title desc">
+  <title id="title">MIPS 五段流水线</title>
+  <desc id="desc">MIPS 五段流水线由 IF、ID、EX、MEM、WB 五个阶段和四组流水线寄存器组成。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill: #fff; }
+    .stage { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 8; }
+    .reg { fill: #eef2ff; stroke: #4338ca; stroke-width: 2; rx: 5; }
+    .text { fill: #0f172a; font: 24px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .small { fill: #475569; font: 17px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .wire { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .arrowhead { fill: #475569; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f172a; }
+      .stage { fill: #111827; stroke: #cbd5e1; }
+      .reg { fill: #1e1b4b; stroke: #a5b4fc; }
+      .text { fill: #e5e7eb; }
+      .small { fill: #cbd5e1; }
+      .wire { stroke: #cbd5e1; }
+      .arrowhead { fill: #cbd5e1; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="arrowhead" d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1180" height="420"/>
+  <rect class="stage" x="45" y="115" width="155" height="155"/>
+  <text class="text" x="122.5" y="155" text-anchor="middle">IF</text>
+  <text class="small" x="122.5" y="190" text-anchor="middle">取指</text>
+  <text class="small" x="122.5" y="222" text-anchor="middle">I-Cache</text>
+  <text class="small" x="122.5" y="250" text-anchor="middle">PC + 4</text>
+  <rect class="reg" x="220" y="95" width="55" height="195"/>
+  <text class="small" x="247.5" y="175" text-anchor="middle">IF/</text>
+  <text class="small" x="247.5" y="205" text-anchor="middle">ID</text>
+  <rect class="stage" x="295" y="115" width="155" height="155"/>
+  <text class="text" x="372.5" y="155" text-anchor="middle">ID</text>
+  <text class="small" x="372.5" y="190" text-anchor="middle">译码 / 读寄存器</text>
+  <text class="small" x="372.5" y="222" text-anchor="middle">生成立即数</text>
+  <rect class="reg" x="470" y="95" width="55" height="195"/>
+  <text class="small" x="497.5" y="175" text-anchor="middle">ID/</text>
+  <text class="small" x="497.5" y="205" text-anchor="middle">EX</text>
+  <rect class="stage" x="545" y="115" width="155" height="155"/>
+  <text class="text" x="622.5" y="155" text-anchor="middle">EX</text>
+  <text class="small" x="622.5" y="190" text-anchor="middle">ALU 运算</text>
+  <text class="small" x="622.5" y="222" text-anchor="middle">有效地址 / 比较</text>
+  <rect class="reg" x="720" y="95" width="65" height="195"/>
+  <text class="small" x="752.5" y="175" text-anchor="middle">EX/</text>
+  <text class="small" x="752.5" y="205" text-anchor="middle">MEM</text>
+  <rect class="stage" x="805" y="115" width="155" height="155"/>
+  <text class="text" x="882.5" y="155" text-anchor="middle">MEM</text>
+  <text class="small" x="882.5" y="190" text-anchor="middle">数据 Cache</text>
+  <text class="small" x="882.5" y="222" text-anchor="middle">读 / 写数据</text>
+  <rect class="reg" x="980" y="95" width="65" height="195"/>
+  <text class="small" x="1012.5" y="175" text-anchor="middle">MEM/</text>
+  <text class="small" x="1012.5" y="205" text-anchor="middle">WB</text>
+  <rect class="stage" x="1065" y="115" width="90" height="155"/>
+  <text class="text" x="1110" y="155" text-anchor="middle">WB</text>
+  <text class="small" x="1110" y="190" text-anchor="middle">写回</text>
+  <text class="small" x="1110" y="222" text-anchor="middle">寄存器</text>
+  <path class="wire" d="M200 192 L220 192"/>
+  <path class="wire" d="M275 192 L295 192"/>
+  <path class="wire" d="M450 192 L470 192"/>
+  <path class="wire" d="M525 192 L545 192"/>
+  <path class="wire" d="M700 192 L720 192"/>
+  <path class="wire" d="M785 192 L805 192"/>
+  <path class="wire" d="M960 192 L980 192"/>
+  <path class="wire" d="M1045 192 L1065 192"/>
+  <text class="small" x="590" y="345" text-anchor="middle">每个流水段后保存阶段结果；下一周期送入后一段。</text>
+</svg>

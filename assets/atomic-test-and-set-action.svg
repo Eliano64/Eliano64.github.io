@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="500" viewBox="0 0 980 500" role="img" aria-labelledby="title desc">
+  <title id="title">TSL and Swap Atomic Check And Lock</title>
+  <desc id="desc">Atomic hardware instructions combine checking the old lock value and setting the lock to true.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #334155;
+      --accent: #2563eb;
+      --warn: #f59e0b;
+      --ok: #16a34a;
+      --bad: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --line: #cbd5e1;
+        --accent: #60a5fa;
+        --warn: #fbbf24;
+        --ok: #34d399;
+        --bad: #fb7185;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 10; }
+    .atomic { fill: color-mix(in srgb, var(--accent) 12%, var(--panel)); stroke: var(--accent); stroke-width: 3; rx: 12; }
+    .text { fill: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 24px; }
+    .small { fill: var(--muted); font-size: 18px; }
+    .label { fill: var(--text); font-size: 18px; font-weight: 700; }
+    .code { font-family: Consolas, "SFMono-Regular", monospace; font-size: 20px; fill: var(--text); }
+    .arrow { stroke: var(--line); stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .accent { stroke: var(--accent); }
+    .warn { fill: var(--warn); }
+    .ok { fill: var(--ok); }
+    .bad { fill: var(--bad); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="980" height="500" />
+  <text class="text" x="40" y="54">硬件原子指令：把“检查”和“上锁”合成一个不可分割动作</text>
+
+  <rect class="box" x="52" y="110" width="190" height="116" />
+  <text class="label" x="92" y="148">共享锁变量</text>
+  <text class="code" x="104" y="188">lock</text>
+  <text class="code bad" x="162" y="188">?</text>
+
+  <rect class="atomic" x="330" y="90" width="320" height="162" />
+  <text class="label" x="406" y="128">TSL / Swap</text>
+  <text class="code" x="372" y="168">old = lock</text>
+  <text class="code" x="372" y="204">lock = true</text>
+  <text class="small" x="372" y="234">执行期间不可被中断</text>
+
+  <rect class="box" x="748" y="88" width="184" height="92" />
+  <text class="label" x="797" y="124">old=false</text>
+  <text class="small ok" x="792" y="154">进入临界区</text>
+
+  <rect class="box" x="748" y="222" width="184" height="92" />
+  <text class="label" x="804" y="258">old=true</text>
+  <text class="small bad" x="800" y="288">继续忙等</text>
+
+  <path class="arrow" d="M242 168 H320" />
+  <path class="arrow" d="M650 150 H736" />
+  <path class="arrow" d="M650 204 C695 204 695 268 736 268" />
+
+  <rect class="box" x="86" y="320" width="808" height="148" />
+  <text class="label" x="116" y="366">关键理解</text>
+  <text class="small" x="116" y="396">软件双标志法的问题在于：“检查”和“上锁”之间可能被切换。</text>
+  <text class="small" x="116" y="422">TSL/Swap 用硬件保证这两步一气呵成。</text>
+  <text class="small" x="116" y="448">等待者仍然反复执行指令，占用 CPU，因此不满足让权等待。</text>
+</svg>

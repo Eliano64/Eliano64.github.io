@@ -1,0 +1,443 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Disk Scheduling And Management | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="磁盘访问时间 平均存取时间可写为： $$T_a&#x3D;T_s+T_r+T_t$$    时间 含义    寻道时间 $T_s$ 磁头移动到目标磁道所需时间   旋转延迟 $T_r$ 目标扇区转到磁头下方所需时间   传输时间 $T_t$ 数据真正读出或写入所需时间   寻道时间不仅包含磁头跨越磁道的移动时间，还包含磁臂启动时间。若启动磁臂耗时为 $s$，磁头每跨越一个磁道耗时为 $m$，本次需">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Disk Scheduling And Management">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/03/Disk-Scheduling-And-Management/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="磁盘访问时间 平均存取时间可写为： $$T_a&#x3D;T_s+T_r+T_t$$    时间 含义    寻道时间 $T_s$ 磁头移动到目标磁道所需时间   旋转延迟 $T_r$ 目标扇区转到磁头下方所需时间   传输时间 $T_t$ 数据真正读出或写入所需时间   寻道时间不仅包含磁头跨越磁道的移动时间，还包含磁臂启动时间。若启动磁臂耗时为 $s$，磁头每跨越一个磁道耗时为 $m$，本次需">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-03T03:58:28.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.012Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="OperatingSystem">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="Storage">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Disk Scheduling And Management",
+  "url": "https://eliano64.github.io/2026/07/03/Disk-Scheduling-And-Management/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-03T03:58:28.000Z",
+  "dateModified": "2026-07-10T07:16:51.012Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/03/Disk-Scheduling-And-Management/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Disk Scheduling And Management',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Disk Scheduling And Management</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Disk Scheduling And Management</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-03T03:58:28.000Z" title="发表于 2026-07-03 11:58:28">2026-07-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.012Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="磁盘访问时间"><a href="#磁盘访问时间" class="headerlink" title="磁盘访问时间"></a>磁盘访问时间</h1><p><img src="/assets/disk-access-time.svg"></p>
+<p>平均存取时间可写为：</p>
+<p>$$<br>T_a&#x3D;T_s+T_r+T_t<br>$$</p>
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>寻道时间 $T_s$</td>
+<td>磁头移动到目标磁道所需时间</td>
+</tr>
+<tr>
+<td>旋转延迟 $T_r$</td>
+<td>目标扇区转到磁头下方所需时间</td>
+</tr>
+<tr>
+<td>传输时间 $T_t$</td>
+<td>数据真正读出或写入所需时间</td>
+</tr>
+</tbody></table>
+<p>寻道时间不仅包含磁头跨越磁道的移动时间，还包含磁臂启动时间。若启动磁臂耗时为 $s$，磁头每跨越一个磁道耗时为 $m$，本次需要跨越 $n$ 个磁道，则：</p>
+<p>$$<br>T_s&#x3D;s+m\times n<br>$$</p>
+<p>如果磁盘转速为 $r$，这里 $r$ 表示每秒转数，则平均旋转延迟为：</p>
+<p>$$<br>T_r&#x3D;\frac{1}{2r}<br>$$</p>
+<p>如果本次读写字节数为 $b$，每个磁道可存 $N$ 字节，则传输时间为：</p>
+<p>$$<br>T_t&#x3D;\frac{b}{rN}<br>$$</p>
+<p>因此总时间也可写成：</p>
+<p>$$<br>T_a&#x3D;s+mn+\frac{1}{2r}+\frac{b}{rN}<br>$$</p>
+<p>磁盘调度算法直接影响的是 $n$，也就是磁头移动距离。旋转延迟和传输时间主要由转速、数据量和磁道容量决定，操作系统通常不能通过改变请求顺序直接优化这两项。</p>
+<h1 id="磁盘调度算法"><a href="#磁盘调度算法" class="headerlink" title="磁盘调度算法"></a>磁盘调度算法</h1><p>当多个进程同时请求访问不同磁道时，操作系统可以改变请求处理顺序，从而减少磁头总移动距离。进而减少寻道时间。</p>
+<p><img src="/assets/disk-scheduling-overview.svg"></p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||520)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||520)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/disk-scheduling-slides.html" style="width:100%;height:520px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>常见算法如下。</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>基本思想</th>
+<th>优点</th>
+<th>问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FCFS</td>
+<td>按请求到达顺序服务</td>
+<td>公平，实现简单</td>
+<td>请求分散时寻道距离长</td>
+</tr>
+<tr>
+<td>SSTF</td>
+<td>每次选择距离当前磁头最近的请求</td>
+<td>平均寻道时间较短</td>
+<td>远处请求可能饥饿</td>
+</tr>
+<tr>
+<td>SCAN</td>
+<td>磁头像电梯一样沿一个方向服务，到边界后反向</td>
+<td>避免 SSTF 的局部来回</td>
+<td>不同位置响应频率不完全均匀</td>
+</tr>
+<tr>
+<td>LOOK</td>
+<td>SCAN 的优化，方向上没有请求就反向</td>
+<td>不必走到最边界</td>
+<td>刚错过当前扫描方向的请求要等磁头反向后才会被服务</td>
+</tr>
+<tr>
+<td>C-SCAN</td>
+<td>只在一个方向服务，回程不服务</td>
+<td>各位置响应更均匀</td>
+<td>平均寻道可能较长</td>
+</tr>
+<tr>
+<td>C-LOOK</td>
+<td>C-SCAN 的优化，只回到最靠边的请求位置</td>
+<td>减少无意义移动</td>
+<td>从最大请求位置回到最小请求位置的移动不服务任何请求</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>FCFS</strong> 按请求到达顺序处理。它不会主动优化磁头移动，因此最公平，也最容易出现长距离来回移动。适合请求较少或请求位置比较集中的情况。</li>
+</ul>
+<ul>
+<li><p><strong>SSTF</strong> 每次选择离当前磁头最近的磁道。它是一种贪心策略，只保证当前一步的寻道距离最短，不保证全局最优。如果不断有靠近当前磁头的新请求到达，远处请求可能长期得不到服务，即会有<strong>饥饿</strong>。</p>
+</li>
+<li><p><strong>SCAN</strong> 规定磁头沿一个方向移动并服务沿途请求，到达边界后再反向。它像电梯运行，所以也叫电梯算法。<strong>LOOK</strong> 是 SCAN 的优化，它不要求磁头移动到最边界。如果当前方向上已经没有请求，就立即反向。</p>
+</li>
+<li><p><strong>C-SCAN</strong> 只在一个方向上服务请求。磁头到达边界后快速回到另一端，回程不服务请求。<strong>C-LOOK</strong> 是 C-SCAN 的优化：不必回到物理边界，只需要回到当前请求序列中最靠边的请求位置。</p>
+</li>
+</ul>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">SCAN 与 LOOK</span></div>
+<div class="callout-content"><p>若没有特别说明，很多场景会把 <code>SCAN</code> 按 <code>LOOK</code> 的实际优化方式处理，把 <code>C-SCAN</code> 按 <code>C-LOOK</code> 处理。关键是看是否要求磁头必须走到最边界。</p>
+</div>
+</div>
+
+<h1 id="减少旋转延迟的方法"><a href="#减少旋转延迟的方法" class="headerlink" title="减少旋转延迟的方法"></a>减少旋转延迟的方法</h1><p>磁盘调度主要减少寻道时间，而连续读写还可能受到旋转延迟影响。为了减少连续块读取时的等待，可以调整扇区编号和地址结构。</p>
+<p><img src="/assets/disk-sector-numbering.svg"></p>
+<h2 id="交替编号"><a href="#交替编号" class="headerlink" title="交替编号"></a>交替编号</h2><p>如果逻辑上相邻的扇区在物理上也紧挨着，读取完一个扇区后，系统还需要一点处理时间。处理完成时，下一个扇区可能已经转过磁头，只能等它再转一圈。</p>
+<p><strong>交替编号</strong>让逻辑相邻扇区在物理位置上隔开一段距离，使处理时间刚好被旋转过程吸收。</p>
+<h2 id="错位命名"><a href="#错位命名" class="headerlink" title="错位命名"></a>错位命名</h2><p>多个盘面一起旋转。读完一个盘面的最后几个扇区后，系统切换到另一个盘面也需要处理时间。</p>
+<p><strong>错位命名</strong>让相邻盘面上的扇区编号错开，使切换盘面后，目标扇区更可能刚好转到磁头下方。</p>
+<h1 id="磁盘初始化"><a href="#磁盘初始化" class="headerlink" title="磁盘初始化"></a>磁盘初始化</h1><p><a href="/2026/07/10/OS-Boot/" class="wikilink">引导</a>发生之前，磁盘必须已经完成了从物理到逻辑的逐级准备工作。四个阶段有严格的先后顺序——前一步没完成，后一步无法执行。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时机</th>
+<th>执行者</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>低级格式化</td>
+<td>磁盘出厂时</td>
+<td>制造商</td>
+<td>将磁道划分为扇区，建立扇区头、数据区、校验等物理结构</td>
+</tr>
+<tr>
+<td>分区</td>
+<td>装机或重装系统时</td>
+<td>用户 &#x2F; 安装程序</td>
+<td>把磁盘划分为若干分区，写入分区表</td>
+</tr>
+<tr>
+<td>逻辑格式化</td>
+<td>装机或重装系统时，紧接分区之后</td>
+<td>操作系统安装程序</td>
+<td>在分区上创建文件系统，建立根目录和空闲空间管理结构</td>
+</tr>
+<tr>
+<td>安装操作系统</td>
+<td>装机或重装系统时，紧接逻辑格式化之后</td>
+<td>操作系统安装程序</td>
+<td>向分区写入系统文件、引导程序和必要配置</td>
+</tr>
+</tbody></table>
+<p>低级格式化只在工厂做一次，普通用户接触不到。日常重装系统时，执行的是后三步：删除旧分区 → 新建分区 → 逻辑格式化 → 安装 OS。</p>
+<h2 id="低级格式化"><a href="#低级格式化" class="headerlink" title="低级格式化"></a>低级格式化</h2><p>低级格式化把磁盘表面划分为可由控制器识别的扇区。每个扇区不只包含用户数据区，还包含扇区头（标识扇区位置）和校验信息（用于检测读写错误）。低级格式化由制造商在出厂前完成，普通用户不会接触到这一步，也极少需要重做。</p>
+<h2 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h2><p>分区把一块物理磁盘划分为若干逻辑区域。每个分区在操作系统看来可以像一块相对独立的磁盘来使用。分区通常在装机或重装系统时由用户（通过安装程序或磁盘工具）完成，分区工具会写入分区表记录每个分区的起始位置、大小和类型。</p>
+<h2 id="逻辑格式化"><a href="#逻辑格式化" class="headerlink" title="逻辑格式化"></a>逻辑格式化</h2><p>逻辑格式化由操作系统安装程序在分区之后立即执行。它在分区上建立文件系统，创建文件系统元数据：根目录、空闲空间管理结构（如空闲块链表或位图）、文件控制结构（如 inode）等。逻辑格式化完成后，操作系统才能按文件名创建、查找、读写和删除文件。日常使用中的”格式化 U 盘”就是这一层操作。</p>
+<h1 id="坏块管理"><a href="#坏块管理" class="headerlink" title="坏块管理"></a>坏块管理</h1><p><strong>坏块</strong>是无法正常读写的扇区或块，属于硬件故障。操作系统不能真正修复坏块，只能避免继续使用它。</p>
+<p>常见处理方式：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>处理方式</th>
+<th>对 OS 是否透明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简单磁盘</td>
+<td>逻辑格式化时检查坏块，并在 FAT 或相关结构中标记</td>
+<td>不透明，OS 知道坏块存在</td>
+</tr>
+<tr>
+<td>复杂磁盘</td>
+<td>磁盘控制器维护坏块链表，并用备用扇区替换坏块</td>
+<td>透明，OS 看到的是可用逻辑扇区</td>
+</tr>
+</tbody></table>
+<p>备用扇区替换也称扇区备用。它把坏块处理下移到磁盘控制器内部，使上层系统不用直接处理物理坏扇区。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/03/Disk-Scheduling-And-Management/">https://eliano64.github.io/2026/07/03/Disk-Scheduling-And-Management/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/Bus-Timing/" title="Bus Timing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Bus Timing</div></div><div class="info-2"><div class="info-item-1">总线定时总线定时是指主设备和从设备交换数据时，在时间上如何配合。它本质上是一种协议或规则：什么时候放地址、什么时候放命令、什么时候读数据、什么时候撤销信号。 常见定时方式有四类：    定时方式 核心机制 适合场景    同步定时方式 用统一时钟控制数据传送 总线较短、设备速度接近   异步定时方式 不用统一时钟，靠请求和回答信号握手 设备速度差异较大   半同步通信 统一时钟基础上增加等待信号 大体同步，但允许慢设备插入等待   分离式通信 请求和响应拆成两个子周期 避免从设备准备数据时长期占用总线     同步定时：统一时钟，快而简单，但要求设备速度接近。 异步定时：握手配合，适应性强，但控制复杂、速度较慢。 半同步通信：统一时钟加...</div></div></div></a><a class="pagination-related" href="/2026/07/03/External-Storage-And-Disk-Basics/" title="External Storage And Disk Basics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">External Storage And Disk Basics</div></div><div class="info-2"><div class="info-item-1">外存、辅存和外设外存储器也叫辅助存储器，用于长期保存大量数据。磁盘、磁带、光盘、U 盘、SSD 都可以放在这一层理解。 外存同时也是一种 I&#x2F;O 设备：主机可以从外存读入数据，也可以把数据写出到外存。   辅存不能替代主存 CPU 通常不能直接访问辅存中的指令和数据。辅存中的内容要调入主存后，才成为 CPU 可以直接取指、读写和处理的数据。   # 磁表面存储器  磁表面存储器是在载体表面涂覆磁性材料，用磁化状态记录二进制信息。磁盘、磁带、磁鼓都属于磁表面存储器。 磁表面存储器的优点：  容量大，单位容量成本低。 信息可以长期保存，断电后不丢失。 可以脱机保存和搬运。 非破坏性读出，读出后原信息仍然保留。  它的主要限制来自机械运动。磁头移动、盘片旋转都需要时间，因此磁盘访问速度通常慢于主存和 Cache...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E8%AE%BF%E9%97%AE%E6%97%B6%E9%97%B4"><span class="toc-text">磁盘访问时间</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="toc-text">磁盘调度算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%87%8F%E5%B0%91%E6%97%8B%E8%BD%AC%E5%BB%B6%E8%BF%9F%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-text">减少旋转延迟的方法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E6%9B%BF%E7%BC%96%E5%8F%B7"><span class="toc-text">交替编号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%99%E4%BD%8D%E5%91%BD%E5%90%8D"><span class="toc-text">错位命名</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">磁盘初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8E%E7%BA%A7%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="toc-text">低级格式化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%8C%BA"><span class="toc-text">分区</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="toc-text">逻辑格式化</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9D%8F%E5%9D%97%E7%AE%A1%E7%90%86"><span class="toc-text">坏块管理</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

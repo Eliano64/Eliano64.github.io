@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" role="img" aria-labelledby="title desc">
+  <title id="title">Producer Consumer Buffer Model</title>
+  <desc id="desc">Producer consumer problem with mutex, empty, and full semaphores.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #334155;
+      --accent: #2563eb;
+      --green: #16a34a;
+      --orange: #f59e0b;
+      --box: #dbeafe;
+      --slot: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --line: #cbd5e1;
+        --accent: #60a5fa;
+        --green: #34d399;
+        --orange: #fbbf24;
+        --box: #172554;
+        --slot: #0f172a;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 10; }
+    .box { fill: var(--box); stroke: var(--accent); stroke-width: 2; rx: 8; }
+    .slot { fill: var(--slot); stroke: var(--line); stroke-width: 2; rx: 6; }
+    .product { fill: var(--green); stroke: var(--line); stroke-width: 1.5; rx: 6; }
+    .title { fill: var(--text); font: 700 26px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .head { fill: var(--text); font: 700 21px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .text { fill: var(--text); font: 18px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .small { fill: var(--muted); font: 16px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .code { fill: var(--text); font: 18px Consolas, "SFMono-Regular", monospace; }
+    .accent { fill: var(--accent); font-weight: 700; }
+    .green { fill: var(--green); font-weight: 700; }
+    .orange { fill: var(--orange); font-weight: 700; }
+    .arrow { stroke: var(--line); stroke-width: 2.6; fill: none; marker-end: url(#arrow); }
+    .dashed { stroke-dasharray: 8 7; }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:light){.code.orange{fill:#92400e}}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+  <rect class="bg" width="1080" height="560" />
+  <text class="title" x="40" y="50">生产者-消费者：三个信号量分别管三件事</text>
+
+  <rect class="panel" x="48" y="112" width="220" height="164" />
+  <text class="head" x="96" y="154">生产者</text>
+  <text class="small" x="78" y="194">生产一个产品</text>
+  <text class="code accent" x="78" y="232">P(empty)</text>
+
+  <rect class="panel" x="812" y="112" width="220" height="164" />
+  <text class="head" x="860" y="154">消费者</text>
+  <text class="code accent" x="842" y="194">P(full)</text>
+  <text class="small" x="842" y="232">取出并使用产品</text>
+
+  <rect class="panel" x="332" y="96" width="416" height="228" />
+  <text class="head" x="470" y="136">共享缓冲区</text>
+  <text class="small" x="456" y="166">临界资源，需要互斥访问</text>
+  <rect class="slot" x="374" y="198" width="62" height="72" />
+  <rect class="product" x="384" y="210" width="42" height="48" />
+  <rect class="slot" x="452" y="198" width="62" height="72" />
+  <rect class="product" x="462" y="210" width="42" height="48" />
+  <rect class="slot" x="530" y="198" width="62" height="72" />
+  <rect class="slot" x="608" y="198" width="62" height="72" />
+  <text class="code orange" x="404" y="304">P(mutex) ... V(mutex)</text>
+
+  <path class="arrow" d="M268 194 C294 194 302 210 326 220" />
+  <path class="arrow" d="M748 220 C778 212 782 194 806 194" />
+  <text class="small" x="86" y="524">消费者取出产品后执行 V(empty)，把空位还给生产者。</text>
+  <text class="small" x="560" y="524">生产者放入产品后执行 V(full)，把产品通知给消费者。</text>
+
+  <rect class="panel" x="86" y="360" width="260" height="128" />
+  <text class="head" x="116" y="396">empty = n</text>
+  <text class="small" x="116" y="428">空闲缓冲区数量</text>
+  <text class="small" x="116" y="456">生产者先消耗一个空位</text>
+
+  <rect class="panel" x="410" y="360" width="260" height="128" />
+  <text class="head" x="440" y="396">mutex = 1</text>
+  <text class="small" x="440" y="428">进入缓冲区的名额</text>
+  <text class="small" x="440" y="456">保护放入/取出动作</text>
+
+  <rect class="panel" x="734" y="360" width="260" height="128" />
+  <text class="head" x="764" y="396">full = 0</text>
+  <text class="small" x="764" y="428">已有产品数量</text>
+  <text class="small" x="764" y="456">消费者先消耗一个产品</text>
+</svg>

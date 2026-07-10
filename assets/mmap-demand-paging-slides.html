@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>mmap 按需调页过程</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --ink: #172033;
+      --muted: #607086;
+      --line: #40516b;
+      --chip: #ffffff;
+      --blue: #2563eb;
+      --green: #15803d;
+      --red: #b91c1c;
+      --orange: #c2410c;
+      --purple: #7c3aed;
+      --shadow: rgba(15, 23, 42, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #172033;
+        --ink: #e5e7eb;
+        --muted: #aab6c8;
+        --line: #b6c2d3;
+        --chip: #111827;
+        --blue: #60a5fa;
+        --green: #4ade80;
+        --red: #f87171;
+        --orange: #fb923c;
+        --purple: #a78bfa;
+        --shadow: rgba(0, 0, 0, .28);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif; }
+    .deck { min-height: 100vh; padding: 22px; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; }
+    header { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+    h1 { margin: 0; font-size: 24px; }
+    .subtitle { margin-top: 6px; color: var(--muted); font-size: 14px; }
+    .controls { display: flex; gap: 8px; }
+    button { border: 1px solid color-mix(in srgb, var(--line), transparent 30%); background: var(--chip); color: var(--ink); border-radius: 7px; padding: 8px 12px; font-size: 14px; cursor: pointer; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    main { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; min-height: 520px; }
+    .stage, .side { background: var(--panel); border: 1px solid color-mix(in srgb, var(--line), transparent 45%); border-radius: 8px; padding: 16px; box-shadow: 0 8px 24px var(--shadow); }
+    svg { width: 100%; height: 100%; min-height: 510px; }
+    text { fill: var(--ink); }
+    .muted { fill: var(--muted); }
+    .box { fill: var(--chip); stroke: var(--line); stroke-width: 2; rx: 8; }
+    .active { stroke: var(--blue); stroke-width: 3; }
+    .fault { stroke: var(--red); stroke-width: 3; }
+    .done { stroke: var(--green); stroke-width: 3; }
+    .path { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); opacity: .35; }
+    .path.on { opacity: 1; stroke: var(--blue); }
+    .path.faultPath { opacity: 1; stroke: var(--red); stroke-dasharray: 8 6; }
+    .path.donePath { opacity: 1; stroke: var(--green); }
+    .side h2 { margin: 0 0 12px; font-size: 21px; }
+    .side p { margin: 0 0 12px; line-height: 1.7; }
+    .side ul { margin: 0; padding-left: 1.2em; line-height: 1.75; }
+    .badge { display: inline-flex; align-items: center; min-height: 26px; padding: 0 9px; border-radius: 999px; background: color-mix(in srgb, var(--blue), transparent 84%); margin-bottom: 10px; font-size: 13px; }
+    footer { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+    .bar { height: 7px; border-radius: 99px; background: color-mix(in srgb, var(--line), transparent 68%); }
+    .bar.on { background: var(--blue); }
+    @media (max-width: 900px) {
+      header { flex-direction: column; }
+      main { grid-template-columns: 1fr; }
+      svg { min-height: 420px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <div>
+        <h1>mmap 后第一次访问发生了什么</h1>
+        <div class="subtitle">mmap 先建立映射；真正读入文件页通常发生在访问映射区之后。</div>
+      </div>
+      <div class="controls">
+        <button id="prev" type="button">上一步</button>
+        <button id="next" type="button">下一步</button>
+      </div>
+    </header>
+    <main>
+      <section class="stage">
+        <svg viewBox="0 0 760 520" role="img" aria-label="mmap 按需调页过程">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect id="file" class="box" x="40" y="60" width="170" height="78"></rect>
+          <text x="82" y="94" font-size="19" font-weight="700">磁盘文件</text>
+          <text x="68" y="120" class="muted" font-size="14">file offset 0..</text>
+
+          <rect id="open" class="box" x="295" y="60" width="170" height="78"></rect>
+          <text x="340" y="94" font-size="19" font-weight="700">open</text>
+          <text x="329" y="120" class="muted" font-size="14">得到 fd</text>
+
+          <rect id="mmap" class="box" x="550" y="60" width="170" height="78"></rect>
+          <text x="604" y="94" font-size="19" font-weight="700">mmap</text>
+          <text x="574" y="120" class="muted" font-size="14">建立映射关系</text>
+
+          <rect id="vma" class="box" x="70" y="230" width="200" height="105"></rect>
+          <text x="113" y="264" font-size="19" font-weight="700">虚拟地址区间</text>
+          <text id="vmaText" x="104" y="294" class="muted" font-size="14">尚未装入物理页</text>
+
+          <rect id="fault" class="box" x="310" y="230" width="160" height="105"></rect>
+          <text x="348" y="264" font-size="19" font-weight="700">首次访问</text>
+          <text id="faultText" x="339" y="294" class="muted" font-size="14">触发缺页故障</text>
+
+          <rect id="memory" class="box" x="540" y="220" width="180" height="125"></rect>
+          <text x="592" y="254" font-size="19" font-weight="700">物理页框</text>
+          <rect id="page" class="box" x="583" y="280" width="96" height="42"></rect>
+          <text id="pageText" x="606" y="307" font-size="14">空</text>
+
+          <rect id="ptable" class="box" x="120" y="400" width="520" height="68"></rect>
+          <text x="153" y="440" font-size="17" font-weight="700">页表项：</text>
+          <text id="pteText" x="225" y="440" font-size="15">文件偏移已记录，状态位=0，页框号为空</text>
+
+          <path id="p1" d="M210 99 H295" class="path"></path>
+          <path id="p2" d="M465 99 H550" class="path"></path>
+          <path id="p3" d="M635 138 C620 210, 350 190, 205 230" class="path"></path>
+          <path id="p4" d="M270 282 H310" class="path faultPath"></path>
+          <path id="p5" d="M470 282 H540" class="path"></path>
+          <path id="p6" d="M540 315 C390 390, 250 386, 220 335" class="path donePath"></path>
+          <path id="p7" d="M630 345 V400" class="path donePath"></path>
+          <path id="p8" d="M220 230 C310 172, 445 168, 540 230" class="path donePath"></path>
+        </svg>
+      </section>
+      <aside class="side">
+        <div id="badge" class="badge">步骤 1 / 8</div>
+        <h2 id="title"></h2>
+        <div id="body"></div>
+      </aside>
+    </main>
+    <footer id="progress"></footer>
+  </div>
+  <script>
+    const steps = [
+      { title: "open 打开文件", body: "<p>程序先用 open 打开文件，得到文件描述符 fd。此时还没有把文件内容映射进地址空间。</p>", active: ["file", "open"], paths: ["p1"] },
+      { title: "mmap 建立映射", body: "<p>mmap 选择一段虚拟地址范围，并记录它对应文件的哪个区间。</p><ul><li>返回值是一段虚拟地址的起始位置。</li><li>这一步建立映射关系，不等于已经读入整个文件。</li></ul>", active: ["mmap", "vma", "ptable"], paths: ["p2", "p3"], text: { pteText: "文件偏移已记录，状态位=0，页框号为空" } },
+      { title: "程序访问映射区", body: "<p>程序把 mmap 返回的地址当普通指针使用。CPU 发出虚拟地址，MMU 查页表。</p>", active: ["vma", "fault"], paths: ["p4"] },
+      { title: "产生缺页故障", body: "<p>页表项显示该文件页尚未在主存中，于是产生缺页故障，进入 OS 处理程序。</p>", fault: ["fault"], pathsFault: ["p4"] },
+      { title: "从文件读入页面", body: "<p>OS 根据页表项中记录的文件和偏移，从磁盘文件读取对应内容，装入一个物理页框。</p>", active: ["file", "memory"], paths: ["p5"], text: { pageText: "文件页 0" } },
+      { title: "更新页表项", body: "<p>OS 填写页框号，把状态位置为 1，并按权限设置读写保护。之后重试原访存指令。</p>", done: ["ptable", "memory"], pathsDone: ["p7"], text: { pteText: "状态位=1，页框号=物理页框，权限=映射权限", pageText: "文件页 0" } },
+      { title: "再次访问命中", body: "<p>下一次访问同一页时，MMU 可以直接通过页表或 TLB 得到页框号，不再触发缺页。</p>", done: ["vma", "memory"], pathsDone: ["p8"], text: { vmaText: "虚拟页已映射到物理页", pageText: "文件页 0" } },
+      { title: "写回由策略决定", body: "<p>如果是共享可写映射，修改会使物理页变脏；内核可稍后写回，也可以由 msync 明确要求同步。</p><p>munmap 取消映射；close(fd) 本身不取消已经建立的映射。</p>", done: ["file", "memory", "mmap"], pathsDone: ["p6"], text: { pageText: "脏页", pteText: "共享映射：脏页稍后写回或 msync 同步" } }
+    ];
+    let index = 0;
+    const ids = ["file", "open", "mmap", "vma", "fault", "memory", "page", "ptable"];
+    const paths = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"];
+    const progress = document.getElementById("progress");
+    steps.forEach(() => {
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      progress.appendChild(bar);
+    });
+    function reset() {
+      ids.forEach(id => document.getElementById(id).classList.remove("active", "fault", "done"));
+      paths.forEach(id => document.getElementById(id).classList.remove("on", "faultPath", "donePath"));
+      document.getElementById("vmaText").textContent = "尚未装入物理页";
+      document.getElementById("pageText").textContent = "空";
+      document.getElementById("pteText").textContent = "文件偏移已记录，状态位=0，页框号为空";
+    }
+    function mark(list, cls) {
+      (list || []).forEach(id => document.getElementById(id).classList.add(cls));
+    }
+    function render() {
+      reset();
+      const s = steps[index];
+      document.getElementById("badge").textContent = `步骤 ${index + 1} / ${steps.length}`;
+      document.getElementById("title").textContent = s.title;
+      document.getElementById("body").innerHTML = s.body;
+      mark(s.active, "active");
+      mark(s.fault, "fault");
+      mark(s.done, "done");
+      (s.paths || []).forEach(id => document.getElementById(id).classList.add("on"));
+      (s.pathsFault || []).forEach(id => document.getElementById(id).classList.add("faultPath"));
+      (s.pathsDone || []).forEach(id => document.getElementById(id).classList.add("donePath"));
+      if (s.text) Object.entries(s.text).forEach(([id, value]) => document.getElementById(id).textContent = value);
+      document.getElementById("prev").disabled = index === 0;
+      document.getElementById("next").disabled = index === steps.length - 1;
+      [...progress.children].forEach((el, i) => el.classList.toggle("on", i <= index));
+    }
+    document.getElementById("prev").addEventListener("click", () => { if (index > 0) { index--; render(); } });
+    document.getElementById("next").addEventListener("click", () => { if (index < steps.length - 1) { index++; render(); } });
+    document.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft" && index > 0) { index--; render(); }
+      if (event.key === "ArrowRight" && index < steps.length - 1) { index++; render(); }
+    });
+    render();
+  </script>
+</body>
+</html>

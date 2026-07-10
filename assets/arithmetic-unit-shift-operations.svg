@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="680" viewBox="0 0 980 680" role="img" aria-labelledby="title desc">
+  <title id="title">Shift operations</title>
+  <desc id="desc">A comparison of logical shift, arithmetic shift, circular shift, and rotate through carry.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    .bg { fill: #f7f8f6; }
+    .title { fill: #20242a; font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .text { fill: #303842; font: 18px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: #59646f; font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .panel { fill: #ffffff; stroke: #c9d2dc; stroke-width: 2; }
+    .bit { fill: #eaf3fb; stroke: #2d6f9f; stroke-width: 1.8; }
+    .fill { fill: #fff3df; stroke: #bd7a20; stroke-width: 1.8; }
+    .carry { fill: #eff7ed; stroke: #4e8555; stroke-width: 1.8; }
+    .drop { fill: #f6e8e8; stroke: #b94d4d; stroke-width: 1.8; }
+    .bittext { fill: #20242a; font: 700 18px "Consolas", "Segoe UI", monospace; }
+    .arrow { stroke: #66727e; stroke-width: 2.8; fill: none; marker-end: url(#arrow); }
+    .orange { stroke: #bd7a20; stroke-width: 2.8; fill: none; marker-end: url(#arrow2); }
+    .green { stroke: #4e8555; stroke-width: 2.8; fill: none; marker-end: url(#arrow3); }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #151719; }
+      .title, .text, .bittext { fill: #edf0f2; }
+      .small { fill: #aeb7c0; }
+      .panel { fill: #20252a; stroke: #3a424b; }
+      .bit { fill: #1d3342; stroke: #82bee8; }
+      .fill { fill: #3a2b18; stroke: #efb463; }
+      .carry { fill: #203522; stroke: #94ca8e; }
+      .drop { fill: #3d2525; stroke: #dc7777; }
+      .arrow { stroke: #aeb7c0; }
+      .orange { stroke: #efb463; }
+      .green { stroke: #94ca8e; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#66727e"/>
+    </marker>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#bd7a20"/>
+    </marker>
+    <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#4e8555"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="680"/>
+  <text class="title" x="50" y="56">移位运算看“空位补什么、移出位去哪”</text>
+  <text class="small" x="50" y="86">移位改变 bit 位置。左移常对应乘 2，右移常对应除 2，但有限字长会丢位。</text>
+
+  <rect class="panel" x="48" y="122" width="884" height="118" rx="8"/>
+  <text class="text" x="72" y="156">逻辑右移：高位补 0，低位移出</text>
+  <rect class="fill" x="190" y="180" width="46" height="34" rx="5"/><text class="bittext" x="207" y="203">0</text>
+  <rect class="bit" x="246" y="180" width="46" height="34" rx="5"/><text class="bittext" x="263" y="203">1</text>
+  <rect class="bit" x="302" y="180" width="46" height="34" rx="5"/><text class="bittext" x="319" y="203">0</text>
+  <rect class="bit" x="358" y="180" width="46" height="34" rx="5"/><text class="bittext" x="375" y="203">1</text>
+  <rect class="bit" x="414" y="180" width="46" height="34" rx="5"/><text class="bittext" x="431" y="203">1</text>
+  <rect class="bit" x="470" y="180" width="46" height="34" rx="5"/><text class="bittext" x="487" y="203">0</text>
+  <rect class="bit" x="526" y="180" width="46" height="34" rx="5"/><text class="bittext" x="543" y="203">1</text>
+  <rect class="bit" x="582" y="180" width="46" height="34" rx="5"/><text class="bittext" x="599" y="203">0</text>
+  <rect class="drop" x="638" y="180" width="46" height="34" rx="5"/><text class="bittext" x="655" y="203">1</text>
+  <path class="arrow" d="M660 220 C660 230 660 232 660 232"/>
+  <text class="small" x="710" y="203">无符号数常用</text>
+
+  <rect class="panel" x="48" y="264" width="884" height="118" rx="8"/>
+  <text class="text" x="72" y="298">算术右移：高位补符号位，低位移出</text>
+  <rect class="fill" x="190" y="322" width="46" height="34" rx="5"/><text class="bittext" x="207" y="345">1</text>
+  <rect class="bit" x="246" y="322" width="46" height="34" rx="5"/><text class="bittext" x="263" y="345">1</text>
+  <rect class="bit" x="302" y="322" width="46" height="34" rx="5"/><text class="bittext" x="319" y="345">0</text>
+  <rect class="bit" x="358" y="322" width="46" height="34" rx="5"/><text class="bittext" x="375" y="345">1</text>
+  <rect class="bit" x="414" y="322" width="46" height="34" rx="5"/><text class="bittext" x="431" y="345">1</text>
+  <rect class="bit" x="470" y="322" width="46" height="34" rx="5"/><text class="bittext" x="487" y="345">0</text>
+  <rect class="bit" x="526" y="322" width="46" height="34" rx="5"/><text class="bittext" x="543" y="345">1</text>
+  <rect class="bit" x="582" y="322" width="46" height="34" rx="5"/><text class="bittext" x="599" y="345">0</text>
+  <rect class="drop" x="638" y="322" width="46" height="34" rx="5"/><text class="bittext" x="655" y="345">1</text>
+  <path class="orange" d="M260 318 C230 304 215 306 213 322"/>
+  <text class="small" x="710" y="345">补码有符号数常用</text>
+
+  <rect class="panel" x="48" y="406" width="884" height="98" rx="8"/>
+  <text class="text" x="72" y="440">循环左移：最高位绕回最低位</text>
+  <rect class="drop" x="190" y="456" width="46" height="34" rx="5"/><text class="bittext" x="207" y="479">1</text>
+  <rect class="bit" x="246" y="456" width="46" height="34" rx="5"/><text class="bittext" x="263" y="479">0</text>
+  <rect class="bit" x="302" y="456" width="46" height="34" rx="5"/><text class="bittext" x="319" y="479">1</text>
+  <rect class="bit" x="358" y="456" width="46" height="34" rx="5"/><text class="bittext" x="375" y="479">1</text>
+  <rect class="bit" x="414" y="456" width="46" height="34" rx="5"/><text class="bittext" x="431" y="479">0</text>
+  <rect class="bit" x="470" y="456" width="46" height="34" rx="5"/><text class="bittext" x="487" y="479">1</text>
+  <rect class="bit" x="526" y="456" width="46" height="34" rx="5"/><text class="bittext" x="543" y="479">0</text>
+  <rect class="bit" x="582" y="456" width="46" height="34" rx="5"/><text class="bittext" x="599" y="479">1</text>
+  <path class="arrow" d="M212 456 C210 414 640 414 662 456 C672 474 652 488 628 472"/>
+  <text class="small" x="710" y="479">不丢位，只重新排列</text>
+
+  <rect class="panel" x="48" y="528" width="884" height="98" rx="8"/>
+  <text class="text" x="72" y="562">带进位循环左移：CF 和数据位一起循环</text>
+  <rect class="carry" x="128" y="578" width="54" height="34" rx="5"/><text class="bittext" x="138" y="601">CF</text>
+  <rect class="drop" x="216" y="578" width="46" height="34" rx="5"/><text class="bittext" x="233" y="601">1</text>
+  <rect class="bit" x="272" y="578" width="46" height="34" rx="5"/><text class="bittext" x="289" y="601">0</text>
+  <rect class="bit" x="328" y="578" width="46" height="34" rx="5"/><text class="bittext" x="345" y="601">1</text>
+  <rect class="bit" x="384" y="578" width="46" height="34" rx="5"/><text class="bittext" x="401" y="601">1</text>
+  <rect class="bit" x="440" y="578" width="46" height="34" rx="5"/><text class="bittext" x="457" y="601">0</text>
+  <rect class="bit" x="496" y="578" width="46" height="34" rx="5"/><text class="bittext" x="513" y="601">1</text>
+  <rect class="bit" x="552" y="578" width="46" height="34" rx="5"/><text class="bittext" x="569" y="601">0</text>
+  <rect class="bit" x="608" y="578" width="46" height="34" rx="5"/><text class="bittext" x="625" y="601">1</text>
+  <path class="green" d="M238 578 C236 542 154 542 154 578"/>
+  <path class="green" d="M654 596 C706 596 706 596 736 596"/>
+  <text class="small" x="736" y="601">移出位进入 CF，原 CF 进入空位</text>
+</svg>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="430" viewBox="0 0 880 430" role="img" aria-labelledby="title desc">
+  <title id="title">Matrix Compressed Storage</title>
+  <desc id="desc">Stored regions of symmetric, triangular, tridiagonal, and sparse matrices.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --ink:#17212b;
+      --muted:#5b6876;
+      --line:#334e68;
+      --cell:#eef6ff;
+      --keep-fill:#9cd3cf;
+      --const-fill:#e5c9a8;
+      --zero-fill:#dce7f2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink:#e6edf3;
+        --muted:#b8c4cf;
+        --line:#9ccfd8;
+        --cell:#16212c;
+        --keep-fill:#2d6661;
+        --const-fill:#66533f;
+        --zero-fill:#273646;
+      }
+    }
+    text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: var(--ink); }
+    .label { font-size:18px; font-weight:700; }
+    .small { font-size:13px; fill:var(--muted); }
+    .cell { fill:var(--cell); stroke:var(--line); stroke-width:1.6; }
+    .keep { fill:var(--keep-fill); }
+    .const { fill:var(--const-fill); }
+    .zero { fill:var(--zero-fill); }
+  </style>
+  <g transform="translate(44 54)">
+    <text class="label" x="0" y="-18">Symmetric matrix</text>
+    <g>
+      <rect class="keep cell" x="0" y="0" width="36" height="36"/><rect class="zero cell" x="36" y="0" width="36" height="36"/><rect class="zero cell" x="72" y="0" width="36" height="36"/><rect class="zero cell" x="108" y="0" width="36" height="36"/>
+      <rect class="keep cell" x="0" y="36" width="36" height="36"/><rect class="keep cell" x="36" y="36" width="36" height="36"/><rect class="zero cell" x="72" y="36" width="36" height="36"/><rect class="zero cell" x="108" y="36" width="36" height="36"/>
+      <rect class="keep cell" x="0" y="72" width="36" height="36"/><rect class="keep cell" x="36" y="72" width="36" height="36"/><rect class="keep cell" x="72" y="72" width="36" height="36"/><rect class="zero cell" x="108" y="72" width="36" height="36"/>
+      <rect class="keep cell" x="0" y="108" width="36" height="36"/><rect class="keep cell" x="36" y="108" width="36" height="36"/><rect class="keep cell" x="72" y="108" width="36" height="36"/><rect class="keep cell" x="108" y="108" width="36" height="36"/>
+    </g>
+    <text class="small" x="0" y="168">store one triangle and diagonal</text>
+  </g>
+  <g transform="translate(258 54)">
+    <text class="label" x="0" y="-18">Lower triangular</text>
+    <rect class="keep cell" x="0" y="0" width="36" height="36"/><rect class="const cell" x="36" y="0" width="36" height="36"/><rect class="const cell" x="72" y="0" width="36" height="36"/><rect class="const cell" x="108" y="0" width="36" height="36"/>
+    <rect class="keep cell" x="0" y="36" width="36" height="36"/><rect class="keep cell" x="36" y="36" width="36" height="36"/><rect class="const cell" x="72" y="36" width="36" height="36"/><rect class="const cell" x="108" y="36" width="36" height="36"/>
+    <rect class="keep cell" x="0" y="72" width="36" height="36"/><rect class="keep cell" x="36" y="72" width="36" height="36"/><rect class="keep cell" x="72" y="72" width="36" height="36"/><rect class="const cell" x="108" y="72" width="36" height="36"/>
+    <rect class="keep cell" x="0" y="108" width="36" height="36"/><rect class="keep cell" x="36" y="108" width="36" height="36"/><rect class="keep cell" x="72" y="108" width="36" height="36"/><rect class="keep cell" x="108" y="108" width="36" height="36"/>
+    <text class="small" x="0" y="168">store lower part plus one constant</text>
+  </g>
+  <g transform="translate(492 54)">
+    <text class="label" x="0" y="-18">Tridiagonal matrix</text>
+    <rect class="keep cell" x="0" y="0" width="36" height="36"/><rect class="keep cell" x="36" y="0" width="36" height="36"/><rect class="zero cell" x="72" y="0" width="36" height="36"/><rect class="zero cell" x="108" y="0" width="36" height="36"/>
+    <rect class="keep cell" x="0" y="36" width="36" height="36"/><rect class="keep cell" x="36" y="36" width="36" height="36"/><rect class="keep cell" x="72" y="36" width="36" height="36"/><rect class="zero cell" x="108" y="36" width="36" height="36"/>
+    <rect class="zero cell" x="0" y="72" width="36" height="36"/><rect class="keep cell" x="36" y="72" width="36" height="36"/><rect class="keep cell" x="72" y="72" width="36" height="36"/><rect class="keep cell" x="108" y="72" width="36" height="36"/>
+    <rect class="zero cell" x="0" y="108" width="36" height="36"/><rect class="zero cell" x="36" y="108" width="36" height="36"/><rect class="keep cell" x="72" y="108" width="36" height="36"/><rect class="keep cell" x="108" y="108" width="36" height="36"/>
+    <text class="small" x="0" y="168">store cells with |i-j| &lt;= 1</text>
+  </g>
+  <g transform="translate(700 54)">
+    <text class="label" x="0" y="-18">Sparse matrix</text>
+    <rect class="zero cell" x="0" y="0" width="36" height="36"/><rect class="zero cell" x="36" y="0" width="36" height="36"/><rect class="keep cell" x="72" y="0" width="36" height="36"/><rect class="zero cell" x="108" y="0" width="36" height="36"/>
+    <rect class="zero cell" x="0" y="36" width="36" height="36"/><rect class="keep cell" x="36" y="36" width="36" height="36"/><rect class="zero cell" x="72" y="36" width="36" height="36"/><rect class="keep cell" x="108" y="36" width="36" height="36"/>
+    <rect class="zero cell" x="0" y="72" width="36" height="36"/><rect class="zero cell" x="36" y="72" width="36" height="36"/><rect class="zero cell" x="72" y="72" width="36" height="36"/><rect class="zero cell" x="108" y="72" width="36" height="36"/>
+    <rect class="zero cell" x="0" y="108" width="36" height="36"/><rect class="keep cell" x="36" y="108" width="36" height="36"/><rect class="zero cell" x="72" y="108" width="36" height="36"/><rect class="zero cell" x="108" y="108" width="36" height="36"/>
+    <text class="small" x="0" y="168">store nonzero triples or links</text>
+  </g>
+  <text class="small" x="44" y="314">Green cells are stored explicitly. Brown cells in triangular matrices share one constant value. Gray cells are restored by symmetry, by constant value, or as zero.</text>
+  <text class="small" x="44" y="350">Compressed storage questions usually ask for array length, k from (i,j), or (i,j) from k.</text>
+</svg>

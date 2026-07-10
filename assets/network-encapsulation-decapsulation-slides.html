@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Network Encapsulation Decapsulation</title>
+  <style>
+    :root {
+      --bg:#fff; --panel:#f8fafc; --line:#cbd5e1; --text:#172033; --muted:#64748b;
+      --blue:#dbeafe; --bl:#2563eb; --green:#dcfce7; --gl:#16a34a; --amber:#fef3c7; --al:#d97706;
+      --red:#fee2e2; --rl:#dc2626; --purple:#ede9fe; --pl:#7c3aed; --arrow:#475569;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#0f172a; --panel:#111827; --line:#334155; --text:#e5e7eb; --muted:#94a3b8;
+        --blue:#1e3a8a; --bl:#60a5fa; --green:#14532d; --gl:#4ade80; --amber:#713f12; --al:#fbbf24;
+        --red:#7f1d1d; --rl:#f87171; --purple:#4c1d95; --pl:#a78bfa; --arrow:#cbd5e1;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .deck { min-height: 760px; padding: 28px 34px 24px; display: grid; grid-template-rows: auto 1fr auto; gap: 18px; }
+    header { display: flex; justify-content: space-between; align-items: end; }
+    h1 { margin: 0; font-size: 30px; }
+    .step { color: var(--muted); font-size: 18px; }
+    .stage { display: grid; grid-template-columns: 1.25fr .85fr; gap: 22px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; min-height: 540px; }
+    svg { width: 100%; height: 535px; }
+    .layer { stroke-width: 2; }
+    .app { fill: var(--blue); stroke: var(--bl); }
+    .tran { fill: var(--green); stroke: var(--gl); }
+    .net { fill: var(--amber); stroke: var(--al); }
+    .link { fill: var(--red); stroke: var(--rl); }
+    .phy { fill: var(--purple); stroke: var(--pl); }
+    .pkt { fill: var(--panel); stroke: var(--text); stroke-width: 2; }
+    .hi { stroke-width: 4; }
+    .faded { opacity: .2; }
+    .hidden { display: none; }
+    .arrow { stroke: var(--arrow); stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    text { fill: var(--text); font-family: inherit; }
+    .label { font-size: 15px; font-weight: 700; text-anchor: middle; }
+    .small { font-size: 13px; fill: var(--muted); text-anchor: middle; }
+    .pkttext { font-size: 13px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    h2 { margin: 0 0 14px; font-size: 25px; }
+    p { margin: 0 0 13px; font-size: 20px; line-height: 1.55; }
+    .formula { font-family: Consolas,"Courier New",monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 17px; line-height: 1.55; white-space: pre-wrap; }
+    .controls { display: flex; justify-content: center; gap: 10px; }
+    button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 9px 14px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="deck">
+  <header><h1>封装、转发与解封</h1><div id="stepLabel" class="step"></div></header>
+  <main class="stage">
+    <section class="panel">
+      <svg viewBox="0 0 760 535">
+        <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 Z" fill="var(--arrow)"/></marker></defs>
+        <g id="hostA">
+          <text class="label" x="140" y="28">发送主机</text>
+          <rect class="layer app" x="60" y="48" width="160" height="42" rx="8"/><text class="label" x="140" y="74">应用层</text>
+          <rect class="layer tran" x="60" y="94" width="160" height="42" rx="8"/><text class="label" x="140" y="120">运输层</text>
+          <rect class="layer net" x="60" y="140" width="160" height="42" rx="8"/><text class="label" x="140" y="166">网络层</text>
+          <rect class="layer link" x="60" y="186" width="160" height="42" rx="8"/><text class="label" x="140" y="212">链路层</text>
+          <rect class="layer phy" x="60" y="232" width="160" height="42" rx="8"/><text class="label" x="140" y="258">物理层</text>
+        </g>
+        <g id="router">
+          <text class="label" x="380" y="74">路由器</text>
+          <rect class="layer net" x="300" y="140" width="160" height="42" rx="8"/><text class="label" x="380" y="166">网络层</text>
+          <rect class="layer link" x="300" y="186" width="160" height="42" rx="8"/><text class="label" x="380" y="212">链路层</text>
+          <rect class="layer phy" x="300" y="232" width="160" height="42" rx="8"/><text class="label" x="380" y="258">物理层</text>
+        </g>
+        <g id="hostB">
+          <text class="label" x="620" y="28">接收主机</text>
+          <rect class="layer app" x="540" y="48" width="160" height="42" rx="8"/><text class="label" x="620" y="74">应用层</text>
+          <rect class="layer tran" x="540" y="94" width="160" height="42" rx="8"/><text class="label" x="620" y="120">运输层</text>
+          <rect class="layer net" x="540" y="140" width="160" height="42" rx="8"/><text class="label" x="620" y="166">网络层</text>
+          <rect class="layer link" x="540" y="186" width="160" height="42" rx="8"/><text class="label" x="620" y="212">链路层</text>
+          <rect class="layer phy" x="540" y="232" width="160" height="42" rx="8"/><text class="label" x="620" y="258">物理层</text>
+        </g>
+        <path class="arrow" id="toRouter" d="M140 292 V334 H380 V292"/>
+        <path class="arrow" id="toHost" d="M380 292 V334 H620 V292"/>
+        <g id="packet" transform="translate(70,374)">
+          <rect class="pkt" x="0" y="0" width="620" height="88" rx="10"/>
+          <g id="framePart"><rect class="link" x="36" y="8" width="70" height="72" rx="6"/><text class="pkttext" x="71" y="45">帧头</text><rect class="link" x="382" y="8" width="70" height="72" rx="6"/><text class="pkttext" x="417" y="45">帧尾</text></g>
+          <g id="ipPart"><rect class="net" x="106" y="14" width="66" height="60" rx="6"/><text class="pkttext" x="139" y="45">IP</text></g>
+          <g id="tcpPart"><rect class="tran" x="172" y="20" width="66" height="48" rx="6"/><text class="pkttext" x="205" y="45">TCP</text></g>
+          <g id="appPart"><rect class="app" x="238" y="26" width="144" height="36" rx="6"/><text class="pkttext" x="310" y="45">HTTP 请求</text></g>
+          <text class="small" x="310" y="106">当前数据包结构</text>
+        </g>
+      </svg>
+    </section>
+    <section class="panel"><h2 id="title"></h2><p id="body1"></p><p id="body2"></p><div id="formula" class="formula"></div></section>
+  </main>
+  <nav class="controls"><button id="prev">上一步</button><button id="next">下一步</button></nav>
+</div>
+<script>
+const groups = ["hostA","router","hostB","toRouter","toHost","packet"];
+const packetParts = ["appPart","tcpPart","ipPart","framePart"];
+const steps = [
+  {t:"应用层构造报文", b1:"浏览器按照 HTTP 协议构造请求报文。应用层关心的是应用进程之间交换什么内容。", b2:"此时还没有端口、IP、MAC 等网络传输信息。", f:"HTTP 请求", hi:["hostA","packet"], fade:["router","hostB","toRouter","toHost"], parts:["appPart"]},
+  {t:"向下封装", b1:"运输层加 TCP 首部，网络层加 IP 首部，数据链路层加帧首部和帧尾。", b2:"每下一层，上一层交来的数据整体成为本层的数据部分。", f:"HTTP -> TCP 段 -> IP 数据报 -> 帧", hi:["hostA","packet"], fade:["router","hostB"], parts:["appPart","tcpPart","ipPart","framePart"]},
+  {t:"物理层发送比特流", b1:"物理层不理解帧的内部结构，只把比特流转换为信号发送。", b2:"在以太网中，还可能在比特流前添加前导码，便于接收方同步。", f:"帧 -> 比特流 -> 信号", hi:["hostA","toRouter","packet"], fade:["hostB"], parts:["appPart","tcpPart","ipPart","framePart"]},
+  {t:"路由器转发到下一跳", b1:"路由器接收一段链路上的帧，去掉入链路帧头尾，查看 IP 首部并查转发表。", b2:"随后路由器为下一段链路重新封装帧。路由器转发任务通常不需要上升到运输层和应用层。", f:"入链路帧 -> IP 数据报 -> 出链路帧", hi:["router","toRouter","toHost","packet"], fade:["hostA","hostB"], parts:["ipPart","framePart"]},
+  {t:"接收主机逐层解封", b1:"接收主机自下而上处理：物理层收比特，链路层取出 IP 数据报，网络层取出 TCP 段，运输层取出 HTTP 报文。", b2:"最后 HTTP 请求交给 Web 服务器进程。响应报文反向经历同样过程。", f:"帧 -> IP 数据报 -> TCP 段 -> HTTP 请求", hi:["hostB","packet"], fade:["hostA","router","toRouter"], parts:["appPart","tcpPart","ipPart","framePart"]}
+];
+let i = Math.min(Math.max((Number(new URLSearchParams(location.search).get("step")) || 1) - 1, 0), steps.length - 1);
+function render() {
+  const s = steps[i];
+  stepLabel.textContent = `${i + 1} / ${steps.length}`;
+  title.textContent = s.t;
+  body1.textContent = s.b1;
+  body2.textContent = s.b2;
+  formula.textContent = s.f;
+  groups.forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove("faded", "hi");
+    if (s.fade.includes(id)) el.classList.add("faded");
+    if (s.hi.includes(id)) el.classList.add("hi");
+  });
+  packetParts.forEach(id => document.getElementById(id).classList.toggle("hidden", !s.parts.includes(id)));
+}
+prev.onclick = () => { i = Math.max(0, i - 1); render(); };
+next.onclick = () => { i = Math.min(steps.length - 1, i + 1); render(); };
+render();
+</script>
+</body>
+</html>

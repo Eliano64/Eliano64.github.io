@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="650" viewBox="0 0 980 650" role="img" aria-labelledby="title desc">
+  <title id="title">Endianness and alignment</title>
+  <desc id="desc">A comparison of big endian, little endian, and aligned versus unaligned memory access.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    .bg { fill: #f7f8f6; }
+    .title { fill: #20242a; font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .text { fill: #303842; font: 18px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: #5b6570; font: 14px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .panel { fill: #ffffff; stroke: #c9d2dc; stroke-width: 2; }
+    .byte { fill: #eaf3fb; stroke: #2d6f9f; stroke-width: 2; }
+    .byte2 { fill: #fff3df; stroke: #bd7a20; stroke-width: 2; }
+    .word { fill: #eff7ed; stroke: #4e8555; stroke-width: 2; }
+    .split { fill: #f8e8e8; stroke: #b94d4d; stroke-width: 2; }
+    .mono { fill: #20242a; font: 700 20px "Consolas", "Segoe UI", monospace; }
+    .arrow { stroke: #66727e; stroke-width: 2.6; fill: none; marker-end: url(#arrow); }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #151719; }
+      .title, .text, .mono { fill: #edf0f2; }
+      .small { fill: #aeb7c0; }
+      .panel { fill: #20252a; stroke: #3a424b; }
+      .byte { fill: #1d3342; stroke: #82bee8; }
+      .byte2 { fill: #3a2b18; stroke: #efb463; }
+      .word { fill: #203522; stroke: #94ca8e; }
+      .split { fill: #3d2525; stroke: #dc7777; }
+      .arrow { stroke: #aeb7c0; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#66727e"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="650"/>
+  <text class="title" x="48" y="56">多字节数据：字节顺序与边界对齐</text>
+  <text class="small" x="48" y="86">例：32 bit 数据 0x01234567，由 4 个字节 01、23、45、67 组成。</text>
+
+  <rect class="panel" x="48" y="122" width="884" height="210" rx="8"/>
+  <text class="text" x="76" y="158">大小端只决定多字节数据的字节存放顺序</text>
+  <text class="small" x="76" y="188">地址从左到右递增</text>
+  <path class="arrow" d="M198 184 H360"/>
+
+  <text class="text" x="76" y="232">大端</text>
+  <text class="small" x="76" y="258">低地址放最高有效字节</text>
+  <rect class="byte" x="270" y="218" width="92" height="48" rx="6"/><text class="mono" x="302" y="249">01</text>
+  <rect class="byte" x="372" y="218" width="92" height="48" rx="6"/><text class="mono" x="404" y="249">23</text>
+  <rect class="byte" x="474" y="218" width="92" height="48" rx="6"/><text class="mono" x="506" y="249">45</text>
+  <rect class="byte" x="576" y="218" width="92" height="48" rx="6"/><text class="mono" x="608" y="249">67</text>
+
+  <text class="text" x="76" y="304">小端</text>
+  <text class="small" x="76" y="326">低地址放最低有效字节</text>
+  <rect class="byte2" x="270" y="290" width="92" height="48" rx="6"/><text class="mono" x="302" y="321">67</text>
+  <rect class="byte2" x="372" y="290" width="92" height="48" rx="6"/><text class="mono" x="404" y="321">45</text>
+  <rect class="byte2" x="474" y="290" width="92" height="48" rx="6"/><text class="mono" x="506" y="321">23</text>
+  <rect class="byte2" x="576" y="290" width="92" height="48" rx="6"/><text class="mono" x="608" y="321">01</text>
+
+  <rect class="panel" x="48" y="374" width="884" height="220" rx="8"/>
+  <text class="text" x="76" y="410">边界对齐影响访存次数</text>
+  <text class="small" x="76" y="440">假设一次访存只能读写 4 字节字，字边界地址为 0、4、8、...</text>
+
+  <text class="text" x="76" y="492">对齐访问</text>
+  <rect class="word" x="210" y="462" width="360" height="54" rx="6"/>
+  <text class="mono" x="246" y="496">addr 0</text>
+  <text class="mono" x="350" y="496">addr 1</text>
+  <text class="mono" x="454" y="496">addr 2</text>
+  <text class="mono" x="558" y="496">addr 3</text>
+  <text class="small" x="640" y="492">一个字完全落在同一存储字内</text>
+
+  <text class="text" x="76" y="570">未对齐访问</text>
+  <rect class="split" x="210" y="540" width="174" height="54" rx="6"/>
+  <rect class="split" x="396" y="540" width="174" height="54" rx="6"/>
+  <text class="mono" x="236" y="574">addr 2</text>
+  <text class="mono" x="326" y="574">addr 3</text>
+  <text class="mono" x="422" y="574">addr 4</text>
+  <text class="mono" x="512" y="574">addr 5</text>
+  <text class="small" x="640" y="570">跨过字边界，可能需要两次访存</text>
+</svg>

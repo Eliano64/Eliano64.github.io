@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Batch Scheduling Algorithms</title>
+  <style>
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --grid:#cbd5e1; --p1:#2563eb; --p2:#0f766e; --p3:#b45309; --p4:#7c3aed; --p5:#be123c;
+      --chip:#e6eef9; --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --grid:#455366; --p1:#7aa2ff; --p2:#62d4c5; --p3:#f6b85f; --p4:#b89cff; --p5:#ff8aa0;
+        --chip:#263142; --shadow:rgba(0,0,0,.38);
+      }
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:780px; background:var(--bg); color:var(--text); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; display:flex; flex-direction:column; }
+    header { padding:20px 24px 8px; text-align:center; }
+    h1 { margin:0; font-size:24px; }
+    .sub { margin-top:8px; color:var(--muted); font-size:14px; }
+    main { flex:1; padding:10px 24px 14px; display:grid; gap:12px; grid-template-rows:auto auto 1fr; }
+    .chart, .panel, .card { border:1.4px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:0 6px 16px var(--shadow); }
+    .chart { padding:14px; }
+    svg { width:100%; height:330px; display:block; }
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .card { padding:14px; min-height:112px; }
+    .card h2 { margin:0 0 8px; font-size:18px; }
+    .card p { margin:0; color:var(--muted); line-height:1.55; font-size:15px; }
+    .panel { padding:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start; }
+    .note { border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--chip); min-height:72px; }
+    .note strong { display:block; color:var(--p1); margin-bottom:8px; }
+    .note span { color:var(--text); line-height:1.45; }
+    footer { display:flex; align-items:center; justify-content:center; gap:12px; padding:10px 20px 18px; }
+    button { border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; padding:8px 14px; cursor:pointer; font-size:14px; }
+    .count { color:var(--muted); min-width:64px; text-align:center; font-size:14px; }
+    @media (max-width:840px) { body { min-height:860px; } main { padding:10px 14px; } .cards,.panel { grid-template-columns:1fr; } svg { height:360px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title"></h1>
+    <div class="sub" id="subtitle"></div>
+  </header>
+  <main>
+    <section class="chart"><svg id="gantt" viewBox="0 0 900 330" role="img"></svg></section>
+    <section class="cards" id="cards"></section>
+    <section class="panel" id="panel"></section>
+  </main>
+  <footer>
+    <button id="prev" type="button">上一页</button>
+    <div class="count" id="count"></div>
+    <button id="next" type="button">下一页</button>
+  </footer>
+  <script>
+    const rows = ["P1", "P2", "P3", "P4", "P5"];
+    const colors = { P1:"var(--p1)", P2:"var(--p2)", P3:"var(--p3)", P4:"var(--p4)", P5:"var(--p5)" };
+    const slides = [
+      {
+        title:"FCFS",
+        subtitle:"按到达先后服务，非抢占。",
+        bars:[["P1",0,8],["P2",8,12],["P3",12,21],["P4",21,26],["P5",26,28]],
+        ticks:[0,8,12,21,26,28],
+        cards:[["规则","谁先进入就绪队列，谁先得到 CPU。"],["顺序","P1 → P2 → P3 → P4 → P5。"],["问题","P5 很短，但排在长作业后面，等待到 26 才运行。"]],
+        notes:[["平均周转","16.6"],["平均等待","11"]]
+      },
+      {
+        title:"SJF / SPF",
+        subtitle:"每次调度时，在已到达进程中选择运行时间最短者，默认非抢占。",
+        bars:[["P1",0,8],["P5",8,10],["P2",10,14],["P4",14,19],["P3",19,28]],
+        ticks:[0,8,10,14,19,28],
+        cards:[["0 时刻","只有 P1 到达，只能先运行 P1。"],["8 时刻","P2、P3、P4、P5 都已到达，P5 最短。"],["之后","再选 P2、P4，最长的 P3 最后运行。"]],
+        notes:[["平均周转","13.4"],["平均等待","7.8"]]
+      },
+      {
+        title:"SRTN",
+        subtitle:"抢占式短作业优先；每次就绪队列变化都比较剩余时间。",
+        bars:[["P1",0,1],["P2",1,5],["P4",5,6],["P5",6,8],["P4",8,12],["P1",12,19],["P3",19,28]],
+        ticks:[0,1,5,6,8,12,19,28],
+        cards:[["1 时刻","P2 到达，P2 的 4 小于 P1 剩余 7，抢占。"],["6 时刻","P5 到达，P5 的 2 小于 P4 剩余 4，抢占。"],["12 时刻","P4 完成后，P1 剩 7 比 P3 的 9 短，运行 P1。"]],
+        notes:[["平均周转","12"],["平均等待","6.4"]]
+      },
+      {
+        title:"HRRN",
+        subtitle:"非抢占；每次调度时计算响应比。",
+        bars:[["P1",0,8],["P2",8,12],["P5",12,14],["P4",14,19],["P3",19,28]],
+        ticks:[0,8,12,14,19,28],
+        cards:[["8 时刻","P2=2.75，P3≈1.67，P4=2，P5=2，所以选 P2。"],["12 时刻","P3≈2.11，P4=2.8，P5=4，所以选 P5。"],["14 时刻","P4=3.2，高于 P3≈2.33，所以选 P4。"]],
+        notes:[["响应比","(等待时间 + 服务时间) / 服务时间"],["平均等待","8.2"]]
+      }
+    ];
+    let index = 0;
+    const svg = document.getElementById("gantt");
+    function x(t) { return 120 + t * 24; }
+    function y(proc) { return 56 + rows.indexOf(proc) * 46; }
+    function renderSvg(slide) {
+      const ticks = slide.ticks;
+      const grid = ticks.map(t => `<line x1="${x(t)}" y1="42" x2="${x(t)}" y2="278" stroke="var(--grid)" stroke-dasharray="4 6"/>`).join("");
+      const labels = rows.map((p,i) => `<text x="72" y="${y(p)+19}" fill="var(--text)" font-size="16" font-weight="700" text-anchor="middle">${p}</text><line x1="120" y1="${y(p)+24}" x2="792" y2="${y(p)+24}" stroke="var(--grid)"/>`).join("");
+      const bars = slide.bars.map(([p,s,e]) => {
+        const w = x(e)-x(s);
+        const label = `${s}-${e}`;
+        return `<rect x="${x(s)}" y="${y(p)}" width="${w}" height="28" rx="5" fill="${colors[p]}" stroke="var(--line)"/><text x="${x(s)+w/2}" y="${y(p)+19}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${label}</text>`;
+      }).join("");
+      const tickLabels = ticks.map(t => `<text x="${x(t)}" y="306" fill="var(--text)" font-size="13" font-weight="700" text-anchor="middle">${t}</text>`).join("");
+      svg.innerHTML = `<line x1="120" y1="278" x2="792" y2="278" stroke="var(--line)" stroke-width="2"/><line x1="120" y1="42" x2="120" y2="278" stroke="var(--line)" stroke-width="2"/>${grid}${labels}${bars}${tickLabels}<text x="456" y="324" fill="var(--muted)" font-size="13" text-anchor="middle">纵轴是进程，横轴是时间；横条表示进程占用 CPU 的时间区间。</text>`;
+    }
+    function render() {
+      const s = slides[index];
+      document.getElementById("title").textContent = s.title;
+      document.getElementById("subtitle").textContent = s.subtitle;
+      renderSvg(s);
+      document.getElementById("cards").innerHTML = s.cards.map(([h,p]) => `<article class="card"><h2>${h}</h2><p>${p}</p></article>`).join("");
+      document.getElementById("panel").innerHTML = s.notes.map(([h,p]) => `<div class="note"><strong>${h}</strong><span>${p}</span></div>`).join("");
+      document.getElementById("count").textContent = `${index+1} / ${slides.length}`;
+    }
+    document.getElementById("prev").addEventListener("click", () => { index = (index + slides.length - 1) % slides.length; render(); });
+    document.getElementById("next").addEventListener("click", () => { index = (index + 1) % slides.length; render(); });
+    render();
+  </script>
+</body>
+</html>

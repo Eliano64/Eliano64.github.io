@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simple Selection Sort</title>
+<style>
+:root{--bg:#fff;--ink:#1f2937;--muted:#64748b;--line:#cbd5e1;--cell:#f8fafc;--sorted:#dcfce7;--scan:#dbeafe;--min:#fed7aa;--swap:#fee2e2;--accent:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#9ca3af;--line:#475569;--cell:#111827;--sorted:#064e3b;--scan:#172554;--min:#7c2d12;--swap:#7f1d1d;--accent:#60a5fa}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:980px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center}.title{font-size:24px;font-weight:750}.sub{color:var(--muted);font-size:14px;margin-top:4px}.controls{display:flex;gap:8px}.btn{border:1px solid var(--line);background:var(--cell);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}.stage{margin-top:22px;border:1px solid var(--line);border-radius:10px;padding:18px}.array{display:flex;gap:8px;align-items:end;min-height:96px}.box{width:72px;height:58px;border:1.5px solid var(--line);border-radius:8px;background:var(--cell);display:flex;align-items:center;justify-content:center;font:700 20px ui-monospace,Menlo,monospace;position:relative}.box::after{content:attr(data-i);position:absolute;bottom:-24px;color:var(--muted);font:12px ui-monospace,Menlo,monospace}.sorted{background:var(--sorted)}.scan{background:var(--scan);border-color:var(--accent)}.min{background:var(--min);border-color:#f97316}.swap{background:var(--swap);border-color:#ef4444}.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px;color:var(--muted);font-size:13px}.chip{display:inline-flex;align-items:center;gap:6px}.dot{width:14px;height:14px;border-radius:4px;border:1px solid var(--line)}.explain{margin-top:22px;line-height:1.75}.code{font-family:ui-monospace,Menlo,monospace;color:var(--accent)}.step{color:var(--muted);font-size:14px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">简单选择排序：每趟选择待排序区最小元素</div>
+      <div class="sub">示例序列：49, 38, 65, 97, 76, 13, 27, 49</div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="prev">上一步</button>
+      <button class="btn" id="next">下一步</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="array" id="array"></div>
+    <div class="legend">
+      <span class="chip"><span class="dot" style="background:var(--sorted)"></span>有序区</span>
+      <span class="chip"><span class="dot" style="background:var(--scan)"></span>正在扫描</span>
+      <span class="chip"><span class="dot" style="background:var(--min)"></span>当前最小</span>
+      <span class="chip"><span class="dot" style="background:var(--swap)"></span>本趟交换位置</span>
+    </div>
+    <div class="explain" id="explain"></div>
+    <div class="step" id="step"></div>
+  </div>
+</div>
+<script>
+const steps=[
+{a:[49,38,65,97,76,13,27,49],sorted:0,scan:[0,7],min:5,swap:[],t:'第 1 趟：扫描 A[0..7]，最小值是 A[5]=13。',d:'选择排序不在扫描过程中反复交换，只记录最小元素位置 min。'},
+{a:[13,38,65,97,76,49,27,49],sorted:1,scan:[],min:null,swap:[0,5],t:'把 A[0] 与 A[5] 交换，13 进入最终位置。',d:'第 1 趟结束后，有序区扩大为 A[0]。'},
+{a:[13,38,65,97,76,49,27,49],sorted:1,scan:[1,7],min:6,swap:[],t:'第 2 趟：扫描 A[1..7]，最小值是 A[6]=27。',d:'前面的 A[0] 已经不再参与后续处理。'},
+{a:[13,27,65,97,76,49,38,49],sorted:2,scan:[],min:null,swap:[1,6],t:'交换 A[1] 与 A[6]，27 进入最终位置。',d:'有序区变为 A[0..1]。'},
+{a:[13,27,65,97,76,49,38,49],sorted:2,scan:[2,7],min:6,swap:[],t:'第 3 趟：扫描 A[2..7]，最小值是 A[6]=38。',d:'比较次数与初始顺序无关，每趟都要找待排序区的最小值。'},
+{a:[13,27,38,97,76,49,65,49],sorted:3,scan:[],min:null,swap:[2,6],t:'交换 A[2] 与 A[6]，38 进入最终位置。',d:'选择排序的交换次数少，但远距离交换会破坏稳定性。'},
+{a:[13,27,38,49,49,65,76,97],sorted:8,scan:[],min:null,swap:[],t:'继续执行 n-1 趟后得到递增序列。',d:'简单选择排序固定需要 n-1 趟，关键字比较次数为 n(n-1)/2。'}
+];
+let cur=0;
+function render(){
+ const s=steps[cur], root=document.getElementById('array');
+ root.innerHTML='';
+ s.a.forEach((v,i)=>{
+  const b=document.createElement('div'); b.className='box'; b.textContent=String(v).padStart(2,'0'); b.dataset.i=i;
+  if(i<s.sorted)b.classList.add('sorted');
+  if(s.scan && i>=s.scan[0] && i<=s.scan[1])b.classList.add('scan');
+  if(s.min===i)b.classList.add('min');
+  if(s.swap && s.swap.includes(i))b.classList.add('swap');
+  root.appendChild(b);
+ });
+ document.getElementById('explain').innerHTML=`<b>${s.t}</b><br>${s.d}`;
+ document.getElementById('step').textContent=`${cur+1} / ${steps.length}`;
+}
+document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

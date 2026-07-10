@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="330" viewBox="0 0 960 330" role="img" aria-labelledby="title desc">
+  <title id="title">Cache address fields and cache line contents</title>
+  <desc id="desc">A CPU address is split into tag, index and block offset fields; a cache line stores data block, tag and state bits, but does not store index or block offset as metadata.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #111827;
+      --tag: #dbeafe;
+      --index: #dcfce7;
+      --offset: #fef3c7;
+      --meta: #fee2e2;
+      --data: #ede9fe;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #e5e7eb;
+        --tag: #1e3a8a;
+        --index: #14532d;
+        --offset: #713f12;
+        --meta: #7f1d1d;
+        --data: #4c1d95;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .text { fill: var(--text); font-family: "Segoe UI", Arial, sans-serif; }
+    .muted { fill: var(--muted); font-family: "Segoe UI", Arial, sans-serif; }
+    .box { stroke: var(--line); stroke-width: 2; rx: 8; }
+    .line { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .thin { stroke: var(--line); stroke-width: 1.5; fill: none; }
+    .tag { fill: var(--tag); }
+    .index { fill: var(--index); }
+    .offset { fill: var(--offset); }
+    .meta { fill: var(--meta); }
+    .data { fill: var(--data); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="960" height="330"/>
+
+  <text class="text" x="40" y="42" font-size="28" font-weight="700">CPU 地址字段与 Cache 行实际保存的内容</text>
+  <text class="muted" x="40" y="72" font-size="18">地址字段用于“查找和选择”；Cache 行中只保存数据块及必要的元数据。</text>
+
+  <text class="text" x="70" y="108" font-size="20" font-weight="700">CPU 地址被拆成三段</text>
+  <rect class="box tag" x="70" y="126" width="290" height="76"/>
+  <rect class="box index" x="360" y="126" width="250" height="76"/>
+  <rect class="box offset" x="610" y="126" width="280" height="76"/>
+  <text class="text" x="188" y="158" font-size="24" text-anchor="middle" font-weight="700">Tag</text>
+  <text class="muted" x="215" y="186" font-size="18" text-anchor="middle">拿来与表项标记比较</text>
+  <text class="text" x="485" y="158" font-size="24" text-anchor="middle" font-weight="700">Index</text>
+  <text class="muted" x="485" y="186" font-size="18" text-anchor="middle">拿来选择行或组</text>
+  <text class="text" x="750" y="158" font-size="24" text-anchor="middle" font-weight="700">Block Offset</text>
+  <text class="muted" x="750" y="186" font-size="18" text-anchor="middle">拿来选择块内位置</text>
+
+  <path class="line" d="M215 210 V235 H265"/>
+  <path class="line" d="M750 210 V235 H705"/>
+
+  <rect class="box meta" x="120" y="248" width="440" height="68"/>
+  <text class="text" x="340" y="276" font-size="22" text-anchor="middle" font-weight="700">Cache 表项元数据保存</text>
+  <text class="muted" x="340" y="304" font-size="18" text-anchor="middle">Tag + Valid + Dirty + 替换控制位</text>
+
+  <rect class="box data" x="610" y="248" width="290" height="68"/>
+  <text class="text" x="755" y="276" font-size="22" text-anchor="middle" font-weight="700">Block Offset 不作为元数据保存</text>
+  <text class="muted" x="755" y="304" font-size="18" text-anchor="middle">数据块本身会保存；偏移只用于取块内位置</text>
+
+  <text class="muted" x="485" y="232" font-size="17" text-anchor="middle">Index 用完即止：它定位表项，不写入表项</text>
+</svg>

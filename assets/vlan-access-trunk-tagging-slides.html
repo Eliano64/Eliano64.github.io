@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VLAN Access Trunk Tagging</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--fg:#172033;--muted:#5d6b7e;--line:#8a98aa;--blue:#3478d4;--green:#2f9b5f;--amber:#bf7a18;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#0b0f14;--fg:#e7edf7;--muted:#b6c2d2;--line:#718096;--blue:#7ab0ff;--green:#67d493;--amber:#ffd166;--card:#111827}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:0 auto;padding:22px}h1{text-align:center;font-size:26px;margin:0 0 14px}.layout{display:grid;grid-template-columns:270px 1fr;gap:18px}.list{display:flex;flex-direction:column;gap:10px}.item{background:var(--card);border:1.6px solid var(--line);border-radius:8px;padding:10px 12px}.item.active{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 30%,transparent)}svg{width:100%;height:auto;background:var(--card);border:1.6px solid var(--line);border-radius:10px}text{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.muted{fill:var(--muted)}.host{fill:var(--card);stroke:var(--line);stroke-width:2}.sw{fill:color-mix(in srgb,var(--blue) 14%,var(--card));stroke:var(--blue);stroke-width:2.5}.line{stroke:var(--line);stroke-width:3}.frame{fill:color-mix(in srgb,var(--green) 20%,var(--card));stroke:var(--green);stroke-width:2}.tag{fill:color-mix(in srgb,var(--amber) 30%,var(--card));stroke:var(--amber);stroke-width:2}.arrow{stroke:var(--amber);stroke-width:4;fill:none;marker-end:url(#arrow)}.controls{text-align:center;margin-top:12px}button{font:inherit;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:8px 14px;margin:0 5px}
+</style>
+</head>
+<body><div class="wrap"><h1>Access / Trunk 的打标签与去标签</h1>
+<div class="layout"><div class="list" id="list"></div>
+<svg viewBox="0 0 660 430">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--amber)"/></marker></defs>
+<rect x="50" y="170" width="100" height="54" rx="8" class="host"/><text x="100" y="203" text-anchor="middle" font-size="18">主机 A</text>
+<rect x="260" y="150" width="140" height="90" rx="10" class="sw"/><text x="330" y="190" text-anchor="middle" font-size="20" font-weight="700">SW1</text><text x="330" y="218" text-anchor="middle" class="muted" font-size="14">Access PVID=10</text>
+<rect x="510" y="150" width="110" height="90" rx="10" class="sw"/><text x="565" y="190" text-anchor="middle" font-size="20" font-weight="700">SW2</text><text x="565" y="218" text-anchor="middle" class="muted" font-size="14">Trunk</text>
+<line x1="150" y1="197" x2="260" y2="197" class="line"/><line x1="400" y1="197" x2="510" y2="197" class="line"/>
+<text x="205" y="180" text-anchor="middle" class="muted" font-size="14">Access</text><text x="455" y="180" text-anchor="middle" class="muted" font-size="14">Trunk</text>
+<g id="scene"></g><text id="caption" x="330" y="370" text-anchor="middle" font-size="18"></text>
+</svg></div>
+<div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div></div>
+<script>
+const steps=[
+{t:"主机发送普通帧",c:"主机接在 Access 口，发送的是不带 VLAN 标签的普通以太网帧。",x:125,tag:false},
+{t:"Access 入方向打标签",c:"SW1 根据入端口 PVID=10，把普通帧归入 VLAN 10，并插入 802.1Q 标签。",x:285,tag:true},
+{t:"Trunk 携带 VLAN",c:"帧经过 Trunk 链路传给另一台交换机。Trunk 可承载多个 VLAN 的带标签帧。",x:440,tag:true},
+{t:"Access 出方向去标签",c:"若最终从 Access 口发给普通主机，交换机通常去掉标签，再发送普通帧。",x:565,tag:false}
+];
+let i=0;function frame(x,tag){return `<path d="M${x-55} 285 L${x+55} 285" class="arrow"/><rect x="${x-42}" y="255" width="84" height="42" rx="6" class="frame"/><text x="${x}" y="281" text-anchor="middle" font-size="15">Frame</text>${tag?`<rect x="${x+20}" y="249" width="56" height="24" rx="4" class="tag"/><text x="${x+48}" y="266" text-anchor="middle" font-size="13">VID 10</text>`:""}`;}
+function render(){list.innerHTML=steps.map((s,k)=>`<div class="item ${k===i?'active':''}"><b>${k+1}. ${s.t}</b><br>${s.c}</div>`).join("");scene.innerHTML=frame(steps[i].x,steps[i].tag);caption.textContent=steps[i].c}
+prev.onclick=()=>{i=(i+steps.length-1)%steps.length;render()};next.onclick=()=>{i=(i+1)%steps.length;render()};render();
+</script></body></html>

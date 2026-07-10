@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Producer Consumer Buffer Flow</title>
+  <style>
+    :root { color-scheme: light dark; --bg:#f8fafc; --panel:#fff; --text:#172033; --muted:#64748b; --line:#cbd5e1; --accent:#2563eb; --green:#16a34a; --orange:#f59e0b; --soft:#dbeafe; --shadow:rgba(15,23,42,.12); }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0b1120; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --line:#374151; --accent:#60a5fa; --green:#34d399; --orange:#fbbf24; --soft:#172554; --shadow:rgba(0,0,0,.35); } }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    .deck { width:min(1160px,100vw); margin:0 auto; padding:22px; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; }
+    h1 { margin:0; font-size:22px; letter-spacing:0; }
+    .controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    button { border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:6px; padding:7px 12px; cursor:pointer; box-shadow:0 1px 3px var(--shadow); }
+    button:hover { border-color:var(--accent); }
+    .counter { color:var(--muted); min-width:56px; text-align:center; }
+    .grid { display:grid; grid-template-columns:1fr 1.25fr 1fr; gap:16px; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; min-height:470px; box-shadow:0 8px 20px var(--shadow); }
+    .panel h2 { margin:0 0 12px; font-size:17px; }
+    .code { display:grid; gap:8px; font-family:Consolas,"SFMono-Regular",monospace; font-size:15px; }
+    .line { border:1px solid transparent; border-radius:6px; padding:7px 9px; white-space:nowrap; }
+    .line.active { border-color:var(--accent); background:var(--soft); box-shadow:inset 4px 0 0 var(--accent); }
+    .buffer { display:flex; gap:10px; justify-content:center; margin:28px 0; }
+    .slot { width:70px; height:86px; border:2px solid var(--line); border-radius:8px; display:grid; place-items:center; color:var(--muted); }
+    .slot.full { border-color:var(--green); color:var(--green); background:color-mix(in srgb,var(--green) 12%,transparent); font-weight:700; }
+    .signals { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .sig { border:1px solid var(--line); border-radius:8px; padding:12px; }
+    .sig b { display:block; font:700 28px/1 Consolas,monospace; margin-top:6px; color:var(--accent); }
+    .desc { margin-top:16px; color:var(--text); }
+    .muted { color:var(--muted); }
+    @media (max-width:900px) { .grid { grid-template-columns:1fr; } header { flex-direction:column; align-items:flex-start; } .panel { min-height:auto; } }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <header>
+      <h1>生产一次、消费一次：empty/full/mutex 如何变化</h1>
+      <div class="controls"><button id="prev">上一步</button><span class="counter" id="counter"></span><button id="next">下一步</button><button id="reset">重置</button></div>
+    </header>
+    <section class="grid">
+      <div class="panel">
+        <h2>生产者</h2>
+        <div class="code">
+          <div class="line" data-line="p0">produce item;</div>
+          <div class="line" data-line="p1">P(empty);</div>
+          <div class="line" data-line="p2">P(mutex);</div>
+          <div class="line" data-line="p3">put item into buffer;</div>
+          <div class="line" data-line="p4">V(mutex);</div>
+          <div class="line" data-line="p5">V(full);</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>缓冲区与信号量</h2>
+        <div class="buffer" id="buffer"></div>
+        <div class="signals">
+          <div class="sig">empty<b id="empty">3</b></div>
+          <div class="sig">full<b id="full">0</b></div>
+          <div class="sig">mutex<b id="mutex">1</b></div>
+        </div>
+        <p class="desc" id="desc"></p>
+      </div>
+      <div class="panel">
+        <h2>消费者</h2>
+        <div class="code">
+          <div class="line" data-line="c1">P(full);</div>
+          <div class="line" data-line="c2">P(mutex);</div>
+          <div class="line" data-line="c3">remove item from buffer;</div>
+          <div class="line" data-line="c4">V(mutex);</div>
+          <div class="line" data-line="c5">V(empty);</div>
+          <div class="line" data-line="c6">consume item;</div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const steps = [
+      { line:"", items:0, empty:3, full:0, mutex:1, desc:"初始：容量为 3 的缓冲区为空，生产者可申请空位，消费者不能取产品。" },
+      { line:"p1", items:0, empty:2, full:0, mutex:1, desc:"生产者执行 P(empty)，消耗一个空位。此时还没有进入缓冲区。" },
+      { line:"p2", items:0, empty:2, full:0, mutex:0, desc:"生产者执行 P(mutex)，取得缓冲区访问权。" },
+      { line:"p3", items:1, empty:2, full:0, mutex:0, desc:"生产者把产品放入缓冲区。这个动作必须在互斥保护内完成。" },
+      { line:"p4", items:1, empty:2, full:0, mutex:1, desc:"生产者执行 V(mutex)，释放缓冲区访问权。" },
+      { line:"p5", items:1, empty:2, full:1, mutex:1, desc:"生产者执行 V(full)，产品数量加一，消费者可以继续。" },
+      { line:"c1", items:1, empty:2, full:0, mutex:1, desc:"消费者执行 P(full)，消耗一个产品名额。" },
+      { line:"c2", items:1, empty:2, full:0, mutex:0, desc:"消费者执行 P(mutex)，取得缓冲区访问权。" },
+      { line:"c3", items:0, empty:2, full:0, mutex:0, desc:"消费者从缓冲区取出产品。这个动作也必须互斥。" },
+      { line:"c4", items:0, empty:2, full:0, mutex:1, desc:"消费者执行 V(mutex)，释放缓冲区访问权。" },
+      { line:"c5", items:0, empty:3, full:0, mutex:1, desc:"消费者执行 V(empty)，空位数量加一，生产者可以继续。" },
+      { line:"c6", items:0, empty:3, full:0, mutex:1, desc:"消费者使用产品。使用产品不再访问共享缓冲区。" }
+    ];
+    let index = 0;
+    const ids = ["empty","full","mutex","desc","counter","buffer"];
+    const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+    function render() {
+      const s = steps[index];
+      document.querySelectorAll(".line").forEach(el => el.classList.toggle("active", el.dataset.line === s.line));
+      els.buffer.innerHTML = Array.from({length:3}, (_,i) => `<div class="slot ${i < s.items ? "full" : ""}">${i < s.items ? "产品" : "空"}</div>`).join("");
+      els.empty.textContent = s.empty; els.full.textContent = s.full; els.mutex.textContent = s.mutex;
+      els.desc.textContent = s.desc; els.counter.textContent = `${index + 1}/${steps.length}`;
+    }
+    document.getElementById("prev").onclick = () => { index = Math.max(0, index - 1); render(); };
+    document.getElementById("next").onclick = () => { index = Math.min(steps.length - 1, index + 1); render(); };
+    document.getElementById("reset").onclick = () => { index = 0; render(); };
+    render();
+  </script>
+</body>
+</html>

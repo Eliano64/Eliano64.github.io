@@ -1,0 +1,427 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Hash Table | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="基本概念散列表也叫哈希表，英文是 Hash Table。它的特点是：可以根据数据元素的关键字直接计算出它在表中的存储地址。 散列函数也叫哈希函数，记作： $$Addr&#x3D;H(key)$$ 它建立了“关键字 $\rightarrow$ 存储地址”的映射关系。 理想情况下，查找一个关键字只需要：  用散列函数计算地址。 到该地址检查关键字是否匹配。  因此理想时间复杂度可达到 $O(1)$。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hash Table">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/29/hash-table/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="基本概念散列表也叫哈希表，英文是 Hash Table。它的特点是：可以根据数据元素的关键字直接计算出它在表中的存储地址。 散列函数也叫哈希函数，记作： $$Addr&#x3D;H(key)$$ 它建立了“关键字 $\rightarrow$ 存储地址”的映射关系。 理想情况下，查找一个关键字只需要：  用散列函数计算地址。 到该地址检查关键字是否匹配。  因此理想时间复杂度可达到 $O(1)$。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-29T14:45:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.060Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Search">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Hash Table",
+  "url": "https://eliano64.github.io/2026/06/29/hash-table/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-29T14:45:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.060Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/29/hash-table/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Hash Table',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Hash Table</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Hash Table</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-29T14:45:00.000Z" title="发表于 2026-06-29 22:45:00">2026-06-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.060Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><p><strong>散列表</strong>也叫哈希表，英文是 <strong>Hash Table</strong>。它的特点是：可以根据数据元素的关键字直接计算出它在表中的存储地址。</p>
+<p><strong>散列函数</strong>也叫哈希函数，记作：</p>
+<p>$$<br>Addr&#x3D;H(key)<br>$$</p>
+<p>它建立了“关键字 $\rightarrow$ 存储地址”的映射关系。</p>
+<p>理想情况下，查找一个关键字只需要：</p>
+<ol>
+<li>用散列函数计算地址。</li>
+<li>到该地址检查关键字是否匹配。</li>
+</ol>
+<p>因此理想时间复杂度可达到 $O(1)$。</p>
+<h2 id="冲突与同义词"><a href="#冲突与同义词" class="headerlink" title="冲突与同义词"></a>冲突与同义词</h2><p><strong>冲突</strong>：插入一个数据元素时，根据关键字算出的地址已经存放了其他元素。</p>
+<p><strong>同义词</strong>：不同关键字通过同一个散列函数映射到同一个地址。</p>
+<p>例如表长为 <code>13</code>，散列函数为：</p>
+<p>$$<br>H(key)&#x3D;key\bmod 13<br>$$</p>
+<p>则：</p>
+<p>$$<br>1\bmod 13&#x3D;1,\quad 14\bmod 13&#x3D;1<br>$$</p>
+<p>所以 <code>1</code> 和 <code>14</code> 是同义词。若地址 <code>1</code> 已存 <code>14</code>，再插入 <code>1</code> 就发生冲突。</p>
+<h2 id="装填因子"><a href="#装填因子" class="headerlink" title="装填因子"></a>装填因子</h2><p>散列表查找效率不是只由散列函数决定，而主要由三类因素共同决定：</p>
+<ol>
+<li>散列函数是否让关键字均匀分布。</li>
+<li>处理冲突的方法。</li>
+<li>装填因子。</li>
+</ol>
+<p><img src="/assets/hash-efficiency-factors.svg"></p>
+<p><strong>装填因子</strong> $\alpha$ 表示散列表的装满程度：</p>
+<p>$$<br>\alpha&#x3D;\frac{\text{表中已存元素个数}}{\text{散列表长度}}<br>$$</p>
+<p>装填因子越大，空位越少，发生冲突的概率越高，平均查找长度通常越大。</p>
+<p>对开放定址法，$\alpha$ 必须小于 <code>1</code>，否则表满后无法继续插入。对拉链法，$\alpha$ 可以大于 <code>1</code>，因为每个桶后面可以接链表，但链表过长也会降低查找效率。</p>
+<h2 id="聚集"><a href="#聚集" class="headerlink" title="聚集"></a>聚集</h2><p><strong>聚集</strong>是指散列表中某些存储区域形成连续或局部密集的关键字群，使后续关键字更容易继续冲突，探测路径变长。</p>
+<p>聚集常见于开放定址法，尤其是线性探测法。</p>
+<p>线性探测发生冲突后，会依次检查后续地址：</p>
+<p>$$<br>d_i&#x3D;0,1,2,3,\cdots,m-1<br>$$</p>
+<p>一旦某段连续位置被占用，任何散列到这段区域附近的新关键字都可能被迫继续向后探测，使这段连续占用区域越来越长。这就是典型的<strong>一次聚集</strong>。</p>
+<p>避免或减轻聚集的方法：</p>
+<ul>
+<li>设计分布更均匀的散列函数。</li>
+<li>控制装填因子，必要时扩容或重散列。</li>
+<li>使用平方探测、双散列或伪随机探测，减少线性探测造成的连续堆积。</li>
+<li>使用拉链法，把同义词放入链表，不在主表中形成连续探测段。</li>
+</ul>
+<h1 id="散列函数的设计"><a href="#散列函数的设计" class="headerlink" title="散列函数的设计"></a>散列函数的设计</h1><p>设计散列函数时应注意：</p>
+<ol>
+<li>定义域必须覆盖所有可能出现的关键字。</li>
+<li>值域不能超出散列表地址范围。</li>
+<li>地址应尽可能均匀分布，从而减少冲突。</li>
+<li>函数应尽量简单，能快速计算。</li>
+</ol>
+<h2 id="一些常见散列函数"><a href="#一些常见散列函数" class="headerlink" title="一些常见散列函数"></a>一些常见散列函数</h2><h3 id="除留余数法"><a href="#除留余数法" class="headerlink" title="除留余数法"></a>除留余数法</h3><p>$$<br>H(key)&#x3D;key\bmod p<br>$$</p>
+<p>若散列表表长为 $m$，通常取不大于 $m$ 且最接近 $m$ 的质数 $p$。</p>
+<p>取质数是为了减少关键字规律与取模数之间的公因子影响，使地址分布更均匀。</p>
+<h3 id="直接定址法"><a href="#直接定址法" class="headerlink" title="直接定址法"></a>直接定址法</h3><p>$$<br>H(key)&#x3D;key<br>$$</p>
+<p>或：</p>
+<p>$$<br>H(key)&#x3D;a\cdot key+b<br>$$</p>
+<p>优点是计算简单且不会产生冲突；缺点是若关键字分布不连续，会浪费大量空间。</p>
+<p>适用于关键字分布基本连续的情况。</p>
+<h3 id="数字分析法"><a href="#数字分析法" class="headerlink" title="数字分析法"></a>数字分析法</h3><p>从关键字中选取数码分布较均匀的若干位作为散列地址。</p>
+<p>适用于关键字集合已知，且某几位数码分布较均匀的情况。例如手机号后四位分布较均匀时，可取后四位作为地址。</p>
+<h3 id="平方取中法"><a href="#平方取中法" class="headerlink" title="平方取中法"></a>平方取中法</h3><p>取关键字平方值的中间若干位作为散列地址。</p>
+<p>平方后中间位会受到关键字多位共同影响，因此地址分布可能更均匀。适用于关键字各位取值都不够均匀的情况。</p>
+<h1 id="冲突处理方法"><a href="#冲突处理方法" class="headerlink" title="冲突处理方法"></a>冲突处理方法</h1><p>冲突不可避免时，需要规定处理冲突的方法。</p>
+<p>主要有：</p>
+<ul>
+<li>拉链法。</li>
+<li>开放定址法。</li>
+</ul>
+<h2 id="拉链法"><a href="#拉链法" class="headerlink" title="拉链法"></a>拉链法</h2><p><strong>拉链法</strong>又称链接法、链地址法。做法是：把所有散列到同一地址的同义词存储在同一个链表中。</p>
+<p>插入步骤：</p>
+<ol>
+<li>计算散列地址 $H(key)$。</li>
+<li>将关键字插入该地址对应的链表。</li>
+</ol>
+<p>链表可以头插，也可以尾插。头插实现简单；若链表保持有序，查找时可在遇到大于目标关键字时提前失败，查找效率可能略好。</p>
+<p>查找步骤：</p>
+<ol>
+<li>计算散列地址。</li>
+<li>在对应链表中逐个比较关键字。</li>
+<li>命中则查找成功；链表结束仍未命中则失败。</li>
+</ol>
+<p>删除步骤：</p>
+<ol>
+<li>先按查找过程定位关键字。</li>
+<li>找到则从链表中删除。</li>
+<li>找不到则删除失败。</li>
+</ol>
+<p>拉链法删除可以物理删除链表结点，不会破坏其他关键字的查找路径。</p>
+<h2 id="开放定址法"><a href="#开放定址法" class="headerlink" title="开放定址法"></a>开放定址法</h2><p><strong>开放定址法</strong>：若发生冲突，就根据某个探测序列去寻找另一个空闲位置。</p>
+<p>开放定址法的统一公式为：</p>
+<p>$$<br>H_i&#x3D;(H(key)+d_i)\bmod m<br>$$</p>
+<p>其中：</p>
+<ul>
+<li>$m$ 是散列表长度。</li>
+<li>$H(key)$ 是初始散列地址。</li>
+<li>$d_i$ 是第 $i$ 次探测的增量。</li>
+</ul>
+<p>之所以叫“开放定址”，是因为一个地址既可能存放同义词，也可能存放非同义词。只要探测序列走到这里且这里为空，就可以插入。</p>
+<p>对于$d_{i}$的取值，常见有以下四种：</p>
+<h3 id="线性探测法"><a href="#线性探测法" class="headerlink" title="线性探测法"></a>线性探测法</h3><p>$$<br>d_i&#x3D;0,1,2,3,\cdots,m-1<br>$$</p>
+<p>线性探测从初始地址开始，依次向后检查。</p>
+<p><strong>优点：一定可以探测到散列表每个位置。只要表中还有空位，就一定可以插入成功。</strong></p>
+<p><strong>缺点：容易产生聚集。</strong></p>
+<h3 id="平方探测法"><a href="#平方探测法" class="headerlink" title="平方探测法"></a>平方探测法</h3><p>又称二次探测法：</p>
+<p>$$<br>d_i&#x3D;0^2,1^2,-1^2,2^2,-2^2,\cdots,k^2,-k^2<br>$$</p>
+<p>其中 $k\le m&#x2F;2$。</p>
+<p><strong>平方探测可以减少线性探测的一次聚集，但不能到所有位置</strong>。因此即使表中还有空位，也可能插入失败。</p>
+<p>要求表长 $m$ 是形如 $4j+3$ 的质数。</p>
+<h3 id="双散列法"><a href="#双散列法" class="headerlink" title="双散列法"></a>双散列法</h3><p>$$<br>d_i&#x3D;i\times hash2(key)<br>$$</p>
+<p>双散列法使用第二个散列函数决定步长。</p>
+<p>能否探测到所有位置，取决于 $hash2(key)$ 与表长 $m$ 是否互质。常见做法是令表长 $m$ 为质数，并取：</p>
+<p>$$<br>hash2(key)&#x3D;m-(key\bmod m)<br>$$</p>
+<p>这样 $hash2(key)$ 与 $m$ 通常互质，探测覆盖率更好。</p>
+<h3 id="伪随机序列法"><a href="#伪随机序列法" class="headerlink" title="伪随机序列法"></a>伪随机序列法</h3><p>$d_i$ 是预先设计的伪随机序列，例如：</p>
+<p>$$<br>d_i&#x3D;0,5,3,11,\cdots<br>$$</p>
+<p>它是否能覆盖全部地址，取决于伪随机序列设计是否合理。</p>
+<h3 id="开放定址法的删除"><a href="#开放定址法的删除" class="headerlink" title="开放定址法的删除"></a>开放定址法的删除</h3><p>开放定址法删除时，不能简单把被删位置清空。</p>
+<p>原因是：清空会截断后续关键字的探测路径，使本来存在的关键字被误判为查找失败。</p>
+<p>正确做法是<strong>逻辑删除</strong>：</p>
+<ul>
+<li>删除时把位置标记为“已删除”。</li>
+<li>查找时遇到“已删除”位置不能停，要继续沿探测序列查找。</li>
+<li>插入新关键字时，可以复用“已删除”位置。</li>
+</ul>
+<p>逻辑删除的问题是：多次删除后，散列表看起来很满，实际有效元素较少，查找效率会下降。因此需要不定期整理或重散列。</p>
+<h1 id="ASL-计算"><a href="#ASL-计算" class="headerlink" title="ASL 计算"></a>ASL 计算</h1><p>平均查找长度 ASL 指所有查找过程中关键字比较次数的平均值。</p>
+<p>散列表中通常分别计算：</p>
+<ul>
+<li>查找成功 ASL。</li>
+<li>查找失败 ASL。</li>
+</ul>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/hash-asl-comparison.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<h2 id="拉链法-ASL"><a href="#拉链法-ASL" class="headerlink" title="拉链法 ASL"></a>拉链法 ASL</h2><p>拉链法查找成功时，查找长度等于目标关键字在对应链表中的比较次数。</p>
+<p>例如目标在链表第 <code>2</code> 个结点，则查找长度为 <code>2</code>。</p>
+<p>拉链法查找失败时，只比较对应链表中的关键字：</p>
+<ul>
+<li>若链表非空，失败长度等于该链表中被比较的关键字数。</li>
+<li>若链表为空，失败长度为 <code>0</code>。</li>
+</ul>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>拉链法不会把“空链表本身”算作一次关键字比较。</p>
+</div>
+</div>
+## 开放定址法 ASL
+
+<p>开放定址法查找成功时，查找长度等于沿探测序列检查到目标关键字所经历的单元数。</p>
+<p>开放定址法查找失败时，要沿探测序列一直检查到第一个空单元。这个空单元也算一次探测次数。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>开放定址法失败 ASL 会把“空”单元计入次数；拉链法失败 ASL 不会把空链表计入次数。</p>
+</div>
+</div>
+计算开放定址法失败 ASL 时，通常要对每个可能的初始散列地址分别计算失败查找长度，再取平均。
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/29/hash-table/">https://eliano64.github.io/2026/06/29/hash-table/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/29/b-tree-and-b-plus-tree/" title="B Tree And B Plus Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">B Tree And B Plus Tree</div></div><div class="info-2"><div class="info-item-1">B 树的定位B 树又称多路平衡查找树。它可以理解为把 二叉排序树 推广为多叉查找树，并额外要求结点尽量“满”、整棵树保持“绝对平衡”。 这里的“绝对平衡”是指：所有叶结点，也就是查找失败的外部结点，都在同一层。 B 树常用于外存索引。一个结点可以存放多个关键字，查找时一次读入一个结点，可以减少访问层数。  m 阶 B 树定义B 树的阶是一个结点允许拥有的最大孩子数，通常记为 $m$。 一棵 $m$ 阶 B 树，或为空树，或满足：  每个结点至多有 $m$ 棵子树，即至多有 $m-1$ 个关键字。 若根结点不是终端结点，则根至少有 2 棵子树，即至少有 1 个关键字。 除根结点外，所有非叶结点至少有 $\lceil m&#x2F;2\rceil$ 棵子树，即至少有 $\lceil m&#x2F;2\rceil-1$ 个关键字。 非叶结点内部关键字有序：$K_1&lt;K_2&lt;\cdots&lt;K_n$。 若结点有 $n$ 个关键字，则有 $n+1$...</div></div></div></a><a class="pagination-related" href="/2026/06/30/combinatorial-thinking-in-data-structures/" title="Combinatorial Thinking In Data Structures"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Combinatorial Thinking In Data Structures</div></div><div class="info-2"><div class="info-item-1">分治递推组合数学中最常见的思想是分治：把一个规模为 $n$ 的对象，按某个天然位置拆成较小的同类对象。 若一个对象只能落入若干互不重叠的情况，使用加法： $$T(n)&#x3D;T_1(n)+T_2(n)+\cdots$$ 若一个对象由几个互相独立的部分共同组成，使用乘法： $$T(n)&#x3D;A(n)\cdot B(n)$$ 很多递推式混合使用两者。  Info  递推式里最容易漏的是空结构。 空结构有时表示 `0`，有时表示 `1`： > - 若计数的是“方案数”，空方案通常算 `1` 种。 > - 若计数的是“结点数”，空树通常有 `0`...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B2%E7%AA%81%E4%B8%8E%E5%90%8C%E4%B9%89%E8%AF%8D"><span class="toc-text">冲突与同义词</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A3%85%E5%A1%AB%E5%9B%A0%E5%AD%90"><span class="toc-text">装填因子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%81%9A%E9%9B%86"><span class="toc-text">聚集</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%A3%E5%88%97%E5%87%BD%E6%95%B0%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">散列函数的设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%A7%81%E6%95%A3%E5%88%97%E5%87%BD%E6%95%B0"><span class="toc-text">一些常见散列函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%A4%E7%95%99%E4%BD%99%E6%95%B0%E6%B3%95"><span class="toc-text">除留余数法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%AE%9A%E5%9D%80%E6%B3%95"><span class="toc-text">直接定址法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E5%88%86%E6%9E%90%E6%B3%95"><span class="toc-text">数字分析法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B3%E6%96%B9%E5%8F%96%E4%B8%AD%E6%B3%95"><span class="toc-text">平方取中法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%B2%E7%AA%81%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95"><span class="toc-text">冲突处理方法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%89%E9%93%BE%E6%B3%95"><span class="toc-text">拉链法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E6%94%BE%E5%AE%9A%E5%9D%80%E6%B3%95"><span class="toc-text">开放定址法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E6%8E%A2%E6%B5%8B%E6%B3%95"><span class="toc-text">线性探测法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B3%E6%96%B9%E6%8E%A2%E6%B5%8B%E6%B3%95"><span class="toc-text">平方探测法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E6%95%A3%E5%88%97%E6%B3%95"><span class="toc-text">双散列法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%AA%E9%9A%8F%E6%9C%BA%E5%BA%8F%E5%88%97%E6%B3%95"><span class="toc-text">伪随机序列法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%80%E6%94%BE%E5%AE%9A%E5%9D%80%E6%B3%95%E7%9A%84%E5%88%A0%E9%99%A4"><span class="toc-text">开放定址法的删除</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ASL-%E8%AE%A1%E7%AE%97"><span class="toc-text">ASL 计算</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%89%E9%93%BE%E6%B3%95-ASL"><span class="toc-text">拉链法 ASL</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

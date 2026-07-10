@@ -1,0 +1,430 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Function Calls And Stack Frames | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="函数调用在机器级的工作是：  从调用者跳转到被调用函数的第一条指令。 被调用函数结束后，能回到调用点后面的那条指令，并继续使用调用者原来的执行状态。  因此，一次函数调用必须保存返回地址、保存必要的上下文、传递参数、提供局部变量空间，并把返回值交回调用者。 函数调用栈运行中的进程有自己的虚拟地址空间。用户栈通常位于高地址区域，并向低地址增长。每发生一次函数调用，就会在栈上形成一个新的栈帧；函数返回">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Function Calls And Stack Frames">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/02/Function-Calls-And-Stack-Frames/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="函数调用在机器级的工作是：  从调用者跳转到被调用函数的第一条指令。 被调用函数结束后，能回到调用点后面的那条指令，并继续使用调用者原来的执行状态。  因此，一次函数调用必须保存返回地址、保存必要的上下文、传递参数、提供局部变量空间，并把返回值交回调用者。 函数调用栈运行中的进程有自己的虚拟地址空间。用户栈通常位于高地址区域，并向低地址增长。每发生一次函数调用，就会在栈上形成一个新的栈帧；函数返回">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-02T03:39:24.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="InstructionSystem">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Function Calls And Stack Frames",
+  "url": "https://eliano64.github.io/2026/07/02/Function-Calls-And-Stack-Frames/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-02T03:39:24.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/02/Function-Calls-And-Stack-Frames/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Function Calls And Stack Frames',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Function Calls And Stack Frames</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Function Calls And Stack Frames</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-02T03:39:24.000Z" title="发表于 2026-07-02 11:39:24">2026-07-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>函数调用在机器级的工作是：</p>
+<ol>
+<li>从调用者跳转到被调用函数的第一条指令。</li>
+<li>被调用函数结束后，能回到调用点后面的那条指令，并继续使用调用者原来的执行状态。</li>
+</ol>
+<p>因此，一次函数调用必须保存返回地址、保存必要的上下文、传递参数、提供局部变量空间，并把返回值交回调用者。</p>
+<h1 id="函数调用栈"><a href="#函数调用栈" class="headerlink" title="函数调用栈"></a>函数调用栈</h1><p>运行中的进程有自己的虚拟地址空间。用户栈通常位于高地址区域，并向低地址增长。每发生一次函数调用，就会在栈上形成一个新的<strong>栈帧</strong>；函数返回时，这个栈帧被撤销。</p>
+<p><img src="/assets/function-stack-address-space.svg"></p>
+<p>栈帧可以理解为某一次函数调用的“现场”：</p>
+<ul>
+<li>参数：调用者传给被调用者的数据。</li>
+<li>返回地址：被调用函数结束后应该回到哪里。</li>
+<li>保存的旧 <code>ebp</code>：用于恢复调用者栈帧。</li>
+<li>局部变量：被调用函数自己的临时数据。</li>
+<li>必要时保存的寄存器值：避免调用其他函数时破坏中间结果。</li>
+</ul>
+<p>递归调用并不特殊。每递归一次，就多压入一层栈帧。不同递归层的参数和局部变量互不覆盖，因为它们在不同的栈帧里。</p>
+<h1 id="esp-与-ebp"><a href="#esp-与-ebp" class="headerlink" title="esp 与 ebp"></a>esp 与 ebp</h1><p>在 32 位 x86 的典型栈帧模型中：</p>
+<ul>
+<li><code>esp</code> 指向当前栈顶，执行 <code>push</code>、<code>pop</code>、<code>call</code>、<code>ret</code> 时会变化。</li>
+<li><code>ebp</code> 指向当前栈帧的基地址，函数体内通常保持不变。</li>
+</ul>
+<p>因为 <code>esp</code> 会随压栈、出栈改变，所以直接用 <code>esp</code> 访问参数和局部变量不稳定。建立栈帧后，参数和局部变量通常通过 <code>ebp</code> 加偏移访问。</p>
+<p><img src="/assets/x86-stack-frame-layout.svg"></p>
+<p>典型偏移关系如下：</p>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[ebp+12]</code></td>
+<td>第 2 个参数</td>
+</tr>
+<tr>
+<td><code>[ebp+8]</code></td>
+<td>第 1 个参数</td>
+</tr>
+<tr>
+<td><code>[ebp+4]</code></td>
+<td>返回地址</td>
+</tr>
+<tr>
+<td><code>[ebp]</code></td>
+<td>保存的上一层 <code>ebp</code></td>
+</tr>
+<tr>
+<td><code>[ebp-4]</code></td>
+<td>第 1 个局部变量</td>
+</tr>
+<tr>
+<td><code>[ebp-8]</code></td>
+<td>第 2 个局部变量</td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">为什么第 1 个参数是 `[ebp+8]`</span></div>
+<div class="callout-content"><p><code>call</code> 会先压入返回地址。被调用函数进入后又执行 <code>push ebp</code> 保存旧 <code>ebp</code>，再执行 <code>mov ebp, esp</code>。所以当前 <code>ebp</code> 指向保存的旧 <code>ebp</code>，<code>[ebp+4]</code> 是返回地址，<code>[ebp+8]</code> 才是第 1 个参数。</p>
+</div>
+</div>
+# push 与 pop
+
+<p>32 位 x86 中，一次普通压栈、出栈通常以 4 字节为单位。</p>
+<ul>
+<li><code>push</code> 是先移动栈顶，再写入新栈顶。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">esp = esp - 4</span><br><span class="line">[esp] = x</span><br></pre></td></tr></table></figure>
+
+
+<ul>
+<li><code>pop</code> 是先读出旧栈顶，再移动栈顶。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = [esp]</span><br><span class="line">esp = esp + 4</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这正好对应栈向低地址增长：压栈会让 <code>esp</code> 变小，出栈会让 <code>esp</code> 变大。</p>
+<h1 id="call-与-ret"><a href="#call-与-ret" class="headerlink" title="call 与 ret"></a>call 与 ret</h1><p>普通跳转指令只改变程序计数器；函数调用还必须保存返回地址。x86 中的程序计数器常称为 <code>eip</code>。</p>
+<p><code>call f</code> 做两件事：</p>
+<ol>
+<li>把返回地址压入(push)栈顶。<strong>返回地址是 <code>call</code> 后面那条指令的地址。</strong></li>
+<li>把 <code>eip</code> 改为函数 <code>f</code> 的入口地址。</li>
+</ol>
+<p><code>ret</code> 也做两件事：</p>
+<ol>
+<li>从栈顶弹出(pop)返回地址。</li>
+<li>把这个地址写回 <code>eip</code>，使程序回到调用者。</li>
+</ol>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||720)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||720)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/call-ret-return-address-slides.html" style="width:100%;height:720px;border:0" loading="lazy"></iframe>
+</div>
+
+<h1 id="标准函数调用过程"><a href="#标准函数调用过程" class="headerlink" title="标准函数调用过程"></a>标准函数调用过程</h1><p>下面以 <code>add(x, y)</code> 为例，采用常见的 32 位 x86 栈帧模型。</p>
+<p>调用者准备参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">push y          ; 第 2 个参数</span><br><span class="line">push x          ; 第 1 个参数</span><br><span class="line">call add        ; 压入返回地址，并跳转到 add</span><br></pre></td></tr></table></figure>
+
+<p>被调用者建立栈帧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">add:</span><br><span class="line">  push ebp</span><br><span class="line">  mov ebp, esp</span><br><span class="line">  sub esp, local_size</span><br></pre></td></tr></table></figure>
+
+<p>这三条指令的含义是：</p>
+<ul>
+<li><code>push ebp</code>：保存调用者的栈帧基准。</li>
+<li><code>mov ebp, esp</code>：把当前栈顶设为本函数栈帧基准。</li>
+<li><code>sub esp, local_size</code>：为局部变量预留空间。</li>
+</ul>
+<p>被调用者返回前恢复栈帧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov esp, ebp</span><br><span class="line">pop ebp</span><br><span class="line">ret</span><br></pre></td></tr></table></figure>
+
+<p>这三条指令的含义是：</p>
+<ul>
+<li><code>mov esp, ebp</code>：丢弃局部变量区域，使栈顶回到保存旧 <code>ebp</code> 的位置。</li>
+<li><code>pop ebp</code>：恢复调用者的 <code>ebp</code>。</li>
+<li><code>ret</code>：弹出返回地址，恢复 <code>eip</code>。</li>
+</ul>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||1620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||1620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/function-call-stack-frame-slides.html" style="width:100%;height:1620px;border:0" loading="lazy"></iframe>
+</div>
+
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">`leave` 指令</span></div>
+<div class="callout-content"><p>有些汇编会用 <code>leave</code> 代替 <code>mov esp, ebp</code> 和 <code>pop ebp</code>。也就是说，<code>leave; ret</code> 常用于函数结尾。</p>
+</div>
+</div>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">`enter` 指令</span></div>
+<div class="callout-content"><p><code>enter</code> 可用于建立栈帧，效果接近函数开头的 <code>push ebp</code> 和 <code>mov ebp, esp</code>。</p>
+</div>
+</div>
+
+<h2 id="参数、局部变量与返回值"><a href="#参数、局部变量与返回值" class="headerlink" title="参数、局部变量与返回值"></a>参数、局部变量与返回值</h2><p>建立栈帧后，函数体通常用固定偏移访问数据：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov eax, [ebp+8]      ; 读取第 1 个参数 x</span><br><span class="line">add eax, [ebp+12]     ; 加上第 2 个参数 y</span><br><span class="line">mov [ebp-4], eax      ; 写入局部变量 sum</span><br></pre></td></tr></table></figure>
+
+<p>返回值通常放入 <code>eax</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mov eax, [ebp-4]      ; 把返回值放入 eax</span><br></pre></td></tr></table></figure>
+
+<p>调用者在 <code>call</code> 返回后，就可以从 <code>eax</code> 取到返回值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">call add</span><br><span class="line">mov [sum], eax</span><br></pre></td></tr></table></figure>
+
+<p>具体调用约定可能不同。例如参数由谁清理、哪些寄存器由调用者保存、哪些由被调用者保存，都属于调用约定的细节。但“返回地址压栈、栈帧保存现场、返回值经寄存器传回”是理解机器级函数调用的主线。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">栈帧中的空闲区域</span></div>
+<div class="callout-content"><p>一些编译器会让栈帧大小按固定边界对齐，例如按 <code>16B</code> 的整数倍组织。这样栈帧中可能出现未使用的空闲区域，它不是新的变量，只是为了满足对齐或调用约定。</p>
+</div>
+</div>
+## 递归与栈帧
+
+<p>递归函数每调用一次自身，就形成一个新的栈帧。每一层栈帧都保存本层的参数、局部变量、返回地址和必要上下文。</p>
+<p>手动模拟栈帧将任何递归改为循环详见<span class="wikilink-unresolved" title="Unresolved: recursion-to-loop">recursion-to-loop</span></p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>函数调用链：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">caller 准备参数</span><br><span class="line">call 压入返回地址并跳转</span><br><span class="line">callee 保存旧 ebp</span><br><span class="line">callee 建立新 ebp</span><br><span class="line">callee 分配局部变量</span><br><span class="line">callee 通过 ebp 偏移访问参数和局部变量</span><br><span class="line">callee 把返回值放入 eax</span><br><span class="line">callee 恢复 esp 和 ebp</span><br><span class="line">ret 弹出返回地址并恢复 eip</span><br><span class="line">caller 使用 eax 中的返回值</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/02/Function-Calls-And-Stack-Frames/">https://eliano64.github.io/2026/07/02/Function-Calls-And-Stack-Frames/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/02/Page-Replacement-Algorithms/" title="Page Replacement Algorithms"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Page Replacement Algorithms</div></div><div class="info-2"><div class="info-item-1">页面置换算法请求分页系统发生缺页故障后，如果主存中还有空闲页框，直接把缺失页面调入即可；如果没有空闲页框，就必须从某个驻留集中选一页换出。页面置换算法解决的就是“换出哪一页”。 页面换入、换出都需要外存 I&#x2F;O，代价远大于普通访存。因此，好的置换算法应尽量减少缺页次数，尤其要避免把很快又会访问的页面换出。  Note FIFO、LRU、Random 的基本思想在 另一处 中已经出现过。这里重点看它们在页框、缺页故障、访问位、修改位中的执行过程。   # 基本指标  设页面访问序列长度为 $N$。    指标 含义    缺页次数 访问页面不在主存的次数   置换次数 缺页且没有空闲页框，需要换出旧页的次数   缺页率 $\text{缺页次数}&#x2F;N$   缺页不一定发生置换。开始时页框可能为空，此时缺页只是调入页面；只有页框已满后再缺页，才需要置换。  Example 3 个页框初始为空，访问 7, 0, 1 会连续缺页 3 次，但没有发生页面置换，因为每次都有空闲页框。     ↻ + −     OPT最佳置换算法 OPT...</div></div></div></a><a class="pagination-related" href="/2026/07/02/Instruction-Addressing-Modes/" title="Instruction Addressing Modes"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Instruction Addressing Modes</div></div><div class="info-2"><div class="info-item-1">寻址方式回答两个问题：  下一条指令在哪里？ 本条指令要使用的操作数在哪里？  前者称为指令寻址，后者称为数据寻址。在一条指令中，操作码决定“做什么”，寻址方式决定“到哪里找操作对象”。 为什么需要不同寻址方式指令采用不同寻址方式是为了让指令系统可缩短指令字长，扩大寻址空间，提高编程灵活性。 指令寻址指令寻址是确定下一条将要执行的指令地址。下一条指令地址始终由程序计数器 PC 给出。  顺序寻址顺序寻址是默认情况：执行完当前指令后，PC 自动指向下一条指令。 若采用定长指令字结构，且主存按字编址，常写作： $$PC \leftarrow (PC) + 1$$ 这里的 1 表示“一个指令字”。若主存按字节编址，且一条指令占 n 字节，则应理解为： $$PC \leftarrow (PC) + n$$  Note PC 实际增加多少，取决于指令长度和主存编址方式。   若采用变长指令字结构，CPU 取到指令开头后，需要根据操作码判断这条指令总长度，再把 `PC` 改为下一条指令的起始地址。  跳跃寻址跳跃寻址由转移类指令指出下一条指令地址。CPU...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88"><span class="toc-text">函数调用栈</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#esp-%E4%B8%8E-ebp"><span class="toc-text">esp 与 ebp</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#call-%E4%B8%8E-ret"><span class="toc-text">call 与 ret</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E8%BF%87%E7%A8%8B"><span class="toc-text">标准函数调用过程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E3%80%81%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E4%B8%8E%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-text">参数、局部变量与返回值</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Reliable Transmission And Stop Wait | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="可靠传输管什么可靠传输解决的是：发送方发出的数据，接收方最终能按协议要求正确收到。 CRC 能检测误码，但不能修复错误。若接收方发现帧出错，只能丢弃，或者让发送方重传。因此可靠传输必须在差错检测之上增加确认、编号、缓存和重传。 若链路层提供不可靠传输服务，接收方发现出错帧后直接丢弃，其他问题交给上层。有线以太网通常这样做。无线链路误码率较高，数据链路层常需要确认和重传。 可靠传输要处理的情况可靠传">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Reliable Transmission And Stop Wait">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/07/Reliable-Transmission/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="可靠传输管什么可靠传输解决的是：发送方发出的数据，接收方最终能按协议要求正确收到。 CRC 能检测误码，但不能修复错误。若接收方发现帧出错，只能丢弃，或者让发送方重传。因此可靠传输必须在差错检测之上增加确认、编号、缓存和重传。 若链路层提供不可靠传输服务，接收方发现出错帧后直接丢弃，其他问题交给上层。有线以太网通常这样做。无线链路误码率较高，数据链路层常需要确认和重传。 可靠传输要处理的情况可靠传">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-07T08:17:20.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.038Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="DataLinkLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Reliable Transmission And Stop Wait",
+  "url": "https://eliano64.github.io/2026/07/07/Reliable-Transmission/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-07T08:17:20.000Z",
+  "dateModified": "2026-07-10T07:16:51.038Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/07/Reliable-Transmission/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Reliable Transmission And Stop Wait',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Reliable Transmission And Stop Wait</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Reliable Transmission And Stop Wait</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-07T08:17:20.000Z" title="发表于 2026-07-07 16:17:20">2026-07-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.038Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">985</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="可靠传输管什么"><a href="#可靠传输管什么" class="headerlink" title="可靠传输管什么"></a>可靠传输管什么</h1><p>可靠传输解决的是：<strong>发送方发出的数据，接收方最终能按协议要求正确收到</strong>。</p>
+<p>CRC 能检测误码，但不能修复错误。若接收方发现帧出错，只能丢弃，或者让发送方重传。因此可靠传输必须在差错检测之上增加确认、编号、缓存和重传。</p>
+<p>若链路层提供不可靠传输服务，接收方发现出错帧后直接丢弃，其他问题交给上层。有线以太网通常这样做。无线链路误码率较高，数据链路层常需要确认和重传。</p>
+<h1 id="可靠传输要处理的情况"><a href="#可靠传输要处理的情况" class="headerlink" title="可靠传输要处理的情况"></a>可靠传输要处理的情况</h1><p>可靠传输不是只处理误码。它至少要面对这些情况：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>问题</th>
+<th>需要的机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据正确到达</td>
+<td>发送方需要知道可以继续发送</td>
+<td>ACK</td>
+</tr>
+<tr>
+<td>数据出错</td>
+<td>接收方不能交付错误数据</td>
+<td>丢弃、NAK 或超时重传</td>
+</tr>
+<tr>
+<td>数据丢失</td>
+<td>接收方不会返回任何确认</td>
+<td>超时重传</td>
+</tr>
+<tr>
+<td>ACK 丢失</td>
+<td>接收方已收到，发送方不知道</td>
+<td>超时重传、编号</td>
+</tr>
+<tr>
+<td>ACK 迟到</td>
+<td>发送方可能已经重传</td>
+<td>编号、重复确认处理</td>
+</tr>
+<tr>
+<td>重复数据</td>
+<td>接收方可能再次收到旧数据</td>
+<td>数据编号、丢弃重复副本</td>
+</tr>
+</tbody></table>
+<h1 id="ACK、NAK-和重传"><a href="#ACK、NAK-和重传" class="headerlink" title="ACK、NAK 和重传"></a>ACK、NAK 和重传</h1><p>接收方收到数据后先做差错检测。</p>
+<ul>
+<li>没有检测出误码：接收方接受数据，并返回 ACK。</li>
+<li>检测出误码：接收方丢弃数据，可以返回 NAK。</li>
+</ul>
+<p>发送方收到 ACK 后继续发送；收到 NAK 后重传当前数据。</p>
+<p>NAK 不是必须的。接收方发现误码后也可以只丢弃，不发 NAK，让发送方等待超时后重传。NAK 的好处是能更早触发重传，适合误码率较高的链路。</p>
+<h1 id="超时重传"><a href="#超时重传" class="headerlink" title="超时重传"></a>超时重传</h1><p>若数据本身丢失，接收方收不到数据，也不会产生 ACK 或 NAK。发送方不能无限等待，所以每次发送后要启动超时计时器。</p>
+<p>若在 RTO 内没有收到对应确认，发送方自动重传缓存中的数据。</p>
+<p>RTO 太短，会把正常还没返回的 ACK 误判为丢失；RTO 太长，会让真正丢失后的等待时间过长。点对点链路的 RTT 通常较稳定，RTO 较容易设置。</p>
+<h1 id="编号和缓存"><a href="#编号和缓存" class="headerlink" title="编号和缓存"></a>编号和缓存</h1><p>ACK 丢失时，接收方已经收到数据，但发送方不知道。发送方超时后会重传同一个数据。接收方必须识别这个数据是旧副本，而不是新的数据。</p>
+<p>因此数据要编号。</p>
+<p>接收方收到重复编号的数据时：</p>
+<ul>
+<li>丢弃重复副本。</li>
+<li>重新发送 ACK，避免发送方继续重传。</li>
+</ul>
+<p>发送方也必须保留已发送但尚未确认的数据副本。只有收到对应 ACK 后，才能从发送缓存中删除。</p>
+<h1 id="停止-等待协议"><a href="#停止-等待协议" class="headerlink" title="停止-等待协议"></a>停止-等待协议</h1><p>停止-等待协议把可靠传输机制放在最简单的发送节奏中：发送方每次只发送一个数据，等确认回来后再发送下一个。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||640)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||640)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/stop-and-wait-protocol-slides.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>停止-等待协议中，同一时刻最多只有一个未确认数据在路上，所以数据编号只需要 1 bit：</p>
+<p>$$<br>0,1,0,1,\dots<br>$$</p>
+<p>这足以区分“当前数据”和“上一次数据的重复副本”。</p>
+<h1 id="ACK-丢失和-ACK-迟到"><a href="#ACK-丢失和-ACK-迟到" class="headerlink" title="ACK 丢失和 ACK 迟到"></a>ACK 丢失和 ACK 迟到</h1><p>ACK 丢失时，发送方超时重传。接收方靠数据编号识别重复副本，丢弃重复数据，并重新发送 ACK。</p>
+<p>ACK 迟到时，发送方可能已经完成超时重传。迟到 ACK 到达后，发送方要判断它是不是重复确认。数据链路层点对点 RTT 通常稳定，ACK 迟到不常见，所以链路层停止-等待协议中 ACK 可以不编号；RTT 不稳定的层次中，ACK 编号更有必要。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/ack-loss-and-late-ack-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+
+<h1 id="详见Sliding-Window"><a href="#详见Sliding-Window" class="headerlink" title="详见Sliding-Window"></a>详见<a href="/2026/07/07/Sliding-Window/" class="wikilink">Sliding-Window</a></h1></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/07/Reliable-Transmission/">https://eliano64.github.io/2026/07/07/Reliable-Transmission/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/07/Flow-Control/" title="Flow Control"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Flow Control</div></div><div class="info-2"><div class="info-item-1">流量控制流量控制解决的是：发送方不能把接收方压垮。 接收方收到数据后，要先放入接收缓存，再交给上层处理。若发送方连续发送太快，接收缓存可能被填满。缓存满了以后，即使后续数据在链路上传输时没有误码，接收方也可能无法接收。  流量控制不等于差错控制。差错控制关心数据是否出错；流量控制关心接收方是否有能力继续接收。    问题 发生原因 结果    差错控制 信道干扰、噪声、误码 数据内容不可靠   流量控制 发送过快、接收缓存或处理能力不足 正确到达的数据也可能被丢弃   接收缓存和发送限制流量控制的核心是接收方让发送方知道自己还能发多少。 接收方能接收多少，取决于：  接收缓存还有多少空位。 已收到的数据能否及时交给上层。 协议允许接收方同时接收多少个未交付数据。  发送方要受限制：  不能无限制连续发送。 已发送但未确认的数据要占据发送窗口。 窗口满时，即使发送方还有数据，也必须等待确认或窗口更新。  停止等待是最保守的流量控制停止-等待方式中，发送方每发送一个数据，就停下来等 ACK。  从窗口角度看： $$W_T&#x3D;1,\quad...</div></div></div></a><a class="pagination-related" href="/2026/07/07/Sliding-Window/" title="Sliding Window"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Sliding Window</div></div><div class="info-2"><div class="info-item-1">滑动窗口协议是这样一个模型：  发送方有发送窗口 $W_T$，限制连续发送但尚未确认的数据数量。 接收方有接收窗口 $W_R$，限制当前愿意接收的数据序号范围。 ACK 推动发送窗口向前滑动。 按序收到数据推动接收窗口向前滑动。 序号字段有限，窗口大小必须避免新旧数据混淆。   停止-等待、GBN、SR 都是这个模型的不同参数取值：    协议形态 $W_T$ $W_R$ 失序数据处理    停止-等待 $1$ $1$ 不形成流水线   GBN $&gt;1$ $1$ 不接收失序数据，直接丢弃   SR $&gt;1$ $&gt;1$ 接收并缓存窗口内失序数据   GBN 和 SR 的共同基础是滑动窗口。区别主要来自 $W_R$：接收窗口为 $1$ 时只能按序收；接收窗口大于 $1$ 时可以先缓存失序数据。 发送窗口发送窗口 $W_T$ 表示发送方最多允许多少个“已发送但尚未确认”的数据在路上。 窗口内的数据分为两类：  已发送但未确认：保留在发送缓存中，超时后可重传。 尚未发送但允许发送：可以立即发送。  收到 ACK...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93%E7%AE%A1%E4%BB%80%E4%B9%88"><span class="toc-text">可靠传输管什么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93%E8%A6%81%E5%A4%84%E7%90%86%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-text">可靠传输要处理的情况</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ACK%E3%80%81NAK-%E5%92%8C%E9%87%8D%E4%BC%A0"><span class="toc-text">ACK、NAK 和重传</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B6%85%E6%97%B6%E9%87%8D%E4%BC%A0"><span class="toc-text">超时重传</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E5%8F%B7%E5%92%8C%E7%BC%93%E5%AD%98"><span class="toc-text">编号和缓存</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%81%9C%E6%AD%A2-%E7%AD%89%E5%BE%85%E5%8D%8F%E8%AE%AE"><span class="toc-text">停止-等待协议</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ACK-%E4%B8%A2%E5%A4%B1%E5%92%8C-ACK-%E8%BF%9F%E5%88%B0"><span class="toc-text">ACK 丢失和 ACK 迟到</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%A6%E8%A7%81Sliding-Window"><span class="toc-text">详见Sliding-Window</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

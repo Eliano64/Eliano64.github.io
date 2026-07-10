@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560" role="img" aria-labelledby="title desc">
+  <title id="title">总线共享线路示意</title>
+  <desc id="desc">CPU、主存和多个 I/O 接口共享地址、数据、控制三组总线；同一时刻只允许一个部件向总线发送信息。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #182230;
+      --muted: #5f6b7a;
+      --line: #64748b;
+      --box: #f8fafc;
+      --addr: #2563eb;
+      --data: #16a34a;
+      --ctrl: #dc2626;
+      --note: #fff7ed;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #a8b3c3;
+        --line: #94a3b8;
+        --box: #111827;
+        --addr: #60a5fa;
+        --data: #4ade80;
+        --ctrl: #f87171;
+        --note: #2a1b10;
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif; }
+    text { fill: var(--fg); }
+    .title { font-size: 30px; font-weight: 700; }
+    .label { font-size: 19px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .tiny { font-size: 13px; fill: var(--muted); text-anchor: middle; }
+    .box { fill: var(--box); stroke: var(--line); stroke-width: 2; rx: 10; }
+    .note { fill: var(--note); stroke: var(--line); stroke-width: 1.5; rx: 10; }
+    .addr { stroke: var(--addr); }
+    .data { stroke: var(--data); }
+    .ctrl { stroke: var(--ctrl); }
+    .bus { stroke-width: 9; stroke-linecap: round; }
+    .tap { fill: none; stroke: var(--line); stroke-width: 2.2; }
+    .dash { stroke-dasharray: 7 5; }
+  </style>
+  <rect width="1100" height="560" fill="var(--bg)" />
+  <text class="title" x="50" y="55">总线：多个部件分时共享的一组公共线路</text>
+  <text class="small" x="50" y="88">一组总线通常包含多根信号线；同一时刻只能有一个发送者，但可以有多个接收者。</text>
+
+  <g>
+    <rect class="box" x="70" y="150" width="150" height="88" />
+    <text class="label" x="145" y="185">CPU</text>
+    <text class="tiny" x="145" y="213">主设备之一</text>
+
+    <rect class="box" x="320" y="150" width="150" height="88" />
+    <text class="label" x="395" y="185">主存</text>
+    <text class="tiny" x="395" y="213">存放指令/数据</text>
+
+    <rect class="box" x="570" y="150" width="150" height="88" />
+    <text class="label" x="645" y="185">I/O 接口</text>
+    <text class="tiny" x="645" y="213">连接外设</text>
+
+    <rect class="box" x="820" y="150" width="150" height="88" />
+    <text class="label" x="895" y="185">I/O 接口</text>
+    <text class="tiny" x="895" y="213">连接外设</text>
+  </g>
+
+  <g>
+    <line class="bus addr" x1="105" y1="315" x2="950" y2="315" />
+    <line class="bus data" x1="105" y1="375" x2="950" y2="375" />
+    <line class="bus ctrl" x1="105" y1="435" x2="950" y2="435" />
+    <text x="50" y="321" class="small" text-anchor="start" fill="var(--addr)">地址总线</text>
+    <text x="50" y="381" class="small" text-anchor="start" fill="var(--data)">数据总线</text>
+    <text x="50" y="441" class="small" text-anchor="start" fill="var(--ctrl)">控制总线</text>
+  </g>
+
+  <g>
+    <path class="tap" d="M145 238 V315" />
+    <path class="tap" d="M145 238 V375" />
+    <path class="tap" d="M145 238 V435" />
+    <path class="tap" d="M395 238 V315" />
+    <path class="tap" d="M395 238 V375" />
+    <path class="tap" d="M395 238 V435" />
+    <path class="tap" d="M645 238 V315" />
+    <path class="tap" d="M645 238 V375" />
+    <path class="tap" d="M645 238 V435" />
+    <path class="tap" d="M895 238 V315" />
+    <path class="tap" d="M895 238 V375" />
+    <path class="tap" d="M895 238 V435" />
+  </g>
+
+  <rect class="note" x="650" y="485" width="400" height="48" />
+  <text class="small" x="670" y="515">分时共享：争用同一组线路，所以后续需要仲裁、定时和带宽分析。</text>
+</svg>

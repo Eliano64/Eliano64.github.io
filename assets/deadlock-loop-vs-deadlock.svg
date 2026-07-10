@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">循环等待与死锁的关系</title>
+  <desc id="desc">说明发生死锁一定有循环等待，但有循环等待不一定发生死锁。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="var(--arrow)"/></marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      :root{--bg:#fff;--panel:#f8fafc;--line:#cbd5e1;--text:#172033;--muted:#64748b;--p:#dbeafe;--pl:#2563eb;--r:#fef3c7;--rl:#d97706;--bad:#fee2e2;--badl:#dc2626;--ok:#dcfce7;--okl:#16a34a;--arrow:#475569}
+      @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--line:#334155;--text:#e5e7eb;--muted:#94a3b8;--p:#1e3a8a;--pl:#60a5fa;--r:#713f12;--rl:#fbbf24;--bad:#7f1d1d;--badl:#f87171;--ok:#14532d;--okl:#4ade80;--arrow:#cbd5e1}}
+      text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--text)}.title{font-size:32px;font-weight:700}.head{font-size:24px;font-weight:700}.body{font-size:19px}.small{font-size:17px;fill:var(--muted)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2;rx:18}.p{fill:var(--p);stroke:var(--pl);stroke-width:2}.r{fill:var(--r);stroke:var(--rl);stroke-width:2}.bad{fill:var(--bad);stroke:var(--badl);stroke-width:2;rx:12}.ok{fill:var(--ok);stroke:var(--okl);stroke-width:2;rx:12}.edge{fill:none;stroke:var(--arrow);stroke-width:2.5;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="980" height="560" fill="var(--bg)"/>
+  <text x="50" y="56" class="title">循环等待不等于一定死锁</text>
+  <rect x="50" y="92" width="410" height="385" class="panel"/><text x="80" y="132" class="head">每类资源只有一个实例</text>
+  <circle cx="150" cy="220" r="34" class="p"/><text x="150" y="226" class="body" text-anchor="middle">P1</text><rect x="300" y="194" width="72" height="52" class="r" rx="10"/><text x="336" y="226" class="body" text-anchor="middle">R1</text>
+  <circle cx="336" cy="340" r="34" class="p"/><text x="336" y="346" class="body" text-anchor="middle">P2</text><rect x="112" y="314" width="72" height="52" class="r" rx="10"/><text x="148" y="346" class="body" text-anchor="middle">R2</text>
+  <path d="M184 220 L300 220" class="edge"/><path d="M336 246 L336 306" class="edge"/><path d="M302 340 L184 340" class="edge"/><path d="M148 314 L148 254" class="edge"/>
+  <rect x="92" y="410" width="300" height="42" class="bad"/><text x="242" y="438" class="body" text-anchor="middle">循环等待就是死锁</text>
+  <rect x="520" y="92" width="410" height="385" class="panel"/><text x="550" y="132" class="head">某类资源有多个实例</text>
+  <circle cx="620" cy="220" r="34" class="p"/><text x="620" y="226" class="body" text-anchor="middle">P1</text><rect x="770" y="194" width="82" height="52" class="r" rx="10"/><text x="811" y="226" class="body" text-anchor="middle">R1×2</text>
+  <circle cx="806" cy="340" r="34" class="p"/><text x="806" y="346" class="body" text-anchor="middle">P2</text><rect x="582" y="314" width="82" height="52" class="r" rx="10"/><text x="623" y="346" class="body" text-anchor="middle">R2×2</text>
+  <path d="M654 220 L770 220" class="edge"/><path d="M806 246 L806 306" class="edge"/><path d="M772 340 L664 340" class="edge"/><path d="M623 314 L623 254" class="edge"/>
+  <rect x="562" y="410" width="300" height="42" class="ok"/><text x="712" y="438" class="body" text-anchor="middle">循环等待未必死锁</text>
+  <text x="52" y="522" class="small">判断时要看资源实例数和剩余可用资源。资源分配图可完全简化时，即使出现等待环，也不是死锁。</text>
+</svg>

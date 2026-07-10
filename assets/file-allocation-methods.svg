@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 520" role="img" aria-labelledby="title desc">
+  <title id="title">File Allocation Methods</title>
+  <desc id="desc">Contiguous, linked and indexed file allocation methods.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626;--purple:#7c3aed}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171;--purple:#c084fc}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.blk{fill:var(--bg);stroke:var(--line);stroke-width:1.5}.used{fill:var(--blue);opacity:.75}.used2{fill:var(--green);opacity:.75}.idx{fill:var(--orange);opacity:.8}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--purple);stroke-width:3;fill:none;marker-end:url(#arrow)}
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.used2{fill:#166534;opacity:1}.idx{fill:#92400e;opacity:1}}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--purple)"/></marker></defs>
+  <rect class="bg" width="1040" height="520"/>
+  <text class="t" x="520" y="36" text-anchor="middle" font-size="24" font-weight="700">文件物理结构：逻辑块到磁盘块</text>
+  <text class="m" x="520" y="64" text-anchor="middle" font-size="15">用户看到连续逻辑地址，操作系统决定这些块如何落到外存</text>
+  <g transform="translate(40,100)">
+    <rect class="panel" x="0" y="0" width="300" height="350" rx="12"/>
+    <text class="t" x="150" y="34" text-anchor="middle" font-size="20" font-weight="700">连续分配</text>
+    <text class="m" x="150" y="60" text-anchor="middle" font-size="14">目录项：起始块号 + 长度</text>
+    <g transform="translate(35,98)">
+      <rect class="blk used" x="0" y="0" width="42" height="42" rx="5"/><rect class="blk used" x="46" y="0" width="42" height="42" rx="5"/><rect class="blk used" x="92" y="0" width="42" height="42" rx="5"/><rect class="blk used" x="138" y="0" width="42" height="42" rx="5"/>
+      <rect class="blk" x="184" y="0" width="42" height="42" rx="5"/><rect class="blk" x="0" y="50" width="42" height="42" rx="5"/><rect class="blk" x="46" y="50" width="42" height="42" rx="5"/><rect class="blk" x="92" y="50" width="42" height="42" rx="5"/>
+    </g>
+    <text class="t" x="150" y="245" text-anchor="middle" font-size="15">物理块号 = 起始块号 + 逻辑块号</text>
+    <text class="m" x="150" y="276" text-anchor="middle" font-size="13">顺序读写最快，支持随机访问</text>
+    <text class="m" x="150" y="300" text-anchor="middle" font-size="13">不便扩展，可能产生外部碎片</text>
+  </g>
+  <g transform="translate(370,100)">
+    <rect class="panel" x="0" y="0" width="300" height="350" rx="12"/>
+    <text class="t" x="150" y="34" text-anchor="middle" font-size="20" font-weight="700">链接分配</text>
+    <text class="m" x="150" y="60" text-anchor="middle" font-size="14">隐式：块内指针；显式：FAT</text>
+    <g transform="translate(42,96)">
+      <rect class="blk used2" x="0" y="0" width="42" height="42" rx="5"/><text class="t" x="21" y="27" text-anchor="middle" font-size="13">9</text>
+      <rect class="blk used2" x="96" y="58" width="42" height="42" rx="5"/><text class="t" x="117" y="85" text-anchor="middle" font-size="13">16</text>
+      <rect class="blk used2" x="190" y="8" width="42" height="42" rx="5"/><text class="t" x="211" y="35" text-anchor="middle" font-size="13">21</text>
+      <path class="a" d="M42 21 C70 25 74 62 96 75"/>
+      <path class="a" d="M138 79 C160 75 166 34 190 29"/>
+    </g>
+    <text class="t" x="150" y="245" text-anchor="middle" font-size="15">按链找到下一块</text>
+    <text class="m" x="150" y="276" text-anchor="middle" font-size="13">易扩展，无外部碎片</text>
+    <text class="m" x="150" y="300" text-anchor="middle" font-size="13">隐式链接不支持高效随机访问</text>
+  </g>
+  <g transform="translate(700,100)">
+    <rect class="panel" x="0" y="0" width="300" height="350" rx="12"/>
+    <text class="t" x="150" y="34" text-anchor="middle" font-size="20" font-weight="700">索引分配</text>
+    <text class="m" x="150" y="60" text-anchor="middle" font-size="14">目录项：索引块号</text>
+    <rect class="blk idx" x="125" y="92" width="50" height="94" rx="6"/>
+    <text class="t" x="150" y="122" text-anchor="middle" font-size="13">0 -> 2</text><text class="t" x="150" y="146" text-anchor="middle" font-size="13">1 -> 5</text><text class="t" x="150" y="170" text-anchor="middle" font-size="13">2 -> 13</text>
+    <rect class="blk used" x="42" y="220" width="42" height="42" rx="5"/><text class="t" x="63" y="247" text-anchor="middle" font-size="13">2</text>
+    <rect class="blk used" x="128" y="220" width="42" height="42" rx="5"/><text class="t" x="149" y="247" text-anchor="middle" font-size="13">5</text>
+    <rect class="blk used" x="214" y="220" width="42" height="42" rx="5"/><text class="t" x="235" y="247" text-anchor="middle" font-size="13">13</text>
+    <path class="a" d="M130 184 C105 195 82 205 66 220"/><path class="a" d="M150 186 V220"/><path class="a" d="M170 184 C195 195 218 205 234 220"/>
+    <text class="m" x="150" y="300" text-anchor="middle" font-size="13">支持随机访问，易扩展；索引表占空间</text>
+  </g>
+</svg>

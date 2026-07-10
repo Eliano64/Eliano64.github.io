@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">BGP AS path selection</title>
+  <desc id="desc">BGP speakers exchange reachability and AS paths over TCP sessions, then choose policy-compliant routes.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #172033; }
+    .as { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 14; }
+    .speaker { fill: #fff; stroke: #475569; stroke-width: 2; }
+    .session { stroke: #dc2626; stroke-width: 3; fill: none; stroke-dasharray: 9 6; }
+    .path { stroke: #2563eb; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .label { font-size: 20px; font-weight: 700; }
+    .small { font-size: 15px; }
+    @media (prefers-color-scheme: dark) {
+      text { fill: #e5e7eb; }
+      .as { fill: #111827; stroke: #94a3b8; }
+      .speaker { fill: #0b1220; stroke: #cbd5e1; }
+      .session { stroke: #f87171; }
+      .path { stroke: #60a5fa; }
+    }
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker></defs>
+  <text x="480" y="38" text-anchor="middle" class="label">BGP：自治系统之间交换可达性与 AS 路径</text>
+  <rect x="70" y="90" width="170" height="150" class="as"/><text x="155" y="124" text-anchor="middle" class="label">AS1</text>
+  <rect x="320" y="90" width="170" height="150" class="as"/><text x="405" y="124" text-anchor="middle" class="label">AS2</text>
+  <rect x="570" y="90" width="170" height="150" class="as"/><text x="655" y="124" text-anchor="middle" class="label">AS3</text>
+  <rect x="320" y="280" width="170" height="95" class="as"/><text x="405" y="315" text-anchor="middle" class="label">AS4</text>
+  <circle cx="195" cy="170" r="26" class="speaker"/><text x="195" y="176" text-anchor="middle" class="small">BGP</text>
+  <circle cx="365" cy="170" r="26" class="speaker"/><text x="365" y="176" text-anchor="middle" class="small">BGP</text>
+  <circle cx="445" cy="170" r="26" class="speaker"/><text x="445" y="176" text-anchor="middle" class="small">BGP</text>
+  <circle cx="615" cy="170" r="26" class="speaker"/><text x="615" y="176" text-anchor="middle" class="small">BGP</text>
+  <circle cx="405" cy="335" r="26" class="speaker"/><text x="405" y="341" text-anchor="middle" class="small">BGP</text>
+  <path d="M221 170 H339" class="session"/>
+  <path d="M471 170 H589" class="session"/>
+  <path d="M405 280 V196" class="session"/>
+  <text x="280" y="153" text-anchor="middle" class="small">TCP 179</text>
+  <text x="530" y="153" text-anchor="middle" class="small">TCP 179</text>
+  <text x="448" y="257" text-anchor="start" class="small">TCP 179</text>
+  <path d="M120 260 C220 315, 510 315, 650 255" class="path"/>
+  <text x="390" y="292" text-anchor="middle" class="small">到某网络的 AS_PATH：AS1 AS2 AS3</text>
+  <text x="480" y="398" text-anchor="middle" class="small">BGP 选择“较好且符合策略”的路由，不追求全网统一度量下的最短路</text>
+</svg>

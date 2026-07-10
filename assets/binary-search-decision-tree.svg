@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="780" viewBox="0 0 1280 780" role="img" aria-labelledby="title desc">
+  <title id="title">Lower Bound Binary Search Decision Tree</title>
+  <desc id="desc">Lower_bound decision tree for half-open binary search. All return-position leaves are aligned on the bottom row.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill: #f8fafc; }
+    .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+    .node { fill: #e0f2fe; stroke: #0284c7; stroke-width: 1.8; }
+    .leaf { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.6; }
+    .line { stroke: #64748b; stroke-width: 1.8; fill: none; }
+    .text { fill: #0f172a; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    .muted { fill: #475569; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    .edge { fill: #334155; font-family: Arial, "Microsoft YaHei", sans-serif; font-size: 14px; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0b1020; }
+      .panel { fill: #111827; stroke: #334155; }
+      .node { fill: #172554; stroke: #38bdf8; }
+      .leaf { fill: #12351f; stroke: #4ade80; }
+      .line { stroke: #94a3b8; }
+      .text { fill: #e5e7eb; }
+      .muted { fill: #cbd5e1; }
+      .edge { fill: #cbd5e1; }
+    }
+  </style>
+
+  <rect class="bg" width="1280" height="780"/>
+  <rect class="panel" x="24" y="24" width="1232" height="732" rx="10"/>
+
+  <text class="text" x="56" y="66" font-size="25" font-weight="700">半开区间二分的边界判定树</text>
+  <text class="muted" x="56" y="98" font-size="16">nums = [7,10,13,16,19,29,32,33,37,41,43]，查找第一个 nums[i] >= target 的位置。</text>
+  <text class="muted" x="56" y="126" font-size="15">mid 使用 C 的整数除法：mid = left + (right - left) / 2，除法结果向下取整；T 表示 right = mid，F 表示 left = mid + 1。</text>
+
+  <!-- leaf positions: pos0..pos11, all aligned -->
+  <g id="leaves">
+    <rect class="leaf" x="65" y="660" width="70" height="44" rx="8"/><text class="text" x="80" y="687" font-size="15">pos 0</text>
+    <rect class="leaf" x="155" y="660" width="70" height="44" rx="8"/><text class="text" x="170" y="687" font-size="15">pos 1</text>
+    <rect class="leaf" x="245" y="660" width="70" height="44" rx="8"/><text class="text" x="260" y="687" font-size="15">pos 2</text>
+    <rect class="leaf" x="335" y="660" width="70" height="44" rx="8"/><text class="text" x="350" y="687" font-size="15">pos 3</text>
+    <rect class="leaf" x="425" y="660" width="70" height="44" rx="8"/><text class="text" x="440" y="687" font-size="15">pos 4</text>
+    <rect class="leaf" x="515" y="660" width="70" height="44" rx="8"/><text class="text" x="530" y="687" font-size="15">pos 5</text>
+    <rect class="leaf" x="605" y="660" width="70" height="44" rx="8"/><text class="text" x="620" y="687" font-size="15">pos 6</text>
+    <rect class="leaf" x="695" y="660" width="70" height="44" rx="8"/><text class="text" x="710" y="687" font-size="15">pos 7</text>
+    <rect class="leaf" x="785" y="660" width="70" height="44" rx="8"/><text class="text" x="800" y="687" font-size="15">pos 8</text>
+    <rect class="leaf" x="875" y="660" width="70" height="44" rx="8"/><text class="text" x="890" y="687" font-size="15">pos 9</text>
+    <rect class="leaf" x="965" y="660" width="78" height="44" rx="8"/><text class="text" x="978" y="687" font-size="15">pos 10</text>
+    <rect class="leaf" x="1063" y="660" width="78" height="44" rx="8"/><text class="text" x="1076" y="687" font-size="15">pos 11</text>
+  </g>
+
+  <!-- internal nodes, centered over their leaf ranges -->
+  <rect class="node" x="542" y="155" width="176" height="60" rx="10"/>
+  <text class="text" x="568" y="180" font-size="15" font-weight="700">[0,11) mid = 5</text>
+  <text class="text" x="574" y="202" font-size="15">29 >= target?</text>
+
+  <rect class="node" x="262" y="275" width="176" height="60" rx="10"/>
+  <text class="text" x="292" y="300" font-size="15" font-weight="700">[0,5) mid = 2</text>
+  <text class="text" x="294" y="322" font-size="15">13 >= target?</text>
+
+  <rect class="node" x="822" y="275" width="176" height="60" rx="10"/>
+  <text class="text" x="852" y="300" font-size="15" font-weight="700">[6,11) mid = 8</text>
+  <text class="text" x="854" y="322" font-size="15">37 >= target?</text>
+
+  <rect class="node" x="112" y="395" width="156" height="60" rx="10"/>
+  <text class="text" x="130" y="420" font-size="15" font-weight="700">[0,2) mid = 1</text>
+  <text class="text" x="143" y="442" font-size="15">10 >= target?</text>
+
+  <rect class="node" x="402" y="395" width="156" height="60" rx="10"/>
+  <text class="text" x="420" y="420" font-size="15" font-weight="700">[3,5) mid = 4</text>
+  <text class="text" x="433" y="442" font-size="15">19 >= target?</text>
+
+  <rect class="node" x="662" y="395" width="156" height="60" rx="10"/>
+  <text class="text" x="680" y="420" font-size="15" font-weight="700">[6,8) mid = 7</text>
+  <text class="text" x="693" y="442" font-size="15">33 >= target?</text>
+
+  <rect class="node" x="962" y="395" width="156" height="60" rx="10"/>
+  <text class="text" x="975" y="420" font-size="15" font-weight="700">[9,11) mid = 10</text>
+  <text class="text" x="990" y="442" font-size="15">43 >= target?</text>
+
+  <rect class="node" x="42" y="520" width="156" height="60" rx="10"/>
+  <text class="text" x="60" y="545" font-size="15" font-weight="700">[0,1) mid = 0</text>
+  <text class="text" x="76" y="567" font-size="15">7 >= target?</text>
+
+  <rect class="node" x="312" y="520" width="156" height="60" rx="10"/>
+  <text class="text" x="330" y="545" font-size="15" font-weight="700">[3,4) mid = 3</text>
+  <text class="text" x="338" y="567" font-size="15">16 >= target?</text>
+
+  <rect class="node" x="582" y="520" width="156" height="60" rx="10"/>
+  <text class="text" x="600" y="545" font-size="15" font-weight="700">[6,7) mid = 6</text>
+  <text class="text" x="608" y="567" font-size="15">32 >= target?</text>
+
+  <rect class="node" x="852" y="520" width="156" height="60" rx="10"/>
+  <text class="text" x="870" y="545" font-size="15" font-weight="700">[9,10) mid = 9</text>
+  <text class="text" x="878" y="567" font-size="15">41 >= target?</text>
+
+  <!-- edges -->
+  <path class="line" d="M630 215 L350 275"/>
+  <path class="line" d="M630 215 L910 275"/>
+  <text class="edge" x="468" y="250">T</text>
+  <text class="edge" x="770" y="250">F</text>
+
+  <path class="line" d="M350 335 L190 395"/>
+  <path class="line" d="M350 335 L480 395"/>
+  <text class="edge" x="258" y="370">T</text>
+  <text class="edge" x="412" y="370">F</text>
+
+  <path class="line" d="M910 335 L740 395"/>
+  <path class="line" d="M910 335 L1040 395"/>
+  <text class="edge" x="812" y="370">T</text>
+  <text class="edge" x="976" y="370">F</text>
+
+  <path class="line" d="M190 455 L120 520"/>
+  <path class="line" d="M190 455 L280 660"/>
+  <text class="edge" x="148" y="495">T</text>
+  <text class="edge" x="230" y="560">F</text>
+
+  <path class="line" d="M480 455 L390 520"/>
+  <path class="line" d="M480 455 L550 660"/>
+  <text class="edge" x="426" y="495">T</text>
+  <text class="edge" x="515" y="560">F</text>
+
+  <path class="line" d="M740 455 L660 520"/>
+  <path class="line" d="M740 455 L820 660"/>
+  <text class="edge" x="690" y="495">T</text>
+  <text class="edge" x="782" y="560">F</text>
+
+  <path class="line" d="M1040 455 L930 520"/>
+  <path class="line" d="M1040 455 L1102 660"/>
+  <text class="edge" x="978" y="495">T</text>
+  <text class="edge" x="1082" y="560">F</text>
+
+  <path class="line" d="M120 580 L100 660"/>
+  <path class="line" d="M120 580 L190 660"/>
+  <text class="edge" x="92" y="630">T</text>
+  <text class="edge" x="156" y="630">F</text>
+
+  <path class="line" d="M390 580 L370 660"/>
+  <path class="line" d="M390 580 L460 660"/>
+  <text class="edge" x="362" y="630">T</text>
+  <text class="edge" x="426" y="630">F</text>
+
+  <path class="line" d="M660 580 L640 660"/>
+  <path class="line" d="M660 580 L730 660"/>
+  <text class="edge" x="632" y="630">T</text>
+  <text class="edge" x="696" y="630">F</text>
+
+  <path class="line" d="M930 580 L910 660"/>
+  <path class="line" d="M930 580 L1004 660"/>
+  <text class="edge" x="902" y="630">T</text>
+  <text class="edge" x="966" y="630">F</text>
+
+  <text class="muted" x="56" y="732" font-size="16">每个叶子的横向顺序就是 lower_bound 可能返回的边界位置 0..n。</text>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 560" role="img" aria-labelledby="title desc">
+  <title id="title">Free Space Management</title>
+  <desc id="desc">Free table, free linked list, bitmap and grouped linking.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--free:#059669;--used:#d97706;--blue:#2563eb;--purple:#7c3aed}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--free:#34d399;--used:#fbbf24;--blue:#60a5fa;--purple:#c084fc}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.blk{stroke:var(--line);stroke-width:1.2}.free{fill:var(--free);opacity:.75}.used{fill:var(--used);opacity:.8}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:2.5;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker></defs>
+  <rect class="bg" width="1040" height="560"/>
+  <text class="t" x="520" y="38" text-anchor="middle" font-size="24" font-weight="700">外存空闲空间管理</text>
+  <text class="m" x="520" y="66" text-anchor="middle" font-size="15">核心问题：如何记录空闲块，如何分配，如何回收</text>
+  <g transform="translate(40,105)">
+    <rect class="panel" x="0" y="0" width="460" height="180" rx="12"/>
+    <text class="t" x="230" y="34" text-anchor="middle" font-size="19" font-weight="700">空闲表法</text>
+    <text class="m" x="230" y="60" text-anchor="middle" font-size="13">记录每个连续空闲区的起始块号和长度</text>
+    <rect class="panel" x="70" y="82" width="135" height="70" rx="6"/><text class="t" x="92" y="108" font-size="14">起始</text><text class="t" x="150" y="108" font-size="14">长度</text><text class="m" x="96" y="135" font-size="14">0</text><text class="m" x="154" y="135" font-size="14">2</text>
+    <rect class="panel" x="255" y="82" width="135" height="70" rx="6"/><text class="m" x="280" y="110" font-size="14">18</text><text class="m" x="342" y="110" font-size="14">3</text><text class="m" x="280" y="136" font-size="14">23</text><text class="m" x="342" y="136" font-size="14">1</text>
+  </g>
+  <g transform="translate(540,105)">
+    <rect class="panel" x="0" y="0" width="460" height="180" rx="12"/>
+    <text class="t" x="230" y="34" text-anchor="middle" font-size="19" font-weight="700">空闲链表法</text>
+    <text class="m" x="230" y="60" text-anchor="middle" font-size="13">空闲盘块链或空闲盘区链</text>
+    <rect class="blk free" x="82" y="96" width="42" height="42" rx="5"/><rect class="blk free" x="180" y="96" width="42" height="42" rx="5"/><rect class="blk free" x="278" y="96" width="42" height="42" rx="5"/>
+    <path class="a" d="M124 117 H180"/><path class="a" d="M222 117 H278"/>
+    <text class="m" x="230" y="158" text-anchor="middle" font-size="13">分配从链头摘下；回收挂回链中或链尾</text>
+  </g>
+  <g transform="translate(40,315)">
+    <rect class="panel" x="0" y="0" width="460" height="180" rx="12"/>
+    <text class="t" x="230" y="34" text-anchor="middle" font-size="19" font-weight="700">位示图法</text>
+    <text class="m" x="230" y="60" text-anchor="middle" font-size="13">每一位对应一个盘块：0 空闲，1 已分配</text>
+    <g transform="translate(90,90)">
+      <rect class="blk free" x="0" y="0" width="28" height="28"/><rect class="blk used" x="32" y="0" width="28" height="28"/><rect class="blk free" x="64" y="0" width="28" height="28"/><rect class="blk used" x="96" y="0" width="28" height="28"/><rect class="blk used" x="128" y="0" width="28" height="28"/><rect class="blk free" x="160" y="0" width="28" height="28"/><rect class="blk free" x="192" y="0" width="28" height="28"/><rect class="blk used" x="224" y="0" width="28" height="28"/>
+    </g>
+    <text class="m" x="230" y="152" text-anchor="middle" font-size="13">盘块号与 (字号, 位号) 可相互换算</text>
+  </g>
+  <g transform="translate(540,315)">
+    <rect class="panel" x="0" y="0" width="460" height="180" rx="12"/>
+    <text class="t" x="230" y="34" text-anchor="middle" font-size="19" font-weight="700">成组链接法</text>
+    <text class="m" x="230" y="60" text-anchor="middle" font-size="13">超级块保存第一组空闲块号和下一组信息</text>
+    <rect class="panel" x="76" y="86" width="110" height="62" rx="8"/><text class="t" x="131" y="113" text-anchor="middle" font-size="14">超级块</text><text class="m" x="131" y="135" text-anchor="middle" font-size="12">100 个块号</text>
+    <rect class="blk free" x="250" y="96" width="46" height="38" rx="5"/><rect class="blk free" x="318" y="96" width="46" height="38" rx="5"/>
+    <path class="a" d="M186 117 H250"/><path class="a" d="M296 117 H318"/>
+    <text class="m" x="230" y="166" text-anchor="middle" font-size="13">大型文件系统中减少空闲表/链表规模</text>
+  </g>
+</svg>

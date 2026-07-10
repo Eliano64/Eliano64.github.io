@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="430" viewBox="0 0 1040 430" role="img" aria-labelledby="title desc">
+  <title id="title">TCP flow control structure</title>
+  <desc id="desc">TCP receiver advertises rwnd through ACKs, sender limits send window by min(rwnd, cwnd).</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:#172033}
+    .label{font-size:22px;font-weight:700}.small{font-size:14px}.mid{font-size:17px;font-weight:700}.code{font-family:Consolas,monospace;font-size:15px}
+    .sender{fill:#dbeafe;stroke:#2563eb}.receiver{fill:#dcfce7;stroke:#16a34a}.ack{fill:#fef3c7;stroke:#d97706}.box{stroke-width:2}.line{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arr)}
+    @media(prefers-color-scheme:dark){text{fill:#e5e7eb}.sender{fill:#10213f;stroke:#60a5fa}.receiver{fill:#0f2b1d;stroke:#4ade80}.ack{fill:#3b2506;stroke:#fbbf24}.line{stroke:#94a3b8}}
+  </style>
+  <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+  <text x="520" y="38" text-anchor="middle" class="label">TCP 流量控制：接收窗口 rwnd 约束发送方</text>
+
+  <rect x="80" y="95" width="300" height="180" rx="10" class="box sender"/>
+  <text x="230" y="128" text-anchor="middle" class="mid">发送方 A</text>
+  <text x="230" y="165" text-anchor="middle" class="code">swnd = min(rwnd, cwnd)</text>
+  <text x="230" y="198" text-anchor="middle" class="small">rwnd 来自接收方通告</text>
+  <text x="230" y="222" text-anchor="middle" class="small">cwnd 来自拥塞控制估算</text>
+  <text x="230" y="246" text-anchor="middle" class="small">发送量不能超过 swnd</text>
+
+  <rect x="660" y="95" width="300" height="180" rx="10" class="box receiver"/>
+  <text x="810" y="128" text-anchor="middle" class="mid">接收方 B</text>
+  <text x="810" y="163" text-anchor="middle" class="small">接收缓存有空闲空间</text>
+  <text x="810" y="188" text-anchor="middle" class="small">应用读得快：rwnd 变大</text>
+  <text x="810" y="213" text-anchor="middle" class="small">应用读得慢：rwnd 变小</text>
+  <text x="810" y="238" text-anchor="middle" class="small">缓存满：rwnd = 0</text>
+
+  <path d="M380 155 L660 155" class="line"/>
+  <text x="520" y="135" text-anchor="middle" class="code">TCP 数据报文段</text>
+  <path d="M660 225 L380 225" class="line"/>
+  <rect x="420" y="245" width="200" height="62" rx="8" class="box ack"/>
+  <text x="520" y="270" text-anchor="middle" class="mid">ACK 报文段</text>
+  <text x="520" y="294" text-anchor="middle" class="code">ack + rwnd</text>
+
+  <rect x="145" y="330" width="750" height="54" rx="8" class="box sender"/>
+  <text x="520" y="354" text-anchor="middle" class="small">流量控制只解决“接收方来不及收”的问题；网络拥塞由 cwnd 进一步限制。</text>
+  <text x="520" y="376" text-anchor="middle" class="code">最终发送窗口始终受 min(rwnd, cwnd) 约束</text>
+</svg>

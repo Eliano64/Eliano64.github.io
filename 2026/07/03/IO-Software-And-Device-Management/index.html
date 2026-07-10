@@ -1,0 +1,544 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>OS IO Software And Device Management | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="I&#x2F;O 软件层次I&#x2F;O 软件把用户请求逐层转换成硬件能执行的操作。越上层越接近用户，越下层越接近硬件。     层次 位置 主要作用    用户层软件 用户态 提供库函数或用户接口，把用户请求转换成系统调用   设备独立性软件 内核态 提供统一 I&#x2F;O 接口，完成设备保护、差错处理、设备分配、缓冲区管理、逻辑设备名映射   设备驱动程序 内核态 把通用 read&amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OS IO Software And Device Management">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/03/IO-Software-And-Device-Management/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="I&#x2F;O 软件层次I&#x2F;O 软件把用户请求逐层转换成硬件能执行的操作。越上层越接近用户，越下层越接近硬件。     层次 位置 主要作用    用户层软件 用户态 提供库函数或用户接口，把用户请求转换成系统调用   设备独立性软件 内核态 提供统一 I&#x2F;O 接口，完成设备保护、差错处理、设备分配、缓冲区管理、逻辑设备名映射   设备驱动程序 内核态 把通用 read&amp;#x">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-03T09:05:18.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="OperatingSystem">
+<meta property="article:tag" content="IO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "OS IO Software And Device Management",
+  "url": "https://eliano64.github.io/2026/07/03/IO-Software-And-Device-Management/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-03T09:05:18.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/03/IO-Software-And-Device-Management/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'OS IO Software And Device Management',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">OS IO Software And Device Management</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">OS IO Software And Device Management</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-03T09:05:18.000Z" title="发表于 2026-07-03 17:05:18">2026-07-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.5k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="I-O-软件层次"><a href="#I-O-软件层次" class="headerlink" title="I&#x2F;O 软件层次"></a>I&#x2F;O 软件层次</h1><p>I&#x2F;O 软件把用户请求逐层转换成硬件能执行的操作。越上层越接近用户，越下层越接近硬件。</p>
+<p><img src="/assets/os-io-software-layers.svg" alt="1000"></p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>位置</th>
+<th>主要作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户层软件</td>
+<td>用户态</td>
+<td>提供库函数或用户接口，把用户请求转换成系统调用</td>
+</tr>
+<tr>
+<td>设备独立性软件</td>
+<td>内核态</td>
+<td>提供统一 I&#x2F;O 接口，完成设备保护、差错处理、设备分配、缓冲区管理、逻辑设备名映射</td>
+</tr>
+<tr>
+<td>设备驱动程序</td>
+<td>内核态</td>
+<td>把通用 read&#x2F;write 请求转换成特定设备能执行的寄存器操作</td>
+</tr>
+<tr>
+<td>中断处理程序</td>
+<td>内核态，最靠近硬件</td>
+<td>响应设备中断，读控制器状态，完成中断应答和少量紧急处理</td>
+</tr>
+<tr>
+<td>硬件</td>
+<td>控制器和设备</td>
+<td>执行实际 I&#x2F;O 操作</td>
+</tr>
+</tbody></table>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">判断属于哪一层</span></div>
+<div class="callout-content"><p>直接涉及设备寄存器、设备状态位、设备厂商规定的控制细节，通常属于<strong>设备驱动程序</strong>。不关心具体硬件、对多类设备都需要的管理工作，通常属于<strong>设备独立性软件</strong>。</p>
+</div>
+</div>
+# 用户层软件
+
+<p>用户层软件给用户程序提供更方便的接口。用户程序通常不直接组织内核内部的 I&#x2F;O 请求，而是调用库函数或系统调用封装。</p>
+<p>例如输出文本时，程序可能调用 <code>printf</code>。用户层库函数会把格式化输出转换成 <code>write</code> 一类系统调用，再进入内核 I&#x2F;O 软件。</p>
+<p>用户层软件解决的是“怎样让用户方便地提出请求”，不是“怎样具体操作设备寄存器”。</p>
+<h1 id="设备独立性软件"><a href="#设备独立性软件" class="headerlink" title="设备独立性软件"></a>设备独立性软件</h1><p>设备独立性软件也叫设备无关性软件。它把具体设备差异压到驱动程序下面，对上提供统一接口。</p>
+<p>常见功能：</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>统一调用接口</td>
+<td>向上提供 <code>read</code>、<code>write</code>、<code>open</code>、<code>close</code> 等统一接口</td>
+</tr>
+<tr>
+<td>设备保护</td>
+<td>检查进程是否有权访问设备，防止非法 I&#x2F;O</td>
+</tr>
+<tr>
+<td>差错处理</td>
+<td>对可统一处理的设备错误做重试、报告、恢复或失败返回</td>
+</tr>
+<tr>
+<td>设备分配与回收</td>
+<td>按设备状态、控制器状态、通道状态决定能否分配</td>
+</tr>
+<tr>
+<td>缓冲区管理</td>
+<td>用内存缓冲区协调速度差异、传输单位差异</td>
+</tr>
+<tr>
+<td>逻辑设备名映射</td>
+<td>建立逻辑设备名到物理设备名、驱动入口的映射</td>
+</tr>
+</tbody></table>
+<p>设备独立性带来的效果是：用户程序不必知道“到底是哪一台打印机、哪个控制器、哪个状态位表示忙”。用户只面对逻辑设备名和统一调用接口。</p>
+<h1 id="逻辑设备名与-LUT"><a href="#逻辑设备名与-LUT" class="headerlink" title="逻辑设备名与 LUT"></a>逻辑设备名与 LUT</h1><p>用户程序使用的是<strong>逻辑设备名</strong>，例如 <code>/dev/printer</code>。操作系统需要把它映射到具体物理设备，并找到对应驱动程序入口。</p>
+<p><img src="/assets/os-io-logical-device-mapping.svg" alt="1000"></p>
+<p>逻辑设备表 <code>LUT</code> 常见表项：</p>
+<table>
+<thead>
+<tr>
+<th>逻辑设备名</th>
+<th>物理设备名</th>
+<th>驱动程序入口地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/dev/printer</code></td>
+<td>3</td>
+<td><code>1024</code></td>
+</tr>
+<tr>
+<td><code>/dev/tty</code></td>
+<td>5</td>
+<td><code>2046</code></td>
+</tr>
+</tbody></table>
+<p>LUT 的设置方式：</p>
+<table>
+<thead>
+<tr>
+<th>设置方式</th>
+<th>特点</th>
+<th>适用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统只有一张 LUT</td>
+<td>所有用户不能使用相同逻辑设备名</td>
+<td>单用户系统</td>
+</tr>
+<tr>
+<td>每个用户一张 LUT</td>
+<td>不同用户可使用相同逻辑设备名</td>
+<td>多用户系统</td>
+</tr>
+</tbody></table>
+<p>第一次使用某类设备时，系统可根据逻辑设备名表示的设备类型在系统设备表中寻找空闲物理设备，分配成功后在 LUT 中增加表项。以后同一进程或用户再次使用该逻辑设备名时，系统可直接根据 LUT 找到物理设备和驱动入口。</p>
+<h1 id="设备驱动程序"><a href="#设备驱动程序" class="headerlink" title="设备驱动程序"></a>设备驱动程序</h1><p>设备驱动程序负责具体设备控制。上层发来的是统一请求，例如“读”“写”“启动”；驱动程序要把它翻译成该设备控制器能理解的寄存器操作。</p>
+<p>驱动程序通常要做：</p>
+<ul>
+<li>设置控制寄存器，如启动读写、设置方向、允许中断；</li>
+<li>检查状态寄存器，如忙、空闲、就绪、错误；</li>
+<li>从数据寄存器取数据，或向数据寄存器写数据；</li>
+<li>按设备厂商规定解释状态位和控制位；</li>
+<li>与中断处理程序配合，完成异步 I&#x2F;O。</li>
+</ul>
+<p>不同设备需要不同驱动程序，是因为控制器设计不同：寄存器数量可能不同，状态位含义可能相反，命令格式和时序也可能不同。设备独立性软件不能假设所有设备都有同一套寄存器约定。</p>
+<h1 id="中断处理程序"><a href="#中断处理程序" class="headerlink" title="中断处理程序"></a>中断处理程序</h1><p>中断处理程序在 I&#x2F;O 软件层次中最靠近硬件。当设备完成 I&#x2F;O 或发生错误时，控制器向 CPU 提出中断请求；CPU 转入内核后执行相应中断处理程序。</p>
+<p>I&#x2F;O 中断处理程序通常做：</p>
+<ol>
+<li>从控制器读出设备状态。</li>
+<li>判断 I&#x2F;O 是否正常完成。</li>
+<li>若异常，按原因处理，例如重试、报告错误、唤醒等待进程并返回错误。</li>
+<li>若正常，从设备或控制器读入数据，或确认 DMA&#x2F;通道传送已经完成。</li>
+<li>更新内核 I&#x2F;O 请求状态。</li>
+<li>唤醒等待该 I&#x2F;O 的进程，或通知上层继续后续处理。</li>
+</ol>
+<p>异常与中断处理流程见 <a href="/2026/07/03/Exception-And-Interrupt-Handling/" class="wikilink">Exception-And-Interrupt-Handling</a>。</p>
+<h1 id="设备保护与差错处理"><a href="#设备保护与差错处理" class="headerlink" title="设备保护与差错处理"></a>设备保护与差错处理</h1><p>设备保护的核心是：用户程序不能绕过操作系统随意访问设备。设备通常由内核管理，用户请求要通过系统调用进入内核，由内核检查权限和设备状态。</p>
+<p>设备保护常见控制点：</p>
+<ul>
+<li>用户是否有权打开或操作该设备；</li>
+<li>请求的读写方向是否允许；</li>
+<li>独占设备是否已经被其他进程占用；</li>
+<li>设备是否处于可用状态。</li>
+</ul>
+<p>差错处理分为两类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>例子</th>
+<th>处理位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>与具体设备强相关</td>
+<td>控制器状态位含义、设备复位时序、设备专用错误码</td>
+<td>设备驱动程序</td>
+</tr>
+<tr>
+<td>可统一处理</td>
+<td>重试次数、错误上报、唤醒等待进程、返回错误状态</td>
+<td>设备独立性软件</td>
+</tr>
+</tbody></table>
+<h1 id="设备分配要考虑什么"><a href="#设备分配要考虑什么" class="headerlink" title="设备分配要考虑什么"></a>设备分配要考虑什么</h1><p>设备分配不是只看设备本身是否空闲。一次 I&#x2F;O 往往同时占用设备、控制器和通道，三者都可用时才能真正启动。</p>
+<p>设备固有属性：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>含义</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>独占设备</td>
+<td>一个时段只能分配给一个进程</td>
+<td>普通打印机</td>
+</tr>
+<tr>
+<td>共享设备</td>
+<td>可被多个进程宏观上同时使用</td>
+<td>磁盘</td>
+</tr>
+<tr>
+<td>虚拟设备</td>
+<td>用软件把独占设备改造成逻辑上的共享设备</td>
+<td>SPOOLing 共享打印机</td>
+</tr>
+</tbody></table>
+<p>设备分配算法可采用先来先服务、优先级高者优先、短任务优先等。算法决定等待队列中哪个请求先获得资源。</p>
+<p>从进程安全性看，还有两种方式：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>做法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>安全分配</td>
+<td>分配设备后阻塞进程，本次 I&#x2F;O 完成后再唤醒</td>
+<td>不易发生死锁，但 CPU 与进程并行性较差</td>
+</tr>
+<tr>
+<td>不安全分配</td>
+<td>分配设备后进程可继续运行，之后还可再请求其他资源</td>
+<td>并行性较好，但资源请求顺序不当可能死锁</td>
+</tr>
+</tbody></table>
+<h1 id="设备分配数据结构"><a href="#设备分配数据结构" class="headerlink" title="设备分配数据结构"></a>设备分配数据结构</h1><p>操作系统用多张表描述设备、控制器、通道及等待队列。</p>
+<p><img src="/assets/os-io-device-allocation-tables.svg" alt="1000"></p>
+<table>
+<thead>
+<tr>
+<th>表</th>
+<th>对象</th>
+<th>典型内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SDT</code> 系统设备表</td>
+<td>全系统设备总表</td>
+<td>设备类型、设备标识符、DCT 指针、驱动程序入口</td>
+</tr>
+<tr>
+<td><code>DCT</code> 设备控制表</td>
+<td>每个设备一张</td>
+<td>设备类型、设备标识符、设备状态、COCT 指针、设备等待队列</td>
+</tr>
+<tr>
+<td><code>COCT</code> 控制器控制表</td>
+<td>每个控制器一张</td>
+<td>控制器标识符、控制器状态、CHCT 指针、控制器等待队列</td>
+</tr>
+<tr>
+<td><code>CHCT</code> 通道控制表</td>
+<td>每个通道一张</td>
+<td>通道标识符、通道状态、所连控制器信息、通道等待队列</td>
+</tr>
+</tbody></table>
+<h1 id="设备分配与回收过程"><a href="#设备分配与回收过程" class="headerlink" title="设备分配与回收过程"></a>设备分配与回收过程</h1><p>使用物理设备名时，基本分配过程是：</p>
+<ol>
+<li>根据进程请求的物理设备名查 <code>SDT</code>。</li>
+<li>根据 <code>SDT</code> 找到 <code>DCT</code>。若设备忙，把进程 PCB 挂到设备等待队列；若空闲，分配设备。</li>
+<li>根据 <code>DCT</code> 找到 <code>COCT</code>。若控制器忙，把进程 PCB 挂到控制器等待队列；若空闲，分配控制器。</li>
+<li>根据 <code>COCT</code> 找到 <code>CHCT</code>。若通道忙，把进程 PCB 挂到通道等待队列；若空闲，分配通道。</li>
+<li>设备、控制器、通道都分配成功后，启动 I&#x2F;O。</li>
+</ol>
+<p><img src="/assets/os-io-device-allocation-flow.svg" alt="1000"></p>
+<p>使用逻辑设备名时，过程会先经过 LUT：</p>
+<ol>
+<li>用户请求逻辑设备名。</li>
+<li>若 LUT 已有映射，直接得到物理设备名和驱动入口。</li>
+<li>若 LUT 没有映射，系统根据设备类型在 <code>SDT</code> 中寻找空闲设备。</li>
+<li>分配成功后，在 LUT 中建立逻辑设备名、物理设备名、驱动入口的映射。</li>
+<li>再按 <code>DCT -&gt; COCT -&gt; CHCT</code> 检查并分配控制器和通道。</li>
+</ol>
+<p>回收过程方向相反：I&#x2F;O 完成后释放设备、控制器、通道，更新相应表项状态；若等待队列非空，按分配算法唤醒或分配给下一个等待进程。</p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><ul>
+<li>I&#x2F;O 软件层次从上到下是：用户层软件、设备独立性软件、设备驱动程序、中断处理程序、硬件。</li>
+<li>设备独立性软件负责统一接口、保护、差错处理、分配回收、缓冲和逻辑设备名映射。</li>
+<li>设备驱动程序负责具体硬件细节，尤其是寄存器设置和状态解释。</li>
+<li>LUT 把逻辑设备名映射到物理设备名和驱动入口。</li>
+<li>设备分配要同时考虑设备、控制器和通道，常通过 <code>SDT -&gt; DCT -&gt; COCT -&gt; CHCT</code> 逐层检查。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/03/IO-Software-And-Device-Management/">https://eliano64.github.io/2026/07/03/IO-Software-And-Device-Management/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/IO-Buffering-And-Spooling/" title="IO Buffering And Spooling"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">IO Buffering And Spooling</div></div><div class="info-2"><div class="info-item-1">缓冲区是什么缓冲区是一个临时存储区域，可以由硬件寄存器组成，也可以由主存中的一段空间组成。操作系统 I&#x2F;O 管理讨论的缓冲区通常是主存缓冲区，由设备独立性软件组织和管理。 缓冲区的作用：  缓和 CPU、内存与 I&#x2F;O 设备之间的速度差异； 协调不同设备或进程之间的数据单位差异； 减少进程因 I&#x2F;O 等待而被频繁阻塞； 支持异步 I&#x2F;O、DMA、SPOOLing 等机制。   以输出为例，用户进程可以把一块数据快速放入缓冲区，之后继续执行；慢速设备再从缓冲区逐步取走数据。输入时方向相反，设备先把数据放入缓冲区，进程再从缓冲区取数据。 单缓冲单缓冲是在主存中为 I&#x2F;O 分配一个缓冲区。若题目没有特别说明，一个缓冲区大小通常等于一个数据块。 单缓冲读入时涉及三个时间：    符号 含义    $T$ 设备把一块数据输入到缓冲区的时间   $M$ 缓冲区到用户工作区的传送时间   $C$ CPU...</div></div></div></a><a class="pagination-related" href="/2026/07/04/CPU-Modes/" title="CPU Modes"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">CPU Modes</div></div><div class="info-2"><div class="info-item-1">两种 CPU 状态操作系统要保护系统资源，不能让普通应用程序随意执行影响全局状态的指令。因此 CPU 将指令分为两类：    类型 含义 例子    非特权指令 普通应用程序可以执行 加法、减法、普通数据处理   特权指令 只能由操作系统内核执行 修改 PSW、开关中断、清内存、启动 I&#x2F;O   CPU 也相应分为两种运行状态：    CPU 状态 运行内容 能否执行特权指令 别名    用户态 应用程序 不能 目态   内核态 操作系统内核程序 可以 核心态、管态   CPU 当前处于哪种状态通常由 PSW 中的状态位表示。用户态程序若试图执行特权指令，CPU 会发现权限不匹配，触发异常，转入内核态交给操作系统处理。  状态切换内核态到用户态内核态到用户态通常由内核主动完成。操作系统准备让某个应用程序运行时，会通过特权指令修改 PSW 中的状态位，并恢复该程序的运行现场，使 CPU 回到用户态执行用户程序。 这个方向是“内核让出 CPU 控制权”。 用户态到内核态用户态程序不能直接把 CPU...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#I-O-%E8%BD%AF%E4%BB%B6%E5%B1%82%E6%AC%A1"><span class="toc-text">I&#x2F;O 软件层次</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E7%8B%AC%E7%AB%8B%E6%80%A7%E8%BD%AF%E4%BB%B6"><span class="toc-text">设备独立性软件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E8%AE%BE%E5%A4%87%E5%90%8D%E4%B8%8E-LUT"><span class="toc-text">逻辑设备名与 LUT</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="toc-text">设备驱动程序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E7%A8%8B%E5%BA%8F"><span class="toc-text">中断处理程序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E4%BF%9D%E6%8A%A4%E4%B8%8E%E5%B7%AE%E9%94%99%E5%A4%84%E7%90%86"><span class="toc-text">设备保护与差错处理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E5%88%86%E9%85%8D%E8%A6%81%E8%80%83%E8%99%91%E4%BB%80%E4%B9%88"><span class="toc-text">设备分配要考虑什么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E5%88%86%E9%85%8D%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">设备分配数据结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E5%88%86%E9%85%8D%E4%B8%8E%E5%9B%9E%E6%94%B6%E8%BF%87%E7%A8%8B"><span class="toc-text">设备分配与回收过程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

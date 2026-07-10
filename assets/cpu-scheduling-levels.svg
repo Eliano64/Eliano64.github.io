@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+  <title id="title">处理机调度的三个层次</title>
+  <desc id="desc">展示高级调度、中级调度、低级调度分别发生在外存、内存、CPU之间。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --panel-2: #eef6ff;
+      --text: #172033;
+      --muted: #536174;
+      --line: #526070;
+      --accent: #2563eb;
+      --accent-2: #0f766e;
+      --accent-3: #b45309;
+      --chip: #e6eef9;
+      --shadow: rgba(15, 23, 42, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111318;
+        --panel: #1b2029;
+        --panel-2: #172232;
+        --text: #e8edf5;
+        --muted: #aab5c4;
+        --line: #9aa8ba;
+        --accent: #7aa2ff;
+        --accent-2: #62d4c5;
+        --accent-3: #f6b85f;
+        --chip: #263142;
+        --shadow: rgba(0, 0, 0, 0.38);
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { fill: var(--text); font-size: 26px; font-weight: 700; }
+    .label { fill: var(--text); font-size: 20px; font-weight: 700; }
+    .small { fill: var(--muted); font-size: 15px; }
+    .tiny { fill: var(--muted); font-size: 13px; }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.7; rx: 10; filter: drop-shadow(0 6px 12px var(--shadow)); }
+    .zone { fill: var(--panel-2); stroke: var(--line); stroke-width: 1.5; rx: 12; }
+    .queue { fill: var(--chip); stroke: var(--line); stroke-width: 1.2; rx: 7; }
+    .arrow { fill: none; stroke: var(--line); stroke-width: 2.4; marker-end: url(#arrow); }
+    .arrow-blue { stroke: var(--accent); }
+    .arrow-green { stroke: var(--accent-2); }
+    .arrow-orange { stroke: var(--accent-3); }
+    .caption-blue { fill: var(--accent); font-size: 16px; font-weight: 700; }
+    .caption-green { fill: var(--accent-2); font-size: 16px; font-weight: 700; }
+    .caption-orange { fill: var(--accent-3); font-size: 16px; font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" style="fill: var(--line);"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="560" y="42" text-anchor="middle">处理机调度的三个层次</text>
+
+  <rect class="zone" x="50" y="92" width="280" height="430"/>
+  <text class="label" x="190" y="128" text-anchor="middle">外存</text>
+  <text class="small" x="190" y="154" text-anchor="middle">作业、挂起进程暂存位置</text>
+
+  <rect class="queue" x="86" y="192" width="208" height="70"/>
+  <text class="label" x="190" y="225" text-anchor="middle">作业后备队列</text>
+  <text class="small" x="190" y="248" text-anchor="middle">尚未进入内存</text>
+
+  <rect class="queue" x="86" y="344" width="208" height="86"/>
+  <text class="label" x="190" y="378" text-anchor="middle">挂起队列</text>
+  <text class="small" x="190" y="402" text-anchor="middle">就绪挂起 / 阻塞挂起</text>
+
+  <rect class="zone" x="420" y="92" width="280" height="430"/>
+  <text class="label" x="560" y="128" text-anchor="middle">内存</text>
+  <text class="small" x="560" y="154" text-anchor="middle">已创建进程的活动区域</text>
+
+  <rect class="queue" x="456" y="192" width="208" height="70"/>
+  <text class="label" x="560" y="225" text-anchor="middle">就绪队列</text>
+  <text class="small" x="560" y="248" text-anchor="middle">只差 CPU</text>
+
+  <rect class="queue" x="456" y="344" width="208" height="86"/>
+  <text class="label" x="560" y="378" text-anchor="middle">阻塞队列</text>
+  <text class="small" x="560" y="402" text-anchor="middle">等待资源或事件</text>
+
+  <rect class="zone" x="790" y="92" width="280" height="430"/>
+  <text class="label" x="930" y="128" text-anchor="middle">CPU</text>
+  <text class="small" x="930" y="154" text-anchor="middle">处理机资源</text>
+
+  <rect class="box" x="842" y="251" width="176" height="96"/>
+  <text class="label" x="930" y="292" text-anchor="middle">运行进程</text>
+  <text class="small" x="930" y="318" text-anchor="middle">正在执行指令</text>
+
+  <path class="arrow arrow-blue" d="M 294 227 C 350 227, 380 227, 456 227"/>
+  <text class="caption-blue" x="374" y="205" text-anchor="middle">高级调度</text>
+
+  <path class="arrow arrow-green" d="M 294 387 C 350 387, 380 387, 456 387"/>
+  <text class="caption-green" x="374" y="365" text-anchor="middle">中级调度</text>
+
+  <path class="arrow arrow-orange" d="M 664 227 C 732 227, 760 299, 842 299"/>
+  <text class="caption-orange" x="742" y="220" text-anchor="middle">低级调度</text>
+
+  <path class="arrow" d="M 842 326 C 760 390, 732 387, 664 387"/>
+
+  <path class="arrow" d="M 560 344 L 560 262"/>
+  <text class="small" x="585" y="310">事件发生</text>
+
+  <rect class="box" x="78" y="548" width="964" height="42"/>
+  <text class="small" x="560" y="574" text-anchor="middle">频率：高级调度最低；中级调度较高；低级调度最高，常以几十毫秒为尺度发生。</text>
+</svg>

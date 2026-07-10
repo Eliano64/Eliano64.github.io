@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="500" viewBox="0 0 1120 500" role="img" aria-labelledby="title desc">
+  <title id="title">停止等待协议信道利用率时空图</title>
+  <desc id="desc">停止等待协议中，数据分组和ACK用带宽度的斜带表示，并标注TD、RTT和完整周期。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--text:#172033;--muted:#64748b;--line:#334155;--data:#475569;--ack:#64748b;--mark:#111827;--panel:#f8fafc}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--data:#cbd5e1;--ack:#94a3b8;--mark:#e5e7eb;--panel:#111827}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.axis{stroke:var(--line);stroke-width:2.2}.band{fill:var(--data);opacity:.9;stroke:var(--line);stroke-width:1.2}.ackband{fill:none;stroke:var(--ack);stroke-width:7;stroke-linecap:butt}.thin{stroke:var(--mark);stroke-width:1.7}.guide{stroke:var(--mark);stroke-width:1.2;stroke-dasharray:5 6}.t{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.h{font-size:23px;font-weight:800}.m{fill:var(--muted);font-size:16px}.label{font-size:18px;font-weight:800}.formula{font-size:19px;font-weight:800}
+  </style>
+  <defs>
+    <marker id="axisArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--line)"/></marker>
+    <marker id="markArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--mark)"/></marker>
+  </defs>
+  <rect class="bg" width="1120" height="500"/>
+  <text x="56" y="30" class="t h">停止等待：一个周期只发送一个分组</text>
+
+  <line x1="170" y1="170" x2="1030" y2="170" class="axis" marker-end="url(#axisArrow)"/>
+  <line x1="170" y1="350" x2="1030" y2="350" class="axis" marker-end="url(#axisArrow)"/>
+  <text x="84" y="176" class="t label">发送方</text>
+  <text x="84" y="356" class="t label">接收方</text>
+  <text x="1044" y="176" class="t m">t</text>
+  <text x="1044" y="356" class="t m">t</text>
+
+  <polygon points="220,170 280,170 500,350 440,350" class="band"/>
+  <line x1="500" y1="350" x2="740" y2="170" class="ackband" marker-end="url(#axisArrow)"/>
+  <polygon points="740,170 800,170 1020,350 960,350" class="band"/>
+
+  <line x1="220" y1="138" x2="280" y2="138" class="thin"/>
+  <line x1="220" y1="129" x2="220" y2="148" class="thin"/>
+  <line x1="280" y1="129" x2="280" y2="148" class="thin"/>
+  <text x="250" y="124" text-anchor="middle" class="t formula">T_D</text>
+
+  <line x1="280" y1="106" x2="740" y2="106" class="thin" marker-end="url(#markArrow)"/>
+  <line x1="280" y1="96" x2="280" y2="116" class="thin"/>
+  <line x1="740" y1="96" x2="740" y2="116" class="thin"/>
+  <text x="510" y="92" text-anchor="middle" class="t formula">RTT</text>
+
+  <line x1="220" y1="74" x2="740" y2="74" class="thin" marker-end="url(#markArrow)"/>
+  <line x1="220" y1="64" x2="220" y2="84" class="thin"/>
+  <line x1="740" y1="64" x2="740" y2="84" class="thin"/>
+  <text x="480" y="60" text-anchor="middle" class="t formula">T_D + RTT + T_A</text>
+
+  <line x1="220" y1="170" x2="220" y2="372" class="guide"/>
+  <line x1="740" y1="170" x2="740" y2="372" class="guide"/>
+  <rect x="262" y="402" width="26" height="16" class="band"/>
+  <text x="300" y="416" class="t m">DATA 分组发送带宽度，对应发送时延 T_D</text>
+  <line x1="630" y1="410" x2="690" y2="410" class="ackband"/>
+  <text x="706" y="416" class="t m">ACK 返回后才进入下一轮</text>
+  <text x="560" y="462" text-anchor="middle" class="t m">有效发送时间为 T_D，完整等待周期为 T_D+RTT+T_A。</text>
+</svg>

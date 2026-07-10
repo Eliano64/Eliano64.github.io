@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" role="img" aria-labelledby="title desc">
+  <title id="title">Bit expansion wiring</title>
+  <desc id="desc">Two 8K by 8 memory chips form an 8K by 16 memory. Address and control lines are shared, while each chip occupies a different half of the data bus.</desc>
+  <defs>
+    <marker id="arrowDark" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      .bg{fill:#fbfcff}
+      .title{font:700 26px "Microsoft YaHei",Arial,sans-serif;fill:#172033}
+      .h{font:700 17px "Microsoft YaHei",Arial,sans-serif;fill:#172033}
+      .t{font:400 14px "Microsoft YaHei",Arial,sans-serif;fill:#40506a}
+      .small{font:400 13px "Microsoft YaHei",Arial,sans-serif;fill:#40506a}
+      .cpu{fill:#eef6ff;stroke:#5f92d6;stroke-width:2;rx:10}
+      .chip{fill:#fff7e8;stroke:#d49a3a;stroke-width:2;rx:10}
+      .busbox{fill:#ffffff;stroke:#9aa9bd;stroke-width:1.6;rx:8}
+      .addr{stroke:#27354f;stroke-width:2.4;fill:none;marker-end:url(#arrowDark)}
+      .ctrl{stroke:#805ca8;stroke-width:2.4;fill:none;marker-end:url(#arrowDark)}
+      .data{stroke:#2f6f53;stroke-width:3;fill:none;marker-end:url(#arrowDark)}
+      .stub{stroke:#27354f;stroke-width:2.2;fill:none}
+      #arrowDark path{fill:#27354f}
+      @media(prefers-color-scheme:dark){
+        .bg{fill:#111827}.title,.h{fill:#f3f4f6}.t,.small{fill:#cbd5e1}
+        .cpu{fill:#172554;stroke:#60a5fa}.chip{fill:#3b2a12;stroke:#f59e0b}.busbox{fill:#1f2937;stroke:#64748b}
+        .addr{stroke:#d1d5db}.ctrl{stroke:#c084fc}.data{stroke:#4ade80}.stub{stroke:#d1d5db}
+        #arrowDark path{fill:#d1d5db}
+      }
+    </style>
+  </defs>
+  <rect class="bg" width="1080" height="560"/>
+  <text class="title" x="48" y="54">位扩展连线：8K × 8 → 8K × 16</text>
+
+  <rect class="cpu" x="70" y="150" width="170" height="250"/>
+  <text class="h" x="155" y="192" text-anchor="middle">CPU / 主存接口</text>
+  <text class="t" x="155" y="240" text-anchor="middle">A0-A12</text>
+  <text class="t" x="155" y="290" text-anchor="middle">D0-D15</text>
+  <text class="t" x="155" y="340" text-anchor="middle">CS / WE</text>
+
+  <rect class="busbox" x="320" y="112" width="210" height="338"/>
+  <text class="h" x="425" y="145" text-anchor="middle">公共连线区</text>
+  <text class="small" x="425" y="195" text-anchor="middle">地址线并联</text>
+  <text class="small" x="425" y="280" text-anchor="middle">数据线分位</text>
+  <text class="small" x="425" y="365" text-anchor="middle">控制线并联</text>
+
+  <rect class="chip" x="680" y="130" width="240" height="135"/>
+  <text class="h" x="800" y="170" text-anchor="middle">芯片 0：8K × 8</text>
+  <text class="t" x="800" y="205" text-anchor="middle">A0-A12, CS, WE</text>
+  <text class="t" x="800" y="232" text-anchor="middle">连接 D0-D7</text>
+
+  <rect class="chip" x="680" y="310" width="240" height="135"/>
+  <text class="h" x="800" y="350" text-anchor="middle">芯片 1：8K × 8</text>
+  <text class="t" x="800" y="385" text-anchor="middle">A0-A12, CS, WE</text>
+  <text class="t" x="800" y="412" text-anchor="middle">连接 D8-D15</text>
+
+  <path class="addr" d="M240 240 H650"/>
+  <path class="stub" d="M650 240 V190"/>
+  <path class="stub" d="M650 240 V370"/>
+  <path class="addr" d="M650 190 H680"/>
+  <path class="addr" d="M650 370 H680"/>
+  <text class="small" x="555" y="228" text-anchor="middle">A0-A12</text>
+
+  <path class="ctrl" d="M240 340 H620"/>
+  <path class="stub" d="M620 340 V222"/>
+  <path class="stub" d="M620 340 V402"/>
+  <path class="ctrl" d="M620 222 H680"/>
+  <path class="ctrl" d="M620 402 H680"/>
+  <text class="small" x="545" y="328" text-anchor="middle">CS / WE 同时有效</text>
+
+  <path class="data" d="M680 232 H585 V290 H240"/>
+  <path class="data" d="M680 412 H560 V306 H240"/>
+  <text class="small" x="512" y="285" text-anchor="end">D0-D7</text>
+  <text class="small" x="512" y="321" text-anchor="end">D8-D15</text>
+
+  <text class="t" x="800" y="492" text-anchor="middle">两片芯片同时工作，同一地址读出 16 bit 数据字</text>
+</svg>

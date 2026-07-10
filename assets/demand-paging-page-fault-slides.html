@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>请求分页缺页处理过程</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --ink: #172033;
+      --muted: #5b6678;
+      --line: #40516b;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --green: #15803d;
+      --orange: #c2410c;
+      --violet: #7c3aed;
+      --chip: #ffffff;
+      --shadow: rgba(15, 23, 42, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #172033;
+        --ink: #e5e7eb;
+        --muted: #aab6c8;
+        --line: #b6c2d3;
+        --blue: #60a5fa;
+        --red: #f87171;
+        --green: #4ade80;
+        --orange: #fb923c;
+        --violet: #a78bfa;
+        --chip: #111827;
+        --shadow: rgba(0, 0, 0, .28);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+    .deck {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      padding: 22px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+    }
+    h1 { margin: 0; font-size: 24px; }
+    .subtitle { color: var(--muted); margin-top: 6px; font-size: 14px; }
+    .controls { display: flex; gap: 8px; }
+    button {
+      border: 1px solid var(--line);
+      background: var(--chip);
+      color: var(--ink);
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    main {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      min-height: 520px;
+    }
+    .stage, .notes {
+      background: var(--panel);
+      border: 1px solid color-mix(in srgb, var(--line), transparent 45%);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px var(--shadow);
+      padding: 18px;
+    }
+    svg { width: 100%; height: 100%; min-height: 490px; }
+    text { fill: var(--ink); }
+    .muted { fill: var(--muted); }
+    .box { fill: var(--chip); stroke: var(--line); stroke-width: 2; rx: 8; }
+    .active { stroke: var(--blue); stroke-width: 3; }
+    .fault { stroke: var(--red); stroke-width: 3; }
+    .done { stroke: var(--green); stroke-width: 3; }
+    .path { stroke: var(--line); stroke-width: 2.3; fill: none; marker-end: url(#arrow); }
+    .path.activePath { stroke: var(--blue); stroke-width: 3; }
+    .path.faultPath { stroke: var(--red); stroke-width: 3; stroke-dasharray: 8 6; }
+    .path.donePath { stroke: var(--green); stroke-width: 3; }
+    .table rect { fill: var(--chip); stroke: var(--line); stroke-width: 1.4; }
+    .hilite { fill: color-mix(in srgb, var(--blue), transparent 82%); stroke: var(--blue); stroke-width: 2; }
+    .bad { fill: color-mix(in srgb, var(--red), transparent 82%); stroke: var(--red); stroke-width: 2; }
+    .good { fill: color-mix(in srgb, var(--green), transparent 82%); stroke: var(--green); stroke-width: 2; }
+    .notes h2 { margin: 0 0 14px; font-size: 22px; }
+    .notes p { margin: 0 0 12px; line-height: 1.7; }
+    .notes ul { margin: 0; padding-left: 1.2em; line-height: 1.8; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--blue), transparent 84%);
+      color: var(--ink);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    footer {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+    }
+    .step {
+      height: 7px;
+      border-radius: 99px;
+      background: color-mix(in srgb, var(--line), transparent 68%);
+    }
+    .step.on { background: var(--blue); }
+    @media (max-width: 880px) {
+      .deck { padding: 14px; }
+      header { align-items: flex-start; flex-direction: column; }
+      main { grid-template-columns: 1fr; }
+      svg { min-height: 420px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <div>
+        <h1>请求分页：一次缺页如何被处理</h1>
+        <div class="subtitle">硬件发现缺页，OS 补页，最后重新执行原来的访存指令。</div>
+      </div>
+      <div class="controls">
+        <button id="prev" type="button">上一步</button>
+        <button id="next" type="button">下一步</button>
+      </div>
+    </header>
+    <main>
+      <section class="stage" aria-label="请求分页过程图">
+        <svg viewBox="0 0 760 520" role="img" aria-label="缺页处理过程">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect id="cpu" class="box" x="30" y="60" width="150" height="72"></rect>
+          <text x="75" y="91" font-size="20" font-weight="700">CPU</text>
+          <text x="52" y="118" class="muted" font-size="14">执行访存指令</text>
+
+          <rect id="mmu" class="box" x="255" y="60" width="170" height="72"></rect>
+          <text x="293" y="91" font-size="20" font-weight="700">MMU</text>
+          <text x="282" y="118" class="muted" font-size="14">拆页号与偏移</text>
+
+          <rect id="pt" class="box" x="500" y="36" width="220" height="160"></rect>
+          <text x="575" y="66" font-size="19" font-weight="700">请求页表</text>
+          <g class="table">
+            <rect x="522" y="84" width="48" height="28"></rect><text x="538" y="104" font-size="13">页</text>
+            <rect x="570" y="84" width="58" height="28"></rect><text x="581" y="104" font-size="13">状态</text>
+            <rect x="628" y="84" width="70" height="28"></rect><text x="640" y="104" font-size="13">外存</text>
+            <rect x="522" y="112" width="48" height="28"></rect><text x="542" y="132" font-size="13">0</text>
+            <rect id="state0" x="570" y="112" width="58" height="28"></rect><text id="state0text" x="592" y="132" font-size="13">0</text>
+            <rect x="628" y="112" width="70" height="28"></rect><text x="658" y="132" font-size="13">x</text>
+            <rect x="522" y="140" width="48" height="28"></rect><text x="542" y="160" font-size="13">1</text>
+            <rect x="570" y="140" width="58" height="28"></rect><text x="592" y="160" font-size="13">1</text>
+            <rect x="628" y="140" width="70" height="28"></rect><text x="658" y="160" font-size="13">y</text>
+          </g>
+
+          <rect id="trap" class="box" x="280" y="225" width="185" height="72"></rect>
+          <text x="315" y="255" font-size="19" font-weight="700">缺页故障</text>
+          <text x="308" y="281" class="muted" font-size="14">保存现场，进入内核</text>
+
+          <rect id="alloc" class="box" x="30" y="360" width="185" height="88"></rect>
+          <text x="72" y="392" font-size="19" font-weight="700">找页框</text>
+          <text id="allocText" x="55" y="421" class="muted" font-size="14">空闲页框或置换</text>
+
+          <rect id="disk" class="box" x="292" y="360" width="170" height="88"></rect>
+          <text x="336" y="392" font-size="19" font-weight="700">外存</text>
+          <text id="diskText" x="320" y="421" class="muted" font-size="14">文件区 / 对换区</text>
+
+          <rect id="mem" class="box" x="535" y="338" width="185" height="132"></rect>
+          <text x="596" y="370" font-size="19" font-weight="700">主存</text>
+          <rect id="frame" x="570" y="392" width="115" height="44" class="box"></rect>
+          <text id="frameText" x="592" y="421" font-size="15">空闲页框</text>
+
+          <path id="p1" d="M180 96 H255" class="path"></path>
+          <path id="p2" d="M425 96 H500" class="path"></path>
+          <path id="p3" d="M610 196 C585 232, 520 260, 465 260" class="path"></path>
+          <path id="p4" d="M280 265 C190 280, 125 315, 122 360" class="path"></path>
+          <path id="p5" d="M215 405 H292" class="path"></path>
+          <path id="p6" d="M462 405 H535" class="path"></path>
+          <path id="p7" d="M628 338 C640 245, 690 205, 650 170" class="path"></path>
+          <path id="p8" d="M535 385 C395 505, 170 475, 105 132" class="path"></path>
+        </svg>
+      </section>
+      <aside class="notes">
+        <div id="badge" class="badge">步骤 1 / 8</div>
+        <h2 id="title"></h2>
+        <div id="body"></div>
+      </aside>
+    </main>
+    <footer id="progress"></footer>
+  </div>
+  <script>
+    const steps = [
+      {
+        title: "CPU 发出虚拟地址",
+        body: "<p>进程执行一条访存指令，例如访问页 0 内的某个偏移。进程只提供虚拟地址，并不知道页面是否已经在主存。</p><ul><li>这一步对进程透明。</li><li>真正的检查从地址变换开始。</li></ul>",
+        active: ["cpu"], path: ["p1"]
+      },
+      {
+        title: "硬件执行地址变换",
+        body: "<p>MMU 从虚拟地址中拆出页号和页内偏移，并查 TLB 或页表。</p><ul><li>页命中时，硬件直接得到页框号。</li><li>页不在主存时，硬件不能继续形成有效物理地址。</li></ul>",
+        active: ["mmu"], path: ["p1", "p2"]
+      },
+      {
+        title: "状态位为 0，产生缺页故障",
+        body: "<p>请求页表项显示目标页尚未调入主存。此时产生缺页故障，控制权转入 OS 的缺页处理程序。</p><ul><li>缺页属于异常中的故障。</li><li>处理完成后通常重试原指令。</li></ul>",
+        active: ["pt", "state0"], fault: ["trap"], pathFault: ["p3"]
+      },
+      {
+        title: "OS 保存现场并阻塞进程",
+        body: "<p>缺页处理需要磁盘 I/O，速度远慢于 CPU。OS 会保存现场，把缺页进程阻塞，等待页面调入完成。</p>",
+        active: ["trap"], path: ["p4"]
+      },
+      {
+        title: "为页面准备页框",
+        body: "<p>若有空闲页框，直接分配；若没有空闲页框，就按页面置换算法选择换出页。</p><ul><li>被换出页若修改位为 1，需要写回外存。</li><li>被换出页若修改位为 0，可以不写回。</li></ul>",
+        active: ["alloc"], path: ["p4"], text: { allocText: "空闲页框或置换" }
+      },
+      {
+        title: "从外存读入缺失页面",
+        body: "<p>OS 根据页表项中的外存地址找到页面来源，再启动磁盘 I/O，把页面读入刚准备好的页框。</p><ul><li>可能来自文件区。</li><li>也可能来自对换区。</li></ul>",
+        active: ["disk", "mem"], path: ["p5", "p6"], text: { frameText: "页 0 装入" }
+      },
+      {
+        title: "更新页表和快表",
+        body: "<p>页面进入主存后，OS 修改请求页表项：填入页框号，把状态位置为 1，并按需要更新访问位、修改位和 TLB。</p>",
+        done: ["pt", "state0", "mem"], pathDone: ["p7"], state: "1", text: { state0text: "1", frameText: "页 0 已在主存" }
+      },
+      {
+        title: "重新执行原访存指令",
+        body: "<p>缺页处理完成后，原指令重新执行。这次地址变换可以找到页框号，最终访问目标物理地址。</p><ul><li>进程只感受到指令继续运行。</li><li>换入、置换和页表维护对进程透明。</li></ul>",
+        done: ["cpu", "mmu", "pt", "mem"], pathDone: ["p8", "p1", "p2"], state: "1", text: { state0text: "1", frameText: "页 0 已在主存" }
+      }
+    ];
+    let index = 0;
+    const ids = ["cpu","mmu","pt","state0","trap","alloc","disk","mem","frame"];
+    const paths = ["p1","p2","p3","p4","p5","p6","p7","p8"];
+    const progress = document.getElementById("progress");
+    steps.forEach((_, i) => {
+      const bar = document.createElement("div");
+      bar.className = "step";
+      bar.dataset.i = i;
+      progress.appendChild(bar);
+    });
+    function reset() {
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("active", "fault", "done", "hilite", "bad", "good");
+      });
+      paths.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("activePath", "faultPath", "donePath");
+      });
+      document.getElementById("state0text").textContent = "0";
+      document.getElementById("frameText").textContent = "空闲页框";
+      document.getElementById("allocText").textContent = "空闲页框或置换";
+    }
+    function mark(list, cls) {
+      (list || []).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add(cls);
+      });
+    }
+    function render() {
+      reset();
+      const s = steps[index];
+      document.getElementById("badge").textContent = `步骤 ${index + 1} / ${steps.length}`;
+      document.getElementById("title").textContent = s.title;
+      document.getElementById("body").innerHTML = s.body;
+      mark(s.active, "active");
+      mark(s.fault, "fault");
+      mark(s.done, "done");
+      mark(s.path, "activePath");
+      mark(s.pathFault, "faultPath");
+      mark(s.pathDone, "donePath");
+      if (s.text) Object.entries(s.text).forEach(([id, value]) => document.getElementById(id).textContent = value);
+      if (s.state) document.getElementById("state0text").textContent = s.state;
+      document.getElementById("prev").disabled = index === 0;
+      document.getElementById("next").disabled = index === steps.length - 1;
+      [...progress.children].forEach((el, i) => el.classList.toggle("on", i <= index));
+    }
+    document.getElementById("prev").addEventListener("click", () => { if (index > 0) { index--; render(); } });
+    document.getElementById("next").addEventListener("click", () => { if (index < steps.length - 1) { index++; render(); } });
+    document.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft" && index > 0) { index--; render(); }
+      if (event.key === "ArrowRight" && index < steps.length - 1) { index++; render(); }
+    });
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Circular Queue</title>
+  <desc id="desc">Circular queue positions with front and rear pointers.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { --ink: #17212b; --muted: #5b6876; --line: #334e68; --accent: #0f766e; --warn: #b45309; --cell: #eef6ff; --empty: #f4f6f8; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #e6edf3; --muted: #b8c4cf; --line: #9ccfd8; --accent: #5eead4; --warn: #f6c177; --cell: #16212c; --empty: #1b2430; }
+    }
+    text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: var(--ink); }
+    .muted { fill: var(--muted); font-size: 15px; }
+    .label { font-weight: 700; font-size: 18px; }
+    .cell { fill: var(--cell); stroke: var(--line); stroke-width: 2; }
+    .empty { fill: var(--empty); stroke: var(--line); stroke-width: 2; stroke-dasharray: 5 4; }
+    .ptr { stroke: var(--accent); stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .rear { stroke: var(--warn); marker-end: url(#warnArrow); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--accent)"/></marker>
+    <marker id="warnArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--warn)"/></marker>
+  </defs>
+  <circle cx="380" cy="210" r="134" fill="none" stroke="var(--line)" stroke-width="2"/>
+  <g transform="translate(380 210)">
+    <g transform="rotate(-90) translate(0 -134)"><rect class="cell" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">0</text></g>
+    <g transform="rotate(-45) translate(0 -134)"><rect class="cell" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">1</text></g>
+    <g transform="rotate(0) translate(0 -134)"><rect class="cell" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">2</text></g>
+    <g transform="rotate(45) translate(0 -134)"><rect class="cell" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">3</text></g>
+    <g transform="rotate(90) translate(0 -134)"><rect class="cell" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">4</text></g>
+    <g transform="rotate(135) translate(0 -134)"><rect class="empty" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">5</text></g>
+    <g transform="rotate(180) translate(0 -134)"><rect class="empty" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">6</text></g>
+    <g transform="rotate(225) translate(0 -134)"><rect class="empty" x="-32" y="-28" width="64" height="56" rx="8"/><text class="label" x="-6" y="7">7</text></g>
+  </g>
+  <path class="ptr" d="M214 82 C260 102 292 112 332 116"/>
+  <text class="label" x="150" y="78">front</text>
+  <path class="ptr rear" d="M548 340 C510 306 488 282 472 248"/>
+  <text class="label" x="562" y="356">rear</text>
+  <text class="muted" x="185" y="392">(rear + MaxSize - front) % MaxSize gives the element count when one slot is unused.</text>
+</svg>

@@ -1,0 +1,915 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>CPU Datapath | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="CPU 可以看成两大部分：    部分 作用    数据通路 保存数据、传送数据、加工数据，决定数据能从哪里流到哪里   控制部件 根据指令、状态和时序产生控制信号，决定数据通路在某一时刻怎样工作   数据通路是指令执行过程中数据经过的路径，以及路径上涉及的硬件。  数据通路的基本组成数据通路中的部件可以分成两类。    类型 也叫 是否保存状态 典型部件 理解重点    组合逻辑单元 操作元件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CPU Datapath">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/02/CPU-Datapath/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="CPU 可以看成两大部分：    部分 作用    数据通路 保存数据、传送数据、加工数据，决定数据能从哪里流到哪里   控制部件 根据指令、状态和时序产生控制信号，决定数据通路在某一时刻怎样工作   数据通路是指令执行过程中数据经过的路径，以及路径上涉及的硬件。  数据通路的基本组成数据通路中的部件可以分成两类。    类型 也叫 是否保存状态 典型部件 理解重点    组合逻辑单元 操作元件">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-02T12:50:24.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.001Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="CPU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CPU Datapath",
+  "url": "https://eliano64.github.io/2026/07/02/CPU-Datapath/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-02T12:50:24.000Z",
+  "dateModified": "2026-07-10T07:16:51.001Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/02/CPU-Datapath/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CPU Datapath',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">CPU Datapath</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">CPU Datapath</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-02T12:50:24.000Z" title="发表于 2026-07-02 20:50:24">2026-07-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.001Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.8k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>CPU 可以看成两大部分：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>数据通路</strong></td>
+<td>保存数据、传送数据、加工数据，决定数据能从哪里流到哪里</td>
+</tr>
+<tr>
+<td><strong>控制部件</strong></td>
+<td>根据指令、状态和时序产生控制信号，决定数据通路在某一时刻怎样工作</td>
+</tr>
+</tbody></table>
+<p>数据通路是指令执行过程中数据经过的路径，以及路径上涉及的硬件。</p>
+<p><img src="/assets/cpu-datapath-control-components.svg" alt="CPU 数据通路与控制部件"></p>
+<h1 id="数据通路的基本组成"><a href="#数据通路的基本组成" class="headerlink" title="数据通路的基本组成"></a>数据通路的基本组成</h1><p>数据通路中的部件可以分成两类。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>也叫</th>
+<th>是否保存状态</th>
+<th>典型部件</th>
+<th>理解重点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>组合逻辑单元</td>
+<td>操作元件</td>
+<td>不保存</td>
+<td>ALU、加法器、多路选择器、三态门、译码逻辑</td>
+<td>输入变化后，经过组合逻辑延迟得到输出</td>
+</tr>
+<tr>
+<td>时序逻辑单元</td>
+<td>状态元件</td>
+<td>保存</td>
+<td>PC、IR、MAR、MDR、通用寄存器、暂存寄存器、流水线寄存器</td>
+<td>在时钟边沿写入新状态，并把状态保持到下一次写入</td>
+</tr>
+</tbody></table>
+<p>一条典型的数据通路可以抽象为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">状态元件 -&gt; 组合逻辑 -&gt; 状态元件</span><br></pre></td></tr></table></figure>
+
+<p>例如一次寄存器加法可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">R1, R2 -&gt; ALU -&gt; R3</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>R1/R2/R3</code> 是状态元件，<code>ALU</code> 是组合逻辑单元。若这个操作安排在一个时钟周期内，那么从 <code>R1/R2</code> 输出开始，经过 ALU 运算，到 <code>R3</code> 能在时钟边沿写入为止，整条路径都必须在该周期内完成。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">“一个时钟周期内完成”到底指什么</span></div>
+<div class="callout-content"><p>对数据通路来说，一个时钟周期内完成的是从一个状态元件出发，经过若干组合逻辑，再写入另一个状态元件的一段路径。完整指令是否一个周期完成，取决于采用单周期、多周期还是流水线数据通路。</p>
+</div>
+</div>
+# 数据通路的两种分类
+
+<p>数据通路可以从两个维度分类：<strong>内部连接方式</strong>和<strong>时序组织方式</strong>。</p>
+<p><img src="/assets/cpu-datapath-classification.svg" alt="数据通路的两种分类维度"></p>
+<table>
+<thead>
+<tr>
+<th>分类维度</th>
+<th>关心的问题</th>
+<th>类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内部连接方式</td>
+<td>部件之间怎样连线，线路是否共享</td>
+<td>总线式数据通路、专用数据通路</td>
+</tr>
+<tr>
+<td>时序组织方式</td>
+<td>一条指令怎样占用时钟周期</td>
+<td>单周期数据通路、多周期数据通路、流水线数据通路</td>
+</tr>
+</tbody></table>
+<ul>
+<li>内部连接方式影响一个周期内能同时发生多少数据传送。</li>
+<li>时序组织方式决定一条指令需要几个周期、哪些寄存器必须保存中间状态。</li>
+</ul>
+<h1 id="按内部连接方式分类"><a href="#按内部连接方式分类" class="headerlink" title="按内部连接方式分类"></a>按内部连接方式分类</h1><p><img src="/assets/cpu-datapath-connection-types.svg" alt="按内部连接方式看数据通路"></p>
+<h2 id="总线式数据通路"><a href="#总线式数据通路" class="headerlink" title="总线式数据通路"></a>总线式数据通路</h2><p>总线式数据通路用公共通路连接多个部件。总线可以是一条，也可以是多条。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>连接方式</th>
+<th>线路占用</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单总线结构</td>
+<td>多个寄存器、ALU、MAR、MDR 等共享一条 CPU 内部总线</td>
+<td>同一时刻通常只能有一个源部件向总线输出</td>
+<td>结构简单、硬件量少，但容易产生总线占用冲突，很多操作要拆成多个节拍</td>
+</tr>
+<tr>
+<td>多总线结构</td>
+<td>使用两条或多条内部总线</td>
+<td>可支持多个源操作数同时送往 ALU，或同时进行更多传送</td>
+<td>并行性更好，减少暂存和节拍数，但硬件更复杂</td>
+</tr>
+</tbody></table>
+<p>单总线结构同一时刻只允许一个部件向总线输出。如果 <code>R0out</code> 和 <code>R1out</code> 同时有效，两个寄存器都试图驱动同一条总线，就会产生冲突。因此单总线的控制信号通常遵守：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">一个时刻：一个 out 信号 + 一个或多个兼容的 in 信号</span><br></pre></td></tr></table></figure>
+
+<h2 id="专用数据通路"><a href="#专用数据通路" class="headerlink" title="专用数据通路"></a>专用数据通路</h2><p>专用数据通路按常用的数据和地址流动方向设置专门连线。它不依赖一条公共总线反复搬运数据，而是让常用路径直接连接。这些存在的多条路径可以在同一周期内并行工作。</p>
+<table>
+<thead>
+<tr>
+<th>对比点</th>
+<th>总线式数据通路</th>
+<th>专用数据通路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线路</td>
+<td>多个部件共享总线</td>
+<td>常用路径有专门连线</td>
+</tr>
+<tr>
+<td>数据流向</td>
+<td>要看当前总线由谁驱动、谁接收</td>
+<td>要沿图中已有箭头判断</td>
+</tr>
+<tr>
+<td>硬件代价</td>
+<td>较低</td>
+<td>较高</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>单总线并行性低，多总线较好</td>
+<td>通常更高</td>
+</tr>
+<tr>
+<td>控制重点</td>
+<td><code>out/in</code> 信号和总线冲突</td>
+<td>多路选择、控制线和路径选择</td>
+</tr>
+</tbody></table>
+<p>专用结构中常省略多路选择器，只用箭头表示数据可以沿哪个方向传送。若多个来源可能进入同一个部件，实际硬件中会有 MUX 或三态门，控制信号负责选择其中一路。</p>
+<h1 id="按时序组织方式分类"><a href="#按时序组织方式分类" class="headerlink" title="按时序组织方式分类"></a>按时序组织方式分类</h1><p>时序组织方式回答的是：一条指令怎样占用时钟周期。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>一条指令耗时</th>
+<th>数据通路特点</th>
+<th>寄存器使用特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单周期数据通路</td>
+<td>每条指令都在一个时钟周期内完成</td>
+<td>一个周期内要完成取指、译码、执行、访存、写回中该指令需要的全部工作；周期长度按最慢指令设置</td>
+<td>中间结果通常不跨周期保存；典型单周期数据通路常不设置跨周期保存指令的 IR</td>
+</tr>
+<tr>
+<td>多周期数据通路</td>
+<td>一条指令拆成多个时钟周期完成</td>
+<td>每个周期只完成部分工作；同一硬件可在不同周期复用</td>
+<td>必须用 IR、MDR、A&#x2F;B、ALUOut 等寄存器保存跨周期信息</td>
+</tr>
+<tr>
+<td>流水线数据通路</td>
+<td>一条指令跨多个流水段，多条指令重叠执行</td>
+<td>每个阶段之间加入流水线寄存器；理想情况下每个周期完成一条指令</td>
+<td>需要 IF&#x2F;ID、ID&#x2F;EX、EX&#x2F;MEM、MEM&#x2F;WB 等流水线寄存器保存阶段间信息</td>
+</tr>
+</tbody></table>
+<h2 id="单周期数据通路"><a href="#单周期数据通路" class="headerlink" title="单周期数据通路"></a>单周期数据通路</h2><p>单周期数据通路要求一条指令的所有必要工作都放在一个时钟周期内完成。典型路径可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PC -&gt; 指令存储器 -&gt; 控制逻辑/寄存器堆 -&gt; ALU -&gt; 数据存储器 -&gt; 寄存器堆</span><br></pre></td></tr></table></figure>
+
+<p>这条路径很长，所以时钟周期必须足够长，以保证最慢指令也能在一个周期内完成。短指令虽然不需要完整路径，也必须等待这个长周期结束。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">单周期数据通路不使用 IR</span></div>
+<div class="callout-content"><p>典型单周期数据通路通常不使用跨周期保存指令的 IR。原因是指令在同一个周期内被取出、译码并驱动后续控制，不需要保存到下一个周期继续使用。<br>多周期和流水线数据通路则不同，它们需要保存阶段之间的信息，因此通常需要 IR 或流水线寄存器。</p>
+</div>
+</div>
+单周期数据通路常与**专用结构数据通路**联系在一起。因为一条指令要在一个周期内完成，如果大量依赖单总线反复传送，就会被总线占用限制住，无法在一个周期内完成完整路径。
+
+<h2 id="多周期数据通路"><a href="#多周期数据通路" class="headerlink" title="多周期数据通路"></a>多周期数据通路</h2><p>多周期数据通路把一条指令拆成多个时钟周期。每个周期只完成一段数据传送或运算，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">第 1 周期：取指</span><br><span class="line">第 2 周期：译码并读寄存器</span><br><span class="line">第 3 周期：执行或计算地址</span><br><span class="line">第 4 周期：访存</span><br><span class="line">第 5 周期：写回</span><br></pre></td></tr></table></figure>
+
+<p>不是所有指令都要经历全部周期。寄存器-寄存器运算可能不需要访存周期，分支指令可能不需要写回周期。</p>
+<p>多周期数据通路的关键是<strong>硬件复用</strong>。同一个 ALU 既可以在取指阶段计算 <code>PC + 1</code>，也可以在执行阶段做算术逻辑运算，还可以在访存前计算有效地址。为了复用硬件，必须用额外寄存器保存中间状态。</p>
+<table>
+<thead>
+<tr>
+<th>寄存器</th>
+<th>保存内容</th>
+<th>为什么需要</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IR</td>
+<td>当前指令</td>
+<td>取指结束后，后续周期仍要使用操作码、寄存器号、地址字段</td>
+</tr>
+<tr>
+<td>MDR</td>
+<td>主存读出的数据</td>
+<td>访存结果可能要到后续周期才写回</td>
+</tr>
+<tr>
+<td>A&#x2F;B</td>
+<td>从寄存器堆读出的两个操作数</td>
+<td>后续周期 ALU 才使用</td>
+</tr>
+<tr>
+<td>ALUOut</td>
+<td>ALU 输出</td>
+<td>运算结果或有效地址可能要在下一周期继续使用</td>
+</tr>
+</tbody></table>
+<p>多周期数据通路常与<strong>总线式结构</strong>联系在一起，尤其是单总线或较少总线结构。因为每个周期只做一部分工作，硬件可以分时复用。</p>
+<h2 id="流水线数据通路"><a href="#流水线数据通路" class="headerlink" title="流水线数据通路"></a>流水线数据通路</h2><p>流水线数据通路把指令执行分成若干阶段。常见五段为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IF -&gt; ID -&gt; EX -&gt; MEM -&gt; WB</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>主要工作</th>
+<th>阶段间需要保存什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IF</td>
+<td>取指，更新 PC</td>
+<td>取出的指令、下一条 PC</td>
+</tr>
+<tr>
+<td>ID</td>
+<td>译码，读寄存器</td>
+<td>操作数、控制信号、立即数、寄存器号</td>
+</tr>
+<tr>
+<td>EX</td>
+<td>ALU 运算或计算地址</td>
+<td>ALU 结果、分支判断、目的寄存器信息</td>
+</tr>
+<tr>
+<td>MEM</td>
+<td>访问数据存储器</td>
+<td>读出的数据或待写回的 ALU 结果</td>
+</tr>
+<tr>
+<td>WB</td>
+<td>写回寄存器</td>
+<td>写回数据和目的寄存器号</td>
+</tr>
+</tbody></table>
+<p>流水线数据通路的特点是：单条指令仍然跨多个阶段，但不同指令可以同时处在不同阶段。为了让各阶段互不混乱，阶段之间必须有流水线寄存器：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IF/ID, ID/EX, EX/MEM, MEM/WB</span><br></pre></td></tr></table></figure>
+
+<p>流水线数据通路通常是在专用数据通路基础上加入流水线寄存器。它追求吞吐率，而不是让单条指令的执行时间变短。</p>
+<h1 id="两种分类维度的联系"><a href="#两种分类维度的联系" class="headerlink" title="两种分类维度的联系"></a>两种分类维度的联系</h1><table>
+<thead>
+<tr>
+<th>常见搭配</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单周期数据通路常使用专用结构数据通路</td>
+<td>一条指令必须在一个周期内完成，需要尽量让必要路径同时可用</td>
+</tr>
+<tr>
+<td>多周期数据通路常使用总线式或共享硬件结构</td>
+<td>指令拆成多个周期后，可以用时间换硬件，复用总线和 ALU</td>
+</tr>
+<tr>
+<td>流水线数据通路常使用专用通路并加入流水线寄存器</td>
+<td>多个阶段要并行工作，需要各阶段有相对独立的数据路径和阶段寄存器</td>
+</tr>
+</tbody></table>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">判断题常见切入点</span></div>
+<div class="callout-content"><ul>
+<li>若问“完整指令是否一定一个时钟周期完成”，只对单周期数据通路成立。</li>
+<li>若问“某个寄存器传送或 ALU 运算是否能在一个时钟周期内完成”，要看这是不是一个状态元件到状态元件的组合路径。</li>
+<li>若问“为什么单周期数据通路通常不使用 IR”，核心是指令不需要跨周期保存。</li>
+<li>若问“为什么多周期数据通路需要 IR&#x2F;MDR&#x2F;ALUOut”，核心是信息要跨周期保存。</li>
+</ul>
+</div>
+</div>
+# 单总线数据通路分析
+
+<p><img src="/assets/single-bus-datapath.svg" alt="CPU 内部单总线数据通路"></p>
+<p>每一个节拍中：</p>
+<ol>
+<li>哪个部件把数据送上总线；</li>
+<li>哪个部件从总线接收数据；</li>
+<li>ALU 是否需要输入暂存；</li>
+<li>主存访问是否需要 MAR&#x2F;MDR；</li>
+<li>当前节拍是否会发生总线冲突。</li>
+</ol>
+<h2 id="基本传送"><a href="#基本传送" class="headerlink" title="基本传送"></a>基本传送</h2><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>数据流向</th>
+<th>控制信号</th>
+<th>线路占用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PC 送 MAR</td>
+<td><code>(PC) -&gt; Bus -&gt; MAR</code></td>
+<td><code>PCout, MARin</code></td>
+<td>PC 驱动总线，MAR 接收</td>
+</tr>
+<tr>
+<td>MDR 送 IR</td>
+<td><code>(MDR) -&gt; Bus -&gt; IR</code></td>
+<td><code>MDRout, IRin</code></td>
+<td>MDR 驱动总线，IR 接收</td>
+</tr>
+<tr>
+<td>R1 送 Y</td>
+<td><code>(R1) -&gt; Bus -&gt; Y</code></td>
+<td><code>R1out, Yin</code></td>
+<td>R1 驱动总线，Y 接收</td>
+</tr>
+<tr>
+<td>Z 送 ACC</td>
+<td><code>(Z) -&gt; Bus -&gt; ACC</code></td>
+<td><code>Zout, ACCin</code></td>
+<td>Z 驱动总线，ACC 接收</td>
+</tr>
+</tbody></table>
+<p>如果一个操作要两个源操作数同时进入 ALU，单总线不能让两个寄存器同时输出到总线。常见做法是先把一个操作数送入暂存寄存器 <code>Y</code>，再让另一个操作数通过总线送到 ALU 输入端。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">R1 -&gt; Bus -&gt; Y</span><br><span class="line">R2 -&gt; Bus, Y -&gt; ALU -&gt; Z</span><br><span class="line">Z -&gt; Bus -&gt; R3</span><br></pre></td></tr></table></figure>
+
+<p>这里 <code>Y</code> 和 <code>Z</code> 的作用就是解决单总线下 ALU 输入、输出的暂存问题。</p>
+<h2 id="例：ADD-R0-R1"><a href="#例：ADD-R0-R1" class="headerlink" title="例：ADD (R0), R1"></a>例：<code>ADD (R0), R1</code></h2><p>设指令为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ADD (R0), R1</span><br></pre></td></tr></table></figure>
+
+<p>其功能为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">((R0)) + (R1) -&gt; (R0)</span><br></pre></td></tr></table></figure>
+
+<p>含义是：<code>R0</code> 中保存一个主存地址，被加数在该主存单元中；<code>R1</code> 保存另一个加数；运算结果写回 <code>R0</code> 指向的主存单元。</p>
+<p>这条指令在单总线结构下要关注三点：</p>
+<ol>
+<li>主存地址要进入 <code>MAR</code>。</li>
+<li>主存读出的操作数要暂存在 <code>MDR</code>，再送到 <code>Y</code>。</li>
+<li>ALU 运算结果要先进入 <code>Z</code> 或 <code>MDR</code>，最后写回主存。</li>
+</ol>
+<h2 id="取指周期"><a href="#取指周期" class="headerlink" title="取指周期"></a>取指周期</h2><table>
+<thead>
+<tr>
+<th>时序</th>
+<th>微操作</th>
+<th>有效控制信号</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>(PC) -&gt; Bus -&gt; MAR</code></td>
+<td><code>PCout, MARin</code></td>
+<td>用 PC 给出当前指令地址</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>1 -&gt; R</code>，<code>M(MAR) -&gt; MDR</code></td>
+<td><code>MemR, MDRinE</code></td>
+<td>主存读，指令进入 MDR</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>(MDR) -&gt; Bus -&gt; IR</code></td>
+<td><code>MDRout, IRin</code></td>
+<td>指令送入 IR</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>(PC) + 1 -&gt; PC</code></td>
+<td><code>PCadd, PCin</code></td>
+<td>形成下一条指令地址</td>
+</tr>
+</tbody></table>
+<p>有些数据通路会把 <code>(PC)+1 -&gt; PC</code> 与主存读安排在同一节拍，这取决于是否有独立加法器和相应路径。分析题目时，应以给定数据通路为准。</p>
+<h2 id="间址或取数周期"><a href="#间址或取数周期" class="headerlink" title="间址或取数周期"></a>间址或取数周期</h2><p>这里 <code>(R0)</code> 已经是操作数所在主存单元的地址，因此要用 <code>R0</code> 访问主存并取出被加数。</p>
+<table>
+<thead>
+<tr>
+<th>时序</th>
+<th>微操作</th>
+<th>有效控制信号</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>(R0) -&gt; Bus -&gt; MAR</code></td>
+<td><code>R0out, MARin</code></td>
+<td>把操作数地址送入 MAR</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>1 -&gt; R</code>，<code>M(MAR) -&gt; MDR</code></td>
+<td><code>MemR, MDRinE</code></td>
+<td>从主存读出被加数</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>(MDR) -&gt; Bus -&gt; Y</code></td>
+<td><code>MDRout, Yin</code></td>
+<td>被加数进入 ALU 暂存输入</td>
+</tr>
+</tbody></table>
+<p><code>Y</code> 的作用是保存一个 ALU 输入。否则下一步 <code>R1</code> 输出到总线时，主存读出的被加数就没有稳定位置可用。</p>
+<h2 id="执行与写回"><a href="#执行与写回" class="headerlink" title="执行与写回"></a>执行与写回</h2><table>
+<thead>
+<tr>
+<th>时序</th>
+<th>微操作</th>
+<th>有效控制信号</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><code>(R1) -&gt; Bus</code>，<code>(Y) + Bus -&gt; Z</code></td>
+<td><code>R1out, Add, Zin</code></td>
+<td>R1 通过总线作为另一个 ALU 输入，结果进入 Z</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>(Z) -&gt; Bus -&gt; MDR</code></td>
+<td><code>Zout, MDRin</code></td>
+<td>结果送入 MDR，准备写主存</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>1 -&gt; W</code>，<code>(MDR) -&gt; M(MAR)</code></td>
+<td><code>MemW, MDRoutE</code></td>
+<td>按 MAR 中保存的地址写回结果</td>
+</tr>
+</tbody></table>
+<p>注意：执行与写回阶段仍然需要前面保存在 <code>MAR</code> 中的地址。如果中间又用 <code>MAR</code> 做了别的访存，写回地址就会丢失；这也是分析寄存器使用情况时必须检查的点。</p>
+<h1 id="专用结构的数据通路分析"><a href="#专用结构的数据通路分析" class="headerlink" title="专用结构的数据通路分析"></a>专用结构的数据通路分析</h1><p><img src="/assets/dedicated-datapath-analysis.svg" alt="专用结构数据通路分析"></p>
+<p>专用结构的数据通路分析，第一步先看图中箭头。箭头说明某条数据通路是否存在，控制信号说明这条通路什么时候接通。</p>
+<table>
+<thead>
+<tr>
+<th>分析对象</th>
+<th>要问的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线路占用</td>
+<td>这条专用路径当前是否被使用？若多条路径进入同一部件，MUX 选择哪一路？</td>
+</tr>
+<tr>
+<td>数据流向</td>
+<td>数据沿图中哪几条箭头流动？有没有反向箭头？</td>
+</tr>
+<tr>
+<td>寄存器使用</td>
+<td>哪些寄存器保存地址、指令、数据或运算结果？是否需要跨周期保存？</td>
+</tr>
+<tr>
+<td>耗时</td>
+<td>这些路径能否在同一节拍并行？是否涉及主存访问而需要等待存储周期？</td>
+</tr>
+</tbody></table>
+<h2 id="控制信号"><a href="#控制信号" class="headerlink" title="控制信号"></a>控制信号</h2><p>在专用结构图中，<code>C0</code>、<code>C1</code>、<code>C2</code> 这类符号只是<strong>特定某图中某条路径或某个动作的编号</strong>。因此不能说<code>C0</code> 一定代表什么，必须看图标注。</p>
+<p>以取指周期为例，可以写成：</p>
+<table>
+<thead>
+<tr>
+<th>微操作</th>
+<th>控制信号含义</th>
+<th>数据流向</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>(PC) -&gt; MAR</code></td>
+<td><code>C0</code> 有效</td>
+<td>PC 中的指令地址送入 MAR</td>
+</tr>
+<tr>
+<td><code>M(MAR) -&gt; 主存读路径</code></td>
+<td><code>C1</code> 有效</td>
+<td>MAR 给出主存地址</td>
+</tr>
+<tr>
+<td><code>1 -&gt; R</code></td>
+<td>读控制有效</td>
+<td>CU 向主存发出读命令</td>
+</tr>
+<tr>
+<td><code>M(MAR) -&gt; MDR</code></td>
+<td><code>C2</code> 有效</td>
+<td>主存读出的指令进入 MDR</td>
+</tr>
+<tr>
+<td><code>(MDR) -&gt; IR</code></td>
+<td><code>C3</code> 有效</td>
+<td>指令进入 IR</td>
+</tr>
+<tr>
+<td><code>(PC) + 1 -&gt; PC</code></td>
+<td>独立加法路径或对应控制线有效</td>
+<td>PC 形成下一条指令地址</td>
+</tr>
+<tr>
+<td><code>Op(IR) -&gt; CU</code></td>
+<td><code>C4</code> 有效</td>
+<td>操作码送控制部件译码</td>
+</tr>
+</tbody></table>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">不要把编号当成通用规则</span></div>
+<div class="callout-content"><p>某张图中 <code>C0</code> 可以表示 <code>(PC)-&gt;MAR</code>，另一张图中 <code>C0</code> 可能表示别的路径。编号只在当前图中有效。</p>
+</div>
+</div>
+## 和单总线结构的不同写法
+
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>单总线结构</th>
+<th>专用结构</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>写法重点</td>
+<td><code>源部件 -&gt; Bus -&gt; 目的部件</code></td>
+<td><code>源部件 -&gt; 目的部件</code>，必要时写经过 ALU、MUX、主存</td>
+</tr>
+<tr>
+<td>控制信号</td>
+<td>常写成 <code>PCout, MARin</code></td>
+<td>常写成 <code>C0, C1, ...</code> 或题图给出的控制线</td>
+</tr>
+<tr>
+<td>冲突来源</td>
+<td>多个部件同时驱动同一总线</td>
+<td>多个来源竞争同一个 MUX 输入、同一部件同一端口或同一存储器端口</td>
+</tr>
+<tr>
+<td>并行性</td>
+<td>单总线并行性较低</td>
+<td>图上不同独立路径可在同一节拍并行</td>
+</tr>
+<tr>
+<td>判断依据</td>
+<td>谁输出到总线，谁从总线接收</td>
+<td>图中是否有箭头，控制信号是否接通该路径</td>
+</tr>
+</tbody></table>
+<p>例如 <code>MDR -&gt; IR</code> 在单总线结构中常写为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(MDR) -&gt; Bus -&gt; IR</span><br></pre></td></tr></table></figure>
+
+<p>在专用结构中，如果图上有 <code>MDR -&gt; IR</code> 的直接箭头，则写为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(MDR) -&gt; IR</span><br></pre></td></tr></table></figure>
+
+<p>这不是省略了总线，而是两种数据通路结构不同。</p>
+<h2 id="存取主存的数据通路"><a href="#存取主存的数据通路" class="headerlink" title="存取主存的数据通路"></a>存取主存的数据通路</h2><p>主存访问一般离不开 <code>MAR</code> 和 <code>MDR</code>：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>数据通路</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读主存</td>
+<td><code>地址 -&gt; MAR</code>，<code>M(MAR) -&gt; MDR</code></td>
+<td>MAR 给地址，MDR 接收主存数据</td>
+</tr>
+<tr>
+<td>写主存</td>
+<td><code>地址 -&gt; MAR</code>，<code>数据 -&gt; MDR</code>，<code>(MDR) -&gt; M(MAR)</code></td>
+<td>MAR 给地址，MDR 给待写数据</td>
+</tr>
+</tbody></table>
+<p>如果题图中运算器和主存之间通过 <code>MDR</code>、<code>ALU</code>、<code>ACC</code> 相连，则常见路径为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">取数：M(MAR) -&gt; MDR -&gt; ALU -&gt; ACC</span><br><span class="line">存数：ACC -&gt; MDR -&gt; M(MAR)</span><br></pre></td></tr></table></figure>
+
+<p>这里 <code>ALU</code> 可能只是作为数据通过的组合通路，也可能执行加法、逻辑运算等具体操作。是否需要 ALU，取决于图中 <code>MDR</code> 到 <code>ACC</code> 是否必须经过 ALU。</p>
+<h2 id="例：LDA-X、ADD-Y、STA-Z"><a href="#例：LDA-X、ADD-Y、STA-Z" class="headerlink" title="例：LDA X、ADD Y、STA Z"></a>例：<code>LDA X</code>、<code>ADD Y</code>、<code>STA Z</code></h2><p>设 <code>X/Y/Z</code> 都是主存地址，且图中存在 <code>MDR -&gt; ALU -&gt; ACC</code>、<code>ACC -&gt; MDR</code> 等路径。</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>功能</th>
+<th>数据通路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>LDA X</code></td>
+<td><code>(X) -&gt; ACC</code></td>
+<td><code>X -&gt; MAR</code>，<code>M(MAR) -&gt; MDR</code>，<code>(MDR) -&gt; ALU -&gt; ACC</code></td>
+</tr>
+<tr>
+<td><code>ADD Y</code></td>
+<td><code>(ACC) + (Y) -&gt; ACC</code></td>
+<td><code>Y -&gt; MAR</code>，<code>M(MAR) -&gt; MDR</code>，<code>(MDR) -&gt; ALU</code>，<code>(ACC) -&gt; ALU</code>，<code>ALU -&gt; ACC</code></td>
+</tr>
+<tr>
+<td><code>STA Z</code></td>
+<td><code>(ACC) -&gt; Z</code></td>
+<td><code>Z -&gt; MAR</code>，<code>(ACC) -&gt; MDR</code>，<code>(MDR) -&gt; M(MAR)</code></td>
+</tr>
+</tbody></table>
+<p>先确定地址怎么到 <code>MAR</code>，再确定数据怎么经过 <code>MDR</code>，最后看是否经过 <code>ALU/ACC</code>。不要因为熟悉单总线写法，就在专用结构中凭空加 <code>Bus</code>。</p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>数据通路题可以按下面顺序分析：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">明确指令功能</span><br><span class="line">-&gt; 判断采用哪种连接方式和时序组织</span><br><span class="line">-&gt; 划分时钟周期或节拍</span><br><span class="line">-&gt; 每一步写出数据流向</span><br><span class="line">-&gt; 标出输出、输入、ALU、访存控制信号</span><br><span class="line">-&gt; 检查线路占用和跨周期寄存器</span><br></pre></td></tr></table></figure>
+
+<p>最容易混淆的是两个维度：</p>
+<table>
+<thead>
+<tr>
+<th>不要混淆</th>
+<th>正确理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单总线、专用数据通路</td>
+<td>这是内部连接方式</td>
+</tr>
+<tr>
+<td>单周期、多周期、流水线数据通路</td>
+<td>这是时序组织方式</td>
+</tr>
+<tr>
+<td>“一条指令一个周期”</td>
+<td>只对应单周期数据通路</td>
+</tr>
+<tr>
+<td>“一个微操作一个周期内完成”</td>
+<td>要看这一步是否能构成状态元件到状态元件的有效路径</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/02/CPU-Datapath/">https://eliano64.github.io/2026/07/02/CPU-Datapath/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/02/CPU-Structure-And-Instruction-Cycle/" title="CPU Structure And Instruction Cycle"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">CPU Structure And Instruction Cycle</div></div><div class="info-2"><div class="info-item-1">CPU 的功能   功能 含义    指令控制 完成取指令、分析指令、执行指令，实现程序的顺序控制   操作控制 产生并发出完成指令所需的操作信号，控制相关部件动作   时间控制 按时间顺序提供控制信号，使各操作在正确节拍发生   数据加工 对数据进行算术运算和逻辑运算   中断处理 处理运行中的异常情况和特殊请求    Summary 控制器协调指令序列，运算器加工数据。   ![CPU 基本结构](/assets/cpu-basic-structure.svg)  运算器运算器负责对数据进行加工。    部件 作用    ALU 执行算术运算和逻辑运算   通用寄存器组 保存操作数、目的操作数、中间结果和各种地址信息   暂存寄存器 暂存从主存读来的数据，避免破坏通用寄存器原有内容   ACC 累加寄存器，用于暂时保存 ALU 运算结果   PSW 程序状态字，保存运算或测试形成的状态信息   移位器 对运算结果执行移位   计数器 控制乘除运算等操作的步数    机器字长 机器字长通常指 CPU 一次能直接处理的二进制数据位数，常与通用寄存器位数、ALU 位数、CPU...</div></div></div></a><a class="pagination-related" href="/2026/07/02/Hardwired-Control-Unit/" title="Hardwired Control Unit"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hardwired Control Unit</div></div><div class="info-2"><div class="info-item-1">硬布线控制器用组合逻辑电路直接产生控制信号。 它的核心思想是： 1指令操作码 + 当前工作周期 + 节拍信号 + 状态条件 -&gt; 微操作控制信号  每个微命令对应一个或一组控制信号；控制信号接通数据通路后，就完成对应的微操作。  例如，要完成： 1(PC) -&gt; MAR  在单总线结构中可能需要让： 1PCout, MARin  同时有效。控制器发出的不是“文字命令”，而是让这些控制线在特定节拍为有效电平。 微操作、微命令和控制信号   概念 含义 例子    微操作 数据通路中最基本的操作 (PC) -&gt; MAR   微命令 控制器发出的命令 使 PCout、MARin...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%BB%84%E6%88%90"><span class="toc-text">数据通路的基本组成</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%89%E5%86%85%E9%83%A8%E8%BF%9E%E6%8E%A5%E6%96%B9%E5%BC%8F%E5%88%86%E7%B1%BB"><span class="toc-text">按内部连接方式分类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF%E5%BC%8F%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF"><span class="toc-text">总线式数据通路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%93%E7%94%A8%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF"><span class="toc-text">专用数据通路</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%89%E6%97%B6%E5%BA%8F%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F%E5%88%86%E7%B1%BB"><span class="toc-text">按时序组织方式分类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E5%91%A8%E6%9C%9F%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF"><span class="toc-text">单周期数据通路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E5%91%A8%E6%9C%9F%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF"><span class="toc-text">多周期数据通路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF"><span class="toc-text">流水线数据通路</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%A4%E7%A7%8D%E5%88%86%E7%B1%BB%E7%BB%B4%E5%BA%A6%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc-text">两种分类维度的联系</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E4%BC%A0%E9%80%81"><span class="toc-text">基本传送</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%8B%EF%BC%9AADD-R0-R1"><span class="toc-text">例：ADD (R0), R1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%96%E6%8C%87%E5%91%A8%E6%9C%9F"><span class="toc-text">取指周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%B4%E5%9D%80%E6%88%96%E5%8F%96%E6%95%B0%E5%91%A8%E6%9C%9F"><span class="toc-text">间址或取数周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E4%B8%8E%E5%86%99%E5%9B%9E"><span class="toc-text">执行与写回</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%93%E7%94%A8%E7%BB%93%E6%9E%84%E7%9A%84%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF%E5%88%86%E6%9E%90"><span class="toc-text">专用结构的数据通路分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E4%BF%A1%E5%8F%B7"><span class="toc-text">控制信号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E5%8F%96%E4%B8%BB%E5%AD%98%E7%9A%84%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF"><span class="toc-text">存取主存的数据通路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%8B%EF%BC%9ALDA-X%E3%80%81ADD-Y%E3%80%81STA-Z"><span class="toc-text">例：LDA X、ADD Y、STA Z</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

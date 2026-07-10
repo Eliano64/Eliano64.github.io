@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Microprogrammed Control Flow</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --panel-2: #eef2ff;
+      --line: #334155;
+      --muted: #64748b;
+      --text: #0f172a;
+      --accent: #2563eb;
+      --accent-2: #dc2626;
+      --active-fill: #dbeafe;
+      --active-stroke: #2563eb;
+      --pulse: rgba(37, 99, 235, .18);
+      --shadow: rgba(15, 23, 42, .12);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --panel-2: #1e1b4b;
+        --line: #cbd5e1;
+        --muted: #94a3b8;
+        --text: #e5e7eb;
+        --accent: #93c5fd;
+        --accent-2: #fca5a5;
+        --active-fill: #1d4ed8;
+        --active-stroke: #bfdbfe;
+        --pulse: rgba(147, 197, 253, .18);
+        --shadow: rgba(0, 0, 0, .35);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+
+    .deck {
+      width: min(1180px, 100vw);
+      margin: 0 auto;
+      padding: 18px 22px 20px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      min-width: 42px;
+      height: 34px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      font: 700 16px system-ui, sans-serif;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--accent); }
+
+    .counter {
+      min-width: 70px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .canvas {
+      border: 1px solid color-mix(in srgb, var(--line), transparent 60%);
+      border-radius: 8px;
+      background: var(--bg);
+      box-shadow: 0 8px 26px var(--shadow);
+      overflow: hidden;
+    }
+
+    .side {
+      border: 1px solid color-mix(in srgb, var(--line), transparent 60%);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 16px 16px 14px;
+      min-height: 0;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .formula {
+      border-left: 4px solid var(--accent);
+      padding: 8px 10px;
+      margin: 10px 0 12px;
+      background: color-mix(in srgb, var(--active-fill), transparent 68%);
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 15px;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .desc {
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      margin-top: 12px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .frame {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 2.2;
+      stroke-dasharray: 10 9;
+    }
+
+    .box, .reg, .cm, .field-op, .field-rest {
+      stroke: var(--line);
+      stroke-width: 2.4;
+      rx: 4;
+      transition: fill .2s ease, stroke .2s ease, filter .2s ease;
+    }
+
+    .box, .field-rest { fill: var(--panel); }
+    .reg, .field-op { fill: var(--panel-2); }
+    .cm { fill: color-mix(in srgb, #ecfeff, var(--bg) 12%); }
+
+    @media (prefers-color-scheme: dark) {
+      .cm { fill: #0f2f2e; }
+    }
+
+    .wire, .wire-noarrow {
+      stroke: var(--line);
+      stroke-width: 2.7;
+      fill: none;
+      transition: stroke .2s ease, stroke-width .2s ease, opacity .2s ease;
+    }
+
+    .wire { marker-end: url(#arrow); }
+    .arrowhead { fill: var(--line); transition: fill .2s ease; }
+
+    .svg-text {
+      fill: var(--text);
+      font: 24px "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+
+    .svg-label {
+      fill: var(--text);
+      font: 22px "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+
+    .latin {
+      fill: var(--text);
+      font: 23px Arial, sans-serif;
+    }
+
+    .muted {
+      fill: var(--muted);
+      font: 17px "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+
+    .node.dim, .path.dim { opacity: .35; }
+
+    .node.active rect,
+    .node.active .box,
+    .node.active .reg,
+    .node.active .cm,
+    .node.active .field-op,
+    .node.active .field-rest {
+      fill: var(--active-fill);
+      stroke: var(--active-stroke);
+      filter: drop-shadow(0 6px 12px var(--pulse));
+    }
+
+    .path.active {
+      stroke: var(--active-stroke);
+      stroke-width: 4.8;
+      opacity: 1;
+    }
+
+    .path.active + .path-label,
+    .node.active .svg-text,
+    .node.active .latin,
+    .node.active .svg-label {
+      fill: var(--accent);
+      font-weight: 700;
+    }
+
+    .microcmd.active {
+      stroke: var(--accent-2);
+      stroke-width: 4.6;
+    }
+
+    .microcmd-label.active {
+      fill: var(--accent-2);
+      font-weight: 700;
+    }
+
+    @media (max-width: 880px) {
+      .stage { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; }
+      .controls { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <div class="topbar">
+      <div>
+        <div class="title">微程序控制器工作过程</div>
+        <div class="subtitle">同一张结构图上逐步观察微指令如何被取出、执行，并形成下一条微指令地址。</div>
+      </div>
+      <div class="controls" aria-label="slide controls">
+        <button type="button" id="prev" aria-label="previous">‹</button>
+        <div class="counter" id="counter">1 / 7</div>
+        <button type="button" id="next" aria-label="next">›</button>
+      </div>
+    </div>
+
+    <section class="stage">
+      <div class="canvas">
+        <svg viewBox="0 0 1180 640" role="img" aria-labelledby="svgTitle svgDesc">
+          <title id="svgTitle">微程序控制器工作过程图</title>
+          <desc id="svgDesc">微程序控制器中微程序计数器、控制存储器、微指令寄存器和微地址形成部件之间的数据流动。</desc>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path class="arrowhead" d="M 0 0 L 10 5 L 0 10 z"></path>
+            </marker>
+          </defs>
+
+          <rect class="frame" x="55" y="170" width="1060" height="425"></rect>
+
+          <g class="node" data-key="ir">
+            <text class="svg-label" x="745" y="34" text-anchor="middle">来自主存</text>
+            <rect class="field-op" x="640" y="84" width="90" height="62"></rect>
+            <rect class="field-rest" x="730" y="84" width="170" height="62"></rect>
+            <text class="latin" x="685" y="124" text-anchor="middle">OP</text>
+            <text class="latin" x="933" y="124" text-anchor="middle">IR</text>
+          </g>
+
+          <path class="path wire" data-key="mem-ir" d="M745 44 L745 83"></path>
+          <path class="path wire" data-key="op-maf" d="M685 146 L685 193"></path>
+
+          <g class="node" data-key="maf">
+            <rect class="box" x="560" y="194" width="335" height="82"></rect>
+            <text class="svg-text" x="727.5" y="246" text-anchor="middle">微地址形成部件</text>
+          </g>
+
+          <text class="svg-label" x="1135" y="218" text-anchor="start">标志</text>
+          <text class="latin" x="1135" y="260" text-anchor="start">CLK</text>
+          <path class="path wire" data-key="flags-maf" d="M1125 214 L895 214"></path>
+          <path class="path wire" data-key="clk-maf" d="M1125 256 L895 256"></path>
+
+          <path class="path wire" data-key="maf-upc" d="M727.5 276 L727.5 332"></path>
+          <g class="node" data-key="upc">
+            <rect class="reg" x="635" y="333" width="185" height="62"></rect>
+            <text class="latin" x="727.5" y="373" text-anchor="middle">μPC</text>
+          </g>
+
+          <path class="path wire-noarrow" data-key="upc-cm-a" d="M727.5 395 L727.5 555"></path>
+          <path class="path wire" data-key="upc-cm-b" d="M727.5 555 L345 555 L345 493"></path>
+          <g class="node" data-key="cm">
+            <rect class="cm" x="195" y="405" width="300" height="88"></rect>
+            <text class="svg-text" x="345" y="458" text-anchor="middle">控制存储器</text>
+          </g>
+
+          <path class="path wire" data-key="cm-uir" d="M345 405 L345 327"></path>
+          <g class="node" data-key="uir">
+            <rect class="reg" x="145" y="248" width="420" height="78"></rect>
+            <rect class="reg" x="145" y="248" width="290" height="78"></rect>
+            <rect class="reg" x="435" y="248" width="130" height="78"></rect>
+            <text class="latin" x="112" y="295" text-anchor="middle">μIR</text>
+            <text class="svg-text" x="290" y="296" text-anchor="middle">操作控制</text>
+            <text class="svg-text" x="500" y="296" text-anchor="middle">下地址</text>
+          </g>
+
+          <text class="microcmd-label svg-label" x="248" y="122" text-anchor="middle">微命令</text>
+          <path class="microcmd wire" data-key="cmd" d="M205 248 L205 145"></path>
+          <path class="microcmd wire" data-key="cmd" d="M245 248 L245 145"></path>
+          <path class="microcmd wire" data-key="cmd" d="M285 248 L285 145"></path>
+          <path class="microcmd wire" data-key="cmd" d="M365 248 L365 145"></path>
+          <text class="svg-label" x="325" y="202" text-anchor="middle">…</text>
+
+          <path class="path wire" data-key="next-maf" d="M565 287 L560 287 C520 287 518 235 560 235"></path>
+        </svg>
+      </div>
+
+      <aside class="side">
+        <div class="step-title" id="stepTitle"></div>
+        <div class="formula" id="formula"></div>
+        <div class="desc" id="desc"></div>
+        <div class="hint" id="hint"></div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const steps = [
+      {
+        title: "1. 机器指令进入 IR",
+        formula: "来自主存 -> IR\nOP(IR) 准备参与微地址形成",
+        desc: "IR 在微程序控制器外部。微程序控制器只需要从 IR 取得操作码字段，用它决定取指之后进入哪一段执行微程序。",
+        hint: "虚线框内才是微程序控制器主体。",
+        nodes: ["ir"],
+        paths: ["mem-ir", "op-maf"]
+      },
+      {
+        title: "2. 微地址形成部件形成入口",
+        formula: "OP(IR), 标志, CLK, 下地址 -> 微地址形成部件",
+        desc: "微地址形成部件综合多种来源：机器指令操作码、状态标志、时钟节拍，以及上一条微指令给出的下地址字段。",
+        hint: "不是每一步都由 OP 决定；顺序执行时常直接使用下地址。",
+        nodes: ["ir", "maf"],
+        paths: ["op-maf", "flags-maf", "clk-maf", "next-maf"]
+      },
+      {
+        title: "3. 微地址写入 μPC",
+        formula: "微地址形成部件 -> μPC",
+        desc: "μPC 保存下一条要读取的微指令地址。它在微程序控制器中承担类似 PC 的角色，只不过面向的是控制存储器中的微指令。",
+        hint: "μPC 又常写作 CMAR。",
+        nodes: ["maf", "upc"],
+        paths: ["maf-upc"]
+      },
+      {
+        title: "4. 用 μPC 访问控制存储器",
+        formula: "μPC -> 控制存储器 CM",
+        desc: "控制存储器按照 μPC 给出的微地址读出对应微指令。这里读取的是微指令，不是主存中的机器指令。",
+        hint: "CM 是控制器内部的存储器，通常用于存放微程序。",
+        nodes: ["upc", "cm"],
+        paths: ["upc-cm-a", "upc-cm-b"]
+      },
+      {
+        title: "5. 微指令进入 μIR",
+        formula: "CM[μPC] -> μIR",
+        desc: "从控制存储器读出的微指令进入 μIR。μIR 左侧的操作控制字段负责发出微命令，右侧的下地址字段参与形成后继微地址。",
+        hint: "μIR 又常写作 CMDR。",
+        nodes: ["cm", "uir"],
+        paths: ["cm-uir"]
+      },
+      {
+        title: "6. 操作控制字段发出微命令",
+        formula: "μIR.操作控制字段 -> 微命令 -> CPU 数据通路",
+        desc: "一条微指令可以发出一个或多个相容微命令。微命令向虚线框外输出，接通 CPU 内部数据通路中的控制线。",
+        hint: "微命令是控制器的输出，不是控制器内部循环的终点。",
+        nodes: ["uir"],
+        paths: [],
+        microcmd: true
+      },
+      {
+        title: "7. 下地址形成下一轮循环",
+        formula: "μIR.下地址 -> 微地址形成部件 -> μPC",
+        desc: "当前微指令执行后，下地址字段送往微地址形成部件。若需要分支或进入某条机器指令的执行微程序，还会结合 OP、标志和 CLK 决定下一微地址。",
+        hint: "这样就回到 μPC，开始读取下一条微指令。",
+        nodes: ["uir", "maf", "upc"],
+        paths: ["next-maf", "maf-upc"]
+      }
+    ];
+
+    let index = 0;
+    const titleEl = document.getElementById("stepTitle");
+    const formulaEl = document.getElementById("formula");
+    const descEl = document.getElementById("desc");
+    const hintEl = document.getElementById("hint");
+    const counterEl = document.getElementById("counter");
+    const allNodes = Array.from(document.querySelectorAll(".node"));
+    const allPaths = Array.from(document.querySelectorAll(".path"));
+    const microcmds = Array.from(document.querySelectorAll(".microcmd"));
+    const microcmdLabel = document.querySelector(".microcmd-label");
+
+    function render() {
+      const step = steps[index];
+      titleEl.textContent = step.title;
+      formulaEl.textContent = step.formula;
+      descEl.textContent = step.desc;
+      hintEl.textContent = step.hint;
+      counterEl.textContent = `${index + 1} / ${steps.length}`;
+
+      allNodes.forEach(node => {
+        const on = step.nodes.includes(node.dataset.key);
+        node.classList.toggle("active", on);
+        node.classList.toggle("dim", !on);
+      });
+
+      allPaths.forEach(path => {
+        const on = step.paths.includes(path.dataset.key);
+        path.classList.toggle("active", on);
+        path.classList.toggle("dim", !on);
+      });
+
+      microcmds.forEach(path => {
+        path.classList.toggle("active", Boolean(step.microcmd));
+        path.classList.toggle("dim", !step.microcmd);
+      });
+      microcmdLabel.classList.toggle("active", Boolean(step.microcmd));
+    }
+
+    document.getElementById("prev").addEventListener("click", () => {
+      index = (index - 1 + steps.length) % steps.length;
+      render();
+    });
+
+    document.getElementById("next").addEventListener("click", () => {
+      index = (index + 1) % steps.length;
+      render();
+    });
+
+    window.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft") document.getElementById("prev").click();
+      if (event.key === "ArrowRight") document.getElementById("next").click();
+    });
+
+    render();
+  </script>
+</body>
+</html>

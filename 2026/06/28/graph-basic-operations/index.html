@@ -1,0 +1,450 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Graph Basic Operations | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="图的基本操作图的基本操作要分清两个层次：接口语义和存储结构代价。接口语义说明“这个操作要做什么”，存储结构决定“做这件事要扫描矩阵、扫描链表，还是直接改指针”。 相关卡片：邻接矩阵、邻接表、十字链表与邻接多重表。 操作语义   操作 含义 常见返回或效果    Adjacent(G, x, y) 判断图 $G$ 是否存在边 $(x,y)$ 或弧 $\langle x,y\rangle$ 存在返回">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Graph Basic Operations">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/28/graph-basic-operations/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="图的基本操作图的基本操作要分清两个层次：接口语义和存储结构代价。接口语义说明“这个操作要做什么”，存储结构决定“做这件事要扫描矩阵、扫描链表，还是直接改指针”。 相关卡片：邻接矩阵、邻接表、十字链表与邻接多重表。 操作语义   操作 含义 常见返回或效果    Adjacent(G, x, y) 判断图 $G$ 是否存在边 $(x,y)$ 或弧 $\langle x,y\rangle$ 存在返回">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T09:08:30.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.058Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Graph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Graph Basic Operations",
+  "url": "https://eliano64.github.io/2026/06/28/graph-basic-operations/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T09:08:30.000Z",
+  "dateModified": "2026-07-10T07:16:51.058Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/28/graph-basic-operations/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Graph Basic Operations',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Graph Basic Operations</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Graph Basic Operations</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T09:08:30.000Z" title="发表于 2026-06-28 17:08:30">2026-06-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.058Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="图的基本操作"><a href="#图的基本操作" class="headerlink" title="图的基本操作"></a>图的基本操作</h1><p>图的基本操作要分清两个层次：接口语义和存储结构代价。接口语义说明“这个操作要做什么”，存储结构决定“做这件事要扫描矩阵、扫描链表，还是直接改指针”。</p>
+<p>相关卡片：<a href="/2026/06/28/adjacency-matrix/" class="wikilink">邻接矩阵</a>、<a href="/2026/06/28/adjacency-list/" class="wikilink">邻接表</a>、<a href="/2026/06/28/orthogonal-list-and-adjacency-multilist/" class="wikilink">十字链表与邻接多重表</a>。</p>
+<h2 id="操作语义"><a href="#操作语义" class="headerlink" title="操作语义"></a>操作语义</h2><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>含义</th>
+<th>常见返回或效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Adjacent(G, x, y)</code></td>
+<td>判断图 $G$ 是否存在边 $(x,y)$ 或弧 $\langle x,y\rangle$</td>
+<td>存在返回 <code>true</code>，否则返回 <code>false</code></td>
+</tr>
+<tr>
+<td><code>Neighbors(G, x)</code></td>
+<td>列出与顶点 $x$ 邻接的边或弧</td>
+<td>返回邻接点或邻接边集合</td>
+</tr>
+<tr>
+<td><code>InsertVertex(G, x)</code></td>
+<td>在图 $G$ 中插入顶点 $x$</td>
+<td>新顶点初始没有关联边</td>
+</tr>
+<tr>
+<td><code>DeleteVertex(G, x)</code></td>
+<td>从图 $G$ 中删除顶点 $x$</td>
+<td>同时删除与 $x$ 相关的边或弧</td>
+</tr>
+<tr>
+<td><code>AddEdge(G, x, y)</code></td>
+<td>若边或弧不存在，则添加 $(x,y)$ 或 $\langle x,y\rangle$</td>
+<td>修改边集</td>
+</tr>
+<tr>
+<td><code>RemoveEdge(G, x, y)</code></td>
+<td>若边或弧存在，则删除 $(x,y)$ 或 $\langle x,y\rangle$</td>
+<td>修改边集</td>
+</tr>
+<tr>
+<td><code>FirstNeighbor(G, x)</code></td>
+<td>求顶点 $x$ 的第一个邻接点（有向图的情况约定寻找$x$的第一条出边的弧头）</td>
+<td>存在则返回顶点号，否则返回 <code>-1</code></td>
+</tr>
+<tr>
+<td><code>NextNeighbor(G, x, y)</code></td>
+<td>已知 $y$ 是 $x$ 的邻接点，求 $x$ 除 $y$ 外的下一个邻接点（有向图的情况约定$x\to y$,寻找$x$的下一条出边的弧头）</td>
+<td>若 $y$ 是最后一个邻接点，则返回 <code>-1</code></td>
+</tr>
+<tr>
+<td><code>Get_edge_value(G, x, y)</code></td>
+<td>获取边或弧对应的权值</td>
+<td>返回权值</td>
+</tr>
+<tr>
+<td><code>Set_edge_value(G, x, y, v)</code></td>
+<td>设置边或弧对应的权值为 $v$</td>
+<td>修改权值</td>
+</tr>
+</tbody></table>
+<p>^267de5</p>
+<h2 id="邻接矩阵与邻接表复杂度"><a href="#邻接矩阵与邻接表复杂度" class="headerlink" title="邻接矩阵与邻接表复杂度"></a>邻接矩阵与邻接表复杂度</h2><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>邻接矩阵</th>
+<th>邻接表</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Adjacent(G, x, y)</code></td>
+<td>$O(1)$，直接访问 <code>edge[x][y]</code></td>
+<td>$O(1)\sim O(\lvert V\rvert)$，扫描 $x$ 的链表</td>
+</tr>
+<tr>
+<td><code>Neighbors(G, x)</code>，无向图</td>
+<td>$O(\lvert V\rvert)$，扫描一行或一列</td>
+<td>$O(1)\sim O(\lvert V\rvert)$，遍历 $x$ 的链表</td>
+</tr>
+<tr>
+<td><code>Neighbors(G, x)</code>，有向图</td>
+<td>$O(\lvert V\rvert)$，扫描第 $x$ 行；再加上$O(\lvert V\rvert)$，扫描第 $x$ 列</td>
+<td>$O(1)\sim O(\lvert V\rvert)$，遍历 $x$ 的链表；再加上$O(\lvert E \rvert + \lvert V\rvert)$，查找$x$所有入边；</td>
+</tr>
+<tr>
+<td><code>InsertVertex(G, x)</code></td>
+<td>$O(1)$，使用预留矩阵空间时直接增加顶点计数</td>
+<td>$O(1)$，新增顶点表结点并令链表为空</td>
+</tr>
+<tr>
+<td><code>DeleteVertex(G, x)</code>，无向图</td>
+<td>$O(\lvert V\rvert)$，清空对应行列或移动数据</td>
+<td>$O(\lvert V\rvert+2\lvert E\rvert)$，删除顶点并清理所有相关边结点</td>
+</tr>
+<tr>
+<td><code>DeleteVertex(G, x)</code>，有向图</td>
+<td>$O(\lvert V\rvert)$，清空对应行列或移动数据</td>
+<td>删出边加删入边，按完整邻接表扫描计为 $O(\lvert V\rvert+\lvert E\rvert)$</td>
+</tr>
+<tr>
+<td><code>AddEdge(G, x, y)</code></td>
+<td>$O(1)$，写矩阵单元</td>
+<td>$O(1)$，若已确认不存在，可头插或尾插边结点</td>
+</tr>
+<tr>
+<td><code>RemoveEdge(G, x, y)</code></td>
+<td>$O(1)$，清矩阵单元</td>
+<td>$O(1)\sim O(\lvert V\rvert)$，在$x$对应链表中查找并删除</td>
+</tr>
+<tr>
+<td><code>FirstNeighbor(G, x)</code>，</td>
+<td>$O(1)\sim O(\lvert V\rvert)$，从行首扫描到第一个非零单元</td>
+<td>$O(1)$，返回链表首结点</td>
+</tr>
+<tr>
+<td><code>NextNeighbor(G, x, y)</code></td>
+<td>$O(1)\sim O(\lvert V\rvert)$，从 $y$ 后继续扫描</td>
+<td>$O(1)$，若已持有 $y$ 所在边结点，取 <code>next</code></td>
+</tr>
+<tr>
+<td><code>Get_edge_value(G, x, y)</code></td>
+<td>$O(1)$</td>
+<td>$O(1)\sim O(\lvert V\rvert)$，核心是先找到边</td>
+</tr>
+<tr>
+<td><code>Set_edge_value(G, x, y, v)</code></td>
+<td>$O(1)$</td>
+<td>$O(1)\sim O(\lvert V\rvert)$，核心是先找到边</td>
+</tr>
+</tbody></table>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">复杂度依赖操作前提</span></div>
+<div class="callout-content"><p>表中 <code>AddEdge</code> 的邻接表复杂度按“已经确认边不存在”计算；若插入前还要调用 <code>Adjacent</code> 查重，则需要加上查找成本。<br><code>NextNeighbor</code> 的邻接表 $O(1)$ 也默认已经定位到 $y$ 所在的边结点；如果只给顶点编号而没有边结点位置，仍需要先扫描链表。<br>“扫描整个邻接表”按顶点表和所有边结点一起计算，写作 $O(\lvert V\rvert+\lvert E\rvert)$。<br>无向图邻接表删除一个顶点时，既要处理顶点表，又要清理相关边结点；教材常写作 $O(\lvert V\rvert+2\lvert E\rvert)$。</p>
+</div>
+</div>
+## 存储结构总表
+
+<table>
+<thead>
+<tr>
+<th>存储结构</th>
+<th>空间复杂度</th>
+<th>找相邻边</th>
+<th>删除边或顶点</th>
+<th>适用对象</th>
+<th>表示方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="/2026/06/28/adjacency-matrix/" class="wikilink">adjacency-matrix</a></td>
+<td>$O(\lvert V\rvert^2)$</td>
+<td>遍历对应行或列，判断指定边为 $O(1)$</td>
+<td>删除边方便；删除顶点可能需要移动大量数据</td>
+<td>稠密图</td>
+<td>唯一</td>
+</tr>
+<tr>
+<td><a href="/2026/06/28/adjacency-list/" class="wikilink">adjacency-list</a></td>
+<td>无向图 $O(\lvert V\rvert+2\lvert E\rvert)$；有向图 $O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>有向图找入边要扫描整个邻接表，其余较方便</td>
+<td>无向图中删除边或顶点不方便</td>
+<td>稀疏图</td>
+<td>不唯一</td>
+</tr>
+<tr>
+<td><a href="/2026/06/28/orthogonal-list-and-adjacency-multilist/" class="wikilink">orthogonal-list-and-adjacency-multilist</a></td>
+<td>$O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>入边、出边都方便</td>
+<td>较方便</td>
+<td>有向图</td>
+<td>不唯一</td>
+</tr>
+<tr>
+<td><a href="/2026/06/28/orthogonal-list-and-adjacency-multilist/" class="wikilink">orthogonal-list-and-adjacency-multilist</a></td>
+<td>$O(\lvert V\rvert+\lvert E\rvert)$</td>
+<td>方便</td>
+<td>较方便</td>
+<td>无向图</td>
+<td>不唯一</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/28/graph-basic-operations/">https://eliano64.github.io/2026/06/28/graph-basic-operations/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/28/adjacency-list/" title="Adjacency List"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Adjacency List</div></div><div class="info-2"><div class="info-item-1">邻接表法邻接表法用一个顶点表保存所有顶点，再给每个顶点接一条链表，链表中保存与该顶点直接相关的边或弧。它本质上是顺序存储 + 链式存储：顶点表适合按编号定位顶点，边结点链表只保存实际存在的边或弧。  为什么需要邻接表邻接矩阵必须开 $|V|\times |V|$ 个单元。若图很稀疏，大量位置只是表示“没有边”，空间浪费明显。 邻接表只保存实际存在的边或弧，因此更适合稀疏图。 存储结构邻接表一般由两类结点组成：    结点 保存内容 作用    顶点表结点 顶点数据 data，第一条边或弧的指针 firstArc 顺序存储所有顶点，支持按编号访问   边&#x2F;弧结点 邻接点编号 adjvex，下一条边或弧的指针 next，可选权值 weight 链式保存某个顶点的邻接关系   123456789101112131415161718192021222324#include &lt;stdbool.h&gt;#define MAX_VERTEX_NUM 100typedef char VertexType;typedef int EdgeType;typedef struct...</div></div></div></a><a class="pagination-related" href="/2026/06/28/orthogonal-list-and-adjacency-multilist/" title="Orthogonal List And Adjacency Multilist"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Orthogonal List And Adjacency Multilist</div></div><div class="info-2"><div class="info-item-1">十字链表与邻接多重表邻接表对稀疏图很省空间，但它有两个典型不便：  有向图中，邻接表默认保存出边，找入边要扫描整个邻接表。 无向图中，每条边会在两个顶点的链表里存两份，删除边或删除顶点时要处理冗余边结点。  十字链表和邻接多重表就是针对这两个问题设计的。 其思想皆为：链头数组表示顶点，链接的每一个不同的节点都表示不同的边。  十字链表十字链表用于存储有向图。 它的核心规则是：一个弧结点同时出现在两条链中：  弧尾顶点的出边链。 弧头顶点的入边链。  顶点结点包含：    字段 含义    data 顶点数据   firstin 以该顶点为弧头的第一条弧，即第一条入边   firstout 以该顶点为弧尾的第一条弧，即第一条出边   弧结点包含：    字段 含义    tailvex 弧尾顶点编号   headvex 弧头顶点编号   info 权值或其他弧信息   hlink 弧头相同的下一条弧   tlink 弧尾相同的下一条弧   12345678910111213typedef struct OLArcNode &#123;    int tailvex;       ...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BE%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text">图的基本操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E8%AF%AD%E4%B9%89"><span class="toc-text">操作语义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%82%BB%E6%8E%A5%E7%9F%A9%E9%98%B5%E4%B8%8E%E9%82%BB%E6%8E%A5%E8%A1%A8%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-text">邻接矩阵与邻接表复杂度</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

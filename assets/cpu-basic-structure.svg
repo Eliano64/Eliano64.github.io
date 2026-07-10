@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="660" viewBox="0 0 1160 660" role="img" aria-labelledby="title desc">
+  <title id="title">CPU basic structure</title>
+  <desc id="desc">CPU is divided into datapath oriented execution resources and control resources. Control signals drive data movement between registers, ALU, memory interface registers, and system buses.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --ink: #172033;
+      --muted: #5d6980;
+      --line: #526174;
+      --bus: #2563eb;
+      --control: #b45309;
+      --exec: #e8f1ff;
+      --ctrl: #fff2d8;
+      --mem: #eef7ee;
+      --chip: #ffffff;
+      --shadow: rgba(23, 32, 51, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1420;
+        --ink: #e7edf7;
+        --muted: #aab6c8;
+        --line: #91a0b5;
+        --bus: #7aa2ff;
+        --control: #f4b45f;
+        --exec: #17243a;
+        --ctrl: #302417;
+        --mem: #18291d;
+        --chip: #151c2a;
+        --shadow: rgba(0, 0, 0, 0.25);
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    text { fill: var(--ink); }
+    .muted { fill: var(--muted); font-size: 18px; }
+    .title { font-size: 30px; font-weight: 700; }
+    .section { font-size: 24px; font-weight: 700; }
+    .label { font-size: 19px; font-weight: 650; }
+    .small { font-size: 16px; fill: var(--muted); }
+    .box { fill: var(--chip); stroke: var(--line); stroke-width: 2; rx: 10; filter: drop-shadow(0 8px 16px var(--shadow)); }
+    .panel { stroke: var(--line); stroke-width: 2.2; rx: 18; }
+    .exec { fill: var(--exec); }
+    .ctrl { fill: var(--ctrl); }
+    .mem { fill: var(--mem); }
+    .line { stroke: var(--line); stroke-width: 2.2; fill: none; }
+    .bus { stroke: var(--bus); stroke-width: 6; fill: none; }
+    .control { stroke: var(--control); stroke-width: 2.6; stroke-dasharray: 8 7; fill: none; marker-end: url(#arrow-control); }
+    .arrow { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+    .busArrow { stroke: var(--bus); stroke-width: 3.2; fill: none; marker-end: url(#arrow-bus); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"/>
+    </marker>
+    <marker id="arrow-bus" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="var(--bus)"/>
+    </marker>
+    <marker id="arrow-control" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="var(--control)"/>
+    </marker>
+  </defs>
+
+  <text x="580" y="48" text-anchor="middle" class="title">CPU 基本结构：执行部件 + 控制部件</text>
+
+  <rect x="48" y="88" width="500" height="460" class="panel exec"/>
+  <text x="78" y="126" class="section">运算器 / 执行资源</text>
+  <text x="78" y="154" class="muted">完成算术逻辑运算，保存操作数、中间结果和状态</text>
+
+  <rect x="88" y="196" width="180" height="88" class="box"/>
+  <text x="178" y="232" text-anchor="middle" class="label">ALU</text>
+  <text x="178" y="260" text-anchor="middle" class="small">算术 / 逻辑运算</text>
+
+  <rect x="328" y="188" width="170" height="54" class="box"/>
+  <text x="413" y="222" text-anchor="middle" class="label">通用寄存器组</text>
+  <rect x="328" y="262" width="170" height="54" class="box"/>
+  <text x="413" y="296" text-anchor="middle" class="label">ACC / MQ / X</text>
+  <rect x="328" y="336" width="170" height="54" class="box"/>
+  <text x="413" y="370" text-anchor="middle" class="label">PSW</text>
+  <rect x="88" y="336" width="180" height="54" class="box"/>
+  <text x="178" y="370" text-anchor="middle" class="label">暂存器 / 移位器</text>
+  <rect x="88" y="420" width="410" height="68" class="box"/>
+  <text x="293" y="450" text-anchor="middle" class="label">内部数据通路</text>
+  <text x="293" y="474" text-anchor="middle" class="small">把寄存器、ALU、主存接口连接起来</text>
+
+  <path d="M328 215 H274" class="arrow"/>
+  <path d="M328 289 H274" class="arrow"/>
+  <path d="M178 284 V334" class="arrow"/>
+  <path d="M268 240 H320" class="arrow"/>
+  <path d="M413 390 V420" class="arrow"/>
+
+  <rect x="612" y="88" width="500" height="460" class="panel ctrl"/>
+  <text x="642" y="126" class="section">控制器 / 控制资源</text>
+  <text x="642" y="154" class="muted">取指、译码、产生时序化控制信号</text>
+
+  <rect x="652" y="190" width="132" height="58" class="box"/>
+  <text x="718" y="226" text-anchor="middle" class="label">PC</text>
+  <rect x="822" y="190" width="132" height="58" class="box"/>
+  <text x="888" y="226" text-anchor="middle" class="label">IR</text>
+  <rect x="652" y="278" width="132" height="58" class="box"/>
+  <text x="718" y="314" text-anchor="middle" class="label">MAR</text>
+  <rect x="822" y="278" width="132" height="58" class="box"/>
+  <text x="888" y="314" text-anchor="middle" class="label">MDR</text>
+  <rect x="660" y="374" width="286" height="70" class="box"/>
+  <text x="803" y="404" text-anchor="middle" class="label">CU / 指令译码 / 时序系统</text>
+  <text x="803" y="428" text-anchor="middle" class="small">根据 IR、PSW、节拍形成微操作信号</text>
+
+  <path d="M784 219 H822" class="arrow"/>
+  <path d="M718 248 V278" class="arrow"/>
+  <path d="M888 248 V278" class="arrow"/>
+  <path d="M803 374 V340" class="control"/>
+  <path d="M660 409 C594 410 574 370 506 363" class="control"/>
+
+  <path d="M160 584 H1000" class="bus"/>
+  <text x="580" y="620" text-anchor="middle" class="label" fill="var(--bus)">系统总线：地址总线 / 数据总线 / 控制总线</text>
+  <path d="M718 336 V580" class="busArrow"/>
+  <path d="M888 336 V580" class="busArrow"/>
+  <path d="M294 488 V580" class="busArrow"/>
+</svg>

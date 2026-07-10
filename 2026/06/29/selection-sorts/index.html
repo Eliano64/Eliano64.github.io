@@ -1,0 +1,585 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Selection Sorts | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="选择类排序的共同思想选择排序的共同动作是：每一趟从待排序元素中选择一个关键字最小或最大的元素，把它加入有序子序列。 两种典型算法：  简单选择排序：直接在线性表中扫描，找出当前待排序区的最小元素。 堆排序：用堆快速维护当前待排序区的最大或最小元素。  简单选择排序简单选择排序每一趟在待排序区 $A[i..n-1]$ 中找最小元素，把它与 $A[i]$ 交换。第 $i$ 趟结束后，$A[0..i]$">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Selection Sorts">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/29/selection-sorts/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="选择类排序的共同思想选择排序的共同动作是：每一趟从待排序元素中选择一个关键字最小或最大的元素，把它加入有序子序列。 两种典型算法：  简单选择排序：直接在线性表中扫描，找出当前待排序区的最小元素。 堆排序：用堆快速维护当前待排序区的最大或最小元素。  简单选择排序简单选择排序每一趟在待排序区 $A[i..n-1]$ 中找最小元素，把它与 $A[i]$ 交换。第 $i$ 趟结束后，$A[0..i]$">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T23:12:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.070Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Sort">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Selection Sorts",
+  "url": "https://eliano64.github.io/2026/06/29/selection-sorts/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T23:12:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.070Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/29/selection-sorts/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Selection Sorts',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Selection Sorts</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Selection Sorts</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T23:12:00.000Z" title="发表于 2026-06-29 07:12:00">2026-06-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.070Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.7k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="选择类排序的共同思想"><a href="#选择类排序的共同思想" class="headerlink" title="选择类排序的共同思想"></a>选择类排序的共同思想</h1><p><strong>选择排序</strong>的共同动作是：每一趟从待排序元素中选择一个关键字最小或最大的元素，把它加入有序子序列。</p>
+<p>两种典型算法：</p>
+<ul>
+<li><strong>简单选择排序</strong>：直接在线性表中扫描，找出当前待排序区的最小元素。</li>
+<li><strong>堆排序</strong>：用堆快速维护当前待排序区的最大或最小元素。</li>
+</ul>
+<h1 id="简单选择排序"><a href="#简单选择排序" class="headerlink" title="简单选择排序"></a>简单选择排序</h1><p>简单选择排序每一趟在待排序区 $A[i..n-1]$ 中找最小元素，把它与 $A[i]$ 交换。第 $i$ 趟结束后，$A[0..i]$ 是最终有序区。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||540)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||540)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/selection-sort.html" style="width:100%;height:540px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="简单选择排序的-C-写法"><a href="#简单选择排序的-C-写法" class="headerlink" title="简单选择排序的 C 写法"></a>简单选择排序的 C 写法</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Sorts an integer array in nondecreasing order using simple selection sort.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Array to sort in place.</span></span><br><span class="line"><span class="comment"> *   n: Number of elements in the array.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   After pass i, a[0..i] contains the i+1 smallest elements in final order.</span></span><br><span class="line"><span class="comment"> *   The algorithm does not stop early when the input is already sorted.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">selection_sort</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n - <span class="number">1</span>; i++) &#123;</span><br><span class="line">        <span class="type">int</span> min_pos = i;  <span class="comment">// 记录当前待排序区中最小元素的位置</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = i + <span class="number">1</span>; j &lt; n; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (a[j] &lt; a[min_pos]) &#123;</span><br><span class="line">                min_pos = j;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (min_pos != i) &#123;</span><br><span class="line">            <span class="type">int</span> temp = a[i];</span><br><span class="line">            a[i] = a[min_pos];</span><br><span class="line">            a[min_pos] = temp;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="简单选择排序的效率与稳定性"><a href="#简单选择排序的效率与稳定性" class="headerlink" title="简单选择排序的效率与稳定性"></a>简单选择排序的效率与稳定性</h3><p>对 $n$ 个元素，简单选择排序需要 $n-1$ 趟。</p>
+<p>关键字比较次数固定为：</p>
+<p>$$<br>(n-1)+(n-2)+\dots+1&#x3D;\frac{n(n-1)}{2}<br>$$</p>
+<p><strong>所以无论初始序列有序、逆序还是乱序，时间复杂度都是 $O(n^2)$。</strong></p>
+<p>空间复杂度为 $O(1)$。</p>
+<p>交换次数小于等于 $n-1$，因为每一趟最多交换一次。</p>
+<p>简单选择排序<strong>不稳定</strong>。例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2a 2b 1</span><br></pre></td></tr></table></figure>
+
+<p>第 1 趟会把 <code>1</code> 与 <code>2a</code> 交换，得到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 2b 2a</span><br></pre></td></tr></table></figure>
+
+<p><code>2a</code> 与 <code>2b</code> 的相对次序改变。</p>
+<p>简单选择排序既可以用于顺序表，也可以用于链表。链表不能随机访问，但每一趟只需要顺着链扫描最小结点，再把结点或数据移动到有序区。</p>
+<h1 id="堆的基本概念"><a href="#堆的基本概念" class="headerlink" title="堆的基本概念"></a>堆的基本概念</h1><p><strong>堆</strong>首先是一棵按顺序存储表示的<span class="wikilink-unresolved" title="Unresolved: 完全二叉树">完全二叉树</span>。设关键字序列为 $L[0..n-1]$，若满足下列任一性质，就称为堆：</p>
+<ul>
+<li><strong>大根堆</strong>：$L(i)\ge L(2i+1)$ 且 $L(i)\ge L(2i+2)$。</li>
+<li><strong>小根堆</strong>：$L(i)\le L(2i+1)$ 且 $L(i)\le L(2i+2)$。</li>
+</ul>
+<p>其中 $2i+1&lt;n$，也就是只需要检查有孩子的分支结点。</p>
+<p>堆与二叉排序树不同：</p>
+<ul>
+<li>堆只要求<strong>父子之间</strong>满足大小关系。</li>
+<li>二叉排序树要求<strong>整棵左子树、根、整棵右子树</strong>满足大小关系。</li>
+</ul>
+<p>顺序存储完全二叉树时，有以下几个下标关系：</p>
+<table>
+<thead>
+<tr>
+<th>关系</th>
+<th>0 下标写法, 合法下标取值$[0,n)$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>左孩子</td>
+<td><code>2 * i + 1</code></td>
+</tr>
+<tr>
+<td>右孩子</td>
+<td><code>2 * i + 2</code></td>
+</tr>
+<tr>
+<td>父结点</td>
+<td><code>(i - 1)/ 2</code></td>
+</tr>
+<tr>
+<td>是否有左孩子</td>
+<td><code>2 * i + 1 &lt; n</code></td>
+</tr>
+<tr>
+<td>是否有右孩子</td>
+<td><code>2 * i + 2 &lt; n</code></td>
+</tr>
+<tr>
+<td>是否为分支结点(即是否有左孩子)</td>
+<td>同“是否有左孩子”写法</td>
+</tr>
+<tr>
+<td>是否为叶子结点</td>
+<td><code>2 * i + 1 &gt;= n</code></td>
+</tr>
+<tr>
+<td>结点 <code>i</code> 所在层次$h$</td>
+<td>$2^{h-1}\leqslant i+1 &lt;2^{h}$</td>
+</tr>
+<tr>
+<td><code>n</code> 个结点的树高$H$</td>
+<td>$2^{H-1}\leqslant n &lt;2^{H}$</td>
+</tr>
+</tbody></table>
+<h2 id="建立大根堆"><a href="#建立大根堆" class="headerlink" title="建立大根堆"></a>建立大根堆</h2><p>建立大根堆的核心是：从最后一个分支结点 $\lfloor (n-2)&#x2F;2\rfloor$ 开始，依次向前检查每个分支结点是否满足“大于等于孩子”。C 语言整数除法中，这个位置常写成 <code>n / 2 - 1</code>。若不满足，就让较小元素不断向<strong>下坠</strong>。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||650)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||650)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/max-heap-build.html" style="width:100%;height:650px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>向下调整时的规则：</p>
+<ol>
+<li>比较当前结点的左右孩子，选出关键字更大的孩子。</li>
+<li>若当前结点小于这个更大的孩子，则交换。</li>
+<li>交换后，原当前结点下坠到下一层，可能继续破坏下一层堆性质，所以继续同样调整。</li>
+<li>若当前结点已经不小于孩子，或已经下坠到叶子，就停止。</li>
+</ol>
+<h2 id="堆排序"><a href="#堆排序" class="headerlink" title="堆排序"></a>堆排序</h2><p>用大根堆进行递增排序：</p>
+<ol>
+<li>先把整个待排序序列建立成大根堆。</li>
+<li>堆顶元素是当前最大值，把它与当前待排序区最后一个元素交换。</li>
+<li>最大值进入最终位置，待排序区长度减一。</li>
+<li>对新的堆顶做向下调整，使待排序区重新成为大根堆。</li>
+<li>重复直到只剩一个待排序元素。</li>
+</ol>
+<p>仅适用于</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||720)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||720)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/heap-sort-max.html" style="width:100%;height:720px;border:0" loading="lazy"></iframe>
+</div>
+
+<div class="callout callout-info">
+<div class="callout-title"><i class="fa-solid fa-circle-info callout-icon"></i><span class="callout-title-text">Info</span></div>
+<div class="callout-content"><p>基于大根堆的堆排序得到<strong>递增序列</strong>；基于小根堆的堆排序得到<strong>递减序列</strong>。</p>
+</div>
+</div>
+### 堆排序的 C 写法
+
+<p>下面采用 0 下标写法：<code>a[0..n-1]</code> 存放待排序元素。若当前结点下标为 <code>i</code>，左孩子为 <code>2 * i + 1</code>，右孩子为 <code>2 * i + 2</code>，父结点为 <code>(i - 1) / 2</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">swap_int</span><span class="params">(<span class="type">int</span> *x, <span class="type">int</span> *y)</span> &#123;</span><br><span class="line">    <span class="type">int</span> temp = *x;</span><br><span class="line">    *x = *y;</span><br><span class="line">    *y = temp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Restores the max-heap property in a subtree whose root may be too small.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Zero-based array. The valid heap interval is a[0..heap_size-1].</span></span><br><span class="line"><span class="comment"> *   root: Root index of the subtree to adjust.</span></span><br><span class="line"><span class="comment"> *   heap_size: Number of elements in the current heap.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   Before the call, the left and right subtrees of root are already max-heaps.</span></span><br><span class="line"><span class="comment"> *   Only a[root] may violate the max-heap property, so it is pushed downward.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">sift_down_max</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> root, <span class="type">int</span> heap_size)</span> &#123;</span><br><span class="line">    <span class="type">int</span> parent = root;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">2</span> * parent + <span class="number">1</span> &lt; heap_size) &#123;</span><br><span class="line">        <span class="type">int</span> child = <span class="number">2</span> * parent + <span class="number">1</span>;  <span class="comment">// 先假设左孩子更大</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (child + <span class="number">1</span> &lt; heap_size &amp;&amp; a[child + <span class="number">1</span>] &gt; a[child]) &#123;</span><br><span class="line">            child++;            <span class="comment">// 右孩子存在且更大，改选右孩子</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (a[parent] &gt;= a[child]) &#123;</span><br><span class="line">            <span class="keyword">break</span>;              <span class="comment">// 父结点已经不小于较大的孩子</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        swap_int(&amp;a[parent], &amp;a[child]);</span><br><span class="line">        parent = child;         <span class="comment">// 较小元素下坠后，继续检查下一层</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Builds a max heap from a zero-based array.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Zero-based array to transform in place.</span></span><br><span class="line"><span class="comment"> *   n: Number of elements in a[0..n-1].</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   Leaves are already heaps. Adjustment starts from the last internal node.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">build_max_heap</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = n / <span class="number">2</span> - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        sift_down_max(a, i, n);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Sorts a zero-based array in nondecreasing order using heap sort.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Zero-based array to sort in place.</span></span><br><span class="line"><span class="comment"> *   n: Number of elements in a[0..n-1].</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">heap_sort</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    build_max_heap(a, n);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> heap_size = n; heap_size &gt; <span class="number">1</span>; heap_size--) &#123;</span><br><span class="line">        swap_int(&amp;a[<span class="number">0</span>], &amp;a[heap_size - <span class="number">1</span>]);  <span class="comment">// 最大值进入最终位置</span></span><br><span class="line">        sift_down_max(a, <span class="number">0</span>, heap_size - <span class="number">1</span>);  <span class="comment">// 恢复剩余待排序区的大根堆</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="堆排序的效率"><a href="#堆排序的效率" class="headerlink" title="堆排序的效率"></a>堆排序的效率</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>建堆时间</td>
+<td>$O(n)$</td>
+</tr>
+<tr>
+<td>排序调整时间</td>
+<td>$O(n\log_2 n)$</td>
+</tr>
+<tr>
+<td>总时间复杂度</td>
+<td>$O(n\log_2 n)$</td>
+</tr>
+<tr>
+<td>空间复杂度</td>
+<td>$O(1)$，仅需常数个辅助单元</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>不稳定</td>
+</tr>
+<tr>
+<td>适用性</td>
+<td>依赖随机访问，因此<strong>仅适用于顺序表</strong></td>
+</tr>
+</tbody></table>
+<h3 id="时间复杂度分析"><a href="#时间复杂度分析" class="headerlink" title="时间复杂度分析"></a>时间复杂度分析</h3><p>堆排序的最好、平均、最坏时间复杂度都为 $O(n\log_2 n)$。它没有快速排序那种因划分极端不均匀而退化到 $O(n^2)$ 的问题。</p>
+<p>堆排序的时间分为两部分：</p>
+<p>$$<br>T(n)&#x3D;T_{\text{build}}(n)+T_{\text{sort}}(n)<br>$$</p>
+<p>其中 $T_{\text{build}}(n)$ 是初始建堆，$T_{\text{sort}}(n)$ 是反复交换堆顶并向下调整。</p>
+<h4 id="单个结点下坠的比较次数"><a href="#单个结点下坠的比较次数" class="headerlink" title="单个结点下坠的比较次数"></a>单个结点下坠的比较次数</h4><p>一个结点每下坠一层，关键字比较次数最多为 2：</p>
+<ol>
+<li>若有两个孩子，先比较左右孩子，选出较大者。</li>
+<li>再比较父结点与较大的孩子，判断是否需要交换。</li>
+</ol>
+<p>若只有一个孩子，则这一层只需比较 1 次。因此用“每层最多 2 次比较”作为上界是成立的。</p>
+<p>设完全二叉树高度为 $h$，根结点在第 1 层。若某个结点在第 $i$ 层，则它最多下坠到第 $h$ 层，所以最多下坠：</p>
+<p>$$<br>h-i<br>$$</p>
+<p>层。于是该结点一次向下调整的关键字比较次数不超过：</p>
+<p>$$<br>2(h-i)<br>$$</p>
+<h4 id="建堆阶段时间复杂度"><a href="#建堆阶段时间复杂度" class="headerlink" title="建堆阶段时间复杂度"></a>建堆阶段时间复杂度</h4><p>建堆从最后一个分支结点开始，依次向前做向下调整。只有第 $1$ 层到第 $h-1$ 层的结点可能下坠，第 $h$ 层叶子不需要调整。</p>
+<p>第 $i$ 层最多有$2^{i-1}$个结点。第 $i$ 层每个结点最多下坠 $h-i$ 层，每层最多比较 2 次，所以建堆总比较次数 $C_{\text{build}}$ 满足：</p>
+<p>$$<br>C_{\text{build}}<br>\le<br>\sum_{i&#x3D;1}^{h-1} 2^{i-1}\cdot 2(h-i)<br>$$</p>
+<p>化简得：</p>
+<p>$$<br>C_{\text{build}}<br>\le<br>\sum_{i&#x3D;1}^{h-1} 2^i(h-i)<br>$$</p>
+<p>令 $j&#x3D;h-i$，则 $i&#x3D;h-j$。当 $i&#x3D;1$ 时 $j&#x3D;h-1$，当 $i&#x3D;h-1$ 时 $j&#x3D;1$，所以：</p>
+<h1 id="sum-i-1-h-1-2-i-h-i"><a href="#sum-i-1-h-1-2-i-h-i" class="headerlink" title="$$\sum_{i&#x3D;1}^{h-1} 2^i(h-i)"></a>$$<br>\sum_{i&#x3D;1}^{h-1} 2^i(h-i)</h1><h1 id="sum-j-1-h-1-2-h-j-j"><a href="#sum-j-1-h-1-2-h-j-j" class="headerlink" title="\sum_{j&#x3D;1}^{h-1} 2^{h-j}j"></a>\sum_{j&#x3D;1}^{h-1} 2^{h-j}j</h1><p>2^h\sum_{j&#x3D;1}^{h-1}\frac{j}{2^j}<br>$$</p>
+<p>而级数：</p>
+<p>$$<br>\sum_{j&#x3D;1}^{\infty}\frac{j}{2^j}&#x3D;2<br>$$</p>
+<p>所以：</p>
+<p>$$<br>\sum_{j&#x3D;1}^{h-1}\frac{j}{2^j}&lt;2<br>$$</p>
+<p>于是：</p>
+<p>$$<br>C_{\text{build}}&lt;2^{h+1}<br>$$</p>
+<p>又因为 $n$ 个结点的完全二叉树高度为：</p>
+<p>$$<br>h&#x3D;\lfloor \log_2 n\rfloor+1<br>$$</p>
+<p>所以：</p>
+<p>$$<br>2^h&#x3D;2\cdot 2^{\lfloor \log_2 n\rfloor}\le 2n<br>$$</p>
+<p>因此：</p>
+<p>$$<br>C_{\text{build}}&lt;2^{h+1}\le 4n<br>$$</p>
+<p>建堆阶段的关键字比较次数被线性函数控制，所以：</p>
+<p>$$<br>T_{\text{build}}(n)&#x3D;O(n)<br>$$</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>建堆不是对 $n$ 个结点都做一次 $O(\log n)$ 调整。大量结点靠近叶子，最多只下坠很少层；按层求和后总成本是 $O(n)$。</p>
+</div>
+</div>
+#### 排序阶段时间复杂度
+
+<p>建好大根堆后，排序阶段重复 $n-1$ 趟。每一趟做两件事：</p>
+<ol>
+<li>交换堆顶与当前堆底，让最大值进入最终位置。</li>
+<li>对新的堆顶做一次向下调整，让剩余待排序区恢复为大根堆。</li>
+</ol>
+<p>交换是 $O(1)$。向下调整从根开始，最多下坠到叶子。若当前堆大小为 $m$，完全二叉树高度为：</p>
+<p>$$<br>\lfloor \log_2 m\rfloor+1<br>$$</p>
+<p>根结点最多下坠：</p>
+<p>$$<br>\lfloor \log_2 m\rfloor<br>$$</p>
+<p>层，每层最多比较 2 次，所以一次调整比较次数不超过：</p>
+<p>$$<br>2\lfloor \log_2 m\rfloor<br>$$</p>
+<p>排序阶段的总比较次数 $C_{\text{sort}}$ 满足：</p>
+<p>$$<br>C_{\text{sort}}<br>\le<br>\sum_{m&#x3D;2}^{n}2\lfloor \log_2 m\rfloor<br>$$</p>
+<p>由于对所有 $2\le m\le n$ 都有：</p>
+<p>$$<br>\lfloor \log_2 m\rfloor\le \lfloor \log_2 n\rfloor<br>$$</p>
+<p>所以：</p>
+<p>$$<br>C_{\text{sort}}<br>\le<br>2(n-1)\lfloor \log_2 n\rfloor<br>$$</p>
+<p>因此：</p>
+<p>$$<br>T_{\text{sort}}(n)&#x3D;O(n\log_2 n)<br>$$</p>
+<p>最终：</p>
+<p>$$<br>T(n)&#x3D;O(n)+O(n\log_2 n)&#x3D;O(n\log_2 n)<br>$$</p>
+<h3 id="堆排序为什么不稳定"><a href="#堆排序为什么不稳定" class="headerlink" title="堆排序为什么不稳定"></a>堆排序为什么不稳定</h3><p>堆排序不稳定，原因是建堆、下坠、堆顶与堆底交换都可能让相等关键字发生远距离跨越。</p>
+<p>例如初始序列：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 2a 2b</span><br></pre></td></tr></table></figure>
+
+<p>建立大根堆时，若左右孩子相等时优先与左孩子交换，可能得到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2a 1 2b</span><br></pre></td></tr></table></figure>
+
+<p>随后堆顶与堆底交换，可能变成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2b 1 2a</span><br></pre></td></tr></table></figure>
+
+<p>相同关键字 <code>2a</code>、<code>2b</code> 的相对顺序已经改变，所以堆排序不稳定。</p>
+<h2 id="堆的插入与删除"><a href="#堆的插入与删除" class="headerlink" title="堆的插入与删除"></a>堆的插入与删除</h2><p>堆排序本身主要用到“建堆”和“删除堆顶最大值”的思想。单独考堆的基本操作时，还要掌握插入与删除。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||650)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||650)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/max-heap-insert-delete.html" style="width:100%;height:650px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="插入新元素"><a href="#插入新元素" class="headerlink" title="插入新元素"></a>插入新元素</h3><p>以大根堆为例：</p>
+<ol>
+<li>把新元素放到表尾，保持完全二叉树形态。</li>
+<li>与父结点比较。</li>
+<li>若新元素大于父结点，就与父结点交换。</li>
+<li>重复向上，直到新元素不大于父结点，或到达根。</li>
+</ol>
+<p>这叫<strong>上升调整</strong>。一次插入最多沿树高上升，时间复杂度为 $O(\log_2 n)$。</p>
+<p>例子中，插入 <code>76</code> 从表尾开始，依次与 <code>32</code>、<code>45</code>、<code>87</code> 比较，共比较 3 次；插入 <code>70</code> 时先与 <code>17</code> 交换，再与 <code>76</code> 比较后停止。</p>
+<h3 id="删除堆中元素"><a href="#删除堆中元素" class="headerlink" title="删除堆中元素"></a>删除堆中元素</h3><p>以大根堆删除某个结点为例：</p>
+<ol>
+<li>删除目标结点。</li>
+<li>用堆底元素补到空位，保持完全二叉树形态。</li>
+<li>若补上来的元素破坏堆性质，就与更大的孩子交换。</li>
+<li>重复向下，直到它不小于孩子，或到达叶子。</li>
+</ol>
+<p>这叫<strong>下坠调整</strong>。一次删除最多沿树高下坠，时间复杂度为 $O(\log_2 n)$。</p>
+<p>例子中，删除 <code>76</code> 后用堆底 <code>17</code> 补位，<code>17</code> 需要在孩子 <code>45</code>、<code>70</code> 中选更大者，再与该孩子比较；交换后 <code>17</code> 到达叶子，调整结束。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Inserts a value into a max heap.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   heap: Zero-based max heap. heap[0..*size-1] is valid before insertion.</span></span><br><span class="line"><span class="comment"> *   size: Pointer to the current heap size. It is increased by 1.</span></span><br><span class="line"><span class="comment"> *   value: New value to insert.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">max_heap_insert</span><span class="params">(<span class="type">int</span> heap[], <span class="type">int</span> *size, <span class="type">int</span> value)</span> &#123;</span><br><span class="line">    <span class="type">int</span> child = *size;</span><br><span class="line">    heap[child] = value;</span><br><span class="line">    (*size)++;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (child &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">int</span> parent = (child - <span class="number">1</span>) / <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (heap[parent] &gt;= heap[child]) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        swap_int(&amp;heap[parent], &amp;heap[child]);</span><br><span class="line">        child = parent;  <span class="comment">// 新元素继续向上</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Restores the max-heap property after a root or internal replacement.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   heap: Zero-based max heap.</span></span><br><span class="line"><span class="comment"> *   root: Root index of the subtree to adjust.</span></span><br><span class="line"><span class="comment"> *   heap_size: Number of elements in the heap.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">sift_down_max_from</span><span class="params">(<span class="type">int</span> heap[], <span class="type">int</span> root, <span class="type">int</span> heap_size)</span> &#123;</span><br><span class="line">    <span class="type">int</span> parent = root;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">2</span> * parent + <span class="number">1</span> &lt; heap_size) &#123;</span><br><span class="line">        <span class="type">int</span> child = <span class="number">2</span> * parent + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (child + <span class="number">1</span> &lt; heap_size &amp;&amp; heap[child + <span class="number">1</span>] &gt; heap[child]) &#123;</span><br><span class="line">            child++;  <span class="comment">// 大根堆要选择更大的孩子</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (heap[parent] &gt;= heap[child]) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        swap_int(&amp;heap[parent], &amp;heap[child]);</span><br><span class="line">        parent = child;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Deletes the element at index pos from a max heap.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   heap: Zero-based max heap.</span></span><br><span class="line"><span class="comment"> *   size: Pointer to the current heap size. It is decreased by 1.</span></span><br><span class="line"><span class="comment"> *   pos: Index of the element to delete.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Returns:</span></span><br><span class="line"><span class="comment"> *   The deleted value.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">max_heap_delete_at</span><span class="params">(<span class="type">int</span> heap[], <span class="type">int</span> *size, <span class="type">int</span> pos)</span> &#123;</span><br><span class="line">    <span class="type">int</span> deleted = heap[pos];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pos == *size - <span class="number">1</span>) &#123;</span><br><span class="line">        (*size)--;</span><br><span class="line">        <span class="keyword">return</span> deleted;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    heap[pos] = heap[*size - <span class="number">1</span>];</span><br><span class="line">    (*size)--;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (pos &gt; <span class="number">0</span> &amp;&amp; heap[pos] &gt; heap[(pos - <span class="number">1</span>) / <span class="number">2</span>]) &#123;</span><br><span class="line">        <span class="keyword">while</span> (pos &gt; <span class="number">0</span> &amp;&amp; heap[pos] &gt; heap[(pos - <span class="number">1</span>) / <span class="number">2</span>]) &#123;</span><br><span class="line">            <span class="type">int</span> parent = (pos - <span class="number">1</span>) / <span class="number">2</span>;</span><br><span class="line">            swap_int(&amp;heap[pos], &amp;heap[parent]);</span><br><span class="line">            pos = parent;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        sift_down_max_from(heap, pos, *size);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> deleted;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Top-K-问题"><a href="#Top-K-问题" class="headerlink" title="Top-K 问题"></a>Top-K 问题</h2><p>Top-K 问题通常是：在 $n$ 个元素中找出最大的 $k$ 个或最小的 $k$ 个，其中 $k\ll n$。</p>
+<p>若要求<strong>最小的 $k$ 个元素</strong>，可以维护一个大小为 $k$ 的大根堆：</p>
+<ol>
+<li>先用前 $k$ 个元素建立大根堆。</li>
+<li>从第 $k+1$ 个元素开始扫描。</li>
+<li>若当前元素不小于堆顶，说明它不可能进入最小的 $k$ 个，跳过。</li>
+<li>若当前元素小于堆顶，就用当前元素替换堆顶，再向下调整。</li>
+<li>扫描结束后，堆中保留的就是最小的 $k$ 个元素。</li>
+</ol>
+<p>这里使用大根堆的原因是：堆顶保存“当前候选集合中最大的那个”。一旦遇到更小的元素，就淘汰堆顶。</p>
+<p>时间复杂度：</p>
+<p>$$<br>O(k)+O((n-k)\log_2 k)&#x3D;O(n\log_2 k)<br>$$</p>
+<p>空间复杂度为：</p>
+<p>$$<br>O(k)<br>$$</p>
+<p>对偶地，若要求<strong>最大的 $k$ 个元素</strong>，应维护一个大小为 $k$ 的小根堆；堆顶保存当前候选集合中最小的那个，遇到更大的元素就替换堆顶。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Keeps the k smallest values in a max heap.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Input array.</span></span><br><span class="line"><span class="comment"> *   n: Number of elements in a.</span></span><br><span class="line"><span class="comment"> *   k: Number of smallest values to keep.</span></span><br><span class="line"><span class="comment"> *   heap: Output buffer with room for at least k elements.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   heap[0] is the largest value among the current k smallest candidates.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">top_k_smallest</span><span class="params">(<span class="type">const</span> <span class="type">int</span> a[], <span class="type">int</span> n, <span class="type">int</span> k, <span class="type">int</span> heap[])</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; k; i++) &#123;</span><br><span class="line">        heap[i] = a[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    build_max_heap(heap, k);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = k; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (a[i] &lt; heap[<span class="number">0</span>]) &#123;</span><br><span class="line">            heap[<span class="number">0</span>] = a[i];</span><br><span class="line">            sift_down_max(heap, <span class="number">0</span>, k);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><table>
+<thead>
+<tr>
+<th>算法</th>
+<th align="right">最好</th>
+<th align="right">平均</th>
+<th align="right">最坏</th>
+<th align="right">空间</th>
+<th>稳定性</th>
+<th>核心记忆</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简单选择排序</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(1)$</td>
+<td>不稳定</td>
+<td>每趟扫描待排序区，选最小值</td>
+</tr>
+<tr>
+<td>堆排序</td>
+<td align="right">$O(n\log_2 n)$</td>
+<td align="right">$O(n\log_2 n)$</td>
+<td align="right">$O(n\log_2 n)$</td>
+<td align="right">$O(1)$</td>
+<td>不稳定</td>
+<td>建堆 $O(n)$，每趟取堆顶后下坠</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/29/selection-sorts/">https://eliano64.github.io/2026/06/29/selection-sorts/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/29/exchange-sorts/" title="Exchange Sorts"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Exchange Sorts</div></div><div class="info-2"><div class="info-item-1">Exchange Sorts交换类排序交换类排序的共同点是：根据两个元素关键字的比较结果，交换它们在序列中的位置。 主要讨论两种交换类排序：  冒泡排序：只比较相邻元素，若相邻逆序则交换。 快速排序：通过一次划分把枢轴放到最终位置，再递归处理左右子表。  冒泡排序冒泡排序从后往前或从前往后两两比较相邻元素。如果相邻元素逆序，就交换它们。一趟冒泡结束后，会有一个元素到达最终位置。 下面采用“从后往前冒泡”的写法：每一趟把当前无序区中最小的元素冒到最前面。 如果一次处理无交换发生，则说明已经有序，提前停止算法。   ↻ + −     冒泡排序的 C 写法1234567891011121314151617181920212223242526272829/** * Sorts an integer array in nondecreasing order using bubble sort. * * Args: *   a: Array to sort in place. *   n: Number of elements in the array. * * Notes: *  ...</div></div></div></a><a class="pagination-related" href="/2026/06/29/merge-sort/" title="Merge Sort"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Merge Sort</div></div><div class="info-2"><div class="info-item-1">归并的基本思想归并：把两个或多个已经有序的序列合并成一个新的有序序列。 归并排序最常用的是二路归并：  把待排序序列拆成若干个有序子表。 每次把相邻的两个有序子表归并成一个更长的有序子表。 子表长度逐趟翻倍，直到整个序列有序。  内部排序中通常采用二路归并；多路归并更常出现在外部排序中。 若朴素地做 $m$ 路归并，每次要从 $m$ 个子表的当前元素中选出最小者，最多需要比较 $m-1$ 次。二路归并时 $m&#x3D;2$，所以每选出一个元素只需要比较 1 次。 二路归并设数组中已有两个相邻有序子表： $$A[left, mid),\quad A[mid, right)$$ 二路归并要把它们合成一个有序区间 $A[left, right)$。   ↻ + −     核心指针含义：    指针 含义    i 指向左子表当前待比较元素   j 指向右子表当前待比较元素   k 指向原数组中当前写回位置   归并时每次比较 B[i] 和 B[j]：  若 B[i] &lt;= B[j]，把 B[i] 写回 A[k]，然后 i++、k++。 若 B[i] &gt; B[j]，把...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%89%E6%8B%A9%E7%B1%BB%E6%8E%92%E5%BA%8F%E7%9A%84%E5%85%B1%E5%90%8C%E6%80%9D%E6%83%B3"><span class="toc-text">选择类排序的共同思想</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F"><span class="toc-text">简单选择排序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E7%9A%84-C-%E5%86%99%E6%B3%95"><span class="toc-text">简单选择排序的 C 写法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E7%9A%84%E6%95%88%E7%8E%87%E4%B8%8E%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="toc-text">简单选择排序的效率与稳定性</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A0%86%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">堆的基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%BA%E7%AB%8B%E5%A4%A7%E6%A0%B9%E5%A0%86"><span class="toc-text">建立大根堆</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F"><span class="toc-text">堆排序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%E7%9A%84%E6%95%88%E7%8E%87"><span class="toc-text">堆排序的效率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-text">时间复杂度分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E4%B8%AA%E7%BB%93%E7%82%B9%E4%B8%8B%E5%9D%A0%E7%9A%84%E6%AF%94%E8%BE%83%E6%AC%A1%E6%95%B0"><span class="toc-text">单个结点下坠的比较次数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BB%BA%E5%A0%86%E9%98%B6%E6%AE%B5%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-text">建堆阶段时间复杂度</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#sum-i-1-h-1-2-i-h-i"><span class="toc-text">$$\sum_{i&#x3D;1}^{h-1} 2^i(h-i)</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#sum-j-1-h-1-2-h-j-j"><span class="toc-text">\sum_{j&#x3D;1}^{h-1} 2^{h-j}j</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E6%8E%92%E5%BA%8F%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%A8%B3%E5%AE%9A"><span class="toc-text">堆排序为什么不稳定</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E7%9A%84%E6%8F%92%E5%85%A5%E4%B8%8E%E5%88%A0%E9%99%A4"><span class="toc-text">堆的插入与删除</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E6%96%B0%E5%85%83%E7%B4%A0"><span class="toc-text">插入新元素</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E5%A0%86%E4%B8%AD%E5%85%83%E7%B4%A0"><span class="toc-text">删除堆中元素</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Top-K-%E9%97%AE%E9%A2%98"><span class="toc-text">Top-K 问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

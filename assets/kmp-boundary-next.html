@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMP 分界线法</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#f8fafc;--fg:#111827;--muted:#64748b;--card:#fff;--line:#334155;
+  --accent:#2563eb;--bad:#dc2626;--ok:#16a34a;--warn:#d97706;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#020617;--fg:#e5e7eb;--muted:#94a3b8;--card:#0f172a;--line:#94a3b8;--accent:#60a5fa;--bad:#f87171;--ok:#4ade80;--warn:#fbbf24}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1060px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.title{font-size:22px;font-weight:750}.hint{color:var(--muted)}
+button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;padding:7px 12px;cursor:pointer}
+.slide{display:none;background:var(--card);border:1px solid color-mix(in srgb,var(--line) 35%,transparent);border-radius:8px;padding:20px;margin-top:16px;min-height:610px}
+.slide.active{display:block}
+h2{margin:0 0 14px;font-size:22px}.grid{display:grid;grid-template-columns:96px repeat(7,70px);gap:8px;align-items:center;margin:14px 0}
+.label{font-weight:750}.cell{position:relative;border:1px solid var(--line);border-radius:6px;height:48px;display:flex;align-items:center;justify-content:center;font-weight:750;font-size:20px}
+.idx{position:absolute;top:-20px;font-size:13px;color:var(--muted);font-weight:600}.blank{border-color:transparent}.known{background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.bad{background:color-mix(in srgb,var(--bad) 18%,transparent)}.try{background:color-mix(in srgb,var(--warn) 18%,transparent)}.keep{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.boundary{border-right:5px solid var(--bad)}
+.line{height:2px;background:var(--line);opacity:.35;margin:16px 0}.note{border-left:4px solid var(--accent);padding:10px 12px;background:color-mix(in srgb,var(--accent) 10%,transparent);margin:14px 0}
+.badnote{border-left-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}.oknote{border-left-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent)}
+pre{background:color-mix(in srgb,var(--line) 10%,transparent);padding:14px;border-radius:8px;overflow:auto}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-right:8px;color:var(--muted)}
+.pager{margin-top:14px;display:flex;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">KMP：分界线法求 next</div>
+      <div class="hint">例：模式串 T = abaabc，演示 T[6] 失配时 j 如何一步步后退。</div>
+    </div>
+    <div><button id="prev">上一页</button> <button id="next">下一页</button></div>
+  </div>
+
+  <section class="slide active">
+    <h2>1. T[6] 失配：只看分界线之前</h2>
+    <div class="grid">
+      <div class="label">下标 j</div>
+      <div class="cell blank"><span class="idx">1</span></div><div class="cell blank"><span class="idx">2</span></div><div class="cell blank"><span class="idx">3</span></div><div class="cell blank"><span class="idx">4</span></div><div class="cell blank"><span class="idx">5</span></div><div class="cell blank"><span class="idx">6</span></div><div class="cell blank"></div>
+      <div class="label">T</div>
+      <div class="cell known">a</div><div class="cell known">b</div><div class="cell known">a</div><div class="cell known">a</div><div class="cell known boundary">b</div><div class="cell bad">c</div><div class="cell blank"></div>
+    </div>
+    <p>若比较到 <code>T[6]</code> 时失配，说明 <code>T[1..5] = abaab</code> 已经匹配。</p>
+    <div class="note">分界线画在失配位置前。后退时只利用分界线前的已匹配段 <code>abaab</code>。</div>
+    <pre>已知：T[1..5] 已匹配
+目标：找到 T[6] 失配后，j 应回退到哪个位置继续比较</pre>
+  </section>
+
+  <section class="slide">
+    <h2>2. 第一次尝试：保留 4 个字符</h2>
+    <div class="compare">
+      <div>
+        <p><span class="pill">前缀长度 4</span>取 T[1..4]</p>
+        <div class="grid">
+          <div class="label">前缀</div>
+          <div class="cell try">a</div><div class="cell try">b</div><div class="cell try">a</div><div class="cell try">a</div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div>
+        </div>
+      </div>
+      <div>
+        <p><span class="pill">后缀长度 4</span>取 T[2..5]</p>
+        <div class="grid">
+          <div class="label">后缀</div>
+          <div class="cell try">b</div><div class="cell try">a</div><div class="cell try">a</div><div class="cell try">b</div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div>
+        </div>
+      </div>
+    </div>
+    <div class="note badnote"><code>abaa != baab</code>，不能保留 4 个已匹配字符，继续后退。</div>
+    <pre>若 next[6] = 5，则表示下一次用 T[5] 比较；
+这要求已匹配段中长度为 4 的前缀和后缀相同，但这里不成立。</pre>
+  </section>
+
+  <section class="slide">
+    <h2>3. 第二次尝试：保留 3 个字符</h2>
+    <div class="compare">
+      <div>
+        <p><span class="pill">前缀长度 3</span>取 T[1..3]</p>
+        <div class="grid">
+          <div class="label">前缀</div>
+          <div class="cell try">a</div><div class="cell try">b</div><div class="cell try">a</div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div>
+        </div>
+      </div>
+      <div>
+        <p><span class="pill">后缀长度 3</span>取 T[3..5]</p>
+        <div class="grid">
+          <div class="label">后缀</div>
+          <div class="cell try">a</div><div class="cell try">a</div><div class="cell try">b</div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div>
+        </div>
+      </div>
+    </div>
+    <div class="note badnote"><code>aba != aab</code>，不能保留 3 个已匹配字符，继续后退。</div>
+    <pre>若 next[6] = 4，则下一次用 T[4] 比较；
+这要求长度为 3 的前缀和后缀相同，但这里不成立。</pre>
+  </section>
+
+  <section class="slide">
+    <h2>4. 第三次尝试：保留 2 个字符，成功</h2>
+    <div class="compare">
+      <div>
+        <p><span class="pill">前缀长度 2</span>取 T[1..2]</p>
+        <div class="grid">
+          <div class="label">前缀</div>
+          <div class="cell keep">a</div><div class="cell keep">b</div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div>
+        </div>
+      </div>
+      <div>
+        <p><span class="pill">后缀长度 2</span>取 T[4..5]</p>
+        <div class="grid">
+          <div class="label">后缀</div>
+          <div class="cell keep">a</div><div class="cell keep">b</div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div>
+        </div>
+      </div>
+    </div>
+    <div class="note oknote"><code>ab == ab</code>，可以保留 2 个已匹配字符。所以下一次从 <code>T[3]</code> 继续比较。</div>
+    <pre>保留字符数 = 2
+下一次比较位置 = 保留字符数 + 1 = 3
+所以 next[6] = 3</pre>
+  </section>
+
+  <section class="slide">
+    <h2>5. 对齐后的状态：j 退到 3，i 不动</h2>
+    <div class="grid">
+      <div class="label">主串片段</div>
+      <div class="cell known">a</div><div class="cell known">b</div><div class="cell known">a</div><div class="cell known">a</div><div class="cell known">b</div><div class="cell bad">?</div><div class="cell blank"></div>
+      <div class="label">T 原位置</div>
+      <div class="cell known">a</div><div class="cell known">b</div><div class="cell known">a</div><div class="cell known">a</div><div class="cell known boundary">b</div><div class="cell bad">c</div><div class="cell blank"></div>
+      <div class="label">T 后退后</div>
+      <div class="cell blank"></div><div class="cell blank"></div><div class="cell blank"></div><div class="cell keep">a</div><div class="cell keep">b</div><div class="cell bad">a</div><div class="cell">a</div>
+    </div>
+    <p>后退后，模式串开头的 <code>ab</code> 与主串中已匹配段末尾的 <code>ab</code> 对齐。当前主串字符仍是刚才让 <code>T[6]</code> 失配的字符。</p>
+    <div class="note">因此下一次比较不是从头开始，而是让 <code>T[3]</code> 和当前 <code>S[i]</code> 比较。</div>
+  </section>
+
+  <section class="slide">
+    <h2>6. next[6] 的含义</h2>
+    <p><code>next[6] = 3</code> 表示：当 <code>T[6]</code> 失配，并且 <code>T[1..5]</code> 已匹配时，模式串指针 <code>j</code> 回退到 <code>3</code>。</p>
+    <pre>if (S.ch[i] == T.ch[j]) {
+    ++i;  // 当前字符匹配，主串继续看下一个字符
+    ++j;  // 模式串也继续看下一个字符
+} else {
+    // T[6] 失配时，T[1..5] 已经匹配。
+    // next[6] = 3 表示保留前后能对齐的 "ab"，
+    // 下一次用 T[3] 和当前 S[i] 比较，主串指针 i 不动。
+    j = next[j];
+}</pre>
+    <div class="note">主串指针 <code>i</code> 不回退；被保留下来的 <code>ab</code> 不需要重新比较。</div>
+  </section>
+
+  <section class="slide">
+    <h2>7. T = abaabc 的 next 数组</h2>
+    <div class="grid">
+      <div class="label">j</div>
+      <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div><div class="cell">5</div><div class="cell">6</div><div class="cell blank"></div>
+      <div class="label">T[j]</div>
+      <div class="cell">a</div><div class="cell">b</div><div class="cell">a</div><div class="cell">a</div><div class="cell">b</div><div class="cell">c</div><div class="cell blank"></div>
+      <div class="label">next[j]</div>
+      <div class="cell">0</div><div class="cell">1</div><div class="cell">1</div><div class="cell">2</div><div class="cell">2</div><div class="cell keep">3</div><div class="cell blank"></div>
+    </div>
+    <p>手算时不要直接背表。对每个 <code>j</code>，都把分界线画在 <code>T[j]</code> 前面，只看 <code>T[1..j-1]</code>，再从最长可保留部分开始逐步后退。</p>
+  </section>
+
+  <div class="pager"><span id="page"></span><span class="hint">点击按钮或使用方向键翻页。</span></div>
+</div>
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+let idx = 0;
+const page = document.querySelector('#page');
+function show(n){
+  idx = (n + slides.length) % slides.length;
+  slides.forEach((slide, i) => slide.classList.toggle('active', i === idx));
+  page.textContent = `${idx + 1} / ${slides.length}`;
+}
+document.querySelector('#prev').addEventListener('click', () => show(idx - 1));
+document.querySelector('#next').addEventListener('click', () => show(idx + 1));
+addEventListener('keydown', event => {
+  if (event.key === 'ArrowRight') show(idx + 1);
+  if (event.key === 'ArrowLeft') show(idx - 1);
+});
+show(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="310" viewBox="0 0 1040 310" role="img" aria-labelledby="title desc">
+  <title id="title">TCP send window P1 P2 P3</title>
+  <desc id="desc">TCP send window is divided by P1, P2, P3 into acknowledged, sent but unacknowledged, sendable, and unsendable regions.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:#172033}
+    .label{font-size:22px;font-weight:700}.small{font-size:14px}.mid{font-size:16px;font-weight:700}.code{font-family:Consolas,monospace;font-size:15px}
+    .base{fill:#f8fafc;stroke:#334155;stroke-width:2}.done{fill:#dcfce7;stroke:#16a34a}.sent{fill:#dbeafe;stroke:#2563eb}.free{fill:#fef3c7;stroke:#d97706}.no{fill:#fee2e2;stroke:#dc2626}
+    .mark{stroke:#111827;stroke-width:3}.arrow{stroke:#64748b;stroke-width:2;fill:none;marker-end:url(#arr)}
+    @media(prefers-color-scheme:dark){text{fill:#e5e7eb}.base{fill:#111827;stroke:#94a3b8}.done{fill:#0f2b1d;stroke:#4ade80}.sent{fill:#10213f;stroke:#60a5fa}.free{fill:#3b2506;stroke:#fbbf24}.no{fill:#3b0d0d;stroke:#f87171}.mark{stroke:#e5e7eb}.arrow{stroke:#94a3b8}}
+  </style>
+  <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+  <text x="520" y="38" text-anchor="middle" class="label">发送窗口的三个指针：P1、P2、P3</text>
+
+  <rect x="80" y="105" width="260" height="70" class="base done"/><text x="210" y="135" text-anchor="middle" class="mid">已确认</text><text x="210" y="158" text-anchor="middle" class="small">可从发送缓存删除</text>
+  <rect x="340" y="105" width="230" height="70" class="base sent"/><text x="455" y="135" text-anchor="middle" class="mid">已发送未确认</text><text x="455" y="158" text-anchor="middle" class="small">等待 ACK，不能删除</text>
+  <rect x="570" y="105" width="220" height="70" class="base free"/><text x="680" y="135" text-anchor="middle" class="mid">允许发送</text><text x="680" y="158" text-anchor="middle" class="small">窗口内尚未发送</text>
+  <rect x="790" y="105" width="170" height="70" class="base no"/><text x="875" y="135" text-anchor="middle" class="mid">不允许发送</text><text x="875" y="158" text-anchor="middle" class="small">窗口之外</text>
+
+  <line x1="340" y1="92" x2="340" y2="188" class="mark"/><line x1="570" y1="92" x2="570" y2="188" class="mark"/><line x1="790" y1="92" x2="790" y2="188" class="mark"/>
+  <text x="340" y="82" text-anchor="middle" class="code">P1</text><text x="340" y="205" text-anchor="middle" class="small">窗口后沿</text>
+  <text x="570" y="82" text-anchor="middle" class="code">P2</text><text x="570" y="205" text-anchor="middle" class="small">可用窗口起点</text>
+  <text x="790" y="82" text-anchor="middle" class="code">P3</text><text x="790" y="205" text-anchor="middle" class="small">窗口前沿</text>
+
+  <text x="565" y="230" text-anchor="middle" class="code">发送窗口大小 = P3 - P1</text>
+  <path d="M340 242 L790 242" class="arrow"/>
+
+  <path d="M340 272 L570 272" class="arrow"/>
+  <path d="M570 272 L790 272" class="arrow"/>
+  <text x="455" y="294" text-anchor="middle" class="code">已发送未确认 = P2 - P1</text>
+  <text x="680" y="294" text-anchor="middle" class="code">可用窗口 = P3 - P2</text>
+</svg>

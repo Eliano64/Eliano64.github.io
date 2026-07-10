@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="330" viewBox="0 0 980 330" role="img" aria-labelledby="title desc">
+  <title id="title">MIPS load-use 相关的时空图分析</title>
+  <desc id="desc">展示 lw 后紧跟使用结果的 add 时，即使有转发也需要插入一个气泡。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --grid: #cbd5e1;
+      --head: #e2e8f0;
+      --if: #dbeafe;
+      --id: #dcfce7;
+      --ex: #fee2e2;
+      --mem: #fef3c7;
+      --wb: #ede9fe;
+      --bubble: #f1f5f9;
+      --accent: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --grid: #475569;
+        --head: #1e293b;
+        --if: #1d4ed8;
+        --id: #166534;
+        --ex: #991b1b;
+        --mem: #92400e;
+        --wb: #5b21b6;
+        --bubble: #334155;
+        --accent: #f87171;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .title { font: 700 23px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); }
+    .subtitle, .note { font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .label { font: 600 15px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: var(--fg); }
+    .cell-text { font: 700 15px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; }
+    .cycle { font: 700 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; }
+    .small { font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .grid { fill: none; stroke: var(--grid); stroke-width: 1; }
+    .header { fill: var(--head); stroke: var(--grid); stroke-width: 1; }
+    .if { fill: var(--if); }
+    .id { fill: var(--id); }
+    .ex { fill: var(--ex); }
+    .mem { fill: var(--mem); }
+    .wb { fill: var(--wb); }
+    .bubble { fill: var(--bubble); }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.small{fill:#f8fafc}}
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="980" height="330" />
+  <text class="title" x="44" y="46">load-use：转发仍然需要一个气泡</text>
+  <text class="subtitle" x="44" y="74">lw 的数据到 MEM 末尾才得到，紧随其后的 add 在 EX 开始就要用。</text>
+
+  <g transform="translate(44 104)">
+    <rect class="header" x="0" y="0" width="170" height="40" />
+    <text class="cycle" x="85" y="20">指令</text>
+    <g>
+      <rect class="header" x="170" y="0" width="90" height="40" /><text class="cycle" x="215" y="20">1</text>
+      <rect class="header" x="260" y="0" width="90" height="40" /><text class="cycle" x="305" y="20">2</text>
+      <rect class="header" x="350" y="0" width="90" height="40" /><text class="cycle" x="395" y="20">3</text>
+      <rect class="header" x="440" y="0" width="90" height="40" /><text class="cycle" x="485" y="20">4</text>
+      <rect class="header" x="530" y="0" width="90" height="40" /><text class="cycle" x="575" y="20">5</text>
+      <rect class="header" x="620" y="0" width="90" height="40" /><text class="cycle" x="665" y="20">6</text>
+      <rect class="header" x="710" y="0" width="90" height="40" /><text class="cycle" x="755" y="20">7</text>
+    </g>
+    <rect class="grid" x="0" y="40" width="800" height="52" />
+    <rect class="grid" x="0" y="92" width="800" height="52" />
+    <text class="label" x="16" y="72">lw  $t0,0($s0)</text>
+    <text class="label" x="16" y="124">add $t1,$t0,$t2</text>
+
+    <rect class="if" x="170" y="40" width="90" height="52" /><text class="cell-text" x="215" y="66">IF</text>
+    <rect class="id" x="260" y="40" width="90" height="52" /><text class="cell-text" x="305" y="66">ID</text>
+    <rect class="ex" x="350" y="40" width="90" height="52" /><text class="cell-text" x="395" y="66">EX</text>
+    <rect class="mem" x="440" y="40" width="90" height="52" /><text class="cell-text" x="485" y="66">MEM</text>
+    <rect class="wb" x="530" y="40" width="90" height="52" /><text class="cell-text" x="575" y="66">WB</text>
+
+    <rect class="if" x="260" y="92" width="90" height="52" /><text class="cell-text" x="305" y="118">IF</text>
+    <rect class="id" x="350" y="92" width="90" height="52" /><text class="cell-text" x="395" y="118">ID</text>
+    <rect class="bubble" x="440" y="92" width="90" height="52" /><text class="cell-text" x="485" y="118">气泡</text>
+    <rect class="ex" x="530" y="92" width="90" height="52" /><text class="cell-text" x="575" y="118">EX</text>
+    <rect class="mem" x="620" y="92" width="90" height="52" /><text class="cell-text" x="665" y="118">MEM</text>
+    <rect class="wb" x="710" y="92" width="90" height="52" /><text class="cell-text" x="755" y="118">WB</text>
+
+    <path class="arrow" d="M 508 76 C 530 96, 548 105, 568 114" />
+    <text class="small" x="542" y="82">MEM 末尾得到数据</text>
+    <text class="small" x="620" y="126">推迟后的 EX 使用</text>
+    <text class="note" x="0" y="194">没有这个气泡时，add 的 EX 会落在第 4 周期，早于 lw 数据可用的时刻。</text>
+  </g>
+</svg>

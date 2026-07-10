@@ -1,0 +1,385 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>SSD And Flash Storage | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="Flash 与 SSDFlash Memory 是一种非易失性半导体存储器，断电后仍能保存信息。U 盘、SD 卡、SSD 都基于 Flash。 SSD 是固态硬盘，通常可以理解为： $$\text{SSD} &#x3D; \text{控制单元} + \text{Flash 存储单元}$$ SSD 与普通 Flash 存储芯片使用的存储介质类似，但 SSD 的控制单元更复杂，要负责地址映射、磨损均衡">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSD And Flash Storage">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/03/SSD-And-Flash-Storage/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="Flash 与 SSDFlash Memory 是一种非易失性半导体存储器，断电后仍能保存信息。U 盘、SD 卡、SSD 都基于 Flash。 SSD 是固态硬盘，通常可以理解为： $$\text{SSD} &#x3D; \text{控制单元} + \text{Flash 存储单元}$$ SSD 与普通 Flash 存储芯片使用的存储介质类似，但 SSD 的控制单元更复杂，要负责地址映射、磨损均衡">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-03T03:58:28.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.038Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="OperatingSystem">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="Storage">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "SSD And Flash Storage",
+  "url": "https://eliano64.github.io/2026/07/03/SSD-And-Flash-Storage/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-03T03:58:28.000Z",
+  "dateModified": "2026-07-10T07:16:51.038Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/03/SSD-And-Flash-Storage/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'SSD And Flash Storage',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">SSD And Flash Storage</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">SSD And Flash Storage</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-03T03:58:28.000Z" title="发表于 2026-07-03 11:58:28">2026-07-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.038Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/Operating-System/">Operating System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Flash-与-SSD"><a href="#Flash-与-SSD" class="headerlink" title="Flash 与 SSD"></a>Flash 与 SSD</h1><p><strong>Flash Memory</strong> 是一种非易失性半导体存储器，断电后仍能保存信息。U 盘、SD 卡、SSD 都基于 Flash。</p>
+<p><strong>SSD</strong> 是固态硬盘，通常可以理解为：</p>
+<p>$$<br>\text{SSD} &#x3D; \text{控制单元} + \text{Flash 存储单元}<br>$$</p>
+<p>SSD 与普通 Flash 存储芯片使用的存储介质类似，但 SSD 的控制单元更复杂，要负责地址映射、磨损均衡、坏块管理、垃圾回收等工作。</p>
+<h1 id="页和块"><a href="#页和块" class="headerlink" title="页和块"></a>页和块</h1><p>SSD 内部常以<strong>页</strong>和<strong>块</strong>组织数据。</p>
+<p><img src="/assets/ssd-flash-page-block.svg"></p>
+<table>
+<thead>
+<tr>
+<th>单位</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>页</td>
+<td>读写的基本单位，常见大小为 512 B 到 4 KB</td>
+</tr>
+<tr>
+<td>块</td>
+<td>擦除的基本单位，常见大小为 16 KB 到 512 KB；即一块包含多页</td>
+</tr>
+</tbody></table>
+<p>&#x3D;&#x3D;SSD 通常按页读写，但按块擦除&#x3D;&#x3D;。</p>
+<p>这意味着 SSD 不能像 RAM 那样随意覆盖一个已有数据的位置。若要改写旧数据，控制器可能需要搬移同块内仍有效的页，擦除整个块，再写入新数据。</p>
+<h1 id="SSD-读快写慢"><a href="#SSD-读快写慢" class="headerlink" title="SSD 读快写慢"></a>SSD 读快写慢</h1><p>SSD 读数据时，可以直接按页读取；写数据时却受到擦除单位限制。</p>
+<p>写入旧位置时，可能经历：</p>
+<ol>
+<li>读取原块中仍然有效的页。</li>
+<li>擦除整个块。</li>
+<li>把有效页和新页写入新的位置。</li>
+<li>更新地址映射关系。</li>
+</ol>
+<p>因此 SSD 的写操作往往比读操作复杂，也可能出现<strong>写放大</strong>：用户看似只写入少量数据，SSD 内部却移动和写入了更多数据。</p>
+<h1 id="SSD-与机械硬盘"><a href="#SSD-与机械硬盘" class="headerlink" title="SSD 与机械硬盘"></a>SSD 与机械硬盘</h1><p><img src="/assets/ssd-vs-hdd.svg"></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>机械硬盘 HDD</th>
+<th>固态硬盘 SSD</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存储介质</td>
+<td>磁表面介质</td>
+<td>Flash 芯片</td>
+</tr>
+<tr>
+<td>访问方式</td>
+<td>依赖磁头移动和盘片旋转</td>
+<td>电子访问，无机械寻道</td>
+</tr>
+<tr>
+<td>随机访问</td>
+<td>受寻道和旋转延迟影响大</td>
+<td>随机访问性能好</td>
+</tr>
+<tr>
+<td>顺序访问</td>
+<td>适合连续块传输</td>
+<td>顺序读写也快</td>
+</tr>
+<tr>
+<td>写入特点</td>
+<td>可直接改写目标位置</td>
+<td>常受擦除单位限制</td>
+</tr>
+<tr>
+<td>典型问题</td>
+<td>机械延迟、抗震性差</td>
+<td>擦写寿命、写放大、价格</td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p>SSD 没有磁臂移动和盘片旋转，因此随机访问性能远好于机械硬盘。但这不意味着 SSD 写入完全没有代价，Flash 的擦除限制仍然是核心问题。</p>
+</div>
+</div>
+# 磨损均衡
+
+<p>Flash 块的擦除次数有限。如果总是反复擦写同一批块，这些块会先达到寿命上限。</p>
+<p><strong>磨损均衡</strong>让 SSD 控制器尽量把擦除次数分散到不同块上，使各块老化程度更接近，从而延长整体寿命。</p>
+<p>常见策略可以分为两类：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>做法</th>
+<th>解决的问题</th>
+<th>性能代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>动态磨损均衡</td>
+<td>新写入的数据尽量写到擦除次数较少的空闲块上</td>
+<td>避免少数空闲块被频繁擦写</td>
+<td>只在写入时选择空闲块，额外开销较小</td>
+</tr>
+<tr>
+<td>静态磨损均衡</td>
+<td>把长期不变的冷数据从擦除次数少的块搬走，让这些块也参与后续写入</td>
+<td>避免存放冷数据的块长期闲置，导致其余块承担过多擦写</td>
+<td>需要主动搬移冷数据，会增加内部读写和写放大</td>
+</tr>
+</tbody></table>
+<p>动态磨损均衡通常对性能影响较小。静态磨损均衡还会主动搬移冷数据，因此会占用控制器和 Flash 带宽，短期性能代价更高，<strong>但能让全盘块的擦除次数更接近，长期寿命更均匀</strong>。</p>
+<div class="callout callout-info">
+<div class="callout-title"><i class="fa-solid fa-circle-info callout-icon"></i><span class="callout-title-text">但对于普通用户，实际上并不是很需要担心寿命问题</span></div>
+<div class="callout-content"><p>一个简化估算：</p>
+</div>
+</div>假设 SSD 容量为 $2^{40}\text{ B}=1\text{ TB}$，每天写入 $2^{37}\text{ B}=128\text{ GB}$，每个 Flash 块可擦除 $2^{10}$ 次。
+每天写入容量占全盘容量的：$\frac{2^{37}}{2^{40}}=\frac{1}{8}$
+理想磨损均衡下，平均每 8 天全盘每个块相当于被擦除一次。每个块可擦除 $2^{10}$ 次，因此理论寿命约为：
+> $$
+8\times 2^{10}=8192\text{ 天}\approx 22.4\text{ 年}
+$$
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/03/SSD-And-Flash-Storage/">https://eliano64.github.io/2026/07/03/SSD-And-Flash-Storage/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/External-Storage-And-Disk-Basics/" title="External Storage And Disk Basics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">External Storage And Disk Basics</div></div><div class="info-2"><div class="info-item-1">外存、辅存和外设外存储器也叫辅助存储器，用于长期保存大量数据。磁盘、磁带、光盘、U 盘、SSD 都可以放在这一层理解。 外存同时也是一种 I&#x2F;O 设备：主机可以从外存读入数据，也可以把数据写出到外存。   辅存不能替代主存 CPU 通常不能直接访问辅存中的指令和数据。辅存中的内容要调入主存后，才成为 CPU 可以直接取指、读写和处理的数据。   # 磁表面存储器  磁表面存储器是在载体表面涂覆磁性材料，用磁化状态记录二进制信息。磁盘、磁带、磁鼓都属于磁表面存储器。 磁表面存储器的优点：  容量大，单位容量成本低。 信息可以长期保存，断电后不丢失。 可以脱机保存和搬运。 非破坏性读出，读出后原信息仍然保留。  它的主要限制来自机械运动。磁头移动、盘片旋转都需要时间，因此磁盘访问速度通常慢于主存和 Cache...</div></div></div></a><a class="pagination-related" href="/2026/07/03/File-Physical-Structure-And-Space-Management/" title="File Physical Structure And Space Management"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">File Physical Structure And Space Management</div></div><div class="info-2"><div class="info-item-1">文件块与磁盘块文件的逻辑地址空间会被划分为一个个文件块。外存也被划分为一个个磁盘块或物理块。文件系统要把： $$(\text{逻辑块号},\ \text{块内地址})$$ 转换为： $$(\text{物理块号},\ \text{块内地址})$$ 块内地址不变，真正需要转换的是块号。  Note 内存与外存之间的数据交换通常以块为单位。一个文件只有 10 B，也可能占用一个完整磁盘块。   ![1000](/assets/file-allocation-methods.svg)  连续分配连续分配要求每个文件在磁盘上占有一组连续的块。目录项中通常记录：  起始块号。 文件长度，或占用块数。  若文件起始块号为 $s$，要访问逻辑块号...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Flash-%E4%B8%8E-SSD"><span class="toc-text">Flash 与 SSD</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A1%B5%E5%92%8C%E5%9D%97"><span class="toc-text">页和块</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SSD-%E8%AF%BB%E5%BF%AB%E5%86%99%E6%85%A2"><span class="toc-text">SSD 读快写慢</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SSD-%E4%B8%8E%E6%9C%BA%E6%A2%B0%E7%A1%AC%E7%9B%98"><span class="toc-text">SSD 与机械硬盘</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

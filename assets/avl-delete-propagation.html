@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AVL Delete Propagation</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1040px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px;margin-top:6px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.explain{font-size:18px;line-height:1.65;min-height:92px}.code{font:14px/1.45 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;overflow:auto}svg{width:100%;height:auto}.edge{stroke:#64748b;stroke-width:2}.cut{stroke:var(--red);stroke-width:3;stroke-dasharray:7 6}.node{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.hot{fill:#fee2e2;stroke:var(--red);stroke-width:4}.newroot{fill:#dcfce7;stroke:var(--green);stroke-width:4}.t{fill:var(--text);font-weight:700;font-size:16px;text-anchor:middle}.bf{fill:var(--muted);font-size:13px;text-anchor:middle}@media(prefers-color-scheme:dark){.edge{stroke:#94a3b8}.node{fill:#172554;stroke:#38bdf8}.hot{fill:#3f1d1d}.newroot{fill:#12351f}}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>AVL 删除：旋转后仍可能向上传导</h1>
+        <div class="hint">删除先按 BST 删除，再从删除位置向上找第一个失衡结点。</div>
+      </div>
+      <div><button id="prev">上一步</button> <button id="next">下一步</button></div>
+    </div>
+    <div class="card">
+      <div class="stage">
+        <svg viewBox="0 0 600 420" id="tree"></svg>
+        <div>
+          <div class="explain" id="explain"></div>
+          <pre class="code">删除调整规则：
+1. 先按 BST 删除目标结点。
+2. 从删除位置向根回溯，找最小不平衡子树 A。
+3. 选 A 较高的孩子 B；再选 B 较高的孩子 C。
+4. 按 C 的位置做 LL/RR/LR/RL 调整。
+5. 删除后子树可能变矮，所以还要继续向上检查。</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const steps = [
+      { text:"删除 10 前，根 A 的左右高度差还在允许范围内。删除会发生在 A 的右侧，使右子树变矮。", nodes:[["A",300,55,"node","+1"],["B",200,150,"node","0"],["R",410,150,"node","0"],["BL",140,250,"node","0"],["BR",260,250,"node","0"],["10",410,250,"node","0"]], edges:[["A","B"],["A","R"],["B","BL"],["B","BR"],["R","10"]] },
+      { text:"按 BST 删除叶结点 10。此时 A 的右子树高度下降，A 的平衡因子变为 +2，A 成为最小不平衡子树。", cut:["R","10"], nodes:[["A",300,55,"hot","+2"],["B",200,150,"node","0"],["R",410,150,"node",""],["BL",140,250,"node","0"],["BR",260,250,"node","0"]], edges:[["A","B"],["A","R"],["B","BL"],["B","BR"]] },
+      { text:"A 左侧更高，选 B；B 左右等高时可按 LL 处理，对 A 右旋。这里的关键是：旋转不只是改位置，还会让该子树高度下降。", nodes:[["A",300,55,"hot","+2"],["B",200,150,"newroot","0"],["R",410,150,"node",""],["BL",140,250,"node","0"],["BR",260,250,"node","0"]], edges:[["A","B"],["A","R"],["B","BL"],["B","BR"]] },
+      { text:"右旋后 B 成为新根，A 成为 B 的右孩子。若这个子树整体高度比删除前少 1，就可能让 A 的祖先继续失衡，所以删除调整可能不止一次。", nodes:[["B",300,70,"newroot","-1"],["BL",190,180,"node","0"],["A",410,180,"node","+1"],["BR",350,300,"node","0"],["R",470,300,"node",""]], edges:[["B","BL"],["B","A"],["A","BR"],["A","R"]] }
+    ];
+    let index = 0;
+    function draw(){
+      const s=steps[index], svg=document.getElementById("tree");
+      svg.innerHTML="";
+      const map=new Map(s.nodes.map(n=>[n[0],n]));
+      const cut=new Set((s.cut||[]).map(e=>e.join("-")));
+      for(const [a,b] of s.edges){
+        const p=map.get(a), q=map.get(b);
+        const cls=cut.has(`${a}-${b}`)?"cut":"edge";
+        svg.innerHTML+=`<line class="${cls}" x1="${p[1]}" y1="${p[2]}" x2="${q[1]}" y2="${q[2]}"/>`;
+      }
+      for(const [name,x,y,cls,bf] of s.nodes){
+        svg.innerHTML+=`<circle class="${cls}" cx="${x}" cy="${y}" r="27"/><text class="t" x="${x}" y="${y+5}">${name}</text>`;
+        if(bf) svg.innerHTML+=`<text class="bf" x="${x}" y="${y+45}">BF=${bf}</text>`;
+      }
+      document.getElementById("explain").textContent=s.text;
+    }
+    document.getElementById("prev").onclick=()=>{index=Math.max(0,index-1);draw()};
+    document.getElementById("next").onclick=()=>{index=Math.min(steps.length-1,index+1);draw()};
+    draw();
+  </script>
+</body>
+</html>

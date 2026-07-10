@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MIPS Pipeline Execution</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --line: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --if: #dbeafe;
+      --id: #dcfce7;
+      --ex: #fee2e2;
+      --mem: #fef3c7;
+      --wb: #ede9fe;
+      --bubble: #e5e7eb;
+      --accent: #dc2626;
+      --blue: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --line: #475569;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --if: #1d4ed8;
+        --id: #166534;
+        --ex: #991b1b;
+        --mem: #92400e;
+        --wb: #5b21b6;
+        --bubble: #374151;
+        --accent: #f87171;
+        --blue: #60a5fa;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 22px 20px;
+    }
+    .top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .title { font-size: 22px; font-weight: 800; }
+    .sub { margin-top: 4px; font-size: 15px; color: var(--muted); line-height: 1.45; }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    button {
+      width: 40px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue); }
+    .count { min-width: 64px; text-align: center; font-size: 14px; color: var(--muted); }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 14px;
+      align-items: start;
+    }
+    .board, .side {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .board {
+      padding: 12px;
+      overflow: auto;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      min-width: 780px;
+      height: auto;
+    }
+    .side { padding: 15px; }
+    .step-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+    .desc { font-size: 15px; line-height: 1.65; color: var(--text); }
+    .legend { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; color: var(--muted); font-size: 13px; }
+    .tag { border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; }
+    .stage { stroke: var(--line); stroke-width: 1; rx: 6; }
+    .IF { fill: var(--if); }
+    .ID { fill: var(--id); }
+    .EX { fill: var(--ex); }
+    .MEM { fill: var(--mem); }
+    .WB { fill: var(--wb); }
+    .BUBBLE { fill: var(--bubble); }
+    .header { fill: color-mix(in srgb, var(--panel), var(--bg) 30%); stroke: var(--line); stroke-width: 1; }
+    .grid { stroke: var(--line); stroke-width: 1; fill: none; }
+    .txt { fill: var(--text); font: 700 14px ui-monospace, SFMono-Regular, Consolas, monospace; text-anchor: middle; dominant-baseline: middle; }
+    .axis { fill: var(--muted); font: 600 13px system-ui, sans-serif; text-anchor: middle; dominant-baseline: middle; }
+    .row { fill: var(--text); font: 700 13px ui-monospace, SFMono-Regular, Consolas, monospace; dominant-baseline: middle; }
+    .hint { fill: var(--muted); font: 13px system-ui, sans-serif; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+    .hold { fill: none; stroke: var(--blue); stroke-width: 2; stroke-dasharray: 7 5; marker-end: url(#arrowBlue); }
+    .active { stroke: var(--accent); stroke-width: 3; }
+    @media (max-width: 900px) {
+      .top, .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <div>
+        <div class="title">MIPS 五段流水线执行过程</div>
+        <div class="sub">每一页推进一个关键时刻：先看正常重叠，再看 RAW 转发，最后看 load-use 气泡。</div>
+      </div>
+      <div class="controls">
+        <button id="prev" type="button" aria-label="previous">‹</button>
+        <div class="count" id="count"></div>
+        <button id="next" type="button" aria-label="next">›</button>
+      </div>
+    </div>
+    <section class="layout">
+      <div class="board">
+        <svg id="chart" viewBox="0 0 1040 430" role="img" aria-label="MIPS pipeline time-space chart"></svg>
+      </div>
+      <aside class="side">
+        <div class="step-title" id="stepTitle"></div>
+        <div class="desc" id="desc"></div>
+        <div class="legend">
+          <span class="tag">横向：时钟周期</span>
+          <span class="tag">纵向：指令</span>
+          <span class="tag">斜向：流水重叠</span>
+          <span class="tag">箭头：转发</span>
+          <span class="tag">气泡：停顿</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const NS = "http://www.w3.org/2000/svg";
+    const W = 86;
+    const H = 48;
+    const X0 = 180;
+    const Y0 = 74;
+    const cycles = 9;
+
+    const cases = [
+      {
+        title: "1. 普通流水：不同指令错开一个周期进入",
+        desc: "先忽略冲突。第一条指令在 C1 取指，第二条在 C2 取指，第三条在 C3 取指。斜向排列说明流水线的本质是阶段重叠，而不是单条指令变短。",
+        rows: [
+          { name: "add $t0,$t1,$t2", start: 1, cells: ["IF","ID","EX","MEM","WB"] },
+          { name: "and $t3,$t4,$t5", start: 2, cells: ["IF","ID","EX","MEM","WB"] },
+          { name: "or  $t6,$t7,$s0", start: 3, cells: ["IF","ID","EX","MEM","WB"] }
+        ],
+        reveal: 5,
+        marks: []
+      },
+      {
+        title: "2. RAW 相关：add 写 $t0，sub 读 $t0",
+        desc: "sub 在 ID 阶段会读寄存器，但真正把 $t0 送进 ALU 是 EX 阶段。判断能不能不停顿，要看生产者结果产生的时刻和消费者真正使用的时刻。",
+        rows: [
+          { name: "add $t0,$t1,$t2", start: 1, cells: ["IF","ID","EX","MEM","WB"] },
+          { name: "sub $t3,$t0,$t4", start: 2, cells: ["IF","ID","EX","MEM","WB"] }
+        ],
+        reveal: 4,
+        active: [[0,3],[1,4]],
+        marks: [
+          { type: "arrow", from: [0,3], to: [1,4], label: "EX 结果转发到 EX 输入" }
+        ]
+      },
+      {
+        title: "3. 有转发：ALU-ALU 相关不必等 WB",
+        desc: "add 的 ALU 结果在 C3 的 EX 末尾已经形成；sub 在 C4 的 EX 开始需要这个操作数。转发路径把结果直接送到 ALU 输入端，所以 sub 不需要等到 add 的 WB。",
+        rows: [
+          { name: "add $t0,$t1,$t2", start: 1, cells: ["IF","ID","EX","MEM","WB"] },
+          { name: "sub $t3,$t0,$t4", start: 2, cells: ["IF","ID","EX","MEM","WB"] }
+        ],
+        reveal: 6,
+        active: [[0,3],[1,4]],
+        marks: [
+          { type: "arrow", from: [0,3], to: [1,4], label: "新 $t0 不经寄存器堆，直接送入 sub 的 EX" }
+        ]
+      },
+      {
+        title: "4. 无转发：WB 后才进入可正确读数的 ID",
+        desc: "如果没有数据旁路，sub 只能从寄存器堆读到新 $t0。按严格画法，sub 在 add 写回前被阻塞；等 add 的 WB 完成后，sub 才进入能正确读数的 ID。",
+        rows: [
+          { name: "add $t0,$t1,$t2", start: 1, cells: ["IF","ID","EX","MEM","WB"] },
+          { name: "sub $t3,$t0,$t4", start: 2, cells: ["IF","STALL","STALL","STALL","ID","EX","MEM","WB"] }
+        ],
+        reveal: 9,
+        active: [[0,5],[1,6]],
+        marks: [
+          { type: "hold", from: [0,5], to: [1,6], label: "WB 后再进入 ID 读新 $t0" }
+        ]
+      },
+      {
+        title: "5. load-use：数据产生得更晚",
+        desc: "lw 的地址在 EX 算出，但真正的数据要到 MEM 末尾才从数据 Cache 读出。紧跟的 add 如果在下一周期 EX 就使用 $t0，时间上赶不上。",
+        rows: [
+          { name: "lw  $t0,0($s0)", start: 1, cells: ["IF","ID","EX","MEM","WB"] },
+          { name: "add $t1,$t0,$t2", start: 2, cells: ["IF","ID","EX","MEM","WB"] }
+        ],
+        reveal: 4,
+        active: [[0,4],[1,4]],
+        marks: [
+          { type: "arrow", from: [0,4], to: [1,4], label: "同一周期内太晚，赶不上 EX 开始" }
+        ]
+      },
+      {
+        title: "6. load-use 插入气泡后再转发",
+        desc: "插入一个气泡后，add 的 EX 推迟到 C5。此时 lw 的 MEM 已经读出数据，可以通过转发把数据送到 add 的 ALU 输入端。",
+        rows: [
+          { name: "lw  $t0,0($s0)", start: 1, cells: ["IF","ID","EX","MEM","WB"] },
+          { name: "add $t1,$t0,$t2", start: 2, cells: ["IF","ID","BUBBLE","EX","MEM","WB"] }
+        ],
+        reveal: 7,
+        active: [[0,4],[1,5]],
+        marks: [
+          { type: "arrow", from: [0,4], to: [1,5], label: "停一拍后，MEM 数据可转发给 EX" }
+        ]
+      }
+    ];
+
+    let idx = 0;
+    const chart = document.getElementById("chart");
+
+    function el(name, attrs = {}, text = "") {
+      const node = document.createElementNS(NS, name);
+      Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+      if (text) node.textContent = text;
+      return node;
+    }
+
+    function cellCenter(rowIndex, cycle) {
+      return {
+        x: X0 + (cycle - 1) * W + W / 2,
+        y: Y0 + 40 + rowIndex * H + H / 2
+      };
+    }
+
+    function draw() {
+      const item = cases[idx];
+      chart.innerHTML = "";
+      const defs = el("defs");
+      const marker = el("marker", { id: "arrow", viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "8", markerHeight: "8", orient: "auto-start-reverse" });
+      marker.appendChild(el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "var(--accent)" }));
+      const markerBlue = el("marker", { id: "arrowBlue", viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "8", markerHeight: "8", orient: "auto-start-reverse" });
+      markerBlue.appendChild(el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "var(--blue)" }));
+      defs.append(marker, markerBlue);
+      chart.appendChild(defs);
+
+      chart.appendChild(el("rect", { x: 0, y: 0, width: 1040, height: 430, fill: "transparent" }));
+      chart.appendChild(el("text", { x: X0 + cycles * W / 2, y: 28, class: "axis" }, "时钟周期"));
+      chart.appendChild(el("text", { x: 20, y: Y0 + 68, class: "hint" }, "指令"));
+
+      chart.appendChild(el("rect", { x: 20, y: Y0, width: X0 - 20, height: 40, class: "header" }));
+      for (let c = 1; c <= cycles; c++) {
+        const x = X0 + (c - 1) * W;
+        chart.appendChild(el("rect", { x, y: Y0, width: W, height: 40, class: "header" }));
+        chart.appendChild(el("text", { x: x + W / 2, y: Y0 + 20, class: "axis" }, String(c)));
+      }
+
+      item.rows.forEach((row, r) => {
+        const y = Y0 + 40 + r * H;
+        chart.appendChild(el("rect", { x: 20, y, width: X0 - 20, height: H, class: "grid" }));
+        chart.appendChild(el("text", { x: 28, y: y + H / 2, class: "row" }, row.name));
+        for (let c = 1; c <= cycles; c++) {
+          chart.appendChild(el("rect", { x: X0 + (c - 1) * W, y, width: W, height: H, class: "grid" }));
+        }
+        row.cells.forEach((stage, i) => {
+          const cycle = row.start + i;
+          if (cycle > item.reveal) return;
+          const x = X0 + (cycle - 1) * W + 6;
+          const cls = stage === "BUBBLE" || stage === "STALL" ? "BUBBLE" : stage;
+          const active = item.active && item.active.some(([rr, cc]) => rr === r && cc === cycle);
+          chart.appendChild(el("rect", { x, y: y + 6, width: W - 12, height: H - 12, class: `stage ${cls}${active ? " active" : ""}` }));
+          chart.appendChild(el("text", { x: x + (W - 12) / 2, y: y + H / 2, class: "txt" }, stage === "BUBBLE" ? "气泡" : stage === "STALL" ? "阻塞" : stage));
+        });
+      });
+
+      item.marks.forEach(mark => {
+        const a = cellCenter(mark.from[0], mark.from[1]);
+        const b = cellCenter(mark.to[0], mark.to[1]);
+        if (mark.to[1] > item.reveal || mark.from[1] > item.reveal) return;
+        const cls = mark.type === "hold" ? "hold" : "arrow";
+        const path = mark.type === "hold"
+          ? `M ${a.x} ${a.y + 20} C ${a.x + 20} ${a.y + 56}, ${b.x - 28} ${b.y - 42}, ${b.x} ${b.y - 20}`
+          : `M ${a.x + 20} ${a.y + 4} C ${a.x + 44} ${a.y + 44}, ${b.x - 42} ${b.y - 42}, ${b.x - 20} ${b.y - 4}`;
+        chart.appendChild(el("path", { d: path, class: cls, "marker-end": mark.type === "hold" ? "url(#arrowBlue)" : "url(#arrow)" }));
+        chart.appendChild(el("text", { x: Math.min(a.x, b.x) + 40, y: Math.max(a.y, b.y) + 54, class: "hint" }, mark.label));
+      });
+
+      document.getElementById("stepTitle").textContent = item.title;
+      document.getElementById("desc").textContent = item.desc;
+      document.getElementById("count").textContent = `${idx + 1} / ${cases.length}`;
+    }
+
+    document.getElementById("prev").onclick = () => { idx = (idx - 1 + cases.length) % cases.length; draw(); };
+    document.getElementById("next").onclick = () => { idx = (idx + 1) % cases.length; draw(); };
+    window.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft") document.getElementById("prev").click();
+      if (event.key === "ArrowRight") document.getElementById("next").click();
+    });
+    draw();
+  </script>
+</body>
+</html>

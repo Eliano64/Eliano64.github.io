@@ -1,0 +1,414 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Media Access Control | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="介质访问控制介质访问控制 MAC 要解决的是：多个站点共享同一条广播信道时，谁可以在什么时候发送数据。 如果一条链路只连接两个节点，例如点对点链路，那么发送方和接收方明确，通常不需要复杂的 MAC 机制。若多个站点共用同一传输介质，例如早期总线以太网、无线局域网、令牌环网，就必须协调发送权，否则多个站点同时发送会产生碰撞或互相干扰。  MAC 方法可以先分成三类：    方法 核心思想 典型技术">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Media Access Control">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/07/Media-Access-Control/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="介质访问控制介质访问控制 MAC 要解决的是：多个站点共享同一条广播信道时，谁可以在什么时候发送数据。 如果一条链路只连接两个节点，例如点对点链路，那么发送方和接收方明确，通常不需要复杂的 MAC 机制。若多个站点共用同一传输介质，例如早期总线以太网、无线局域网、令牌环网，就必须协调发送权，否则多个站点同时发送会产生碰撞或互相干扰。  MAC 方法可以先分成三类：    方法 核心思想 典型技术">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-07T09:51:49.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="DataLinkLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Media Access Control",
+  "url": "https://eliano64.github.io/2026/07/07/Media-Access-Control/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-07T09:51:49.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/07/Media-Access-Control/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Media Access Control',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Media Access Control</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Media Access Control</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-07T09:51:49.000Z" title="发表于 2026-07-07 17:51:49">2026-07-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.6k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="介质访问控制"><a href="#介质访问控制" class="headerlink" title="介质访问控制"></a>介质访问控制</h1><p>介质访问控制 MAC 要解决的是：多个站点共享同一条广播信道时，谁可以在什么时候发送数据。</p>
+<p>如果一条链路只连接两个节点，例如点对点链路，那么发送方和接收方明确，通常不需要复杂的 MAC 机制。若多个站点共用同一传输介质，例如早期总线以太网、无线局域网、令牌环网，就必须协调发送权，否则多个站点同时发送会产生碰撞或互相干扰。</p>
+<p><img src="/assets/media-access-control-classification.svg" alt="900"></p>
+<p>MAC 方法可以先分成三类：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>核心思想</th>
+<th>典型技术</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>信道划分</td>
+<td>先把信道资源切开，每个站点使用自己的资源片</td>
+<td>FDM、TDM、WDM、CDM&#x2F;CDMA</td>
+<td>冲突少，但资源可能被空闲站点浪费</td>
+</tr>
+<tr>
+<td>随机访问</td>
+<td>站点有数据就争用信道，冲突后再处理</td>
+<td>ALOHA、CSMA、CSMA&#x2F;CD、CSMA&#x2F;CA</td>
+<td>灵活，适合突发流量，但可能发生冲突</td>
+</tr>
+<tr>
+<td>轮询访问</td>
+<td>用集中轮询或令牌传递决定发送顺序</td>
+<td>轮询、令牌传递</td>
+<td>发送权明确，但控制开销较高</td>
+</tr>
+</tbody></table>
+<h1 id="信道划分介质访问控制"><a href="#信道划分介质访问控制" class="headerlink" title="信道划分介质访问控制"></a>信道划分介质访问控制</h1><p>信道划分把共享信道预先分成若干互不干扰的资源片。站点只在分配给自己的资源片中发送，因此不需要每次发送前争抢信道。</p>
+<ul>
+<li>频分复用、时分复用、统计时分复用、波分复用见 <a href="/2026/07/07/Multiplexing-Technologies/" class="wikilink">Multiplexing-Technologies</a>。</li>
+<li>码分复用和 CDMA 的正交码片计算见 <a href="/2026/07/07/CDMA-Code-Division-Multiplexing/" class="wikilink">CDMA-Code-Division-Multiplexing</a>。</li>
+</ul>
+<p>在数据链路层视角下，这些方法把共享信道上的发送权冲突转化成固定资源片的分配问题。</p>
+<h1 id="随机访问介质访问控制"><a href="#随机访问介质访问控制" class="headerlink" title="随机访问介质访问控制"></a>随机访问介质访问控制</h1><p>随机访问不预先给每个站点固定分配信道资源。站点有帧要发送时，就根据协议规则尝试发送；如果发生冲突，再等待一段时间后重发。</p>
+<p>这种方法适合突发通信：多数站点平时不发送，少数站点临时发送。它的代价是冲突不可完全避免。</p>
+<h2 id="ALOHA"><a href="#ALOHA" class="headerlink" title="ALOHA"></a>ALOHA</h2><p>纯 ALOHA 的规则很简单：站点有帧就立即发送；如果没有收到确认，就认为发生碰撞或丢失，随机等待后重发。</p>
+<p>时隙 ALOHA 把时间切成等长时隙，站点只能在时隙开始处发送。这样可以减少碰撞发生的时间范围，但仍然可能出现多个站点在同一时隙发送而碰撞。</p>
+<p><img src="/assets/aloha-timespace-comparison.svg" alt="900"></p>
+<p>ALOHA 的关键是碰撞后重发。它实现简单，但信道利用率不高。</p>
+<h2 id="CSMA"><a href="#CSMA" class="headerlink" title="CSMA"></a>CSMA</h2><p>CSMA 是 Carrier Sense Multiple Access，载波监听多址接入。它比 ALOHA 多了一步：发送前先监听信道。</p>
+<p>若信道空闲，站点尝试发送；若信道忙，则根据坚持策略决定等待方式。</p>
+<p><img src="/assets/csma-persistence-strategies.svg" alt="900"></p>
+<p>三种坚持策略的区别：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>信道忙时</th>
+<th>信道刚变空闲时</th>
+<th>直观效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1-坚持 CSMA</td>
+<td>持续监听</td>
+<td>立即发送</td>
+<td>延迟小，但多个站点可能同时抢发</td>
+</tr>
+<tr>
+<td>非坚持 CSMA</td>
+<td>随机等待一段时间后再监听</td>
+<td>不一定立刻抢发</td>
+<td>冲突概率较低，但平均等待时间变长</td>
+</tr>
+<tr>
+<td>p-坚持 CSMA</td>
+<td>只用于时隙信道；持续监听到空闲</td>
+<td>以概率 $p$ 发送，以概率 $1-p$ 推迟到下一<strong>时隙</strong></td>
+<td>在冲突概率和等待时间之间折中</td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p>CSMA 只能减少冲突，不能消除冲突。因为信号传播需要时间，一个站点监听到信道空闲时，远端站点发出的信号可能还没有传播过来。</p>
+</div>
+</div>
+## CSMA/CD 与 CSMA/CA
+
+<p>CSMA&#x2F;CD 在 CSMA 基础上加入<strong>碰撞检测</strong>。站点边发送边检测信道；一旦检测到碰撞，就停止发送，发送干扰信号，然后执行退避算法。它适用于共享式有线以太网。</p>
+<p>CSMA&#x2F;CA 在 CSMA 基础上加入<strong>碰撞避免</strong>。无线局域网中，发送站很难边发送边检测碰撞，而且还存在隐藏站问题，因此 802.11 使用 CSMA&#x2F;CA，通过 DIFS、随机退避、ACK、NAV、RTS&#x2F;CTS 等机制尽量降低碰撞概率。</p>
+<p>两者的本质区别：</p>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>重点</th>
+<th>适用环境</th>
+<th>碰撞处理思路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CSMA&#x2F;CD</td>
+<td>检测碰撞</td>
+<td>共享式有线以太网</td>
+<td>发送中发现碰撞，立即停止并退避重发</td>
+</tr>
+<tr>
+<td>CSMA&#x2F;CA</td>
+<td>避免碰撞</td>
+<td>802.11 无线局域网</td>
+<td>发送前等待和预约，发送后用 ACK 确认</td>
+</tr>
+</tbody></table>
+<p>CSMA&#x2F;CD 的争用期、最小帧长和退避算法属于 <a href="/2026/07/07/Shared-Ethernet/" class="wikilink">共享式以太网</a> 的核心内容。<br>CSMA&#x2F;CA 的帧间间隔、NAV、RTS&#x2F;CTS 属于 <a href="/2026/07/07/WLAN/" class="wikilink">无线局域网</a> 的核心内容。</p>
+<h1 id="轮询访问介质访问控制"><a href="#轮询访问介质访问控制" class="headerlink" title="轮询访问介质访问控制"></a>轮询访问介质访问控制</h1><p>轮询访问把发送权交给一个明确的控制过程。站点不能随意发送，必须等到自己被询问或拿到令牌。</p>
+<p>常见方式有两类：</p>
+<ul>
+<li>轮询：主站按顺序询问各从站是否有数据要发送。被询问的站点才可以发送。</li>
+<li>令牌传递：令牌是一种特殊的控制帧，本身不承载普通数据，它表示当前发送权；哪个站点持有令牌，哪个站点才可以发送数据帧。令牌在站点之间循环传递。只有持有令牌的站点可以发送数据；发送完或无数据可发时，把令牌交给下一个站点。</li>
+</ul>
+<p><img src="/assets/token-passing-process.svg" alt="760"></p>
+<p>轮询访问的优点是不会因为多个站点同时发送而碰撞，适合需要确定性访问顺序的场景。缺点是控制开销较大，主站故障或令牌丢失会影响整个系统，需要额外的维护机制。</p>
+<h1 id="三类方法比较"><a href="#三类方法比较" class="headerlink" title="三类方法比较"></a>三类方法比较</h1><p>信道划分、随机访问、轮询访问的差异可以概括为“发送权在哪里决定”：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>发送权来源</th>
+<th>是否可能冲突</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>信道划分</td>
+<td>预先分配资源片</td>
+<td>通常不会</td>
+<td>用户数相对稳定、持续通信</td>
+</tr>
+<tr>
+<td>随机访问</td>
+<td>站点按协议自行争用</td>
+<td>可能</td>
+<td>突发通信、站点发送不均匀</td>
+</tr>
+<tr>
+<td>轮询访问</td>
+<td>主站轮询或令牌控制</td>
+<td>通常不会</td>
+<td>需要有序访问或确定性控制</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/07/Media-Access-Control/">https://eliano64.github.io/2026/07/07/Media-Access-Control/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/07/Sliding-Window/" title="Sliding Window"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Sliding Window</div></div><div class="info-2"><div class="info-item-1">滑动窗口协议是这样一个模型：  发送方有发送窗口 $W_T$，限制连续发送但尚未确认的数据数量。 接收方有接收窗口 $W_R$，限制当前愿意接收的数据序号范围。 ACK 推动发送窗口向前滑动。 按序收到数据推动接收窗口向前滑动。 序号字段有限，窗口大小必须避免新旧数据混淆。   停止-等待、GBN、SR 都是这个模型的不同参数取值：    协议形态 $W_T$ $W_R$ 失序数据处理    停止-等待 $1$ $1$ 不形成流水线   GBN $&gt;1$ $1$ 不接收失序数据，直接丢弃   SR $&gt;1$ $&gt;1$ 接收并缓存窗口内失序数据   GBN 和 SR 的共同基础是滑动窗口。区别主要来自 $W_R$：接收窗口为 $1$ 时只能按序收；接收窗口大于 $1$ 时可以先缓存失序数据。 发送窗口发送窗口 $W_T$ 表示发送方最多允许多少个“已发送但尚未确认”的数据在路上。 窗口内的数据分为两类：  已发送但未确认：保留在发送缓存中，超时后可重传。 尚未发送但允许发送：可以立即发送。  收到 ACK...</div></div></div></a><a class="pagination-related" href="/2026/07/07/Shared-Ethernet/" title="Shared Ethernet"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Shared Ethernet</div></div><div class="info-2"><div class="info-item-1">以太网与 IEEE 802局域网 LAN 是覆盖范围较小、通常由一个单位自行建设和管理的计算机网络，例如实验室、办公室、教学楼或园区内部网络。局域网常见特点是：传输距离较短、速率较高、误码率较低，并且多个站点经常共享同一个广播范围。 IEEE 802 标准面向局域网和城域网。它把局域网的数据链路层分为两个子层：    子层 作用    LLC 子层 向网络层提供统一接口，屏蔽不同局域网 MAC 机制的差异   MAC 子层 处理成帧、MAC 地址、介质访问控制、差错检测等与具体局域网有关的问题    以太网最初来自 DIX Ethernet V2 标准。IEEE 802.3 在此基础上制定以太网标准。实际网络设备通常兼容 Ethernet V2 帧和 IEEE 802.3 相关规范。 以太网向上提供的是无连接、不可靠的帧传输服务。  无连接：发送帧之前不先建立数据链路层连接。 不可靠：接收方用 FCS 检测差错，发现错帧就丢弃；以太网本身不确认、不重传、不保证按序交付。 尽最大努力交付：没有检测出错误的帧才向上交付，可靠性通常由高层协议处理。  802.11...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E8%B4%A8%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-text">介质访问控制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BF%A1%E9%81%93%E5%88%92%E5%88%86%E4%BB%8B%E8%B4%A8%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-text">信道划分介质访问控制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E8%AE%BF%E9%97%AE%E4%BB%8B%E8%B4%A8%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-text">随机访问介质访问控制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ALOHA"><span class="toc-text">ALOHA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CSMA"><span class="toc-text">CSMA</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BD%AE%E8%AF%A2%E8%AE%BF%E9%97%AE%E4%BB%8B%E8%B4%A8%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-text">轮询访问介质访问控制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E7%B1%BB%E6%96%B9%E6%B3%95%E6%AF%94%E8%BE%83"><span class="toc-text">三类方法比较</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

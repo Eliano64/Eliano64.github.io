@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">File System Structures In Memory</title>
+  <desc id="desc">A read system call uses a file descriptor as an index into the per-process open file table, then reaches the system-wide open file table, file control block, and data blocks.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#94a3b8;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--purple:#7c3aed}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#64748b;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--purple:#c084fc}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.outer{fill:none;stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.row{fill:var(--blue);opacity:.12}.hit{fill:var(--orange);opacity:.28}.data{fill:var(--green);opacity:.16;stroke:var(--green);stroke-width:1.5}.meta{fill:var(--purple);opacity:.16;stroke:var(--purple);stroke-width:1.5}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#arrow)}.ga{stroke:var(--green);stroke-width:3;fill:none;marker-end:url(#garrow)}.oa{stroke:var(--orange);stroke-width:3;fill:none;marker-end:url(#oarrow)}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker>
+    <marker id="garrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--green)"/></marker>
+    <marker id="oarrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--orange)"/></marker>
+  </defs>
+  <rect class="bg" width="1120" height="520"/>
+  <text class="t" x="560" y="38" text-anchor="middle" font-size="25" font-weight="700">内存中文件的系统结构</text>
+  <text class="m" x="560" y="66" text-anchor="middle" font-size="15">文件描述符是进程打开文件表的索引；真正的文件控制信息由系统范围结构共享</text>
+
+  <rect class="outer" x="44" y="112" width="205" height="288" rx="8"/>
+  <text class="t" x="146" y="145" text-anchor="middle" font-size="18" font-weight="700">用户空间</text>
+  <rect class="box" x="72" y="206" width="148" height="72" rx="6"/>
+  <text class="t" x="146" y="235" text-anchor="middle" font-size="16">read(fd)</text>
+  <text class="m" x="146" y="258" text-anchor="middle" font-size="13">fd 是索引号</text>
+
+  <rect class="outer" x="300" y="112" width="510" height="288" rx="8"/>
+  <text class="t" x="555" y="145" text-anchor="middle" font-size="18" font-weight="700">内核内存</text>
+
+  <g transform="translate(340,178)">
+    <text class="t" x="92" y="0" text-anchor="middle" font-size="16" font-weight="700">每个进程的打开文件表</text>
+    <rect class="box" x="10" y="22" width="164" height="182" rx="6"/>
+    <rect class="row" x="28" y="42" width="128" height="32" rx="3"/>
+    <rect class="hit" x="28" y="82" width="128" height="32" rx="3"/>
+    <rect class="row" x="28" y="122" width="128" height="32" rx="3"/>
+    <rect class="row" x="28" y="162" width="128" height="22" rx="3"/>
+    <text class="m" x="92" y="63" text-anchor="middle" font-size="13">fd 0</text>
+    <text class="t" x="92" y="103" text-anchor="middle" font-size="13" font-weight="700">fd n</text>
+    <text class="m" x="92" y="143" text-anchor="middle" font-size="13">fd n+1</text>
+    <text class="m" x="-8" y="103" text-anchor="end" font-size="13">索引号</text>
+  </g>
+
+  <g transform="translate(592,178)">
+    <text class="t" x="92" y="0" text-anchor="middle" font-size="16" font-weight="700">系统范围的打开文件表</text>
+    <rect class="box" x="10" y="22" width="164" height="182" rx="6"/>
+    <rect class="row" x="28" y="42" width="128" height="32" rx="3"/>
+    <rect class="row" x="28" y="82" width="128" height="32" rx="3"/>
+    <rect class="hit" x="28" y="122" width="128" height="32" rx="3"/>
+    <rect class="row" x="28" y="162" width="128" height="22" rx="3"/>
+    <text class="m" x="92" y="63" text-anchor="middle" font-size="13">表项 k</text>
+    <text class="m" x="92" y="103" text-anchor="middle" font-size="13">表项 k+1</text>
+    <text class="t" x="92" y="143" text-anchor="middle" font-size="13" font-weight="700">表项 m</text>
+  </g>
+
+  <rect class="outer" x="860" y="112" width="216" height="288" rx="8"/>
+  <text class="t" x="968" y="145" text-anchor="middle" font-size="18" font-weight="700">辅助存储</text>
+  <g transform="translate(892,184)">
+    <rect class="data" x="0" y="0" width="42" height="28" rx="3"/>
+    <rect class="data" x="58" y="0" width="42" height="28" rx="3"/>
+    <rect class="data" x="116" y="0" width="42" height="28" rx="3"/>
+    <rect class="data" x="0" y="48" width="42" height="28" rx="3"/>
+    <rect class="data" x="58" y="48" width="42" height="28" rx="3"/>
+    <text class="t" x="79" y="104" text-anchor="middle" font-size="15" font-weight="700">数据块</text>
+    <rect class="meta" x="20" y="138" width="116" height="42" rx="5"/>
+    <text class="t" x="78" y="165" text-anchor="middle" font-size="15" font-weight="700">文件控制块</text>
+  </g>
+
+  <path class="oa" d="M220 242 H370"/>
+  <path class="a" d="M496 280 H620"/>
+  <path class="ga" d="M756 320 C820 320 824 342 912 342"/>
+  <path class="ga" d="M756 320 C832 282 832 230 892 230"/>
+  <text class="m" x="296" y="232" font-size="13">用 fd 查表</text>
+  <text class="m" x="520" y="270" font-size="13">进程表项指向系统表项</text>
+  <text class="m" x="790" y="270" font-size="13">定位数据块</text>
+  <text class="m" x="792" y="352" font-size="13">取得控制信息</text>
+</svg>

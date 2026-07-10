@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kruskal MST</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--fg:#111827;--card:#fff;--muted:#64748b;--line:#334155;--edge:#94a3b8;--ok:#16a34a;--bad:#dc2626;--accent:#2563eb;--warn:#f59e0b}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--fg:#e5e7eb;--card:#0f172a;--muted:#94a3b8;--line:#94a3b8;--edge:#64748b;--ok:#4ade80;--bad:#f87171;--accent:#60a5fa;--warn:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:1120px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;gap:16px}.title{font-size:22px;font-weight:750}button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;padding:7px 12px}.slide{display:none;background:var(--card);border:1px solid color-mix(in srgb,var(--line) 35%,transparent);border-radius:8px;padding:20px;margin-top:14px;min-height:620px}.active{display:block}.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:18px}.edge-pill{padding:5px 10px;border:1px solid var(--line);border-radius:999px;margin:4px;display:inline-block;font-size:14px}.pick-pill{background:color-mix(in srgb,var(--ok) 18%,transparent);border-color:var(--ok)}.skip-pill{background:color-mix(in srgb,var(--bad) 15%,transparent);border-color:var(--bad)}svg{width:100%;height:390px}.e{stroke:var(--edge);stroke-width:3}.t{stroke:var(--ok);stroke-width:6}.x{stroke:var(--bad);stroke-width:6;stroke-dasharray:9 7}.candidate{stroke:var(--warn);stroke-width:5;stroke-dasharray:8 6}.n{fill:var(--card);stroke:var(--accent);stroke-width:3}.txt{fill:var(--fg);font-weight:700}.w{fill:var(--fg);font:700 13px ui-monospace,Consolas,monospace;text-anchor:middle;paint-order:stroke;stroke:var(--card);stroke-width:5}.note{border-left:4px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);padding:10px 12px;margin-top:12px}.sets{font-family:ui-monospace,Consolas,monospace}.muted{color:var(--muted)}.pager{display:flex;justify-content:space-between;margin-top:12px;color:var(--muted)}
+@media(max-width:850px){.grid{grid-template-columns:1fr}svg{height:340px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><div><div class="title">Kruskal：同一图上的边筛选</div><div class="muted">等权边排序可不同；每条边都要先判断加入后是否成环。</div></div><div><button id="prev">上一页</button> <button id="next">下一页</button></div></div>
+
+<template id="graph">
+<svg viewBox="0 0 520 390" aria-label="weighted graph">
+<line data-edge="AB" class="e" x1="95" y1="105" x2="245" y2="75"/><text class="w" x="170" y="78">1</text>
+<line data-edge="AC" class="e" x1="95" y1="105" x2="170" y2="250"/><text class="w" x="123" y="178">2</text>
+<line data-edge="BC" class="e" x1="245" y1="75" x2="170" y2="250"/><text class="w" x="216" y="164">2</text>
+<line data-edge="BD" class="e" x1="245" y1="75" x2="355" y2="155"/><text class="w" x="304" y="105">3</text>
+<line data-edge="CE" class="e" x1="170" y1="250" x2="325" y2="295"/><text class="w" x="250" y="286">1</text>
+<line data-edge="DE" class="e" x1="355" y1="155" x2="325" y2="295"/><text class="w" x="354" y="229">2</text>
+<line data-edge="DF" class="e" x1="355" y1="155" x2="455" y2="245"/><text class="w" x="415" y="188">1</text>
+<line data-edge="EF" class="e" x1="325" y1="295" x2="455" y2="245"/><text class="w" x="394" y="288">2</text>
+<line data-edge="CF" class="e" x1="170" y1="250" x2="455" y2="245"/><text class="w" x="310" y="238">4</text>
+<circle class="n" cx="95" cy="105" r="24"/><text class="txt" x="87" y="113">A</text>
+<circle class="n" cx="245" cy="75" r="24"/><text class="txt" x="237" y="83">B</text>
+<circle class="n" cx="170" cy="250" r="24"/><text class="txt" x="162" y="258">C</text>
+<circle class="n" cx="355" cy="155" r="24"/><text class="txt" x="347" y="163">D</text>
+<circle class="n" cx="325" cy="295" r="24"/><text class="txt" x="317" y="303">E</text>
+<circle class="n" cx="455" cy="245" r="24"/><text class="txt" x="447" y="253">F</text>
+</svg>
+</template>
+
+<section class="slide active" data-tree="" data-candidate="">
+<h2>1. 排序后从最小边开始</h2><div class="grid"><div class="stage"></div><div>
+<p><span class="edge-pill">AB:1</span><span class="edge-pill">CE:1</span><span class="edge-pill">DF:1</span><span class="edge-pill">AC:2</span><span class="edge-pill">BC:2</span><span class="edge-pill">EF:2</span><span class="edge-pill">DE:2</span><span class="edge-pill">BD:3</span><span class="edge-pill">CF:4</span></p>
+<div class="note">初始每个顶点自成一个集合：<span class="sets">{A} {B} {C} {D} {E} {F}</span>。Kruskal 先看权值，再看是否会成环。</div></div></div></section>
+
+<section class="slide" data-tree="AB" data-candidate="AB" data-pick="AB">
+<h2>2. 选择 AB:1</h2><div class="grid"><div class="stage"></div><div>
+<p><span class="edge-pill pick-pill">AB:1</span><span class="edge-pill">CE:1</span><span class="edge-pill">DF:1</span><span class="edge-pill">AC:2</span><span class="edge-pill">BC:2</span><span class="edge-pill">EF:2</span></p>
+<div class="note">A 与 B 不在同一集合，选入 AB。集合变为 <span class="sets">{A,B} {C} {D} {E} {F}</span>。</div></div></div></section>
+
+<section class="slide" data-tree="AB CE" data-candidate="CE" data-pick="AB CE">
+<h2>3. 选择 CE:1</h2><div class="grid"><div class="stage"></div><div>
+<p><span class="edge-pill pick-pill">AB:1</span><span class="edge-pill pick-pill">CE:1</span><span class="edge-pill">DF:1</span><span class="edge-pill">AC:2</span><span class="edge-pill">BC:2</span><span class="edge-pill">EF:2</span></p>
+<div class="note">C 与 E 不在同一集合，选入 CE。集合变为 <span class="sets">{A,B} {C,E} {D} {F}</span>。</div></div></div></section>
+
+<section class="slide" data-tree="AB CE DF" data-candidate="DF" data-pick="AB CE DF">
+<h2>4. 选择 DF:1</h2><div class="grid"><div class="stage"></div><div>
+<p><span class="edge-pill pick-pill">AB:1</span><span class="edge-pill pick-pill">CE:1</span><span class="edge-pill pick-pill">DF:1</span><span class="edge-pill">AC:2</span><span class="edge-pill">BC:2</span><span class="edge-pill">EF:2</span></p>
+<div class="note">D 与 F 不在同一集合，选入 DF。集合变为 <span class="sets">{A,B} {C,E} {D,F}</span>。</div></div></div></section>
+
+<section class="slide" data-tree="AB CE DF AC" data-candidate="AC" data-pick="AB CE DF AC">
+<h2>5. 选择 AC:2</h2><div class="grid"><div class="stage"></div><div>
+<p><span class="edge-pill pick-pill">AB:1</span><span class="edge-pill pick-pill">CE:1</span><span class="edge-pill pick-pill">DF:1</span><span class="edge-pill pick-pill">AC:2</span><span class="edge-pill">BC:2</span><span class="edge-pill">EF:2</span></p>
+<div class="note">A 与 C 分属两个集合，选入 AC。集合变为 <span class="sets">{A,B,C,E} {D,F}</span>。</div></div></div></section>
+
+<section class="slide" data-tree="AB CE DF AC" data-skip="BC" data-pick="AB CE DF AC" data-skip-pill="BC">
+<h2>6. 检查 BC:2，但跳过</h2><div class="grid"><div class="stage"></div><div>
+<p><span class="edge-pill pick-pill">AB:1</span><span class="edge-pill pick-pill">CE:1</span><span class="edge-pill pick-pill">DF:1</span><span class="edge-pill pick-pill">AC:2</span><span class="edge-pill skip-pill">BC:2</span><span class="edge-pill">EF:2</span></p>
+<div class="note">B 与 C 已经通过 B-A-C 连通。虽然 BC 的权值只有 2，但加入它会形成 A-B-C-A 回路，所以跳过。</div></div></div></section>
+
+<section class="slide" data-tree="AB CE DF AC EF" data-candidate="EF" data-pick="AB CE DF AC EF" data-skip-pill="BC">
+<h2>7. 选择 EF:2，生成树完成</h2><div class="grid"><div class="stage"></div><div>
+<p><span class="edge-pill pick-pill">AB:1</span><span class="edge-pill pick-pill">CE:1</span><span class="edge-pill pick-pill">DF:1</span><span class="edge-pill pick-pill">AC:2</span><span class="edge-pill skip-pill">BC:2</span><span class="edge-pill pick-pill">EF:2</span></p>
+<div class="note">E 与 F 分属两个集合，选入 EF。已选 5 条边，等于 n-1，生成树完成。</div></div></div></section>
+
+<section class="slide" data-tree="AB CE DF AC EF" data-candidate="" data-pick="AB CE DF AC EF" data-skip-pill="BC">
+<h2>8. Kruskal 得到另一棵 MST</h2><div class="grid"><div class="stage"></div><div>
+<div class="note">Kruskal 选中 AB、CE、DF、AC、EF，总权值为 1+1+1+2+2=7。它与 Prim 示例树不同，但总代价同样最小。</div></div></div></section>
+
+<div class="pager"><span id="page"></span><span>方向键可翻页</span></div></div>
+<script>
+const slides=[...document.querySelectorAll(".slide")];let idx=0;const page=document.querySelector("#page");const template=document.querySelector("#graph");
+function draw(slide){const svg=template.content.firstElementChild.cloneNode(true);const tree=(slide.dataset.tree||"").split(/\s+/).filter(Boolean);const cand=(slide.dataset.candidate||"").split(/\s+/).filter(Boolean);const skip=(slide.dataset.skip||"").split(/\s+/).filter(Boolean);for(const e of svg.querySelectorAll("[data-edge]")){const id=e.dataset.edge;if(tree.includes(id))e.setAttribute("class","t");else if(skip.includes(id))e.setAttribute("class","x");else if(cand.includes(id))e.setAttribute("class","candidate");}slide.querySelector(".stage").replaceChildren(svg);}
+function show(n){idx=(n+slides.length)%slides.length;slides.forEach((s,i)=>{s.classList.toggle("active",i===idx);if(i===idx)draw(s)});page.textContent=`${idx+1} / ${slides.length}`}
+document.querySelector("#prev").onclick=()=>show(idx-1);document.querySelector("#next").onclick=()=>show(idx+1);addEventListener("keydown",e=>{if(e.key==="ArrowRight")show(idx+1);if(e.key==="ArrowLeft")show(idx-1)});show(0);
+</script>
+</body>
+</html>

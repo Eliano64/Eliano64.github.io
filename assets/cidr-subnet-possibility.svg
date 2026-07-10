@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="470" viewBox="0 0 1220 470" role="img" aria-labelledby="title desc">
+  <title id="title">CIDR 子网可能性判断</title>
+  <desc id="desc">用地址块不重叠和覆盖剩余空间的方式判断某个候选子网是否可能。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill:#f8fafc; }
+    .text { fill:#0f172a; font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif; font-size:18px; }
+    .small { fill:#334155; font-size:15px; }
+    .axis { stroke:#64748b; stroke-width:2; }
+    .base { fill:#e2e8f0; stroke:#94a3b8; stroke-width:2; }
+    .known { fill:#fed7aa; stroke:#f97316; stroke-width:2.5; }
+    .ok { fill:#dcfce7; stroke:#16a34a; stroke-width:2.2; }
+    .bad { fill:#fee2e2; stroke:#ef4444; stroke-width:2.2; }
+    .mark { stroke:#475569; stroke-width:1.5; }
+    .label { fill:#0369a1; font-weight:700; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill:#020617; }
+      .text { fill:#e5e7eb; }
+      .small { fill:#cbd5e1; }
+      .axis { stroke:#94a3b8; }
+      .base { fill:#1e293b; stroke:#475569; }
+      .known { fill:#431407; stroke:#fb923c; }
+      .ok { fill:#052e16; stroke:#4ade80; }
+      .bad { fill:#450a0a; stroke:#f87171; }
+      .mark { stroke:#94a3b8; }
+      .label { fill:#67e8f9; }
+    }
+  </style>
+  <rect class="bg" width="1220" height="470"/>
+  <text class="text" x="610" y="42" text-anchor="middle" font-size="25" font-weight="700">已知一个子网时，候选子网必须能形成不重叠划分</text>
+  <text class="small" x="610" y="78" text-anchor="middle">例：某网络划分为 3 个子网，其中一个是 192.168.9.128/26</text>
+
+  <g transform="translate(90,122)">
+    <rect class="base" x="0" y="0" width="920" height="54" rx="5"/>
+    <line class="mark" x1="0" y1="-8" x2="0" y2="62"/>
+    <line class="mark" x1="230" y1="-8" x2="230" y2="62"/>
+    <line class="mark" x1="460" y1="-8" x2="460" y2="62"/>
+    <line class="mark" x1="690" y1="-8" x2="690" y2="62"/>
+    <line class="mark" x1="920" y1="-8" x2="920" y2="62"/>
+    <rect class="known" x="460" y="0" width="230" height="54" rx="5"/>
+    <text class="small" x="0" y="88" text-anchor="middle">.0</text>
+    <text class="small" x="230" y="88" text-anchor="middle">.64</text>
+    <text class="small" x="460" y="88" text-anchor="middle">.128</text>
+    <text class="small" x="690" y="88" text-anchor="middle">.192</text>
+    <text class="small" x="920" y="88" text-anchor="middle">.256</text>
+    <text class="text" x="575" y="34" text-anchor="middle">已知：192.168.9.128/26</text>
+  </g>
+
+  <g transform="translate(90,250)">
+    <rect class="ok" x="0" y="0" width="460" height="44" rx="5"/>
+    <rect class="known" x="460" y="0" width="230" height="44" rx="5"/>
+    <rect class="ok" x="690" y="0" width="230" height="44" rx="5"/>
+    <text class="text" x="230" y="29" text-anchor="middle">192.168.9.0/25 可作为一个子网</text>
+    <text class="small" x="575" y="29" text-anchor="middle">已知</text>
+    <text class="small" x="805" y="29" text-anchor="middle">192.168.9.192/26</text>
+    <text class="small" x="1028" y="29" text-anchor="middle">合法的 3 子网划分</text>
+  </g>
+
+  <g transform="translate(90,326)">
+    <rect class="bad" x="0" y="0" width="230" height="44" rx="5"/>
+    <rect class="base" x="230" y="0" width="230" height="44" rx="5"/>
+    <rect class="known" x="460" y="0" width="230" height="44" rx="5"/>
+    <rect class="base" x="690" y="0" width="230" height="44" rx="5"/>
+    <text class="text" x="115" y="29" text-anchor="middle">192.168.9.0/26</text>
+    <text class="small" x="345" y="29" text-anchor="middle">还剩 .64/26</text>
+    <text class="small" x="575" y="29" text-anchor="middle">已知</text>
+    <text class="small" x="805" y="29" text-anchor="middle">还剩 .192/26</text>
+    <text class="small" x="1028" y="18" text-anchor="middle">只剩 1 个子网名额</text>
+    <text class="small" x="1028" y="40" text-anchor="middle">但剩余两段不连续</text>
+  </g>
+
+  <text class="label" x="610" y="430" text-anchor="middle">判断依据：合法边界、互不重叠、能与其他子网共同覆盖原地址块</text>
+</svg>

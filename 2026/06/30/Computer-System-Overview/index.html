@@ -1,0 +1,782 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Computer System Overview | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="Computer System Overview这部分回答三个问题：  计算机系统由什么组成。 程序如何在硬件上运行。 如何衡量一台计算机的性能。   Summary  计算机系统 &#x3D; 硬件 + 软件 硬件按冯诺依曼思想组织 程序以指令序列形式存放并运行 性能由存储器、CPU 和系统整体指标共同描述。    ## 计算机系统  计算机系统由 硬件 和 软件 共同构成。    组成 含义">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Computer System Overview">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/30/Computer-System-Overview/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="Computer System Overview这部分回答三个问题：  计算机系统由什么组成。 程序如何在硬件上运行。 如何衡量一台计算机的性能。   Summary  计算机系统 &#x3D; 硬件 + 软件 硬件按冯诺依曼思想组织 程序以指令序列形式存放并运行 性能由存储器、CPU 和系统整体指标共同描述。    ## 计算机系统  计算机系统由 硬件 和 软件 共同构成。    组成 含义">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-30T00:49:23.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.010Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Computer System Overview",
+  "url": "https://eliano64.github.io/2026/06/30/Computer-System-Overview/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-30T00:49:23.000Z",
+  "dateModified": "2026-07-10T07:16:51.010Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/30/Computer-System-Overview/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Computer System Overview',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Computer System Overview</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Computer System Overview</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-30T00:49:23.000Z" title="发表于 2026-06-30 08:49:23">2026-06-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.010Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Computer-System-Overview"><a href="#Computer-System-Overview" class="headerlink" title="Computer System Overview"></a>Computer System Overview</h1><p>这部分回答三个问题：</p>
+<ul>
+<li>计算机系统由什么组成。</li>
+<li>程序如何在硬件上运行。</li>
+<li>如何衡量一台计算机的性能。</li>
+</ul>
+<div class="callout callout-abstract">
+<div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">Summary</span></div>
+<div class="callout-content"><ul>
+<li>计算机系统 &#x3D; 硬件 + 软件</li>
+<li>硬件按冯诺依曼思想组织</li>
+<li>程序以指令序列形式存放并运行</li>
+<li>性能由存储器、CPU 和系统整体指标共同描述。</li>
+</ul>
+</div>
+</div>
+## 计算机系统
+
+<p>计算机系统由 <strong>硬件</strong> 和 <strong>软件</strong> 共同构成。</p>
+<table>
+<thead>
+<tr>
+<th>组成</th>
+<th>含义</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>硬件</td>
+<td>计算机的实体装置</td>
+<td>CPU、主存、辅存、输入设备、输出设备</td>
+</tr>
+<tr>
+<td>软件</td>
+<td>为完成任务而编写的程序及相关文档</td>
+<td>操作系统、数据库管理系统、标准程序库、应用程序</td>
+</tr>
+</tbody></table>
+<p>软件通常分为两类：</p>
+<ul>
+<li><strong>系统软件</strong>：管理、控制、维护计算机资源，为应用软件提供运行环境，例如操作系统、数据库管理系统、语言处理程序、网络软件、服务程序。</li>
+<li><strong>应用软件</strong>：面向具体用户任务的软件，例如办公软件、游戏、影音工具、浏览器等。</li>
+</ul>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">性能判断</span></div>
+<div class="callout-content"><p>计算机性能的好坏取决于软件和硬件功能的总和。只看硬件参数，或只看软件体验，都不能完整评价系统性能。</p>
+</div>
+</div>
+![](/assets/computer-system-overview-architecture.svg)
+
+<h2 id="硬件发展"><a href="#硬件发展" class="headerlink" title="硬件发展"></a>硬件发展</h2><p>计算机硬件的发展常按逻辑元件划分为四代。</p>
+<table>
+<thead>
+<tr>
+<th>发展阶段</th>
+<th align="right">时间</th>
+<th>逻辑元件</th>
+<th>速度</th>
+<th>内存</th>
+<th>外存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一代</td>
+<td align="right">1946-1957</td>
+<td>电子管</td>
+<td>几千至几万次&#x2F;秒</td>
+<td>汞延迟线、磁鼓</td>
+<td>穿孔卡片、纸带</td>
+</tr>
+<tr>
+<td>第二代</td>
+<td align="right">1958-1964</td>
+<td>晶体管</td>
+<td>几万至几十万次&#x2F;秒</td>
+<td>磁芯存储器</td>
+<td>磁带</td>
+</tr>
+<tr>
+<td>第三代</td>
+<td align="right">1964-1971</td>
+<td>中小规模集成电路</td>
+<td>几十万至几百万次&#x2F;秒</td>
+<td>半导体存储器</td>
+<td>磁带、磁盘</td>
+</tr>
+<tr>
+<td>第四代</td>
+<td align="right">1972 至今</td>
+<td>大规模、超大规模集成电路</td>
+<td>上千万至万亿次&#x2F;秒</td>
+<td>半导体存储器</td>
+<td>磁盘、磁带、光盘、半导体存储器</td>
+</tr>
+</tbody></table>
+<p>第一台电子数字计算机 ENIAC 诞生于 1946 年，采用电子管，体积大、功耗高、速度相对低。</p>
+<h3 id="摩尔定律"><a href="#摩尔定律" class="headerlink" title="摩尔定律"></a>摩尔定律</h3><p>摩尔定律描述的是集成电路规模增长趋势：集成电路上可容纳的晶体管数目大约每隔 18 个月增加一倍，整体性能也随之提升。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">理解边界</span></div>
+<div class="callout-content"><p>摩尔定律不是严格物理定律，而是对一段时期内半导体产业发展速度的经验性概括。</p>
+</div>
+</div>
+### 当前趋势
+
+<p>硬件发展不只依靠单个通用处理器变快，还体现在：</p>
+<ul>
+<li>更高集成度与更先进工艺。</li>
+<li>多核、众核与并行处理。</li>
+<li>专用处理器与异构计算。</li>
+<li>更高层次的存储体系与 I&#x2F;O 能力。</li>
+</ul>
+<h2 id="冯诺依曼结构"><a href="#冯诺依曼结构" class="headerlink" title="冯诺依曼结构"></a>冯诺依曼结构</h2><p>冯诺依曼结构的核心思想是 <strong>存储程序</strong>：把指令以二进制代码形式事先存入主存，程序运行时从首地址开始取出指令，然后按指令规定的顺序执行，直到程序结束。</p>
+<h3 id="五大部件"><a href="#五大部件" class="headerlink" title="五大部件"></a>五大部件</h3><p>冯诺依曼机由五大部件组成：</p>
+<ul>
+<li><strong>输入设备</strong>：把外部信息转换成机器能识别的形式。</li>
+<li><strong>输出设备</strong>：把机器处理结果转换成人能识别或其他设备能接收的形式。</li>
+<li><strong>存储器</strong>：存放程序和数据。</li>
+<li><strong>运算器</strong>：进行算术运算和逻辑运算。</li>
+<li><strong>控制器</strong>：指挥程序运行。</li>
+</ul>
+<h3 id="基本特点"><a href="#基本特点" class="headerlink" title="基本特点"></a>基本特点</h3><ul>
+<li>计算机由五大部件组成。</li>
+<li>指令和数据以同等地位存于存储器中，可按地址访问。</li>
+<li>指令和数据均用二进制表示。</li>
+<li>指令由 <strong>操作码</strong> 和 <strong>地址码</strong> 组成。</li>
+<li>采用存储程序工作方式。</li>
+<li>早期冯诺依曼机以<strong>运算器</strong>为中心；现代计算机通常以<strong>存储器</strong>为中心。</li>
+</ul>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">指令与数据如何区分</span></div>
+<div class="callout-content"><p>二进制本身不会标明指令数据。CPU 根据指令周期的阶段解释同一串二进制位：取指阶段读出的内容被送入 IR 作为指令，执行阶段按地址读出的内容作为数据。</p>
+</div>
+</div>
+## 现代计算机组织
+
+<p>现代计算机一般可以这样把握：</p>
+<ul>
+<li><strong>CPU &#x3D; 运算器 + 控制器</strong></li>
+<li><strong>主机 &#x3D; CPU + 主存储器</strong></li>
+<li><strong>I&#x2F;O 设备 &#x3D; 输入设备 + 输出设备 + 外部设备</strong></li>
+<li><strong>存储系统 &#x3D; 主存 + 辅存 + 层次化缓存结构</strong></li>
+</ul>
+<h3 id="主存储器"><a href="#主存储器" class="headerlink" title="主存储器"></a>主存储器</h3><p>主存储器由大量存储单元组成。每个存储单元有地址，并存放一串二进制代码。</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存储单元</td>
+<td>按地址访问的基本存储单位</td>
+</tr>
+<tr>
+<td>存储字</td>
+<td>一个存储单元中的二进制串</td>
+</tr>
+<tr>
+<td>存储字长</td>
+<td>一个存储单元中二进制串的位数</td>
+</tr>
+<tr>
+<td>存储元</td>
+<td>存储 1 bit 的电子元件</td>
+</tr>
+<tr>
+<td>MAR</td>
+<td>存储器地址寄存器，位数反映最多可寻址的存储单元个数</td>
+</tr>
+<tr>
+<td>MDR</td>
+<td>存储器数据寄存器，位数通常等于存储字长</td>
+</tr>
+</tbody></table>
+<p>如果 MAR 为 $n$ 位，则最多支持 $2^n$ 个存储单元；如果 MDR 为 $m$ 位，则每个存储单元可存放 $m$ bit。</p>
+<h3 id="运算器"><a href="#运算器" class="headerlink" title="运算器"></a>运算器</h3><p>运算器用于实现算术运算和逻辑运算。</p>
+<table>
+<thead>
+<tr>
+<th>部件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ALU</td>
+<td>算术逻辑单元，执行算术运算和逻辑运算</td>
+</tr>
+<tr>
+<td>ACC</td>
+<td>累加器，暂存操作数或运算结果</td>
+</tr>
+<tr>
+<td>MQ</td>
+<td>乘商寄存器，辅助乘法和除法</td>
+</tr>
+<tr>
+<td>X</td>
+<td>通用操作数寄存器，暂存参与运算的数据</td>
+</tr>
+</tbody></table>
+<h3 id="控制器"><a href="#控制器" class="headerlink" title="控制器"></a>控制器</h3><p>控制器负责取指、译码并发出控制信号。</p>
+<table>
+<thead>
+<tr>
+<th>部件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CU</td>
+<td>控制单元，分析指令并发出控制信号</td>
+</tr>
+<tr>
+<td>IR</td>
+<td>指令寄存器，保存当前正在执行的指令</td>
+</tr>
+<tr>
+<td>PC</td>
+<td>程序计数器，保存下一条指令的地址</td>
+</tr>
+</tbody></table>
+<h2 id="计算机的工作过程"><a href="#计算机的工作过程" class="headerlink" title="计算机的工作过程"></a>计算机的工作过程</h2><p>程序在计算机中表现为一串机器指令。CPU 执行程序时，反复经历：</p>
+<ol>
+<li><strong>取指令</strong>：根据 PC 给出的地址，从主存读出指令。</li>
+<li><strong>分析指令</strong>：控制器分析操作码，判断要执行什么操作。</li>
+<li><strong>执行指令</strong>：根据地址码取得操作数，完成运算、访存或控制动作。</li>
+</ol>
+<p><img src="/assets/computer-system-overview-register-roles.svg"></p>
+<h3 id="公共取指流程"><a href="#公共取指流程" class="headerlink" title="公共取指流程"></a>公共取指流程</h3><p>多数指令的取指阶段具有共同模式：</p>
+<p><img src="/assets/computer-system-overview-fetch-cycle.svg"></p>
+<table>
+<thead>
+<tr>
+<th align="right">步骤</th>
+<th>寄存器传送</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td>$(PC) \rightarrow MAR$</td>
+<td>将下一条指令地址送入 MAR</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td>$M(MAR) \rightarrow MDR$</td>
+<td>从主存指定地址读出指令</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>$(MDR) \rightarrow IR$</td>
+<td>将指令送入 IR</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>$(PC) + 1 \rightarrow PC$</td>
+<td>PC 指向顺序执行时的下一条指令</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>$OP(IR) \rightarrow CU$</td>
+<td>控制器分析操作码</td>
+</tr>
+</tbody></table>
+<p>其中：</p>
+<ul>
+<li>$M(MAR)$ 表示主存中 MAR 所指向的存储单元内容。</li>
+<li>$OP(IR)$ 表示 IR 中的操作码字段。</li>
+<li>$Ad(IR)$ 表示 IR 中的地址码字段。</li>
+</ul>
+<h2 id="计算机系统的层次结构"><a href="#计算机系统的层次结构" class="headerlink" title="计算机系统的层次结构"></a>计算机系统的层次结构</h2><p>计算机系统可以看成多级虚拟机器构成的层次。</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>面向对象</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>微程序机器</td>
+<td>微指令</td>
+<td>用微程序解释机器指令</td>
+</tr>
+<tr>
+<td>传统机器</td>
+<td>机器语言程序员</td>
+<td>直接执行机器指令</td>
+</tr>
+<tr>
+<td>操作系统机器</td>
+<td>操作系统用户</td>
+<td>提供系统调用、进程、文件、I&#x2F;O 管理等抽象</td>
+</tr>
+<tr>
+<td>汇编语言机器</td>
+<td>汇编语言程序员</td>
+<td>通过汇编语言接近机器指令</td>
+</tr>
+<tr>
+<td>高级语言机器</td>
+<td>高级语言程序员</td>
+<td>通过编译或解释执行高级语言程序</td>
+</tr>
+</tbody></table>
+<h3 id="三种语言级别"><a href="#三种语言级别" class="headerlink" title="三种语言级别"></a>三种语言级别</h3><table>
+<thead>
+<tr>
+<th>语言</th>
+<th>特点</th>
+<th>转换方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>机器语言</td>
+<td>二进制指令，机器可直接执行</td>
+<td>无需翻译</td>
+</tr>
+<tr>
+<td>汇编语言</td>
+<td>用助记符表示机器指令</td>
+<td>汇编</td>
+</tr>
+<tr>
+<td>高级语言</td>
+<td>接近自然语言和数学表达</td>
+<td>编译或解释</td>
+</tr>
+</tbody></table>
+<p>从 C 语言源程序到可执行文件，通常经历<span class="wikilink-unresolved" title="Unresolved: 预处理、编译、汇编、链接等阶段">预处理、编译、汇编、链接等阶段</span>。可执行文件最终仍以机器指令和数据的形式在计算机中运行。</p>
+<h3 id="ISA-与组成原理"><a href="#ISA-与组成原理" class="headerlink" title="ISA 与组成原理"></a>ISA 与组成原理</h3><p><strong>指令集体系结构</strong>（Instruction Set Architecture, ISA）是软件和硬件之间的接口。它规定计算机支持哪些指令、每条指令做什么、指令如何使用。</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>所属范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>是否提供乘法指令</td>
+<td>计算机体系结构</td>
+</tr>
+<tr>
+<td>乘法指令如何由硬件实现</td>
+<td>计算机组成原理</td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">软硬件逻辑等价性</span></div>
+<div class="callout-content"><p>同一个功能既可以用硬件实现，也可以用软件实现。硬件实现通常性能更高、成本更高；软件实现通常更灵活、成本较低但性能较低。</p>
+</div>
+</div>
+## 性能指标
+
+
+<p><img src="/assets/computer-system-overview-performance.svg"></p>
+<h3 id="存储器容量"><a href="#存储器容量" class="headerlink" title="存储器容量"></a>存储器容量</h3><p>主存容量可以按位或字节计算：</p>
+<p>$$<br>\text{总容量(bit)} &#x3D; \text{存储单元个数} \times \text{存储字长}<br>$$</p>
+<p>$$<br>\text{总容量(Byte)} &#x3D; \frac{\text{存储单元个数} \times \text{存储字长}}{8}<br>$$</p>
+<p>若 MAR 为 32 位，MDR 为 8 位，则：</p>
+<p>$$<br>2^{32} \times 8\ bit &#x3D; 2^{32}\ Byte &#x3D; 4GB<br>$$</p>
+<h3 id="CPU-性能"><a href="#CPU-性能" class="headerlink" title="CPU 性能"></a>CPU 性能</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPU 主频</td>
+<td>CPU 内数字脉冲信号振荡的频率，单位 Hz</td>
+</tr>
+<tr>
+<td>CPU 时钟周期</td>
+<td>一个时钟周期的时间，等于主频的倒数</td>
+</tr>
+<tr>
+<td>CPI</td>
+<td>Clock cycle Per Instruction，执行一条指令平均需要的时钟周期数</td>
+</tr>
+<tr>
+<td>CPU 执行时间</td>
+<td>程序在 CPU 上实际执行所花的时间</td>
+</tr>
+</tbody></table>
+<p>核心公式：</p>
+<p>$$<br>\text{CPU 时钟周期} &#x3D; \frac{1}{\text{CPU 主频}}<br>$$</p>
+<p>$$<br>\text{单条指令耗时} &#x3D; CPI \times \text{CPU 时钟周期}<br>$$</p>
+<p>$$<br>\text{CPU 执行时间} &#x3D; \frac{\text{指令条数} \times \text{平均 CPI}}{\text{CPU 主频}}<br>$$</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">Example</span></div>
+<div class="callout-content"><p>某 CPU 主频为 1000 Hz，某程序包含 100 条指令，平均 CPI 为 3，则：<br>$$</p>
+</div>
+</div>\text{CPU 执行时间} = \frac{100 \times 3}{1000} = 0.3s
+$$
+
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">Warning</span></div>
+<div class="callout-content"><p><strong>主频高的 CPU 不一定更快</strong>。程序执行时间还取决于指令条数、平均 CPI、指令系统、编译结果和具体程序特征。</p>
+</div>
+</div>
+### IPS 与 FLOPS
+
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>常见单位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IPS</td>
+<td>Instructions Per Second，每秒执行多少条指令</td>
+<td>KIPS、MIPS</td>
+</tr>
+<tr>
+<td>FLOPS</td>
+<td>Floating-point Operations Per Second，每秒执行多少次浮点运算</td>
+<td>KFLOPS、MFLOPS、GFLOPS、TFLOPS、PFLOPS、EFLOPS、ZFLOPS</td>
+</tr>
+</tbody></table>
+<p>数量单位按 $10^3$ 逐级递增：</p>
+<table>
+<thead>
+<tr>
+<th>单位</th>
+<th align="right">数量级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>K</td>
+<td align="right">$10^3$</td>
+</tr>
+<tr>
+<td>M</td>
+<td align="right">$10^6$</td>
+</tr>
+<tr>
+<td>G</td>
+<td align="right">$10^9$</td>
+</tr>
+<tr>
+<td>T</td>
+<td align="right">$10^{12}$</td>
+</tr>
+<tr>
+<td>P</td>
+<td align="right">$10^{15}$</td>
+</tr>
+<tr>
+<td>E</td>
+<td align="right">$10^{18}$</td>
+</tr>
+<tr>
+<td>Z</td>
+<td align="right">$10^{21}$</td>
+</tr>
+</tbody></table>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">K/M/G/T 的二进制与十进制混用</span></div>
+<div class="callout-content"><p><strong>存储容量&#x2F;文件大小</strong>里常见的 K、M、G、T 往往按 $2^{10}$ 逐级上升：$1KB &#x3D; 2^{10}B$，$1MB &#x3D; 2^{20}B$，$1GB &#x3D; 2^{30}B$。<br><strong>性能指标</strong>里，如 Hz、IPS、FLOPS 及其 k(小写！)&#x2F;M&#x2F;G&#x2F;T&#x2F;P&#x2F;E&#x2F;Z 前缀，通常按 $10^3$ 逐级递增：$1k &#x3D; 10^3$，$1M &#x3D; 10^6$，$1G &#x3D; 10^9$。<br>因此看到 K(k)&#x2F;M&#x2F;G&#x2F;T 时，先判断它修饰的是“存储容量”还是“频率、速度、运算次数”。</p>
+</div>
+</div>
+
+<h3 id="系统整体性能"><a href="#系统整体性能" class="headerlink" title="系统整体性能"></a>系统整体性能</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据通路带宽</td>
+<td>数据总线一次所能并行传送信息的位数</td>
+</tr>
+<tr>
+<td>吞吐量</td>
+<td>系统单位时间内处理请求的数量</td>
+</tr>
+<tr>
+<td>响应时间</td>
+<td>从用户发出请求到系统给出结果的等待时间</td>
+</tr>
+<tr>
+<td>基准程序</td>
+<td>用来测量并比较计算机处理速度的一类测试程序</td>
+</tr>
+</tbody></table>
+<p>吞吐量受到输入、取指、访存、写回、I&#x2F;O 等多个环节影响。由于这些环节都与主存有关，系统吞吐量往往与主存存取周期密切相关。</p>
+<p>响应时间通常包括：</p>
+<ul>
+<li>CPU 时间。</li>
+<li>磁盘访问时间。</li>
+<li>存储器访问时间。</li>
+<li>I&#x2F;O 操作时间。</li>
+<li>操作系统开销。</li>
+</ul>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">基准程序误区</span></div>
+<div class="callout-content"><p>基准程序执行得更快，只能说明机器在该基准程序及其测试环境下表现更好。不同语句频度、不同应用场景和不同数据规模都会影响评价结论。</p>
+</div>
+</div>
+## 快速回忆
+
+<ul>
+<li>计算机系统由硬件和软件共同组成。</li>
+<li>冯诺依曼结构的核心是存储程序。</li>
+<li>指令和数据都用二进制表示，CPU 通过指令周期阶段区分二者。</li>
+<li>现代计算机以存储器为中心，CPU 由运算器和控制器组成。</li>
+<li>程序执行过程可概括为取指令、分析指令、执行指令。</li>
+<li>ISA 是软件与硬件之间的接口。</li>
+<li>存储容量看 MAR 和 MDR；CPU 时间看指令条数、CPI 和主频；整机性能还要看吞吐量、响应时间和实际工作负载。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/30/Computer-System-Overview/">https://eliano64.github.io/2026/06/30/Computer-System-Overview/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/30/combinatorial-thinking-in-data-structures/" title="Combinatorial Thinking In Data Structures"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Combinatorial Thinking In Data Structures</div></div><div class="info-2"><div class="info-item-1">分治递推组合数学中最常见的思想是分治：把一个规模为 $n$ 的对象，按某个天然位置拆成较小的同类对象。 若一个对象只能落入若干互不重叠的情况，使用加法： $$T(n)&#x3D;T_1(n)+T_2(n)+\cdots$$ 若一个对象由几个互相独立的部分共同组成，使用乘法： $$T(n)&#x3D;A(n)\cdot B(n)$$ 很多递推式混合使用两者。  Info  递推式里最容易漏的是空结构。 空结构有时表示 `0`，有时表示 `1`： > - 若计数的是“方案数”，空方案通常算 `1` 种。 > - 若计数的是“结点数”，空树通常有 `0`...</div></div></div></a><a class="pagination-related" href="/2026/06/30/Number-Systems-And-Encoding/" title="Number Systems And Encoding"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Number Systems And Encoding</div></div><div class="info-2"><div class="info-item-1">进位计数制进位计数制用有限个数码和位权表示数值。对于 $r$ 进制数： $$K_nK_{n-1}\cdots K_1K_0.K_{-1}K_{-2}\cdots$$ 其真值为： $$\sum_i K_i r^i$$ 其中每个数码 $K_i$ 必须满足： $$0 \le K_i &lt; r$$ 例如： $$(975.36)_{10}&#x3D;9\times10^2+7\times10^1+5\times10^0+3\times10^{-1}+6\times10^{-2}$$  进制转换任意进制转十进制按位权展开后求和。  Example $$  (1011.01)_2=1\times2^3+0\times2^2+1\times2^1+1\times2^0+0\times2^{-1}+1\times2^{-2}=11.25 > $$  十进制转任意进制整数部分和小数部分分开处理。    部分 方法 读数方向    整数部分 除基取余 余数从下往上读   小数部分 乘基取整 整数部分从上往下读   整数部分：除基取余把十进制整数 $N$ 转为 $r$ 进制：  用 $N$ 除以...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Computer-System-Overview"><span class="toc-text">Computer System Overview</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%8F%91%E5%B1%95"><span class="toc-text">硬件发展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%91%A9%E5%B0%94%E5%AE%9A%E5%BE%8B"><span class="toc-text">摩尔定律</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%AF%E8%AF%BA%E4%BE%9D%E6%9B%BC%E7%BB%93%E6%9E%84"><span class="toc-text">冯诺依曼结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E5%A4%A7%E9%83%A8%E4%BB%B6"><span class="toc-text">五大部件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%89%B9%E7%82%B9"><span class="toc-text">基本特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%AD%98%E5%82%A8%E5%99%A8"><span class="toc-text">主存储器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E7%AE%97%E5%99%A8"><span class="toc-text">运算器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E5%99%A8"><span class="toc-text">控制器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%9A%84%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B"><span class="toc-text">计算机的工作过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E5%85%B1%E5%8F%96%E6%8C%87%E6%B5%81%E7%A8%8B"><span class="toc-text">公共取指流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="toc-text">计算机系统的层次结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E8%AF%AD%E8%A8%80%E7%BA%A7%E5%88%AB"><span class="toc-text">三种语言级别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ISA-%E4%B8%8E%E7%BB%84%E6%88%90%E5%8E%9F%E7%90%86"><span class="toc-text">ISA 与组成原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E5%99%A8%E5%AE%B9%E9%87%8F"><span class="toc-text">存储器容量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CPU-%E6%80%A7%E8%83%BD"><span class="toc-text">CPU 性能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%95%B4%E4%BD%93%E6%80%A7%E8%83%BD"><span class="toc-text">系统整体性能</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

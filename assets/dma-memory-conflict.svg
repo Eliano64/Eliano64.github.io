@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 500" role="img" aria-labelledby="title desc">
+  <title id="title">DMA Memory Conflict</title>
+  <desc id="desc">Three ways to coordinate main memory access between CPU and DMA controller.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.cpu{fill:color-mix(in srgb,var(--blue) 18%,var(--bg));stroke:var(--blue);stroke-width:2}.dma{fill:color-mix(in srgb,var(--green) 18%,var(--bg));stroke:var(--green);stroke-width:2}.stop{fill:color-mix(in srgb,var(--red) 16%,var(--bg));stroke:var(--red);stroke-width:2}.line{stroke:var(--line);stroke-width:2}
+  </style>
+  <rect class="bg" width="1100" height="500"/>
+  <text class="t" x="550" y="42" text-anchor="middle" font-size="24" font-weight="700">CPU 与 DMA 访存冲突的处理</text>
+  <g transform="translate(55 92)">
+    <rect class="box" width="300" height="330" rx="10"/>
+    <text class="t" x="150" y="36" text-anchor="middle" font-size="18" font-weight="700">停止 CPU 访存</text>
+    <rect class="dma" x="35" y="88" width="230" height="46" rx="5"/><text class="t" x="150" y="117" text-anchor="middle" font-size="14">DMA 使用主存</text>
+    <rect class="stop" x="35" y="152" width="230" height="46" rx="5"/><text class="t" x="150" y="181" text-anchor="middle" font-size="14">CPU 暂停访存</text>
+    <rect class="dma" x="35" y="216" width="230" height="46" rx="5"/><text class="t" x="150" y="245" text-anchor="middle" font-size="14">DMA 继续传送</text>
+    <text class="m" x="150" y="295" text-anchor="middle" font-size="13">控制简单，CPU 利用率低</text>
+  </g>
+  <g transform="translate(400 92)">
+    <rect class="box" width="300" height="330" rx="10"/>
+    <text class="t" x="150" y="36" text-anchor="middle" font-size="18" font-weight="700">交替访存</text>
+    <g transform="translate(30 90)">
+      <rect class="dma" x="0" y="0" width="55" height="52" rx="4"/><text class="t" x="27" y="32" text-anchor="middle" font-size="13">DMA</text>
+      <rect class="cpu" x="65" y="0" width="55" height="52" rx="4"/><text class="t" x="92" y="32" text-anchor="middle" font-size="13">CPU</text>
+      <rect class="dma" x="130" y="0" width="55" height="52" rx="4"/><text class="t" x="157" y="32" text-anchor="middle" font-size="13">DMA</text>
+      <rect class="cpu" x="195" y="0" width="55" height="52" rx="4"/><text class="t" x="222" y="32" text-anchor="middle" font-size="13">CPU</text>
+    </g>
+    <text class="m" x="150" y="190" text-anchor="middle" font-size="13">预先划分主存周期</text>
+    <text class="m" x="150" y="216" text-anchor="middle" font-size="13">不必每次申请和归还总线</text>
+    <text class="m" x="150" y="295" text-anchor="middle" font-size="13">硬件时序较复杂</text>
+  </g>
+  <g transform="translate(745 92)">
+    <rect class="box" width="300" height="330" rx="10"/>
+    <text class="t" x="150" y="36" text-anchor="middle" font-size="18" font-weight="700">周期挪用</text>
+    <g transform="translate(34 88)">
+      <rect class="cpu" x="0" y="0" width="52" height="46" rx="4"/><text class="t" x="26" y="29" text-anchor="middle" font-size="12">CPU</text>
+      <rect class="cpu" x="60" y="0" width="52" height="46" rx="4"/><text class="t" x="86" y="29" text-anchor="middle" font-size="12">CPU</text>
+      <rect class="dma" x="120" y="0" width="52" height="46" rx="4"/><text class="t" x="146" y="29" text-anchor="middle" font-size="12">DMA</text>
+      <rect class="cpu" x="180" y="0" width="52" height="46" rx="4"/><text class="t" x="206" y="29" text-anchor="middle" font-size="12">CPU</text>
+    </g>
+    <text class="m" x="150" y="178" text-anchor="middle" font-size="13">DMA 需要时临时挪用周期</text>
+    <text class="m" x="150" y="204" text-anchor="middle" font-size="13">CPU 只在该周期受影响</text>
+    <text class="m" x="150" y="295" text-anchor="middle" font-size="13">常见、灵活，I/O 通常优先</text>
+  </g>
+</svg>

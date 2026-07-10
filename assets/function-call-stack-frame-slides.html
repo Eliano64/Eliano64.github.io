@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>function call stack frame</title>
+  <style>
+    :root {
+      --bg:#ffffff; --fg:#17212b; --muted:#5b6773; --panel:#f5f7fb; --line:#26323d; --accent:#2563eb; --soft:#dbeafe; --green:#15803d; --warn:#c2410c; --shadow:rgba(15,23,32,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#0f1720; --fg:#e8edf2; --muted:#aab5c0; --panel:#1b2632; --line:#d7dee6; --accent:#7cb7ff; --soft:#173963; --green:#7bdc91; --warn:#ffb07c; --shadow:rgba(0,0,0,.35);
+      }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .wrap{max-width:1180px;margin:0 auto;padding:14px}
+    header{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:14px}
+    h1{font-size:22px;margin:0;font-weight:700;letter-spacing:0}
+    .step{color:var(--muted);font-size:15px;white-space:nowrap}
+    .grid{display:grid;grid-template-columns:minmax(320px,390px) minmax(360px,1fr);gap:14px;align-items:start}
+    .panel{background:var(--panel);border:1px solid color-mix(in srgb,var(--line) 35%,transparent);border-radius:8px;padding:12px;box-shadow:0 8px 20px var(--shadow)}
+    .caption{color:var(--muted);font-size:15px;margin-bottom:10px}
+    pre{margin:0;padding:10px;border-radius:7px;background:color-mix(in srgb,var(--bg) 82%,var(--panel));border:1px solid color-mix(in srgb,var(--line) 25%,transparent);overflow:auto;font-size:13px;line-height:1.36}
+    code{font-family:Consolas,"Courier New",monospace}
+    .code-line{display:block;padding:1px 6px;border-radius:5px}
+    .active{background:var(--soft);outline:1px solid color-mix(in srgb,var(--accent) 55%,transparent)}
+    .regs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}
+    .reg{border:1px solid color-mix(in srgb,var(--line) 32%,transparent);border-radius:7px;padding:7px;background:color-mix(in srgb,var(--bg) 80%,var(--panel))}
+    .reg b{display:block;font-family:Consolas,"Courier New",monospace;font-size:15px;margin-bottom:2px}
+    .reg span{color:var(--muted);font-size:12px}
+    .note{font-size:15px;line-height:1.42;margin-top:9px;min-height:62px}
+    .note b{color:var(--accent)}
+    .stack{position:relative;padding-left:84px;min-height:500px}
+    .axis{position:absolute;left:20px;top:24px;bottom:24px;width:2px;background:var(--line)}
+    .axis::before{content:"高地址";position:absolute;left:-20px;top:-24px;color:var(--muted);font-size:13px;white-space:nowrap}
+    .axis::after{content:"低地址";position:absolute;left:-20px;bottom:-24px;color:var(--muted);font-size:13px;white-space:nowrap}
+    .cell{height:38px;border:1.3px solid var(--line);display:grid;grid-template-columns:82px 88px 1fr;align-items:center;padding:0 8px;background:color-mix(in srgb,var(--bg) 84%,var(--panel));margin-bottom:4px;border-radius:6px}
+    .cell.hot{border-color:var(--accent);background:var(--soft)}
+    .cell.return{border-color:var(--warn)}
+    .cell.local{border-color:var(--green)}
+    .addr,.off{font-family:Consolas,"Courier New",monospace;color:var(--muted);font-size:12px}
+    .val{font-family:Consolas,"Courier New",monospace;font-size:13px}
+    .mark{color:var(--accent);font-weight:700;margin-left:8px}
+    .controls{display:flex;gap:10px;justify-content:center;margin-top:10px}
+    button{border:1px solid color-mix(in srgb,var(--line) 35%,transparent);background:var(--panel);color:var(--fg);border-radius:7px;padding:7px 13px;font-size:14px;cursor:pointer}
+    button:hover{border-color:var(--accent)}
+    @media(max-width:680px){.grid{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}.stack{min-height:500px}.regs{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>一次函数调用的完整栈帧过程</h1>
+    <div class="step" id="stepText"></div>
+  </header>
+  <div class="grid">
+    <section class="panel">
+      <div class="caption">示例：caller 调用 add(x, y)</div>
+      <pre><code><span class="code-line" data-line="0">push 80          ; 第 2 个参数 y</span>
+<span class="code-line" data-line="1">push 125         ; 第 1 个参数 x</span>
+<span class="code-line" data-line="2">call add</span>
+<span class="code-line" data-line="3">add:</span>
+<span class="code-line" data-line="4">  push ebp</span>
+<span class="code-line" data-line="5">  mov ebp, esp</span>
+<span class="code-line" data-line="6">  sub esp, 12</span>
+<span class="code-line" data-line="7">  mov eax, [ebp+8]</span>
+<span class="code-line" data-line="8">  add eax, [ebp+12]</span>
+<span class="code-line" data-line="9">  mov [ebp-4], eax</span>
+<span class="code-line" data-line="10">  mov esp, ebp</span>
+<span class="code-line" data-line="11">  pop ebp</span>
+<span class="code-line" data-line="12">  ret</span>
+<span class="code-line" data-line="13">mov [sum], eax</span></code></pre>
+      <div class="regs">
+        <div class="reg"><b>eip</b><span id="eip"></span></div>
+        <div class="reg"><b>esp</b><span id="esp"></span></div>
+        <div class="reg"><b>ebp</b><span id="ebp"></span></div>
+        <div class="reg"><b>eax</b><span id="eax"></span></div>
+        <div class="reg"><b>[ebp+8]</b><span id="arg1"></span></div>
+        <div class="reg"><b>[ebp+12]</b><span id="arg2"></span></div>
+      </div>
+      <div class="note" id="note"></div>
+    </section>
+    <section class="panel">
+      <div class="caption">栈内容与 ebp/esp 位置</div>
+      <div class="stack" id="stack"><div class="axis"></div></div>
+    </section>
+  </div>
+  <div class="controls">
+    <button id="prev">上一步</button>
+    <button id="next">下一步</button>
+    <button id="reset">重置</button>
+  </div>
+</div>
+<script>
+const baseCells = [
+  ["0xA00F0030", "", "caller ebp 保存值"],
+  ["0xA00F002C", "", "caller 局部变量"],
+  ["0xA00F0028", "", "caller 局部变量"],
+  ["0xA00F0024", "", "caller 局部变量"],
+  ["0xA00F0020", "", "caller 当前栈顶"]
+];
+const steps = [
+  {line:0,eip:"caller",esp:"0xA00F0020",ebp:"0xA00F0030",eax:"-",arg1:"-",arg2:"-",cells:baseCells,note:"调用者先准备参数。这里采用 32 位 x86 常见模型：每次 push 占 4 字节，栈向低地址增长。"},
+  {line:0,eip:"caller",esp:"0xA00F001C",ebp:"0xA00F0030",eax:"-",arg1:"-",arg2:"-",cells:[...baseCells,["0xA00F001C","","80  参数 y","hot"]],note:"先压入第 2 个参数 y。push 的动作是 esp 减 4，再写入新栈顶。"},
+  {line:1,eip:"caller",esp:"0xA00F0018",ebp:"0xA00F0030",eax:"-",arg1:"-",arg2:"-",cells:[...baseCells,["0xA00F001C","","80  参数 y"],["0xA00F0018","","125 参数 x","hot"]],note:"再压入第 1 个参数 x。这样被调用函数建立 ebp 后，x 会落在 [ebp+8]，y 会落在 [ebp+12]。"},
+  {line:2,eip:"call add",esp:"0xA00F0014",ebp:"0xA00F0030",eax:"-",arg1:"-",arg2:"-",cells:[...baseCells,["0xA00F001C","","80  参数 y"],["0xA00F0018","","125 参数 x"],["0xA00F0014","","返回地址 0x40100A","return hot"]],note:"call 把返回地址压栈，然后跳到 add 的入口。此时返回地址位于栈顶。"},
+  {line:4,eip:"add",esp:"0xA00F0010",ebp:"0xA00F0030",eax:"-",arg1:"-",arg2:"-",cells:[...baseCells,["0xA00F001C","","80  参数 y"],["0xA00F0018","","125 参数 x"],["0xA00F0014","","返回地址 0x40100A","return"],["0xA00F0010","","旧 ebp = 0xA00F0030","hot"]],note:"被调用者先 push ebp，把调用者的栈帧基准保存下来。"},
+  {line:5,eip:"add",esp:"0xA00F0010",ebp:"0xA00F0010",eax:"-",arg1:"125",arg2:"80",cells:[...baseCells,["0xA00F001C","[ebp+12]","80  参数 y"],["0xA00F0018","[ebp+8]","125 参数 x"],["0xA00F0014","[ebp+4]","返回地址 0x40100A","return"],["0xA00F0010","[ebp]","旧 ebp = 0xA00F0030","hot"]],note:"mov ebp, esp 建立当前栈帧。此后 ebp 稳定不动，参数和返回地址都可以用固定偏移访问。"},
+  {line:6,eip:"add",esp:"0xA00F0004",ebp:"0xA00F0010",eax:"-",arg1:"125",arg2:"80",cells:[...baseCells,["0xA00F001C","[ebp+12]","80  参数 y"],["0xA00F0018","[ebp+8]","125 参数 x"],["0xA00F0014","[ebp+4]","返回地址 0x40100A","return"],["0xA00F0010","[ebp]","旧 ebp = 0xA00F0030"],["0xA00F000C","[ebp-4]","局部变量 sum","local hot"],["0xA00F0008","[ebp-8]","局部变量 temp","local"],["0xA00F0004","[ebp-12]","局部变量 tmp","local hot"]],note:"sub esp, 12 在当前栈帧低地址处预留 3 个 4 字节局部变量。"},
+  {line:8,eip:"add",esp:"0xA00F0004",ebp:"0xA00F0010",eax:"205",arg1:"125",arg2:"80",cells:[...baseCells,["0xA00F001C","[ebp+12]","80  参数 y","hot"],["0xA00F0018","[ebp+8]","125 参数 x","hot"],["0xA00F0014","[ebp+4]","返回地址 0x40100A","return"],["0xA00F0010","[ebp]","旧 ebp = 0xA00F0030"],["0xA00F000C","[ebp-4]","局部变量 sum","local"],["0xA00F0008","[ebp-8]","局部变量 temp","local"],["0xA00F0004","[ebp-12]","局部变量 tmp","local"]],note:"函数体通过 [ebp+8] 和 [ebp+12] 读取参数，计算结果通常先放入 eax。"},
+  {line:9,eip:"add",esp:"0xA00F0004",ebp:"0xA00F0010",eax:"205",arg1:"125",arg2:"80",cells:[...baseCells,["0xA00F001C","[ebp+12]","80  参数 y"],["0xA00F0018","[ebp+8]","125 参数 x"],["0xA00F0014","[ebp+4]","返回地址 0x40100A","return"],["0xA00F0010","[ebp]","旧 ebp = 0xA00F0030"],["0xA00F000C","[ebp-4]","sum = 205","local hot"],["0xA00F0008","[ebp-8]","局部变量 temp","local"],["0xA00F0004","[ebp-12]","局部变量 tmp","local"]],note:"局部变量位于 ebp 的负偏移处；返回值仍然放在 eax，便于调用者接着使用。"},
+  {line:10,eip:"add",esp:"0xA00F0010",ebp:"0xA00F0010",eax:"205",arg1:"125",arg2:"80",cells:[...baseCells,["0xA00F001C","[ebp+12]","80  参数 y"],["0xA00F0018","[ebp+8]","125 参数 x"],["0xA00F0014","[ebp+4]","返回地址 0x40100A","return"],["0xA00F0010","[ebp]","旧 ebp = 0xA00F0030","hot"]],note:"mov esp, ebp 直接丢弃局部变量区域，使 esp 回到保存的旧 ebp 位置。"},
+  {line:11,eip:"add",esp:"0xA00F0014",ebp:"0xA00F0030",eax:"205",arg1:"-",arg2:"-",cells:[...baseCells,["0xA00F001C","","80  参数 y"],["0xA00F0018","","125 参数 x"],["0xA00F0014","","返回地址 0x40100A","return hot"]],note:"pop ebp 恢复调用者的 ebp，并让 esp 指向返回地址。"},
+  {line:12,eip:"ret",esp:"0xA00F0018",ebp:"0xA00F0030",eax:"205",arg1:"-",arg2:"-",cells:[...baseCells,["0xA00F001C","","80  参数 y"],["0xA00F0018","","125 参数 x","hot"]],note:"ret 弹出返回地址写回 eip，控制流回到 call 后面的指令。参数区仍在栈上，之后按调用约定由调用者或被调用者清理。"},
+  {line:13,eip:"caller",esp:"0xA00F0018",ebp:"0xA00F0030",eax:"205",arg1:"-",arg2:"-",cells:[...baseCells,["0xA00F001C","","80  参数 y"],["0xA00F0018","","125 参数 x","hot"]],note:"调用者重新获得控制权，并从 eax 取到返回值。"}
+];
+let index=0;
+const ids=["eip","esp","ebp","eax","arg1","arg2"];
+const lines=[...document.querySelectorAll(".code-line")];
+const stack=document.getElementById("stack");
+function render(){
+  const s=steps[index];
+  document.getElementById("stepText").textContent=`步骤 ${index+1} / ${steps.length}`;
+  ids.forEach(id=>document.getElementById(id).textContent=s[id]);
+  document.getElementById("note").innerHTML=s.note;
+  lines.forEach(line=>line.classList.toggle("active",Number(line.dataset.line)===s.line));
+  stack.querySelectorAll(".cell").forEach(node=>node.remove());
+  s.cells.forEach(([addr,off,val,klass=""])=>{
+    const cell=document.createElement("div");
+    cell.className=`cell ${klass}`;
+    const marks=[];
+    if(addr===s.esp) marks.push("esp");
+    if(addr===s.ebp) marks.push("ebp");
+    cell.innerHTML=`<div class="addr">${addr}</div><div class="off">${off}</div><div class="val">${val}${marks.map(m=>`<span class="mark">${m}</span>`).join("")}</div>`;
+    stack.appendChild(cell);
+  });
+}
+document.getElementById("prev").addEventListener("click",()=>{index=Math.max(0,index-1);render()});
+document.getElementById("next").addEventListener("click",()=>{index=Math.min(steps.length-1,index+1);render()});
+document.getElementById("reset").addEventListener("click",()=>{index=0;render()});
+render();
+</script>
+</body>
+</html>

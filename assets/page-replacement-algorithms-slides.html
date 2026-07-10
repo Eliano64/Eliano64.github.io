@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>页面置换算法过程</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --ink: #172033;
+      --muted: #607086;
+      --line: #40516b;
+      --chip: #ffffff;
+      --blue: #2563eb;
+      --green: #15803d;
+      --red: #b91c1c;
+      --orange: #c2410c;
+      --purple: #7c3aed;
+      --shadow: rgba(15, 23, 42, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #172033;
+        --ink: #e5e7eb;
+        --muted: #aab6c8;
+        --line: #b6c2d3;
+        --chip: #111827;
+        --blue: #60a5fa;
+        --green: #4ade80;
+        --red: #f87171;
+        --orange: #fb923c;
+        --purple: #a78bfa;
+        --shadow: rgba(0, 0, 0, .28);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+    .deck {
+      min-height: 100vh;
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 14px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+    }
+    h1 { margin: 0; font-size: 24px; }
+    .subtitle { margin-top: 6px; color: var(--muted); font-size: 14px; }
+    .tabs, .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      border: 1px solid color-mix(in srgb, var(--line), transparent 30%);
+      background: var(--chip);
+      color: var(--ink);
+      border-radius: 7px;
+      padding: 8px 11px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.active {
+      border-color: var(--blue);
+      background: color-mix(in srgb, var(--blue), transparent 86%);
+      font-weight: 700;
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    main {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      min-height: 520px;
+    }
+    .stage, .side {
+      background: var(--panel);
+      border: 1px solid color-mix(in srgb, var(--line), transparent 45%);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 8px 24px var(--shadow);
+    }
+    .sequence {
+      display: grid;
+      grid-template-columns: repeat(20, minmax(28px, 1fr));
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+    .ref {
+      min-height: 32px;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--line), transparent 50%);
+      border-radius: 6px;
+      background: var(--chip);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .ref.past { opacity: .45; }
+    .ref.now {
+      border-color: var(--blue);
+      outline: 2px solid color-mix(in srgb, var(--blue), transparent 55%);
+    }
+    .frames {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin: 18px 0;
+    }
+    .frame {
+      min-height: 112px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: var(--chip);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      align-items: center;
+      justify-items: center;
+      padding: 10px;
+      position: relative;
+    }
+    .frame.empty { opacity: .62; }
+    .frame.hit { border-color: var(--green); }
+    .frame.evict { border-color: var(--red); }
+    .frame.pointer::after {
+      content: "指针";
+      position: absolute;
+      top: -13px;
+      right: 8px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      color: var(--bg);
+      background: var(--purple);
+      font-size: 12px;
+    }
+    .slotLabel { font-size: 12px; color: var(--muted); }
+    .page { font-size: 34px; font-weight: 800; line-height: 1; }
+    .bits { font-size: 12px; color: var(--muted); }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .metric {
+      background: var(--chip);
+      border: 1px solid color-mix(in srgb, var(--line), transparent 50%);
+      border-radius: 7px;
+      padding: 10px;
+    }
+    .metric strong { display: block; font-size: 20px; margin-top: 4px; }
+    .side h2 { margin: 0 0 12px; font-size: 21px; }
+    .side p { margin: 0 0 12px; line-height: 1.7; }
+    .side ul { margin: 0; padding-left: 1.2em; line-height: 1.75; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--blue), transparent 84%);
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    th, td { border: 1px solid color-mix(in srgb, var(--line), transparent 45%); padding: 7px; text-align: center; }
+    th { background: color-mix(in srgb, var(--line), transparent 86%); }
+    .belady { display: none; }
+    .belady.show { display: block; }
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      .frames { grid-template-columns: repeat(3, 1fr); }
+      .sequence { grid-template-columns: repeat(10, minmax(28px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <div>
+        <h1>页面置换算法过程</h1>
+        <div class="subtitle">按访问串逐步模拟驻留集变化，区分命中、缺页和真正发生置换。</div>
+      </div>
+      <div class="controls">
+        <button id="prev" type="button">上一步</button>
+        <button id="next" type="button">下一步</button>
+        <button id="reset" type="button">重置</button>
+      </div>
+    </header>
+    <nav class="tabs" aria-label="算法选择">
+      <button data-algo="OPT" class="active" type="button">OPT</button>
+      <button data-algo="FIFO" type="button">FIFO</button>
+      <button data-algo="LRU" type="button">LRU</button>
+      <button data-algo="CLOCK" type="button">CLOCK</button>
+      <button data-algo="ICLOCK" type="button">改进 CLOCK</button>
+      <button data-algo="BELADY" type="button">Belady 异常</button>
+    </nav>
+    <main>
+      <section class="stage">
+        <div id="sequence" class="sequence"></div>
+        <div id="frames" class="frames"></div>
+        <div class="metrics">
+          <div class="metric">当前访问<strong id="cur">-</strong></div>
+          <div class="metric">缺页次数<strong id="faults">0</strong></div>
+          <div class="metric">置换次数<strong id="replacements">0</strong></div>
+          <div class="metric">缺页率<strong id="rate">0%</strong></div>
+        </div>
+        <div id="belady" class="belady"></div>
+      </section>
+      <aside class="side">
+        <div id="badge" class="badge">步骤 0</div>
+        <h2 id="title">准备开始</h2>
+        <div id="explain"></div>
+      </aside>
+    </main>
+  </div>
+  <script>
+    const baseSeq = [7,0,1,2,0,3,0,4,2,3,0,3,2,1,2,0,1,7,0,1];
+    const beladySeq = [3,2,1,0,3,2,4,3,2,1,0,4];
+    const frameCount = 3;
+    const dirtyPages = new Set([2, 4, 7]);
+    const intro = {
+      OPT: "OPT 看未来：如果必须淘汰，就换出未来最晚才会再次访问，或以后不再访问的页。",
+      FIFO: "FIFO 看进入时间：命中不改变队列顺序，缺页且满时淘汰最早进入主存的页。",
+      LRU: "LRU 看过去：命中后更新最近使用顺序，缺页且满时淘汰最近最长时间未使用的页。",
+      CLOCK: "CLOCK 用访问位近似 LRU：R=1 的页获得第二次机会，扫描时改为 0；R=0 的页被淘汰。",
+      ICLOCK: "改进 CLOCK 同时看访问位 R 和修改位 M，优先淘汰不需要写回的页。",
+      BELADY: "FIFO 可能出现页框更多但缺页更多的反直觉现象。"
+    };
+    let algo = "OPT";
+    let step = 0;
+
+    function simulate(kind, seq = baseSeq, framesN = frameCount) {
+      const frames = Array(framesN).fill(null);
+      const fifo = [];
+      const recent = [];
+      let hand = 0;
+      let faults = 0;
+      let replacements = 0;
+      const rows = [];
+      for (let i = 0; i < seq.length; i++) {
+        const page = seq[i];
+        let hitIndex = frames.findIndex(f => f && f.page === page);
+        let hit = hitIndex >= 0;
+        let evicted = null;
+        let message = "";
+        if (hit) {
+          if (kind === "LRU") {
+            const pos = recent.indexOf(page);
+            if (pos >= 0) recent.splice(pos, 1);
+            recent.unshift(page);
+            message = `页 ${page} 命中，更新为最近使用。`;
+          } else if (kind === "CLOCK" || kind === "ICLOCK") {
+            frames[hitIndex].r = 1;
+            if (kind === "ICLOCK" && dirtyPages.has(page)) frames[hitIndex].m = 1;
+            message = `页 ${page} 命中，将访问位 R 置为 1。`;
+          } else {
+            message = `页 ${page} 命中，不发生缺页。`;
+          }
+        } else {
+          faults++;
+          const empty = frames.findIndex(f => !f);
+          if (empty >= 0) {
+            frames[empty] = { page, r: 1, m: dirtyPages.has(page) ? 1 : 0, loadedAt: i };
+            if (kind === "FIFO") fifo.push(page);
+            if (kind === "LRU") recent.unshift(page);
+            message = `页 ${page} 不在主存，发生缺页；还有空闲页框，直接调入。`;
+          } else {
+            replacements++;
+            let victimIndex = 0;
+            if (kind === "OPT") {
+              let best = -1;
+              for (let j = 0; j < frames.length; j++) {
+                const next = seq.slice(i + 1).indexOf(frames[j].page);
+                const score = next < 0 ? Number.POSITIVE_INFINITY : next;
+                if (score > best) { best = score; victimIndex = j; }
+              }
+              message = `页 ${page} 缺页且无空闲页框；OPT 淘汰未来最晚再访问的页 ${frames[victimIndex].page}。`;
+            } else if (kind === "FIFO") {
+              const victim = fifo.shift();
+              victimIndex = frames.findIndex(f => f.page === victim);
+              message = `页 ${page} 缺页且无空闲页框；FIFO 淘汰最早进入的页 ${victim}。`;
+            } else if (kind === "LRU") {
+              const victim = recent.pop();
+              victimIndex = frames.findIndex(f => f.page === victim);
+              message = `页 ${page} 缺页且无空闲页框；LRU 淘汰最近最长时间未使用的页 ${victim}。`;
+            } else if (kind === "CLOCK") {
+              const visited = [];
+              while (true) {
+                visited.push(`${frames[hand].page}(R=${frames[hand].r})`);
+                if (frames[hand].r === 0) { victimIndex = hand; break; }
+                frames[hand].r = 0;
+                hand = (hand + 1) % frames.length;
+              }
+              message = `页 ${page} 缺页；CLOCK 扫描 ${visited.join(" -> ")}，淘汰页 ${frames[victimIndex].page}。`;
+            } else if (kind === "ICLOCK") {
+              const scans = [];
+              let found = false;
+              for (let pass = 1; pass <= 4 && !found; pass++) {
+                for (let k = 0; k < frames.length; k++) {
+                  const f = frames[hand];
+                  scans.push(`${f.page}(${f.r},${f.m})`);
+                  if ((pass === 1 || pass === 3) && f.r === 0 && f.m === 0) { victimIndex = hand; found = true; break; }
+                  if ((pass === 2 || pass === 4) && f.r === 0 && f.m === 1) { victimIndex = hand; found = true; break; }
+                  if (pass === 2) f.r = 0;
+                  hand = (hand + 1) % frames.length;
+                }
+              }
+              message = `页 ${page} 缺页；改进 CLOCK 按 (R,M) 扫描 ${scans.join(" -> ")}，淘汰页 ${frames[victimIndex].page}。`;
+            }
+            evicted = frames[victimIndex].page;
+            frames[victimIndex] = { page, r: 1, m: dirtyPages.has(page) ? 1 : 0, loadedAt: i };
+            if (kind === "FIFO") fifo.push(page);
+            if (kind === "LRU") recent.unshift(page);
+            if (kind === "CLOCK" || kind === "ICLOCK") hand = (victimIndex + 1) % frames.length;
+          }
+        }
+        rows.push({
+          i, page, hit, evicted, faults, replacements, hand,
+          frames: frames.map(f => f ? { ...f } : null),
+          message
+        });
+      }
+      return rows;
+    }
+
+    function renderSequence(seq, idx) {
+      const wrap = document.getElementById("sequence");
+      wrap.innerHTML = "";
+      seq.forEach((p, i) => {
+        const el = document.createElement("div");
+        el.className = "ref" + (i < idx ? " past" : "") + (i === idx ? " now" : "");
+        el.textContent = p;
+        wrap.appendChild(el);
+      });
+    }
+
+    function renderFrames(row, kind) {
+      const wrap = document.getElementById("frames");
+      wrap.innerHTML = "";
+      const n = kind === "BELADY" ? 0 : frameCount;
+      for (let i = 0; i < n; i++) {
+        const f = row && row.frames[i];
+        const el = document.createElement("div");
+        el.className = "frame" + (!f ? " empty" : "") + (f && f.page === row.page && row.hit ? " hit" : "") + (f && f.page === row.evicted ? " evict" : "") + ((kind === "CLOCK" || kind === "ICLOCK") && row.hand === i ? " pointer" : "");
+        el.innerHTML = `<div class="slotLabel">页框 ${i}</div><div class="page">${f ? f.page : "-"}</div><div class="bits">${f ? `R=${f.r} M=${f.m}` : "空"}</div>`;
+        wrap.appendChild(el);
+      }
+    }
+
+    function renderBelady() {
+      const box = document.getElementById("belady");
+      const rows3 = simulate("FIFO", beladySeq, 3);
+      const rows4 = simulate("FIFO", beladySeq, 4);
+      box.classList.add("show");
+      box.innerHTML = `
+        <table>
+          <thead><tr><th>页框数</th><th>访问串</th><th>缺页次数</th><th>置换次数</th><th>结论</th></tr></thead>
+          <tbody>
+            <tr><td>3</td><td>${beladySeq.join(", ")}</td><td>${rows3.at(-1).faults}</td><td>${rows3.at(-1).replacements}</td><td>较少</td></tr>
+            <tr><td>4</td><td>${beladySeq.join(", ")}</td><td>${rows4.at(-1).faults}</td><td>${rows4.at(-1).replacements}</td><td>反而更多</td></tr>
+          </tbody>
+        </table>`;
+      document.getElementById("frames").innerHTML = "";
+      document.getElementById("sequence").innerHTML = "";
+      document.getElementById("cur").textContent = "-";
+      document.getElementById("faults").textContent = "9 / 10";
+      document.getElementById("replacements").textContent = "6 / 6";
+      document.getElementById("rate").textContent = "75% / 83.3%";
+      document.getElementById("badge").textContent = "FIFO";
+      document.getElementById("title").textContent = "Belady 异常";
+      document.getElementById("explain").innerHTML = "<p>同一访问串使用 FIFO，页框从 3 增加到 4，缺页次数反而从 9 增加到 10。</p><p>原因是 FIFO 只看进入主存的先后，不关心页面未来或最近是否会被访问。</p>";
+    }
+
+    function render() {
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.algo === algo));
+      document.getElementById("belady").classList.remove("show");
+      if (algo === "BELADY") {
+        renderBelady();
+        document.getElementById("prev").disabled = true;
+        document.getElementById("next").disabled = true;
+        return;
+      }
+      const rows = simulate(algo);
+      const row = rows[Math.max(0, step - 1)];
+      renderSequence(baseSeq, step - 1);
+      renderFrames(row, algo);
+      document.getElementById("cur").textContent = row ? row.page : "-";
+      document.getElementById("faults").textContent = row ? row.faults : 0;
+      document.getElementById("replacements").textContent = row ? row.replacements : 0;
+      document.getElementById("rate").textContent = row ? `${Math.round(row.faults / (row.i + 1) * 1000) / 10}%` : "0%";
+      document.getElementById("badge").textContent = step === 0 ? "准备开始" : `步骤 ${step} / ${baseSeq.length}`;
+      document.getElementById("title").textContent = step === 0 ? `${algo}：准备开始` : (row.hit ? "命中" : (row.evicted === null ? "缺页，直接调入" : "缺页，并发生置换"));
+      document.getElementById("explain").innerHTML = step === 0
+        ? `<p>${intro[algo]}</p><ul><li>访问串：${baseSeq.join(", ")}</li><li>页框数：${frameCount}</li><li>点击下一步逐次执行。</li></ul>`
+        : `<p>${row.message}</p><ul><li>缺页次数：${row.faults}</li><li>置换次数：${row.replacements}</li><li>当前缺页率：${row.faults}/${row.i + 1}</li></ul>`;
+      document.getElementById("prev").disabled = step === 0;
+      document.getElementById("next").disabled = step === baseSeq.length;
+    }
+
+    document.querySelectorAll(".tabs button").forEach(btn => btn.addEventListener("click", () => {
+      algo = btn.dataset.algo;
+      step = 0;
+      render();
+    }));
+    document.getElementById("prev").addEventListener("click", () => { if (step > 0) { step--; render(); } });
+    document.getElementById("next").addEventListener("click", () => { if (step < baseSeq.length) { step++; render(); } });
+    document.getElementById("reset").addEventListener("click", () => { step = 0; render(); });
+    document.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft" && step > 0) { step--; render(); }
+      if (event.key === "ArrowRight" && step < baseSeq.length && algo !== "BELADY") { step++; render(); }
+    });
+    render();
+  </script>
+</body>
+</html>

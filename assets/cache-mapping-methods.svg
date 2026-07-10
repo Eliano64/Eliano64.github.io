@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">Cache mapping methods</title>
+  <desc id="desc">Direct mapping, fully associative mapping and set associative mapping compared by where a memory block may be placed.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #111827;
+      --mem: #e0f2fe;
+      --cache: #fef3c7;
+      --set: #dcfce7;
+      --accent: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #e5e7eb;
+        --mem: #164e63;
+        --cache: #713f12;
+        --set: #14532d;
+        --accent: #fb923c;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .text { fill: var(--text); font-family: "Segoe UI", Arial, sans-serif; }
+    .muted { fill: var(--muted); font-family: "Segoe UI", Arial, sans-serif; }
+    .box { stroke: var(--line); stroke-width: 2; rx: 7; }
+    .mem { fill: var(--mem); }
+    .cache { fill: var(--cache); }
+    .set { fill: var(--set); }
+    .line { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .accent { stroke: var(--accent); stroke-width: 2.5; fill: none; marker-end: url(#arrowAccent); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)" />
+    </marker>
+    <marker id="arrowAccent" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--accent)" />
+    </marker>
+  </defs>
+  <rect class="bg" width="980" height="560"/>
+  <text class="text" x="40" y="42" font-size="28" font-weight="700">主存块放入 Cache 的三种映射方式</text>
+
+  <g transform="translate(40 80)">
+    <text class="text" x="0" y="0" font-size="23" font-weight="700">直接映射</text>
+    <text class="muted" x="0" y="28" font-size="17">每个主存块只能放到唯一 Cache 行</text>
+    <rect class="box mem" x="0" y="56" width="130" height="240"/>
+    <rect class="box cache" x="235" y="56" width="130" height="240"/>
+    <text class="text" x="65" y="88" font-size="17" text-anchor="middle">主存块</text>
+    <text class="text" x="300" y="88" font-size="17" text-anchor="middle">Cache 行</text>
+    <g class="muted" font-size="16" text-anchor="middle">
+      <text x="65" y="126">0</text><text x="65" y="166">1</text><text x="65" y="206">2</text><text x="65" y="246">3</text>
+      <text x="300" y="126">0</text><text x="300" y="166">1</text><text x="300" y="206">2</text><text x="300" y="246">3</text>
+    </g>
+    <path class="accent" d="M130 120 H235"/>
+    <path class="accent" d="M130 160 H235"/>
+    <text class="muted" x="182" y="330" font-size="16" text-anchor="middle">行号 = 主存块号 mod 行数</text>
+  </g>
+
+  <g transform="translate(390 80)">
+    <text class="text" x="0" y="0" font-size="23" font-weight="700">全相联映射</text>
+    <text class="muted" x="0" y="28" font-size="17">主存块可放入任意 Cache 行</text>
+    <rect class="box mem" x="0" y="56" width="130" height="240"/>
+    <rect class="box cache" x="235" y="56" width="130" height="240"/>
+    <text class="text" x="65" y="88" font-size="17" text-anchor="middle">主存块</text>
+    <text class="text" x="300" y="88" font-size="17" text-anchor="middle">Cache 行</text>
+    <g class="muted" font-size="16" text-anchor="middle">
+      <text x="65" y="126">A</text><text x="65" y="166">B</text><text x="65" y="206">C</text><text x="65" y="246">D</text>
+      <text x="300" y="126">0</text><text x="300" y="166">1</text><text x="300" y="206">2</text><text x="300" y="246">3</text>
+    </g>
+    <path class="accent" d="M130 120 C180 80 195 110 235 160"/>
+    <path class="accent" d="M130 160 C178 230 195 220 235 200"/>
+    <text class="muted" x="182" y="330" font-size="16" text-anchor="middle">没有 Index，需比较所有有效行 Tag</text>
+  </g>
+
+  <g transform="translate(40 435)">
+    <text class="text" x="0" y="0" font-size="23" font-weight="700">组相联映射</text>
+    <text class="muted" x="135" y="0" font-size="17">主存块先定位到某一组，再放入该组任意一行</text>
+    <rect class="box mem" x="0" y="32" width="160" height="70"/>
+    <rect class="box set" x="260" y="22" width="250" height="90"/>
+    <rect class="box cache" x="570" y="22" width="320" height="90"/>
+    <text class="text" x="80" y="74" font-size="18" text-anchor="middle">主存块号</text>
+    <text class="text" x="385" y="58" font-size="18" text-anchor="middle">组号</text>
+    <text class="muted" x="385" y="86" font-size="16" text-anchor="middle">由 Index 选择</text>
+    <text class="text" x="730" y="58" font-size="18" text-anchor="middle">组内若干行</text>
+    <text class="muted" x="730" y="86" font-size="16" text-anchor="middle">由替换算法选择</text>
+    <path class="accent" d="M160 67 H260"/>
+    <path class="accent" d="M510 67 H570"/>
+  </g>
+</svg>

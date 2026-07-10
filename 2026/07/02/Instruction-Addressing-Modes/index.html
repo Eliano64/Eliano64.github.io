@@ -1,0 +1,497 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Instruction Addressing Modes | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="寻址方式回答两个问题：  下一条指令在哪里？ 本条指令要使用的操作数在哪里？  前者称为指令寻址，后者称为数据寻址。在一条指令中，操作码决定“做什么”，寻址方式决定“到哪里找操作对象”。 为什么需要不同寻址方式指令采用不同寻址方式是为了让指令系统可缩短指令字长，扩大寻址空间，提高编程灵活性。 指令寻址指令寻址是确定下一条将要执行的指令地址。下一条指令地址始终由程序计数器 PC 给出。  顺序寻址顺">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Instruction Addressing Modes">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/02/Instruction-Addressing-Modes/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="寻址方式回答两个问题：  下一条指令在哪里？ 本条指令要使用的操作数在哪里？  前者称为指令寻址，后者称为数据寻址。在一条指令中，操作码决定“做什么”，寻址方式决定“到哪里找操作对象”。 为什么需要不同寻址方式指令采用不同寻址方式是为了让指令系统可缩短指令字长，扩大寻址空间，提高编程灵活性。 指令寻址指令寻址是确定下一条将要执行的指令地址。下一条指令地址始终由程序计数器 PC 给出。  顺序寻址顺">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-02T03:40:41.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="InstructionSystem">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Instruction Addressing Modes",
+  "url": "https://eliano64.github.io/2026/07/02/Instruction-Addressing-Modes/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-02T03:40:41.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/02/Instruction-Addressing-Modes/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Instruction Addressing Modes',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Instruction Addressing Modes</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Instruction Addressing Modes</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-02T03:40:41.000Z" title="发表于 2026-07-02 11:40:41">2026-07-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>寻址方式回答两个问题：</p>
+<ul>
+<li>下一条指令在哪里？</li>
+<li>本条指令要使用的操作数在哪里？</li>
+</ul>
+<p>前者称为<strong>指令寻址</strong>，后者称为<strong>数据寻址</strong>。在一条指令中，操作码决定“做什么”，寻址方式决定“到哪里找操作对象”。</p>
+<h1 id="为什么需要不同寻址方式"><a href="#为什么需要不同寻址方式" class="headerlink" title="为什么需要不同寻址方式"></a>为什么需要不同寻址方式</h1><p>指令采用不同寻址方式是为了让指令系统<strong>可缩短指令字长，扩大寻址空间，提高编程灵活性</strong>。</p>
+<h1 id="指令寻址"><a href="#指令寻址" class="headerlink" title="指令寻址"></a>指令寻址</h1><p><strong>指令寻址</strong>是确定下一条将要执行的指令地址。下一条指令地址始终由程序计数器 <code>PC</code> 给出。</p>
+<p><img src="/assets/instruction-addressing-flow.svg" alt="指令寻址"></p>
+<h2 id="顺序寻址"><a href="#顺序寻址" class="headerlink" title="顺序寻址"></a>顺序寻址</h2><p>顺序寻址是默认情况：执行完当前指令后，<code>PC</code> 自动指向下一条指令。</p>
+<p>若采用定长指令字结构，且主存按字编址，常写作：</p>
+<p>$$<br>PC \leftarrow (PC) + 1<br>$$</p>
+<p>这里的 <code>1</code> 表示“一个指令字”。若主存按字节编址，且一条指令占 <code>n</code> 字节，则应理解为：</p>
+<p>$$<br>PC \leftarrow (PC) + n<br>$$</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p><code>PC</code> 实际增加多少，取决于指令长度和主存编址方式。</p>
+</div>
+</div>
+若采用变长指令字结构，CPU 取到指令开头后，需要根据操作码判断这条指令总长度，再把 `PC` 改为下一条指令的起始地址。
+
+<h2 id="跳跃寻址"><a href="#跳跃寻址" class="headerlink" title="跳跃寻址"></a>跳跃寻址</h2><p>跳跃寻址由转移类指令指出下一条指令地址。CPU 取指后仍会形成顺序地址(即<strong>下一条顺序指令的地址</strong>)，但执行转移指令时，<strong>更新后</strong>的<code>PC</code> 会被改写为转移目标。</p>
+<p>例如无条件转移 <code>JMP 7</code> 的效果是：</p>
+<p>$$<br>PC \leftarrow 7<br>$$</p>
+<p>条件转移则需要先根据条件判断是否改写 <code>PC</code>。若条件成立，<code>PC</code> 改为转移目标；若条件不成立，继续使用顺序地址。</p>
+<h1 id="数据寻址"><a href="#数据寻址" class="headerlink" title="数据寻址"></a>数据寻址</h1><p><strong>数据寻址</strong>是确定本条指令中地址码所指操作数的<strong>真实位置</strong>。地址码字段给出的地址通常称为<strong>形式地址</strong> <code>A</code>；根据寻址方式计算出的真实地址称为<strong>有效地址</strong> <code>EA</code>。</p>
+<p>一条指令的地址部分常可理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">寻址特征 + 形式地址 A</span><br></pre></td></tr></table></figure>
+
+<p>寻址特征说明如何解释 A，<code>EA</code> 才是最终访问操作数时使用的地址。</p>
+<p><img src="/assets/data-addressing-basic-modes.svg" alt="基本数据寻址方式"></p>
+<h1 id="常见数据寻址方式"><a href="#常见数据寻址方式" class="headerlink" title="常见数据寻址方式"></a>常见数据寻址方式</h1><h2 id="直接寻址"><a href="#直接寻址" class="headerlink" title="直接寻址"></a>直接寻址</h2><p>直接寻址中，指令地址码给出的形式地址就是操作数所在主存单元的有效地址：</p>
+<p>$$<br>EA&#x3D;A<br>$$</p>
+<p>取到指令后，执行阶段只需要按 <code>A</code> 访问一次主存即可取到操作数。</p>
+<ul>
+<li>优点：简单，地址计算开销小。</li>
+<li>缺点：寻址范围受地址码位数限制；操作数地址写死在指令中，不便修改。</li>
+</ul>
+<h2 id="间接寻址"><a href="#间接寻址" class="headerlink" title="间接寻址"></a>间接寻址</h2><p>间接寻址中，形式地址 <code>A</code> 指向的主存单元中存放的不是操作数，而是操作数的有效地址：</p>
+<p>$$<br>EA&#x3D;(A)<br>$$</p>
+<p>执行时先访问 <code>A</code> 所在主存单元，读出真正的地址 <code>EA</code>，再访问 <code>EA</code> 取操作数。</p>
+<ul>
+<li>优点：有效地址的位数可由存储字长决定，能扩大寻址范围；地址可通过修改指针单元改变。</li>
+<li>缺点：一次间接寻址在执行阶段至少需要两次访存，速度较慢。</li>
+</ul>
+<p>如果允许多级间接寻址，则还要继续按读出的地址再找下一层地址，直到得到真正的操作数地址。</p>
+<h2 id="寄存器寻址"><a href="#寄存器寻址" class="headerlink" title="寄存器寻址"></a>寄存器寻址</h2><p>寄存器寻址中，地址码字段直接给出寄存器编号，操作数就在该寄存器中：</p>
+<p>$$<br>EA&#x3D;R_i<br>$$</p>
+<ul>
+<li>优点：执行阶段不访问主存，速度快；寄存器编号位数通常比主存地址短，指令也可更短。</li>
+<li>缺点：寄存器数量有限。</li>
+</ul>
+<h2 id="寄存器间接寻址"><a href="#寄存器间接寻址" class="headerlink" title="寄存器间接寻址"></a>寄存器间接寻址</h2><p>寄存器间接寻址中，地址码字段给出寄存器编号，寄存器中保存操作数所在主存单元的地址：</p>
+<p>$$<br>EA&#x3D;(R_i)<br>$$</p>
+<p>执行阶段需要按寄存器中的地址访问一次主存取操作数。</p>
+<p>它和普通间接寻址的区别在于：普通间接寻址先访问主存取地址；寄存器间接寻址直接从寄存器取地址，因此少一次主存访存。</p>
+<h2 id="隐含寻址"><a href="#隐含寻址" class="headerlink" title="隐含寻址"></a>隐含寻址</h2><p>隐含寻址不在指令中显式给出操作数地址，而由操作码或体系结构约定操作数位置。</p>
+<p>例如某些一地址指令默认另一个操作数在 <code>ACC</code> 中：</p>
+<p>$$<br>(ACC)\ OP\ (A) \rightarrow ACC<br>$$</p>
+<p>堆栈机中的零地址算术指令也常隐含使用栈顶和次栈顶作为操作数。</p>
+<ul>
+<li>优点：可减少地址字段，缩短指令。</li>
+<li>缺点：操作数位置不够灵活，需要理解体系结构约定。</li>
+</ul>
+<h2 id="立即寻址"><a href="#立即寻址" class="headerlink" title="立即寻址"></a>立即寻址</h2><p>立即寻址中，形式地址字段 <code>A</code> 本身就是操作数，通常称为<strong>立即数</strong>：</p>
+<p>$$<br>操作数&#x3D;A<br>$$</p>
+<p>汇编中常用 <code>#</code> 标记立即数，例如 <code>#5</code> 表示常数 <code>5</code>。</p>
+<ul>
+<li>优点：执行阶段不需要为取操作数访问主存，速度快。</li>
+<li>缺点：立即数大小受地址字段位数限制；它只能作为源操作数，不能作为结果写回位置。</li>
+</ul>
+<h2 id="偏移寻址"><a href="#偏移寻址" class="headerlink" title="偏移寻址"></a>偏移寻址</h2><p>基址寻址、变址寻址和相对寻址都属于偏移寻址。它们共同的形式是：</p>
+<p>$$<br>EA&#x3D;某个基准值 + A<br>$$</p>
+<p><img src="/assets/offset-addressing-comparison.svg" alt="偏移寻址对比"></p>
+<h3 id="基址寻址"><a href="#基址寻址" class="headerlink" title="基址寻址"></a>基址寻址</h3><p>基址寻址用基址寄存器 <code>BR</code> 的内容加上形式地址 <code>A</code> 得到有效地址：</p>
+<p>$$<br>EA&#x3D;(BR)+A<br>$$</p>
+<p><code>BR</code> 保存某个存储区域的起始地址，<code>A</code> 是相对于该起始地址的偏移量。</p>
+<p>基址寻址的典型作用是支持程序重定位。程序装入主存的位置可能变化，但指令中的偏移量可以不变，只要把 <code>BR</code> 设置为新的起始地址即可。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>基址寄存器面向系统管理，内容由操作系统设定，对用户程序透明。程序运行过程中，<code>BR</code> 作为基地址一般保持不变；指令中的 <code>A</code> 随不同操作数而变化。</p>
+</div>
+</div>
+### 变址寻址
+
+<p>变址寻址用变址寄存器 <code>IX</code> 的内容加上形式地址 <code>A</code> 得到有效地址：</p>
+<p>$$<br>EA&#x3D;(IX)+A<br>$$</p>
+<p><code>A</code> 通常保存数组或表的首地址，<code>IX</code> 保存下标偏移量。循环访问数组时，每轮只需修改 <code>IX</code>，指令中的数组首地址不变。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p>变址寻址通常面向程序员。程序执行过程中，<code>IX</code> 会随循环或下标变化而变化；形式地址 <code>A</code> 常作为基准地址保持不变。</p>
+</div>
+</div>
+### 基址寻址与变址寻址的区别
+
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>基址寻址</th>
+<th>变址寻址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>公式</td>
+<td>$EA&#x3D;(BR)+A$</td>
+<td>$EA&#x3D;(IX)+A$</td>
+</tr>
+<tr>
+<td>寄存器含义</td>
+<td>基地址</td>
+<td>偏移量</td>
+</tr>
+<tr>
+<td>形式地址 <code>A</code></td>
+<td>偏移量</td>
+<td>基地址</td>
+</tr>
+<tr>
+<td>主要用途</td>
+<td>程序重定位、多道程序</td>
+<td>数组、表格、循环访问</td>
+</tr>
+<tr>
+<td>维护者</td>
+<td>操作系统</td>
+<td>用户程序</td>
+</tr>
+</tbody></table>
+<h3 id="相对寻址"><a href="#相对寻址" class="headerlink" title="相对寻址"></a>相对寻址</h3><p>相对寻址用程序计数器 <code>PC</code> 的内容加上形式地址 <code>A</code> 得到有效地址：</p>
+<p>$$<br>EA&#x3D;(PC)+A<br>$$</p>
+<p>其中 <code>A</code> 是相对于 <code>PC</code> 所指地址的位移量，可以为正，也可以为负，用<strong>补码</strong>表示。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">Warning</span></div>
+<div class="callout-content"></div>
+</div>计算$EA$时, 需要先将$A$符号扩展，再类型提升为符号数才能与$(PC)$相加。
+
+<p>相对寻址广泛用于转移指令。代码整体在程序内部移动时，只要转移目标与当前指令之间的相对距离不变，转移指令的地址码就不需要修改。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>相对寻址中的 <code>PC</code> 已经指向<strong>下一条指令</strong>。也就是说，偏移量 <code>A</code> 是相对于取完当前指令后的 PC计算的，而不是相对于当前指令起始地址计算的。</p>
+</div>
+</div>
+## 堆栈寻址
+
+<p>堆栈寻址中，操作数存放在堆栈中，指令隐含使用堆栈指针 <code>SP</code> 指出栈顶位置。堆栈按后进先出（LIFO）原则管理。</p>
+<p>常见栈操作：</p>
+<ul>
+<li><code>PUSH X</code>：把 <code>X</code> 压入栈顶，并修改 <code>SP</code>。</li>
+<li><code>POP X</code>：从栈顶弹出一个元素写入 <code>X</code>，并修改 <code>SP</code>。</li>
+</ul>
+<p>若算术指令隐含使用栈顶和次栈顶，则一条零地址加法指令可以理解为：</p>
+<ol>
+<li>弹出栈顶元素作为一个操作数。</li>
+<li>再弹出新的栈顶元素作为另一个操作数。</li>
+<li>完成加法。</li>
+<li>将结果压回栈顶。</li>
+</ol>
+<p>堆栈可以由专用寄存器组实现，也可以由主存中的一段区域实现。前者速度快但成本高，后者成本低但栈操作需要访问主存。</p>
+<h1 id="汇总"><a href="#汇总" class="headerlink" title="汇总"></a>汇总</h1><table>
+<thead>
+<tr>
+<th>寻址方式</th>
+<th>有效地址或操作数位置</th>
+<th align="right">执行阶段访存次数</th>
+<th>重点用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>隐含寻址</td>
+<td>由操作码或体系结构约定</td>
+<td align="right"><code>0</code></td>
+<td>缩短指令</td>
+</tr>
+<tr>
+<td>立即寻址</td>
+<td><code>A</code> 本身是操作数</td>
+<td align="right"><code>0</code></td>
+<td>常数操作数</td>
+</tr>
+<tr>
+<td>直接寻址</td>
+<td>$EA&#x3D;A$</td>
+<td align="right"><code>1</code></td>
+<td>简单访问主存</td>
+</tr>
+<tr>
+<td>一次间接寻址</td>
+<td>$EA&#x3D;(A)$</td>
+<td align="right"><code>2</code></td>
+<td>扩大寻址范围、指针</td>
+</tr>
+<tr>
+<td>寄存器寻址</td>
+<td>操作数在 $R_i$</td>
+<td align="right"><code>0</code></td>
+<td>快速访问寄存器</td>
+</tr>
+<tr>
+<td>寄存器间接寻址</td>
+<td>$EA&#x3D;(R_i)$</td>
+<td align="right"><code>1</code></td>
+<td>指针在寄存器中</td>
+</tr>
+<tr>
+<td>基址寻址</td>
+<td>$EA&#x3D;(BR)+A$</td>
+<td align="right"><code>1</code></td>
+<td>程序重定位</td>
+</tr>
+<tr>
+<td>变址寻址</td>
+<td>$EA&#x3D;(IX)+A$</td>
+<td align="right"><code>1</code></td>
+<td>数组、循环</td>
+</tr>
+<tr>
+<td>相对寻址</td>
+<td>$EA&#x3D;(PC)+A$</td>
+<td align="right"><code>1</code></td>
+<td>转移指令、代码浮动</td>
+</tr>
+<tr>
+<td>堆栈寻址</td>
+<td>由 <code>SP</code> 隐含指出</td>
+<td align="right">视实现而定</td>
+<td>表达式求值、函数调用</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/02/Instruction-Addressing-Modes/">https://eliano64.github.io/2026/07/02/Instruction-Addressing-Modes/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/02/Function-Calls-And-Stack-Frames/" title="Function Calls And Stack Frames"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Function Calls And Stack Frames</div></div><div class="info-2"><div class="info-item-1">函数调用在机器级的工作是：  从调用者跳转到被调用函数的第一条指令。 被调用函数结束后，能回到调用点后面的那条指令，并继续使用调用者原来的执行状态。  因此，一次函数调用必须保存返回地址、保存必要的上下文、传递参数、提供局部变量空间，并把返回值交回调用者。 函数调用栈运行中的进程有自己的虚拟地址空间。用户栈通常位于高地址区域，并向低地址增长。每发生一次函数调用，就会在栈上形成一个新的栈帧；函数返回时，这个栈帧被撤销。  栈帧可以理解为某一次函数调用的“现场”：  参数：调用者传给被调用者的数据。 返回地址：被调用函数结束后应该回到哪里。 保存的旧 ebp：用于恢复调用者栈帧。 局部变量：被调用函数自己的临时数据。 必要时保存的寄存器值：避免调用其他函数时破坏中间结果。  递归调用并不特殊。每递归一次，就多压入一层栈帧。不同递归层的参数和局部变量互不覆盖，因为它们在不同的栈帧里。 esp 与 ebp在 32 位 x86 的典型栈帧模型中：  esp 指向当前栈顶，执行 push、pop、call、ret 时会变化。 ebp 指向当前栈帧的基地址，函数体内通常保持不变。  因为...</div></div></div></a><a class="pagination-related" href="/2026/07/02/Instruction-System-Basics/" title="Instruction System Basics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Instruction System Basics</div></div><div class="info-2"><div class="info-item-1">指令是计算机执行某种操作的命令，是计算机运行的最小功能单位。一台机器能够识别并执行的全部机器指令构成它的指令系统，也称为指令集ISA。 指令系统处在软件和硬件之间：高级语言程序最终必须被翻译成机器指令；硬件则按指令中的字段完成取数、运算、访存、转移和控制等动作。不同体系结构的机器指令格式和指令含义不同，因此一台机器通常只能直接执行自己指令系统中的指令。 指令格式一条机器指令是一组有意义的二进制代码，通常由操作码字段和地址码字段组成。   操作码（Operation Code, OP）：指出指令要做什么操作，例如加法、传送、转移、停机。 地址码：指出操作对象在哪里，可能表示操作数地址、结果地址、寄存器编号、立即数或下一条指令地址。  地址码的数量并不固定。根据显式地址码个数，指令可以分为零地址、一地址、二地址、三地址和四地址指令。     类型 常见格式 典型含义 执行阶段访存次数    零地址指令 OP 不需要操作数；或在堆栈机中隐含使用栈顶、次栈顶 通常为 0   一地址指令 OP A1 OP(A1) -&gt; A1，或 (ACC) OP (A1) -&gt;...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%B8%8D%E5%90%8C%E5%AF%BB%E5%9D%80%E6%96%B9%E5%BC%8F"><span class="toc-text">为什么需要不同寻址方式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%87%E4%BB%A4%E5%AF%BB%E5%9D%80"><span class="toc-text">指令寻址</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E5%AF%BB%E5%9D%80"><span class="toc-text">顺序寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%B3%E8%B7%83%E5%AF%BB%E5%9D%80"><span class="toc-text">跳跃寻址</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%AF%BB%E5%9D%80"><span class="toc-text">数据寻址</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E5%AF%BB%E5%9D%80%E6%96%B9%E5%BC%8F"><span class="toc-text">常见数据寻址方式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%AF%BB%E5%9D%80"><span class="toc-text">直接寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%B4%E6%8E%A5%E5%AF%BB%E5%9D%80"><span class="toc-text">间接寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8%E5%AF%BB%E5%9D%80"><span class="toc-text">寄存器寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8%E9%97%B4%E6%8E%A5%E5%AF%BB%E5%9D%80"><span class="toc-text">寄存器间接寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%90%AB%E5%AF%BB%E5%9D%80"><span class="toc-text">隐含寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AB%8B%E5%8D%B3%E5%AF%BB%E5%9D%80"><span class="toc-text">立即寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E7%A7%BB%E5%AF%BB%E5%9D%80"><span class="toc-text">偏移寻址</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E5%9D%80%E5%AF%BB%E5%9D%80"><span class="toc-text">基址寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%AF%B9%E5%AF%BB%E5%9D%80"><span class="toc-text">相对寻址</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B1%87%E6%80%BB"><span class="toc-text">汇总</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

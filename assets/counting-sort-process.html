@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counting Sort Process</title>
+<style>
+:root{--bg:#fff;--ink:#172033;--muted:#64748b;--line:#cbd5e1;--cell:#f8fafc;--count:#dbeafe;--prefix:#dcfce7;--active:#fee2e2;--done:#fef3c7;--accent:#2563eb;--code:#0f766e}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#a3aab8;--line:#475569;--cell:#111827;--count:#172554;--prefix:#064e3b;--active:#7f1d1d;--done:#713f12;--accent:#60a5fa;--code:#5eead4}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.title{font-size:24px;font-weight:760}
+.sub{margin-top:4px;color:var(--muted);font-size:14px}
+.controls{display:flex;gap:8px}
+button{border:1px solid var(--line);background:var(--cell);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.stage{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:18px}
+.label{color:var(--muted);font-size:13px;margin:12px 0 6px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:46px}
+.cell{min-width:52px;height:42px;border:1.5px solid var(--line);border-radius:8px;background:var(--cell);display:flex;align-items:center;justify-content:center;font:700 16px ui-monospace,Menlo,monospace;position:relative;padding:0 8px}
+.cell::after{content:attr(data-i);position:absolute;bottom:-18px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
+.count{background:var(--count)}.prefix{background:var(--prefix)}.active{background:var(--active);border-color:#ef4444}.done{background:var(--done)}
+.explain{margin-top:24px;line-height:1.72}
+.code{margin-top:10px;color:var(--code);font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap}
+.step{margin-top:8px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">计数排序：从计数到稳定定位</div>
+      <div class="sub">示例关键字范围 0..5，记录写成 2a、2b 用来观察稳定性</div>
+    </div>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="label">输入 A</div>
+    <div class="row" id="input"></div>
+    <div class="label">计数 / 前缀数组 C，下标表示关键字</div>
+    <div class="row" id="count"></div>
+    <div class="label">输出 B</div>
+    <div class="row" id="output"></div>
+    <div class="explain" id="explain"></div>
+    <div class="code" id="code"></div>
+    <div class="step" id="step"></div>
+  </div>
+</div>
+<script>
+const keys=[0,1,2,3,4,5];
+const input=['2a','5','3','0','2b','3','1'];
+const steps=[
+ {c:[0,0,0,0,0,0],out:['','','','','','',''],active:null,t:'初始化计数数组 C。C[x] 表示关键字 x 出现了多少次。',code:'for x in 0..k: C[x] = 0;'},
+ {c:[1,1,2,2,0,1],out:['','','','','','',''],active:null,t:'扫描输入序列，统计每个关键字出现次数。',code:'for each record A[i]: C[key(A[i])]++;'},
+ {c:[1,2,4,6,6,7],out:['','','','','','',''],active:null,t:'对 C 做前缀和。现在 C[x] 表示关键字 <= x 的记录个数。',code:'for x in 1..k: C[x] += C[x - 1];'},
+ {c:[1,1,4,6,6,7],out:['','1','','','','',''],active:6,t:'从右向左扫描 A。第一次处理的是 A[6]=1，它应放在最后一个 <=1 的位置，也就是 B[C[1]-1]。',code:'B[C[1] - 1] = 1; C[1]--;'},
+ {c:[1,1,4,5,6,7],out:['','1','','','','3',''],active:5,t:'处理 A[5]=3，写入 B[C[3]-1]，然后 C[3] 减一。',code:'B[C[3] - 1] = 3; C[3]--;'},
+ {c:[1,1,3,5,6,7],out:['','1','','2b','','3',''],active:4,t:'处理 A[4]=2b。它先占据关键字 2 的最后一个位置。',code:'B[C[2] - 1] = 2b; C[2]--;'},
+ {c:[0,1,3,5,6,7],out:['0','1','','2b','','3',''],active:3,t:'处理 A[3]=0。C[0]=1，所以 0 写入 B[0]，然后 C[0] 减一。',code:'B[C[0] - 1] = 0; C[0]--;'},
+ {c:[0,1,3,4,6,7],out:['0','1','','2b','3','3',''],active:2,t:'继续处理 A[2]=3。相同关键字按从右到左反向放入，最终能保持原相对顺序。',code:'B[C[3] - 1] = 3; C[3]--;'},
+ {c:[0,1,3,4,6,6],out:['0','1','','2b','3','3','5'],active:1,t:'处理 A[1]=5。C[5]=7，所以 5 写入 B[6]，然后 C[5] 减一。',code:'B[C[5] - 1] = 5; C[5]--;'},
+ {c:[0,1,2,4,6,6],out:['0','1','2a','2b','3','3','5'],active:0,t:'处理 A[0]=2a。2a 落在 2b 前面，稳定性保留下来。',code:'B[C[2] - 1] = 2a; C[2]--;'},
+ {c:[0,1,2,4,6,6],out:['0','1','2a','2b','3','3','5'],active:null,t:'其余记录处理完后，B 是稳定有序序列。',code:'0, 1, 2a, 2b, 3, 3, 5'}
+];
+let cur=0;
+function renderCells(rootId, values, cls, activeIndex){
+ const root=document.getElementById(rootId);
+ root.innerHTML='';
+ values.forEach((v,i)=>{
+  const el=document.createElement('div');
+  el.className='cell '+cls;
+  if(activeIndex===i)el.classList.add('active');
+  if(rootId==='output'&&v)el.classList.add('done');
+  el.textContent=v;
+  el.dataset.i=rootId==='count'?keys[i]:i;
+  root.appendChild(el);
+ });
+}
+function render(){
+ const s=steps[cur];
+ renderCells('input',input,'',s.active);
+ renderCells('count',s.c,'count',null);
+ renderCells('output',s.out,'',null);
+ document.getElementById('explain').innerHTML='<b>'+s.t+'</b>';
+ document.getElementById('code').textContent=s.code;
+ document.getElementById('step').textContent=(cur+1)+' / '+steps.length;
+}
+document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

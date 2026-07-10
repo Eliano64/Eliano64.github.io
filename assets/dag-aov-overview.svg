@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 500" role="img" aria-labelledby="title desc">
+  <title id="title">DAG and AOV overview</title>
+  <desc id="desc">Comparison of DAG, cyclic directed graph, and AOV network.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#0f172a;--muted:#475569;--line:#94a3b8;--edge:#64748b;--good:#059669;--bad:#dc2626;--blue:#2563eb}
+    @media (prefers-color-scheme: dark){:root{--bg:#0b1020;--panel:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#64748b;--edge:#94a3b8;--good:#34d399;--bad:#f87171;--blue:#60a5fa}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:1.4}.title{fill:var(--text);font:700 25px system-ui,Segoe UI,sans-serif}.h{fill:var(--text);font:700 18px system-ui,Segoe UI,sans-serif}.t{fill:var(--muted);font:14px system-ui,Segoe UI,sans-serif}.edge{stroke:var(--edge);stroke-width:3.6;fill:none;marker-end:url(#arr)}.good{stroke:var(--good);marker-end:url(#arrGood)}.bad{stroke:var(--bad);marker-end:url(#arrBad)}.node{fill:var(--bg);stroke:var(--edge);stroke-width:2}.label{fill:var(--text);font:700 15px system-ui,Segoe UI,sans-serif}.tag{fill:var(--blue);font:700 14px system-ui,Segoe UI,sans-serif}.cycleText{fill:var(--bad);font:700 13px system-ui,Segoe UI,sans-serif}
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--edge)"/></marker>
+    <marker id="arrGood" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--good)"/></marker>
+    <marker id="arrBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--bad)"/></marker>
+  </defs>
+  <rect class="bg" width="980" height="500"/>
+  <text class="title" x="40" y="52">DAG And AOV Network</text>
+
+  <rect class="panel" x="40" y="90" width="280" height="340" rx="8"/>
+  <text class="h" x="65" y="126">DAG</text>
+  <text class="t" x="65" y="153">Directed graph without directed cycles</text>
+  <path class="edge good" d="M114 229 L151 196"/><path class="edge good" d="M114 261 L151 294"/><path class="edge good" d="M189 196 L231 229"/><path class="edge good" d="M189 294 L231 261"/>
+  <circle class="node" cx="95" cy="245" r="23"/><text class="label" x="95" y="251" text-anchor="middle">V0</text>
+  <circle class="node" cx="170" cy="180" r="23"/><text class="label" x="170" y="186" text-anchor="middle">V1</text>
+  <circle class="node" cx="170" cy="310" r="23"/><text class="label" x="170" y="316" text-anchor="middle">V2</text>
+  <circle class="node" cx="250" cy="245" r="23"/><text class="label" x="250" y="251" text-anchor="middle">V3</text>
+  <text class="tag" x="86" y="380">has topological order</text>
+
+  <rect class="panel" x="350" y="90" width="280" height="340" rx="8"/>
+  <text class="h" x="375" y="126">Not A DAG</text>
+  <text class="t" x="375" y="153">Directed cycle makes ordering impossible</text>
+  <path class="edge bad" d="M448 229 L492 191"/>
+  <path class="edge bad" d="M522 196 L558 259"/>
+  <path class="edge bad" d="M548 274 L452 250"/>
+  <circle class="node" cx="430" cy="245" r="23"/><text class="label" x="430" y="251" text-anchor="middle">A</text>
+  <circle class="node" cx="510" cy="175" r="23"/><text class="label" x="510" y="181" text-anchor="middle">B</text>
+  <circle class="node" cx="570" cy="280" r="23"/><text class="label" x="570" y="286" text-anchor="middle">C</text>
+  <text class="cycleText" x="455" y="328">A -> B -> C -> A</text>
+  <text class="tag" x="410" y="380">no topological order</text>
+
+  <rect class="panel" x="660" y="90" width="280" height="340" rx="8"/>
+  <text class="h" x="685" y="126">AOV Network</text>
+  <text class="t" x="685" y="153">Vertices are activities; edges are prerequisites</text>
+  <path class="edge" d="M733 228 L766 203"/><path class="edge" d="M733 262 L766 287"/><path class="edge" d="M815 201 L855 229"/><path class="edge" d="M815 289 L855 261"/>
+  <circle class="node" cx="710" cy="245" r="28"/><text class="label" x="710" y="251" text-anchor="middle">prep</text>
+  <circle class="node" cx="790" cy="185" r="28"/><text class="label" x="790" y="191" text-anchor="middle">egg</text>
+  <circle class="node" cx="790" cy="305" r="28"/><text class="label" x="790" y="311" text-anchor="middle">tomato</text>
+  <circle class="node" cx="880" cy="245" r="28"/><text class="label" x="880" y="251" text-anchor="middle">cook</text>
+  <text class="tag" x="705" y="380">activity precedence model</text>
+</svg>

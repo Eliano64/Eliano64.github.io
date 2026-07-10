@@ -1,0 +1,423 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Thread | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="线程线程是一个基本的 CPU 执行单元，也是程序执行流的最小单位。线程也常被称为轻量级进程。 引入线程后：    对象 主要角色    进程 系统资源分配单位，例如地址空间、打开文件、I&#x2F;O 资源   线程 处理机调度和分配单位    同一进程内的线程共享进程资源，例如地址空间、全局变量、打开文件等；但每个线程有自己的执行现场，例如线程 ID、程序计数器、寄存器、栈等。 线程和进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Thread">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/04/Thread/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="线程线程是一个基本的 CPU 执行单元，也是程序执行流的最小单位。线程也常被称为轻量级进程。 引入线程后：    对象 主要角色    进程 系统资源分配单位，例如地址空间、打开文件、I&#x2F;O 资源   线程 处理机调度和分配单位    同一进程内的线程共享进程资源，例如地址空间、全局变量、打开文件等；但每个线程有自己的执行现场，例如线程 ID、程序计数器、寄存器、栈等。 线程和进程">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-04T05:48:37.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="OperatingSystem">
+<meta property="article:tag" content="ProcessAndThread">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Thread",
+  "url": "https://eliano64.github.io/2026/07/04/Thread/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-04T05:48:37.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/04/Thread/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Thread',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Thread</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Thread</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-04T05:48:37.000Z" title="发表于 2026-07-04 13:48:37">2026-07-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h1><p><strong>线程</strong>是一个基本的 CPU 执行单元，也是程序执行流的最小单位。线程也常被称为轻量级进程。</p>
+<p>引入线程后：</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>主要角色</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>进程</td>
+<td>系统资源分配单位，例如地址空间、打开文件、I&#x2F;O 资源</td>
+</tr>
+<tr>
+<td>线程</td>
+<td>处理机调度和分配单位</td>
+</tr>
+</tbody></table>
+<p><img src="/assets/thread-process-resource-and-scheduling.svg" alt="900"></p>
+<p><strong>同一进程内的线程共享进程资源</strong>，例如地址空间、全局变量、打开文件等；但每个线程有自己的执行现场，例如线程 ID、程序计数器、寄存器、栈等。</p>
+<h1 id="线程和进程"><a href="#线程和进程" class="headerlink" title="线程和进程"></a>线程和进程</h1><table>
+<thead>
+<tr>
+<th>角度</th>
+<th>进程</th>
+<th>线程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>资源拥有</td>
+<td>拥有独立地址空间和资源集合</td>
+<td><strong>共享</strong>所属进程资源</td>
+</tr>
+<tr>
+<td>调度单位</td>
+<td>传统系统中是调度单位</td>
+<td>引入线程后成为基本调度单位</td>
+</tr>
+<tr>
+<td>切换开销</td>
+<td>切换地址空间和资源环境，开销较大</td>
+<td>同进程内线程切换开销较小</td>
+</tr>
+<tr>
+<td>通信</td>
+<td>进程间地址空间隔离，需要 IPC</td>
+<td>同进程线程共享地址空间，通信更方便</td>
+</tr>
+<tr>
+<td>影响范围</td>
+<td>一个进程崩溃通常不直接破坏其他进程</td>
+<td>一个线程错误可能破坏同进程共享数据</td>
+</tr>
+</tbody></table>
+<p>同一进程内线程切换成本较低，是因为很多资源环境不需要更换；但线程共享地址空间，也意味着共享数据更容易发生竞争，后面同步与互斥会专门处理这个问题。</p>
+<h1 id="用户级线程"><a href="#用户级线程" class="headerlink" title="用户级线程"></a>用户级线程</h1><p><strong>用户级线程</strong> ULT，User-Level Thread，由应用程序和线程库管理。操作系统内核不知道这些线程的存在。</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>用户级线程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>谁管理线程</td>
+<td>用户态线程库</td>
+</tr>
+<tr>
+<td>切换是否进入核心态</td>
+<td>不需要</td>
+</tr>
+<tr>
+<td>内核是否看得见</td>
+<td>看不见，只看到所属进程</td>
+</tr>
+<tr>
+<td>阻塞影响</td>
+<td>一个用户级线程阻塞，可能导致整个进程阻塞</td>
+</tr>
+<tr>
+<td>多核并行</td>
+<td>同一进程内多个用户级线程不能真正同时运行在多个 CPU 核上</td>
+</tr>
+</tbody></table>
+<p>用户级线程切换快，因为不需要进入内核态。但内核只把整个进程当作调度单位：<strong>如果该进程因为一个线程执行阻塞系统调用而阻塞，对操作系统来说就是这个进程发生了阻塞，所以线程库中的其他用户级线程也可能一起停住。</strong></p>
+<h1 id="内核级线程"><a href="#内核级线程" class="headerlink" title="内核级线程"></a>内核级线程</h1><p><strong>内核级线程</strong> KLT，Kernel-Level Thread，由操作系统内核支持和管理。内核为线程建立 TCB，Thread Control Block，即线程控制块。</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>内核级线程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>谁管理线程</td>
+<td>操作系统内核</td>
+</tr>
+<tr>
+<td>切换是否进入核心态</td>
+<td>需要</td>
+</tr>
+<tr>
+<td>内核是否看得见</td>
+<td>看得见，内核维护 TCB</td>
+</tr>
+<tr>
+<td>阻塞影响</td>
+<td>一个线程阻塞，同进程其他线程仍可运行</td>
+</tr>
+<tr>
+<td>多核并行</td>
+<td>多个线程可以在多核处理机上并行</td>
+</tr>
+</tbody></table>
+<p>内核级线程并发能力强，但线程创建、撤销、切换等工作需要内核参与，系统开销比用户级线程更大。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>操作系统只看得见内核级线程。因此，在支持内核级线程的系统中，真正作为处理机分配单位的是内核级线程。</p>
+</div>
+</div>
+# 多线程模型
+
+<p>用户级线程和内核级线程之间可以有不同映射关系。</p>
+<p><img src="/assets/thread-models.svg" alt="900"></p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>映射</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多对一</td>
+<td>多个用户级线程映射到一个内核级线程</td>
+<td>用户态切换快，管理开销小</td>
+<td>一个线程阻塞可能阻塞整个进程，不能利用多核并行</td>
+</tr>
+<tr>
+<td>一对一</td>
+<td>每个用户级线程映射到一个内核级线程</td>
+<td>一个线程阻塞不影响其他线程，可多核并行</td>
+<td>内核级线程数量多，管理开销大</td>
+</tr>
+<tr>
+<td>多对多</td>
+<td>$n$ 个用户级线程映射到 $m$ 个内核级线程，且 $n \ge m$</td>
+<td>兼顾并发度和内核开销</td>
+<td>实现复杂</td>
+</tr>
+</tbody></table>
+<p>多对多模型可以这样理解：用户级线程是代码逻辑的载体，内核级线程是运行机会的载体。一段线程代码只有映射到某个内核级线程并获得 CPU，才真正向前执行。</p>
+<h1 id="线程状态"><a href="#线程状态" class="headerlink" title="线程状态"></a>线程状态</h1><p>线程也有类似进程的运行状态，例如就绪、运行、阻塞。区别在于，线程状态更强调执行流是否能获得 CPU；进程状态还涉及资源分配和地址空间等更大范围的管理。</p>
+<p>在内核级线程系统中，调度程序通常围绕线程做调度；进程则作为线程共享资源的容器存在。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/04/Thread/">https://eliano64.github.io/2026/07/04/Thread/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/04/Signal/" title="Signal"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Signal</div></div><div class="info-2"><div class="info-item-1">信号信号是进程级异步事件通知机制。其目的是在目标进程的控制信息中标记某类事件发生。  信号机制的核心是三类控制信息：    信息 含义    待处理信号集 哪些信号已经到达，但还没有被处理   信号屏蔽字 哪些信号暂时被屏蔽，暂不投递给进程处理   信号处理动作表 每种信号采用默认处理、忽略，还是调用用户注册的处理函数   每种信号在目标进程 PCB 中表示为 1 bit：某位为 1 表示该类信号处于待处理状态。 一次典型信号处理过程：  信号产生。来源可能是终端输入、定时器、异常、I&#x2F;O...</div></div></div></a><a class="pagination-related" href="/2026/07/04/Scheduling-Levels/" title="Scheduling Levels"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Scheduling Levels</div></div><div class="info-2"><div class="info-item-1">调度当系统中有多个任务都想使用有限资源时，操作系统必须决定谁先使用资源。这个选择过程就是调度。 一个程序要真正运行，通常要先从外存进入内存，再进入就绪队列，最后才可能被分配 CPU。因此，处理机调度要分成三个层次理解。  高级调度高级调度也称作业调度。 用户提交的作业最初通常位于外存的后备队列。由于内存空间有限，系统不能把所有作业一次性装入内存。高级调度按照一定规则，从外存后备队列中选择作业调入内存，并为它创建进程。 高级调度的关键动作是：  从外存后备队列选择作业。 将作业调入内存。 为该作业创建进程和 PCB。 让新建进程进入创建态，再进入就绪态。  高级调度面向的是作业。一个作业通常只被高级调度调入一次，作业结束后再调出一次。因此，高级调度发生频率最低。 低级调度低级调度也称进程调度或处理机调度。 低级调度从内存中的就绪队列选择一个进程，把 CPU...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B"><span class="toc-text">线程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%92%8C%E8%BF%9B%E7%A8%8B"><span class="toc-text">线程和进程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E7%BA%A7%E7%BA%BF%E7%A8%8B"><span class="toc-text">用户级线程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%BA%A7%E7%BA%BF%E7%A8%8B"><span class="toc-text">内核级线程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81"><span class="toc-text">线程状态</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

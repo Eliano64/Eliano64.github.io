@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virtual Circuit Service</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#64748b;--blue:#2563eb;--orange:#f97316;--green:#059669;--border:#cbd5e1}
+@media (prefers-color-scheme:dark){:root{--bg:#020617;--panel:#0f172a;--text:#e5e7eb;--muted:#cbd5e1;--line:#64748b;--blue:#60a5fa;--orange:#fb923c;--green:#34d399;--border:#334155}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif}.wrap{width:100%;max-width:1100px;margin:0 auto;padding:22px 24px 18px}.title{text-align:center;font-size:28px;font-weight:750;margin:2px 0 18px}.stage{display:grid;grid-template-columns:280px 1fr;gap:18px}.steps{display:flex;flex-direction:column;gap:10px}.step{border:1.5px solid var(--border);border-radius:8px;padding:12px 14px;background:var(--panel);line-height:1.45;font-size:15px}.step.active{outline:2px solid var(--blue)}.step b{display:block;font-size:17px;margin-bottom:4px}.canvas{background:var(--panel);border:1.5px solid var(--border);border-radius:10px;padding:10px}.note{font-size:18px;text-align:center;margin-top:14px;color:var(--text)}button{border:1.5px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:8px 18px;font-size:16px}.controls{display:flex;justify-content:center;gap:12px;margin-top:16px}svg{width:100%;height:420px;display:block}.node{fill:var(--panel);stroke:var(--border);stroke-width:2}.path{stroke:var(--line);stroke-width:2.5;fill:none}.highlight{stroke:var(--orange);stroke-width:6;fill:none}.packet{fill:var(--blue)}.label{fill:var(--text);font-size:17px}.small{fill:var(--muted);font-size:14px}.vc{fill:var(--orange);font-weight:700}.data{fill:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">虚电路服务：先建连接，再沿同一路径传输</div>
+  <div class="stage">
+    <div class="steps" id="steps"></div>
+    <div>
+      <div class="canvas">
+        <svg viewBox="0 0 760 420" aria-label="虚电路服务过程">
+          <defs><marker id="arr" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2 2 L10 6 L2 10 Z" fill="currentColor"/></marker></defs>
+          <path class="path" d="M90 210 L230 120 L390 120 L560 210"/>
+          <path class="path" d="M90 210 L230 300 L390 300 L560 210"/>
+          <path class="path" d="M230 120 L230 300 M390 120 L390 300"/>
+          <path id="activePath" class="highlight" d="M90 210 L230 120 L390 120 L560 210" opacity="0"/>
+          <g id="packets"></g>
+          <g>
+            <circle class="node" cx="90" cy="210" r="32"/><text class="label" x="90" y="216" text-anchor="middle">S</text>
+            <circle class="node" cx="230" cy="120" r="30"/><text class="label" x="230" y="126" text-anchor="middle">R1</text>
+            <circle class="node" cx="230" cy="300" r="30"/><text class="label" x="230" y="306" text-anchor="middle">R2</text>
+            <circle class="node" cx="390" cy="120" r="30"/><text class="label" x="390" y="126" text-anchor="middle">R3</text>
+            <circle class="node" cx="390" cy="300" r="30"/><text class="label" x="390" y="306" text-anchor="middle">R4</text>
+            <circle class="node" cx="560" cy="210" r="32"/><text class="label" x="560" y="216" text-anchor="middle">D</text>
+          </g>
+          <text id="caption" class="label" x="380" y="382" text-anchor="middle"></text>
+        </svg>
+      </div>
+      <div class="note" id="note"></div>
+      <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+    </div>
+  </div>
+</div>
+<script>
+const data=[
+ {t:"1. 建立虚电路",d:"源主机先发起连接建立请求，网络为这次通信选择一条逻辑路径。",cap:"建立路径：S -> R1 -> R3 -> D",note:"连接建立阶段需要使用完整目的地址，路由器为这条虚电路建立转发表项。",packets:[["setup",90,210,230,120]]},
+ {t:"2. 保存虚电路号",d:"沿途路由器记录虚电路号与下一跳的对应关系。",cap:"沿途节点记住 VC#17 的转发方向",note:"后续数据分组不必再携带完整目的地址，只需携带虚电路号。",packets:[["vc",230,120,390,120],["vc",390,120,560,210]]},
+ {t:"3. 传输数据分组",d:"属于同一虚电路的分组沿同一路径传输，通常按序到达。",cap:"数据分组沿 VC#17 传输",note:"虚电路是逻辑连接，不是独占一条物理线路。",packets:[["data",130,185,230,120],["data",282,120,390,120],["data",445,147,560,210]]},
+ {t:"4. 释放虚电路",d:"通信结束后释放虚电路，沿途节点删除对应状态。",cap:"释放 VC#17",note:"释放后再发送数据，需要重新建立虚电路。",packets:[["release",560,210,390,120],["release",390,120,230,120]]}
+];
+let i=0;const steps=document.getElementById("steps"),packets=document.getElementById("packets"),cap=document.getElementById("caption"),note=document.getElementById("note"),path=document.getElementById("activePath");
+function render(){steps.innerHTML=data.map((s,k)=>`<div class="step ${k===i?'active':''}"><b>${s.t}</b>${s.d}</div>`).join("");packets.innerHTML="";path.style.opacity=i===0||i===1||i===2?1:.35;cap.textContent=data[i].cap;note.textContent=data[i].note;for(const p of data[i].packets){const [kind,x1,y1,x2,y2]=p;const cx=(x1+x2)/2,cy=(y1+y2)/2;packets.insertAdjacentHTML("beforeend",`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--${kind==='data'?'green':'blue'})" stroke-width="4" marker-end="url(#arr)"/><rect x="${cx-34}" y="${cy-15}" width="68" height="30" rx="6" class="packet"/><text x="${cx}" y="${cy+5}" text-anchor="middle" fill="white" font-size="13">${kind==='data'?'DATA':kind==='vc'?'VC#17':kind==='release'?'REL':'SETUP'}</text>`)}}
+document.getElementById("prev").onclick=()=>{i=Math.max(0,i-1);render()};document.getElementById("next").onclick=()=>{i=Math.min(data.length-1,i+1);render()};render();
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SMTP 基本工作过程</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 16px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 20px; margin: 0; }
+h2 { font-size: 18px; margin: 0 0 10px; }
+p { font-size: 15px; line-height: 1.5; margin: 0 0 6px; }
+.slide { display: none; padding: 20px 28px; }
+.slide.active { display: block; }
+.row { display: flex; gap: 20px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; flex: 1; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+.count { color: var(--muted); }
+.step-num { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--blue); color: #fff; text-align: center; line-height: 22px; font-size: 12px; font-weight: 700; margin-right: 4px; }
+
+.dialog { font-family: Consolas, monospace; font-size: 13px; line-height: 1.8; padding: 12px; background: var(--code); color: var(--codeText); border-radius: 8px; }
+.dialog .s { color: #22c55e; }  /* server response */
+.dialog .c { color: #60a5fa; }  /* client command */
+.highlight { background: rgba(37,99,235,0.1); border-left: 3px solid var(--blue); padding: 8px 10px; margin: 6px 0; font-size: 13px; border-radius: 0 4px 4px 0; }
+
+table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+td { padding: 6px 8px; border: 1px solid var(--border); font-size: 13px; }
+.th { background: var(--bg); font-weight: 700; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24;
+  }
+  .highlight { background: rgba(59,130,246,0.12); }
+  .th { background: #1e293b; }
+  button { border-color: #52616b; }
+}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>SMTP 基本工作过程 — 命令-应答交互</h1></header>
+
+  <!-- Page 1: TCP connection + initial greeting -->
+  <section class="slide active">
+    <h2><span class="step-num">1</span> TCP 连接建立与服务器问候</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.2;">
+        <p style="font-size:14px;">SMTP 客户（发送方）与 SMTP 服务器（接收方）通过 TCP 端口 <strong>25</strong> 建立连接。</p>
+        <div class="dialog" style="margin-top:10px;">
+<span class="s">[TCP 连接建立]</span><br>
+<span class="s">220 smtp.example.com ESMTP Service Ready</span>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:8px;">
+          连接建立后，<strong>服务器主动推送</strong>"服务就绪"应答（代码 <strong>220</strong>），表示准备好接收 SMTP 命令。
+        </p>
+        <p style="font-size:13px;color:var(--muted);">SMTP 中使用三位数字应答码：2xx 成功，3xx 中间应答，4xx 临时失败，5xx 永久失败。</p>
+      </div>
+      <div class="panel">
+        <p style="font-weight:700;">SMTP 交互模式</p>
+        <p style="font-size:13px;line-height:1.7;">
+          SMTP 的基本模式是：<br>
+          <strong>客户发送命令 → 服务器返回应答</strong><br>
+          每条命令以 <code>&lt;CRLF&gt;</code> 结尾。<br>
+          每条应答以三位数字开头，后跟描述文本。
+        </p>
+        <p style="font-size:13px;margin-top:6px;color:var(--muted);">
+          SMTP 使用 <strong>TCP</strong>（不是 UDP），因为有大量邮件内容和命令需要可靠传输。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 2: HELO + MAIL FROM + RCPT TO -->
+  <section class="slide">
+    <h2><span class="step-num">2</span> 身份声明、发件人与收件人</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.4;">
+        <div class="dialog">
+<span class="c">HELO mail.example.com</span><br>
+<span class="s">250 smtp.example.com Hello mail.example.com</span><br>
+<span style="color:var(--muted);">—— 客户表明身份 ——</span><br>
+<span class="c">MAIL FROM: &lt;sender@example.com&gt;</span><br>
+<span class="s">250 2.1.0 Sender OK</span><br>
+<span style="color:var(--muted);">—— 告知邮件来自谁 ——</span><br>
+<span class="c">RCPT TO: &lt;receiver@example.org&gt;</span><br>
+<span class="s">250 2.1.5 Recipient OK</span><br>
+<span style="color:var(--muted);">—— 告知邮件发给谁 ——</span>
+        </div>
+      </div>
+      <div class="panel">
+        <table>
+          <tr class="th"><td>命令</td><td>含义</td><td>成功应答</td></tr>
+          <tr><td><code>HELO 域名</code></td><td>客户告知自己的域名</td><td>250</td></tr>
+          <tr><td><code>MAIL FROM: &lt;地址&gt;</code></td><td>告知发件人邮箱地址</td><td>250</td></tr>
+          <tr><td><code>RCPT TO: &lt;地址&gt;</code></td><td>告知收件人邮箱地址</td><td>250（存在）或 550（不存在）</td></tr>
+        </table>
+        <p style="font-size:13px;color:var(--muted);margin-top:8px;">
+          注意 <code>MAIL FROM</code> 和 <code>RCPT TO</code> 是 SMTP 命令中指定的信封地址，可能与邮件首部中的 <code>From:</code> 和 <code>To:</code> 不一致。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 3: DATA - mail content -->
+  <section class="slide">
+    <h2><span class="step-num">3</span> DATA 命令——传送邮件内容</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.4;">
+        <div class="dialog">
+<span class="c">DATA</span><br>
+<span class="s">354 Start mail input; end with &lt;CRLF&gt;.&lt;CRLF&gt;</span><br>
+<span style="color:var(--muted);">—— 服务器准备好接收邮件内容 ——</span><br>
+<span style="color:#e5e7eb;">From: sender@example.com</span><br>
+<span style="color:#e5e7eb;">To: receiver@example.org</span><br>
+<span style="color:#e5e7eb;">Subject: Test Email</span><br>
+<span style="color:#e5e7eb;"></span><br>
+<span style="color:#e5e7eb;">Hello, this is a test message.</span><br>
+<span style="color:#e5e7eb;">.</span><br>
+<span class="s">250 2.6.0 Message accepted for delivery</span><br>
+<span style="color:var(--muted);">—— 邮件内容结束，服务器确认接收 ——</span>
+        </div>
+      </div>
+      <div class="panel">
+        <p style="font-weight:700;">DATA 命令的关键细节</p>
+        <p style="font-size:13px;line-height:1.7;">
+          1. 服务器应答 <strong>354</strong> 表示准备接收。<br>
+          2. 客户发送邮件内容（包含首部和主体）。<br>
+          3. 邮件内容以 <strong><code>&lt;CRLF&gt;.&lt;CRLF&gt;</code></strong> 结束（单独一行的句点）。<br>
+          4. 服务器收到结束符后回复 <strong>250</strong>。
+        </p>
+        <div class="highlight">
+          <strong>关键</strong>：<code>&lt;CRLF&gt;.&lt;CRLF&gt;</code>（回车换行 + 句点 + 回车换行）是 SMTP 的邮件结束标记。如果邮件正文中含有单独一行的句点，发送方必须额外加一个句点（变为 <code>..</code>）进行转义。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 4: QUIT + full session summary -->
+  <section class="slide">
+    <h2><span class="step-num">4</span> QUIT 命令——释放连接</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.3;">
+        <div class="dialog">
+<span class="c">QUIT</span><br>
+<span class="s">221 smtp.example.com Service closing transmission channel</span><br>
+<span style="color:var(--muted);">[TCP 连接关闭]</span>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:10px;">客户发送 QUIT 命令后，服务器回复 221 并主动关闭 TCP 连接。至此，一次 SMTP 会话结束。</p>
+        <p style="font-size:13px;color:var(--muted);margin-top:4px;">如果还有下一封邮件需要发送，客户需要重新建立 TCP 连接并开始新的 SMTP 会话。</p>
+      </div>
+      <div class="panel">
+        <table>
+          <tr class="th"><td>事件</td><td>应答码</td><td>含义</td></tr>
+          <tr><td>连接建立</td><td>220</td><td>服务就绪</td></tr>
+          <tr><td>HELO 成功</td><td>250</td><td>请求动作完成</td></tr>
+          <tr><td>MAIL FROM 成功</td><td>250</td><td>发件人 OK</td></tr>
+          <tr><td>RCPT TO 成功</td><td>250</td><td>收件人 OK</td></tr>
+          <tr><td>DATA 准备接收</td><td>354</td><td>开始邮件输入</td></tr>
+          <tr><td>邮件接收成功</td><td>250</td><td>邮件已接受</td></tr>
+          <tr><td>QUIT 成功</td><td>221</td><td>服务关闭</td></tr>
+          <tr><td>错误：服务不可用</td><td>421</td><td>稍后重试</td></tr>
+          <tr><td>错误：邮箱不存在</td><td>550</td><td>永久失败</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 5: Full process overview -->
+  <section class="slide">
+    <h2><span class="step-num">★</span> SMTP 会话完整过程一览</h2>
+    <div class="panel">
+      <div class="dialog" style="font-size:12px;">
+<span style="color:var(--muted);">===== TCP 连接建立 =====</span><br>
+<span class="s">220 smtp.example.com ESMTP Service Ready</span><br>
+<span style="color:var(--muted);">===== 身份与信封 =====</span><br>
+<span class="c">HELO client.example.com</span><br>
+<span class="s">250 smtp.example.com</span><br>
+<span class="c">MAIL FROM: &lt;alice@example.com&gt;</span><br>
+<span class="s">250 2.1.0 Sender OK</span><br>
+<span class="c">RCPT TO: &lt;bob@example.org&gt;</span><br>
+<span class="s">250 2.1.5 Recipient OK</span><br>
+<span style="color:var(--muted);">===== 邮件内容 =====</span><br>
+<span class="c">DATA</span><br>
+<span class="s">354 Start mail input</span><br>
+<span style="color:#e5e7eb;">[邮件首部 + 主体 + &lt;CRLF&gt;.&lt;CRLF&gt;]</span><br>
+<span class="s">250 2.6.0 Message accepted</span><br>
+<span style="color:var(--muted);">===== 释放连接 =====</span><br>
+<span class="c">QUIT</span><br>
+<span class="s">221 Service closing</span><br>
+<span style="color:var(--muted);">===== TCP 连接关闭 =====</span>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px;text-align:center;">
+        记住顺序：HELO → MAIL FROM → RCPT TO → DATA（含结束符）→ QUIT。每一步都有对应的服务器应答码。
+      </p>
+    </div>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+function show(n) {
+  index = (n + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

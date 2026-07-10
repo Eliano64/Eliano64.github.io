@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="620" viewBox="0 0 1140 620" role="img" aria-labelledby="title desc">
+  <title id="title">磁盘调度算法概览</title>
+  <desc id="desc">对比 FCFS、SSTF、SCAN、LOOK、C-SCAN 和 C-LOOK 的磁头移动策略。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--text:#172033;--muted:#536171;--line:#8794a5;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;--panel:#f8fafc}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--text:#e5e7eb;--muted:#aab4c3;--line:#687386;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171;--purple:#c084fc;--panel:#111827}}
+    .bg{fill:var(--bg)}.title{fill:var(--text);font:700 27px "Microsoft YaHei",sans-serif}.h{fill:var(--text);font:700 18px "Microsoft YaHei",sans-serif}.body{fill:var(--muted);font:14px "Microsoft YaHei",sans-serif}.panel{fill:var(--panel);stroke:var(--line);stroke-width:1.3;rx:12}.axis{stroke:var(--line);stroke-width:2}.path{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.b{stroke:var(--blue)}.g{stroke:var(--green)}.o{stroke:var(--orange)}.r{stroke:var(--red)}.p{stroke:var(--purple)}.dot{fill:var(--text)}
+  </style>
+  <rect class="bg" width="1140" height="620"/>
+  <text class="title" x="54" y="55">磁盘调度：决定磁头按什么顺序服务请求</text>
+  <g transform="translate(50 105)">
+    <rect class="panel" x="0" y="0" width="330" height="140"/><text class="h" x="20" y="32">FCFS</text><text class="body" x="20" y="58">按请求到达顺序服务，公平但移动距离可能很长。</text><line class="axis" x1="24" y1="96" x2="300" y2="96"/><path class="path b" d="M160 96 L95 96 L260 96 L70 96"/><circle class="dot" cx="160" cy="96" r="5"/><circle class="dot" cx="70" cy="96" r="5"/>
+    <rect class="panel" x="380" y="0" width="330" height="140"/><text class="h" x="400" y="32">SSTF</text><text class="body" x="400" y="58">每次选最近请求，局部最优，可能让远处请求饥饿。</text><line class="axis" x1="404" y1="96" x2="680" y2="96"/><path class="path g" d="M540 96 L510 96 L475 96 L620 96 L655 96"/><circle class="dot" cx="540" cy="96" r="5"/><circle class="dot" cx="655" cy="96" r="5"/>
+    <rect class="panel" x="760" y="0" width="330" height="140"/><text class="h" x="780" y="32">SCAN</text><text class="body" x="780" y="58">沿一个方向服务，直到边界再反向，像电梯。</text><line class="axis" x1="784" y1="96" x2="1060" y2="96"/><path class="path o" d="M920 96 L1025 96 L820 96"/><circle class="dot" cx="920" cy="96" r="5"/><circle class="dot" cx="820" cy="96" r="5"/>
+    <rect class="panel" x="0" y="180" width="330" height="140"/><text class="h" x="20" y="212">LOOK</text><text class="body" x="20" y="238">方向上没有请求就反向，不必走到最边界。</text><line class="axis" x1="24" y1="276" x2="300" y2="276"/><path class="path r" d="M160 276 L260 276 L70 276"/><circle class="dot" cx="160" cy="276" r="5"/><circle class="dot" cx="70" cy="276" r="5"/>
+    <rect class="panel" x="380" y="180" width="330" height="140"/><text class="h" x="400" y="212">C-SCAN</text><text class="body" x="400" y="238">只在一个方向服务，回程不服务，响应更均匀。</text><line class="axis" x1="404" y1="276" x2="680" y2="276"/><path class="path p" d="M540 276 L680 276 M680 276 L404 276 M404 276 L510 276"/><circle class="dot" cx="540" cy="276" r="5"/><circle class="dot" cx="510" cy="276" r="5"/>
+    <rect class="panel" x="760" y="180" width="330" height="140"/><text class="h" x="780" y="212">C-LOOK</text><text class="body" x="780" y="238">C-SCAN 优化：只回到最靠边的请求位置。</text><line class="axis" x1="784" y1="276" x2="1060" y2="276"/><path class="path b" d="M920 276 L1030 276 M1030 276 L820 276 M820 276 L895 276"/><circle class="dot" cx="920" cy="276" r="5"/><circle class="dot" cx="895" cy="276" r="5"/>
+  </g>
+  <text class="body" x="570" y="550" text-anchor="middle">题目若无特别说明，常把 SCAN 按 LOOK、C-SCAN 按 C-LOOK 的实际优化版本处理。</text>
+</svg>

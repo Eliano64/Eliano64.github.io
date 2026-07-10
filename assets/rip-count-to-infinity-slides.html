@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RIP Count To Infinity</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--red:#dc2626;--blue:#2563eb;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--red:#f87171;--blue:#60a5fa;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}.side{display:grid;gap:10px}.step{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px}.step.active{outline:2px solid var(--red)}.step b{display:block}.step span{font-size:14px;color:var(--muted);line-height:1.4}.stage{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}.note{margin-top:8px;color:var(--muted);line-height:1.55}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">RIP 坏消息传播慢：距离无穷计数</div>
+  <div class="layout">
+    <div class="side" id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 660 350" role="img" aria-label="RIP 距离无穷计数过程">
+        <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--red)"/></marker></defs>
+        <rect x="35" y="95" width="92" height="70" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="81" y="136" text-anchor="middle" fill="var(--text)" font-size="20">N1</text>
+        <circle cx="245" cy="130" r="34" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="245" y="137" text-anchor="middle" fill="var(--text)" font-size="20">R1</text>
+        <circle cx="430" cy="130" r="34" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="430" y="137" text-anchor="middle" fill="var(--text)" font-size="20">R2</text>
+        <line x1="127" y1="130" x2="211" y2="130" stroke="var(--line)" stroke-width="3" id="broken"/>
+        <line x1="279" y1="130" x2="396" y2="130" stroke="var(--line)" stroke-width="3"/>
+        <path id="msg" d="M430 172 C385 250, 290 250, 245 172" fill="none" stroke="var(--red)" stroke-width="4" marker-end="url(#arr)"/>
+        <text id="msgText" x="337" y="265" text-anchor="middle" fill="var(--red)" font-size="17"></text>
+        <text id="r1" x="245" y="205" text-anchor="middle" fill="var(--text)" font-size="16"></text>
+        <text id="r2" x="430" y="205" text-anchor="middle" fill="var(--text)" font-size="16"></text>
+        <text id="caption" x="330" y="315" text-anchor="middle" fill="var(--muted)" font-size="16"></text>
+      </svg>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+["N1 故障","R1 发现直连网络 N1 不可达。","R1 到 N1 = 16","R2 到 N1 = 2，经 R1","R1 标记 16，但还没来得及把坏消息发给 R2。","链路断开，R1 先知道坏消息。"],
+["谣言返回","R2 的周期更新先到，仍宣告经 R1 到 N1 距离为 2。","R1 误算：经 R2 到 N1 = 3","R2 到 N1 = 2，经 R1","R2 → R1：N1 距离 2","R1 被旧信息误导，以为可以绕过 R2 到达 N1。"],
+["相互抬高","R1 再向 R2 宣告距离 3，R2 更新为 4。","R1 到 N1 = 3，经 R2","R2 到 N1 = 4，经 R1","R1 → R2：N1 距离 3","两者互相把对方当成下一跳，形成路由环路。"],
+["直到 16","距离 5、6、7……逐步增加，直到达到 16。","R1/R2 最终到 N1 = 16","16 表示不可达","距离逐步增加","RIP 用最大距离 15 限制问题规模，但不能彻底消除距离向量的环路风险。"]
+];
+let i=0;const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{const el=document.createElement("div");el.className="step";el.innerHTML=`<b>${idx+1}. ${d[0]}</b><span>${d[1]}</span>`;el.onclick=()=>{i=idx;render()};steps.appendChild(el)});
+function render(){[...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));r1.textContent=data[i][2];r2.textContent=data[i][3];msgText.textContent=data[i][4];note.textContent=data[i][5];caption.textContent=i===3?"16 表示不可达；这就是 count to infinity":"坏消息没有完整路径信息，容易被旧距离向量误导";broken.setAttribute("stroke-dasharray",i===0?"8 6":"");}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script>
+</body>
+</html>

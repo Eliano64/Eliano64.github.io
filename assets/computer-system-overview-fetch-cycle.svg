@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="560" viewBox="0 0 1120 560" role="img" aria-labelledby="title desc">
+  <title id="title">Instruction Fetch Cycle</title>
+  <desc id="desc">Static diagram showing the common fetch and decode sequence from PC to MAR, memory, MDR, IR, PC update, and CU decode.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    .bg { fill: #f7f7f4; }
+    .panel { fill: #fff; stroke: #ccd4dc; stroke-width: 2; }
+    .title { fill: #1f252b; font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .h { fill: #1f252b; font: 700 19px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .t { fill: #46505a; font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: #5f6873; font: 13px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .reg { fill: #eef6fc; stroke: #2f6f9f; stroke-width: 2; rx: 8; }
+    .mem { fill: #f1f8ef; stroke: #4b7f52; stroke-width: 2; rx: 8; }
+    .cu { fill: #fff0ee; stroke: #a1473e; stroke-width: 2; rx: 8; }
+    .arrow { stroke: #2f6f9f; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .decode { stroke: #a1473e; stroke-width: 3; fill: none; marker-end: url(#redArrow); }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #151719; }
+      .panel { fill: #202428; stroke: #3a4149; }
+      .title, .h { fill: #edf0f2; }
+      .t { fill: #c6ccd3; }
+      .small { fill: #aab2bc; }
+      .reg { fill: #1f3443; stroke: #7db7e8; }
+      .mem { fill: #213522; stroke: #95c88f; }
+      .cu { fill: #3a2423; stroke: #dd8c84; }
+      .arrow { stroke: #7db7e8; }
+      .decode { stroke: #dd8c84; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L10,3.5 z" fill="#2f6f9f"/>
+    </marker>
+    <marker id="redArrow" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L10,3.5 z" fill="#a1473e"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1120" height="560"/>
+  <text class="title" x="48" y="58">公共取指与译码流程</text>
+  <text class="t" x="48" y="88">大多数指令在进入具体执行阶段前，都先经历这条固定主线。</text>
+
+  <rect class="panel" x="48" y="122" width="1024" height="360" rx="8"/>
+  <rect class="reg" x="92" y="234" width="120" height="70"/>
+  <text class="h" x="134" y="264">PC</text>
+  <text class="small" x="112" y="286">下一指令地址</text>
+
+  <rect class="reg" x="278" y="234" width="120" height="70"/>
+  <text class="h" x="317" y="264">MAR</text>
+  <text class="small" x="300" y="286">访存地址</text>
+
+  <rect class="mem" x="462" y="214" width="150" height="110"/>
+  <text class="h" x="500" y="262">主存</text>
+  <text class="small" x="492" y="286">M(MAR)</text>
+
+  <rect class="reg" x="676" y="234" width="120" height="70"/>
+  <text class="h" x="714" y="264">MDR</text>
+  <text class="small" x="696" y="286">读出指令</text>
+
+  <rect class="reg" x="862" y="234" width="120" height="70"/>
+  <text class="h" x="906" y="264">IR</text>
+  <text class="small" x="887" y="286">当前指令</text>
+
+  <rect class="cu" x="862" y="374" width="120" height="70"/>
+  <text class="h" x="906" y="404">CU</text>
+  <text class="small" x="888" y="426">分析操作码</text>
+
+  <path class="arrow" d="M212 269 H268"/>
+  <text class="small" x="218" y="250">(PC) -> MAR</text>
+  <path class="arrow" d="M398 269 H452"/>
+  <text class="small" x="402" y="250">按地址读</text>
+  <path class="arrow" d="M612 269 H666"/>
+  <text class="small" x="620" y="250">M(MAR) -> MDR</text>
+  <path class="arrow" d="M796 269 H852"/>
+  <text class="small" x="802" y="250">(MDR) -> IR</text>
+  <path class="decode" d="M922 304 V364"/>
+  <text class="small" x="938" y="340">OP(IR) -> CU</text>
+  <path class="arrow" d="M152 234 C152 160 922 160 922 224"/>
+  <text class="small" x="440" y="150">(PC) + 1 -> PC：准备顺序执行下一条指令</text>
+</svg>

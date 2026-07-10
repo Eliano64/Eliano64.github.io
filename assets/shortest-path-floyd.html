@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Floyd</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#0f172a;--muted:#475569;--line:#94a3b8;--edge:#64748b;--hot:#2563eb;--done:#059669}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#64748b;--edge:#94a3b8;--hot:#60a5fa;--done:#34d399}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,sans-serif}.wrap{padding:18px;max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px}.title{font-size:22px;font-weight:750}.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer}.stage{display:grid;grid-template-columns:.9fr 1.1fr;gap:16px;margin-top:14px}.card{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px}.note{color:var(--muted);line-height:1.6}.edge{stroke:var(--edge);stroke-width:3;marker-end:url(#arr)}.hot{stroke:var(--hot);stroke-width:5;marker-end:url(#arrHot)}.node{fill:var(--bg);stroke:var(--edge);stroke-width:2}.mid{stroke:var(--hot);stroke-width:4}.label{fill:var(--text);font-weight:700;font-size:18px}.w{fill:var(--text);font-size:14px;font-weight:700}.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{border:1px solid var(--line);padding:7px;text-align:center}.changed{background:color-mix(in srgb,var(--done) 20%,transparent)}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top"><div><div class="title">Floyd：逐步放开可用中转点</div><div class="note" id="cap"></div></div><div><button class="btn" id="prev">上一页</button> <button class="btn" id="next">下一页</button></div></div>
+ <div class="stage"><div class="card" id="graph"></div><div class="card"><div class="note" id="txt"></div><h3>A 矩阵</h3><div id="dist"></div><h3>path 矩阵</h3><div id="path"></div></div></div>
+</div>
+<script>
+const pos={0:[90,190],1:[290,90],2:[290,300]};
+const steps=[
+{cap:"初始：不允许任何中转点。",mid:null,hot:[],txt:"A(-1) 只记录直接边；path 全为 -1。",d:[[0,6,13],[10,0,4],[5,"INF",0]],p:[[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]],c:[]},
+{cap:"允许 V0 中转。",mid:0,hot:[[2,0],[0,1]],txt:"检查 V2 -> V1：原来不可达，经过 V0 后为 5+6=11，因此更新。",d:[[0,6,13],[10,0,4],[5,11,0]],p:[[-1,-1,-1],[-1,-1,-1],[-1,0,-1]],c:[[2,1]]},
+{cap:"允许 V0、V1 中转。",mid:1,hot:[[0,1],[1,2]],txt:"检查 V0 -> V2：原来是 13，经过 V1 后为 6+4=10，因此更新 path[0][2]=1。",d:[[0,6,10],[10,0,4],[5,11,0]],p:[[-1,-1,1],[-1,-1,-1],[-1,0,-1]],c:[[0,2]]},
+{cap:"允许 V0、V1、V2 中转。",mid:2,hot:[[1,2],[2,0]],txt:"检查 V1 -> V0：原来是 10，经过 V2 后为 4+5=9，因此更新 path[1][0]=2。",d:[[0,6,10],[9,0,4],[5,11,0]],p:[[-1,-1,1],[2,-1,-1],[-1,0,-1]],c:[[1,0]]},
+{cap:"结果：A 保存最短距离，path 保存中转信息。",mid:null,hot:[],txt:"例如 V0 到 V2 的长度为 10，path[0][2]=1，所以路径为 V0 -> V1 -> V2。",d:[[0,6,10],[9,0,4],[5,11,0]],p:[[-1,-1,1],[2,-1,-1],[-1,0,-1]],c:[]}
+];
+let i=0;
+function edgeClass(s,a,b){return s.hot.some(e=>e[0]===a&&e[1]===b)?"hot":"edge"}
+function table(m,changed){
+ const vs=["V0","V1","V2"];
+ return `<table class="tbl"><tr><th></th>${vs.map(v=>`<th>${v}</th>`).join("")}</tr>${m.map((row,r)=>`<tr><th>${vs[r]}</th>${row.map((x,c)=>`<td class="${changed.some(e=>e[0]===r&&e[1]===c)?'changed':''}">${x}</td>`).join("")}</tr>`).join("")}</table>`;
+}
+function render(){
+ const s=steps[i];document.getElementById("cap").textContent=s.cap;document.getElementById("txt").textContent=s.txt;
+ document.getElementById("graph").innerHTML=`<svg viewBox="0 0 390 390"><defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--edge)"/></marker><marker id="arrHot" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--hot)"/></marker></defs>
+ <line class="${edgeClass(s,0,1)}" x1="90" y1="190" x2="290" y2="90"/><text class="w" x="180" y="126">6</text>
+ <line class="${edgeClass(s,0,2)}" x1="90" y1="190" x2="290" y2="300"/><text class="w" x="168" y="265">13</text>
+ <line class="${edgeClass(s,1,0)}" x1="276" y1="105" x2="106" y2="178"/><text class="w" x="190" y="168">10</text>
+ <line class="${edgeClass(s,1,2)}" x1="290" y1="90" x2="290" y2="300"/><text class="w" x="304" y="198">4</text>
+ <line class="${edgeClass(s,2,0)}" x1="276" y1="288" x2="106" y2="202"/><text class="w" x="185" y="230">5</text>
+ ${[0,1,2].map(v=>`<g><circle class="node ${s.mid===v?'mid':''}" cx="${pos[v][0]}" cy="${pos[v][1]}" r="25"/><text class="label" x="${pos[v][0]}" y="${pos[v][1]+6}" text-anchor="middle">V${v}</text></g>`).join("")}</svg>`;
+ document.getElementById("dist").innerHTML=table(s.d,s.c);
+ document.getElementById("path").innerHTML=table(s.p,s.c);
+}
+document.getElementById("prev").onclick=()=>{i=(i+steps.length-1)%steps.length;render()};document.getElementById("next").onclick=()=>{i=(i+1)%steps.length;render()};render();
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="560" viewBox="0 0 1180 560" role="img" aria-labelledby="title desc">
+  <title id="title">Datapath connection types</title>
+  <desc id="desc">Single bus, multi bus, and dedicated datapath connection styles.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--ink:#172033;--muted:#5f6c80;--line:#526174;--bus:#345f9f;--box:#fff;--panel:#f7f9fc;--good:#eef7ee;--warn:#fff2d8}
+    @media (prefers-color-scheme:dark){:root{--bg:#0f1420;--ink:#e7edf7;--muted:#aab6c8;--line:#91a0b5;--bus:#86b7ff;--box:#151c2a;--panel:#131b2a;--good:#18291d;--warn:#302417}}
+    svg{background:var(--bg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    text{fill:var(--ink)} .title{font-size:28px;font-weight:700}.h{font-size:21px;font-weight:700}.small{font-size:15px;fill:var(--muted)}.label{font-size:17px;font-weight:700}
+    .panel{fill:var(--panel);stroke:var(--line);stroke-width:2;rx:16}.box{fill:var(--box);stroke:var(--line);stroke-width:2;rx:8}.bus{stroke:var(--bus);stroke-width:8;stroke-linecap:round}.line{stroke:var(--line);stroke-width:2.2;fill:none}.arrow{stroke:var(--line);stroke-width:2.2;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"/></marker></defs>
+  <text x="590" y="42" text-anchor="middle" class="title">按内部连接方式看数据通路</text>
+
+  <rect x="40" y="78" width="340" height="390" class="panel"/>
+  <text x="210" y="116" text-anchor="middle" class="h">单总线结构</text>
+  <text x="210" y="144" text-anchor="middle" class="small">所有部件共享一条内部总线</text>
+  <path d="M105 278 H315" class="bus"/>
+  <rect x="82" y="190" width="70" height="44" class="box"/><text x="117" y="218" text-anchor="middle" class="label">PC</text>
+  <rect x="175" y="190" width="70" height="44" class="box"/><text x="210" y="218" text-anchor="middle" class="label">R1</text>
+  <rect x="268" y="190" width="70" height="44" class="box"/><text x="303" y="218" text-anchor="middle" class="label">MDR</text>
+  <rect x="175" y="330" width="70" height="44" class="box"/><text x="210" y="358" text-anchor="middle" class="label">ALU</text>
+  <path d="M117 234 V274" class="line"/><path d="M210 234 V274" class="line"/><path d="M303 234 V274" class="line"/><path d="M210 282 V330" class="line"/>
+  <text x="210" y="425" text-anchor="middle" class="small">同一时刻通常只能有一个源部件输出到总线</text>
+
+  <rect x="420" y="78" width="340" height="390" class="panel"/>
+  <text x="590" y="116" text-anchor="middle" class="h">多总线结构</text>
+  <text x="590" y="144" text-anchor="middle" class="small">多条内部通路支持更多并行传送</text>
+  <path d="M485 242 H695" class="bus"/><path d="M485 306 H695" class="bus"/>
+  <rect x="462" y="178" width="70" height="44" class="box"/><text x="497" y="206" text-anchor="middle" class="label">R0</text>
+  <rect x="555" y="178" width="70" height="44" class="box"/><text x="590" y="206" text-anchor="middle" class="label">R1</text>
+  <rect x="648" y="178" width="70" height="44" class="box"/><text x="683" y="206" text-anchor="middle" class="label">R2</text>
+  <rect x="555" y="358" width="70" height="44" class="box"/><text x="590" y="386" text-anchor="middle" class="label">ALU</text>
+  <path d="M497 222 V238" class="line"/><path d="M590 222 V302" class="line"/><path d="M683 222 V238" class="line"/><path d="M565 310 V358" class="line"/><path d="M615 310 V358" class="line"/>
+  <text x="590" y="425" text-anchor="middle" class="small">硬件量增加，但可减少总线冲突和中间暂存</text>
+
+  <rect x="800" y="78" width="340" height="390" class="panel"/>
+  <text x="970" y="116" text-anchor="middle" class="h">专用数据通路</text>
+  <text x="970" y="144" text-anchor="middle" class="small">按常用数据流向布置专门连线</text>
+  <rect x="842" y="190" width="70" height="44" class="box"/><text x="877" y="218" text-anchor="middle" class="label">PC</text>
+  <rect x="1028" y="190" width="70" height="44" class="box"/><text x="1063" y="218" text-anchor="middle" class="label">Reg</text>
+  <rect x="935" y="304" width="70" height="50" class="box"/><text x="970" y="335" text-anchor="middle" class="label">ALU</text>
+  <rect x="842" y="382" width="70" height="44" class="box"/><text x="877" y="410" text-anchor="middle" class="label">MAR</text>
+  <rect x="1028" y="382" width="70" height="44" class="box"/><text x="1063" y="410" text-anchor="middle" class="label">MDR</text>
+  <path d="M912 212 C942 214 930 314 935 318" class="arrow"/>
+  <path d="M1063 234 C1063 280 1010 286 1000 304" class="arrow"/>
+  <path d="M970 354 C970 388 923 400 912 404" class="arrow"/>
+  <path d="M912 404 H1028" class="arrow"/>
+  <text x="970" y="456" text-anchor="middle" class="small">速度高，线路多，控制和硬件设计更复杂</text>
+</svg>

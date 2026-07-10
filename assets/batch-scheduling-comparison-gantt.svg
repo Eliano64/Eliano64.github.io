@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="980" viewBox="0 0 1180 980" role="img" aria-labelledby="title desc">
+  <title id="title">批处理调度算法甘特图对比</title>
+  <desc id="desc">四个子图分别展示 FCFS、SJF、SRTN、HRRN 的甘特图；每个子图纵轴为进程，横轴为时间。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --grid:#cbd5e1; --p1:#2563eb; --p2:#0f766e; --p3:#b45309; --p4:#7c3aed; --p5:#be123c;
+      --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --grid:#455366; --p1:#7aa2ff; --p2:#62d4c5; --p3:#f6b85f; --p4:#b89cff; --p5:#ff8aa0;
+        --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:25px; font-weight:700; }
+    .subtitle { fill:var(--muted); font-size:14px; }
+    .panel { fill:var(--panel); stroke:var(--line); stroke-width:1.4; rx:14; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .panelTitle { fill:var(--text); font-size:19px; font-weight:700; }
+    .axis { stroke:var(--line); stroke-width:1.8; }
+    .grid { stroke:var(--grid); stroke-width:1; stroke-dasharray:4 6; }
+    .row { stroke:var(--grid); stroke-width:1; }
+    .rowLabel { fill:var(--text); font-size:15px; font-weight:700; }
+    .time { fill:var(--text); font-size:12px; font-weight:700; }
+    .bar { stroke:var(--line); stroke-width:1; rx:5; }
+    .barText { fill:#fff; font-size:12px; font-weight:700; }
+    .note { fill:var(--muted); font-size:12px; }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.barText{fill:#0f172a}}
+  </style>
+
+  <text class="title" x="590" y="38" text-anchor="middle">批处理调度算法甘特图对比</text>
+  <text class="subtitle" x="590" y="64" text-anchor="middle">每个子图：纵轴是进程，横轴是时间；横条表示该进程占用 CPU 的时间区间。</text>
+
+  <!-- x = 138 + t * 13.2142857, t ranges 0..28 -->
+
+  <defs>
+    <g id="rows">
+      <line class="axis" x1="138" y1="316" x2="508" y2="316"/>
+      <line class="axis" x1="138" y1="82" x2="138" y2="316"/>
+      <line class="row" x1="138" y1="104" x2="508" y2="104"/>
+      <line class="row" x1="138" y1="148" x2="508" y2="148"/>
+      <line class="row" x1="138" y1="192" x2="508" y2="192"/>
+      <line class="row" x1="138" y1="236" x2="508" y2="236"/>
+      <line class="row" x1="138" y1="280" x2="508" y2="280"/>
+      <text class="rowLabel" x="96" y="99" text-anchor="middle">P1</text>
+      <text class="rowLabel" x="96" y="143" text-anchor="middle">P2</text>
+      <text class="rowLabel" x="96" y="187" text-anchor="middle">P3</text>
+      <text class="rowLabel" x="96" y="231" text-anchor="middle">P4</text>
+      <text class="rowLabel" x="96" y="275" text-anchor="middle">P5</text>
+    </g>
+  </defs>
+
+  <g transform="translate(48 92)">
+    <rect class="panel" x="0" y="0" width="530" height="400"/>
+    <text class="panelTitle" x="265" y="34" text-anchor="middle">FCFS</text>
+    <text class="note" x="265" y="56" text-anchor="middle">P1 0-8, P2 8-12, P3 12-21, P4 21-26, P5 26-28</text>
+    <use href="#rows"/>
+    <line class="grid" x1="138" y1="82" x2="138" y2="316"/><line class="grid" x1="243.71" y1="82" x2="243.71" y2="316"/><line class="grid" x1="296.57" y1="82" x2="296.57" y2="316"/><line class="grid" x1="415.5" y1="82" x2="415.5" y2="316"/><line class="grid" x1="481.57" y1="82" x2="481.57" y2="316"/><line class="grid" x1="508" y1="82" x2="508" y2="316"/>
+    <rect class="bar" x="138" y="86" width="105.71" height="28" fill="var(--p1)"/><text class="barText" x="190.86" y="105" text-anchor="middle">0-8</text>
+    <rect class="bar" x="243.71" y="130" width="52.86" height="28" fill="var(--p2)"/><text class="barText" x="270.14" y="149" text-anchor="middle">8-12</text>
+    <rect class="bar" x="296.57" y="174" width="118.93" height="28" fill="var(--p3)"/><text class="barText" x="356.04" y="193" text-anchor="middle">12-21</text>
+    <rect class="bar" x="415.5" y="218" width="66.07" height="28" fill="var(--p4)"/><text class="barText" x="448.54" y="237" text-anchor="middle">21-26</text>
+    <rect class="bar" x="481.57" y="262" width="26.43" height="28" fill="var(--p5)"/><text class="barText" x="494.79" y="281" text-anchor="middle">26-28</text>
+    <text class="time" x="138" y="346" text-anchor="middle">0</text><text class="time" x="243.71" y="346" text-anchor="middle">8</text><text class="time" x="296.57" y="346" text-anchor="middle">12</text><text class="time" x="415.5" y="346" text-anchor="middle">21</text><text class="time" x="481.57" y="346" text-anchor="middle">26</text><text class="time" x="508" y="346" text-anchor="middle">28</text>
+  </g>
+
+  <g transform="translate(602 92)">
+    <rect class="panel" x="0" y="0" width="530" height="400"/>
+    <text class="panelTitle" x="265" y="34" text-anchor="middle">SJF / SPF</text>
+    <text class="note" x="265" y="56" text-anchor="middle">P1 0-8, P5 8-10, P2 10-14, P4 14-19, P3 19-28</text>
+    <use href="#rows"/>
+    <line class="grid" x1="138" y1="82" x2="138" y2="316"/><line class="grid" x1="243.71" y1="82" x2="243.71" y2="316"/><line class="grid" x1="270.14" y1="82" x2="270.14" y2="316"/><line class="grid" x1="323" y1="82" x2="323" y2="316"/><line class="grid" x1="389.07" y1="82" x2="389.07" y2="316"/><line class="grid" x1="508" y1="82" x2="508" y2="316"/>
+    <rect class="bar" x="138" y="86" width="105.71" height="28" fill="var(--p1)"/><text class="barText" x="190.86" y="105" text-anchor="middle">0-8</text>
+    <rect class="bar" x="270.14" y="130" width="52.86" height="28" fill="var(--p2)"/><text class="barText" x="296.57" y="149" text-anchor="middle">10-14</text>
+    <rect class="bar" x="389.07" y="174" width="118.93" height="28" fill="var(--p3)"/><text class="barText" x="448.54" y="193" text-anchor="middle">19-28</text>
+    <rect class="bar" x="323" y="218" width="66.07" height="28" fill="var(--p4)"/><text class="barText" x="356.04" y="237" text-anchor="middle">14-19</text>
+    <rect class="bar" x="243.71" y="262" width="26.43" height="28" fill="var(--p5)"/><text class="barText" x="256.93" y="281" text-anchor="middle">8-10</text>
+    <text class="time" x="138" y="346" text-anchor="middle">0</text><text class="time" x="243.71" y="346" text-anchor="middle">8</text><text class="time" x="270.14" y="346" text-anchor="middle">10</text><text class="time" x="323" y="346" text-anchor="middle">14</text><text class="time" x="389.07" y="346" text-anchor="middle">19</text><text class="time" x="508" y="346" text-anchor="middle">28</text>
+  </g>
+
+  <g transform="translate(48 532)">
+    <rect class="panel" x="0" y="0" width="530" height="400"/>
+    <text class="panelTitle" x="265" y="34" text-anchor="middle">SRTN</text>
+    <text class="note" x="265" y="56" text-anchor="middle">P1 0-1/12-19, P2 1-5, P4 5-6/8-12, P5 6-8, P3 19-28</text>
+    <use href="#rows"/>
+    <line class="grid" x1="138" y1="82" x2="138" y2="316"/><line class="grid" x1="151.21" y1="82" x2="151.21" y2="316"/><line class="grid" x1="204.07" y1="82" x2="204.07" y2="316"/><line class="grid" x1="217.29" y1="82" x2="217.29" y2="316"/><line class="grid" x1="243.71" y1="82" x2="243.71" y2="316"/><line class="grid" x1="296.57" y1="82" x2="296.57" y2="316"/><line class="grid" x1="389.07" y1="82" x2="389.07" y2="316"/><line class="grid" x1="508" y1="82" x2="508" y2="316"/>
+    <rect class="bar" x="138" y="86" width="13.21" height="28" fill="var(--p1)"/><rect class="bar" x="296.57" y="86" width="92.5" height="28" fill="var(--p1)"/><text class="barText" x="342.82" y="105" text-anchor="middle">12-19</text>
+    <rect class="bar" x="151.21" y="130" width="52.86" height="28" fill="var(--p2)"/><text class="barText" x="177.64" y="149" text-anchor="middle">1-5</text>
+    <rect class="bar" x="389.07" y="174" width="118.93" height="28" fill="var(--p3)"/><text class="barText" x="448.54" y="193" text-anchor="middle">19-28</text>
+    <rect class="bar" x="204.07" y="218" width="13.21" height="28" fill="var(--p4)"/><rect class="bar" x="243.71" y="218" width="52.86" height="28" fill="var(--p4)"/><text class="barText" x="270.14" y="237" text-anchor="middle">8-12</text>
+    <rect class="bar" x="217.29" y="262" width="26.43" height="28" fill="var(--p5)"/><text class="barText" x="230.5" y="281" text-anchor="middle">6-8</text>
+    <text class="time" x="138" y="346" text-anchor="middle">0</text><text class="time" x="151.21" y="346" text-anchor="middle">1</text><text class="time" x="204.07" y="346" text-anchor="middle">5</text><text class="time" x="217.29" y="346" text-anchor="middle">6</text><text class="time" x="243.71" y="346" text-anchor="middle">8</text><text class="time" x="296.57" y="346" text-anchor="middle">12</text><text class="time" x="389.07" y="346" text-anchor="middle">19</text><text class="time" x="508" y="346" text-anchor="middle">28</text>
+  </g>
+
+  <g transform="translate(602 532)">
+    <rect class="panel" x="0" y="0" width="530" height="400"/>
+    <text class="panelTitle" x="265" y="34" text-anchor="middle">HRRN</text>
+    <text class="note" x="265" y="56" text-anchor="middle">P1 0-8, P2 8-12, P5 12-14, P4 14-19, P3 19-28</text>
+    <use href="#rows"/>
+    <line class="grid" x1="138" y1="82" x2="138" y2="316"/><line class="grid" x1="243.71" y1="82" x2="243.71" y2="316"/><line class="grid" x1="296.57" y1="82" x2="296.57" y2="316"/><line class="grid" x1="323" y1="82" x2="323" y2="316"/><line class="grid" x1="389.07" y1="82" x2="389.07" y2="316"/><line class="grid" x1="508" y1="82" x2="508" y2="316"/>
+    <rect class="bar" x="138" y="86" width="105.71" height="28" fill="var(--p1)"/><text class="barText" x="190.86" y="105" text-anchor="middle">0-8</text>
+    <rect class="bar" x="243.71" y="130" width="52.86" height="28" fill="var(--p2)"/><text class="barText" x="270.14" y="149" text-anchor="middle">8-12</text>
+    <rect class="bar" x="389.07" y="174" width="118.93" height="28" fill="var(--p3)"/><text class="barText" x="448.54" y="193" text-anchor="middle">19-28</text>
+    <rect class="bar" x="323" y="218" width="66.07" height="28" fill="var(--p4)"/><text class="barText" x="356.04" y="237" text-anchor="middle">14-19</text>
+    <rect class="bar" x="296.57" y="262" width="26.43" height="28" fill="var(--p5)"/><text class="barText" x="309.79" y="281" text-anchor="middle">12-14</text>
+    <text class="time" x="138" y="346" text-anchor="middle">0</text><text class="time" x="243.71" y="346" text-anchor="middle">8</text><text class="time" x="296.57" y="346" text-anchor="middle">12</text><text class="time" x="323" y="346" text-anchor="middle">14</text><text class="time" x="389.07" y="346" text-anchor="middle">19</text><text class="time" x="508" y="346" text-anchor="middle">28</text>
+  </g>
+</svg>

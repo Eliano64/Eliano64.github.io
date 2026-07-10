@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420" role="img" aria-labelledby="title desc">
+  <title id="title">Dynamic Relocation and Memory Protection</title>
+  <desc id="desc">A logical address is checked against the limit register and added to the relocation register to form a physical address.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --panel2: #eff6ff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #64748b;
+      --accent: #2563eb;
+      --danger: #dc2626;
+      --ok: #15803d;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #1e293b;
+        --panel2: #172554;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #94a3b8;
+        --accent: #93c5fd;
+        --danger: #fca5a5;
+        --ok: #86efac;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; rx: 8; }
+    .box2 { fill: var(--panel2); stroke: var(--accent); stroke-width: 1.6; rx: 8; }
+    .title { fill: var(--text); font: 700 18px "Segoe UI", Arial, sans-serif; }
+    .text { fill: var(--text); font: 15px "Segoe UI", Arial, sans-serif; }
+    .small { fill: var(--muted); font: 13px "Segoe UI", Arial, sans-serif; }
+    .arrow { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .danger { fill: var(--danger); font-weight: 700; }
+    .ok { fill: var(--ok); font-weight: 700; }
+    .accent { fill: var(--accent); font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="980" height="420"/>
+  <text class="title" x="40" y="38">动态重定位与内存保护</text>
+  <text class="small" x="40" y="62">示例：进程逻辑地址范围 0~179，装入物理地址 100~279。</text>
+
+  <rect class="box" x="46" y="118" width="156" height="82"/>
+  <text class="text" x="78" y="148">CPU 指令</text>
+  <text class="small" x="72" y="174">逻辑地址 A = 80</text>
+
+  <path class="arrow" d="M 202 159 H 276"/>
+
+  <rect class="box2" x="276" y="104" width="190" height="110"/>
+  <text class="text" x="314" y="134">越界检查</text>
+  <text class="small" x="302" y="160">界地址寄存器 = 179</text>
+  <text class="small" x="302" y="184">若 A &gt; 179：越界异常</text>
+
+  <path class="arrow" d="M 466 159 H 540"/>
+  <text class="ok" x="492" y="145">合法</text>
+
+  <rect class="box2" x="540" y="104" width="190" height="110"/>
+  <text class="text" x="584" y="134">地址重定位</text>
+  <text class="small" x="566" y="160">重定位寄存器 = 100</text>
+  <text class="small" x="566" y="184">物理地址 E = 100 + A</text>
+
+  <path class="arrow" d="M 730 159 H 804"/>
+
+  <rect class="box" x="804" y="118" width="136" height="82"/>
+  <text class="text" x="834" y="148">物理地址</text>
+  <text class="small" x="834" y="174">E = 180</text>
+
+  <path class="arrow" d="M 371 214 V 272 H 804"/>
+  <text class="danger" x="405" y="258">非法地址：产生越界异常</text>
+
+  <rect class="box" x="84" y="284" width="300" height="78"/>
+  <text class="text" x="112" y="314">逻辑地址空间</text>
+  <text class="small" x="112" y="340">进程只看到 0~179</text>
+
+  <rect class="box" x="596" y="284" width="300" height="78"/>
+  <text class="text" x="624" y="314">物理地址空间</text>
+  <text class="small" x="624" y="340">实际存放在 100~279</text>
+
+  <path class="arrow" d="M 384 323 H 596"/>
+  <text class="small" x="430" y="308">加上重定位寄存器</text>
+</svg>

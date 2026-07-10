@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title desc">
+  <title id="title">Memory system overview</title>
+  <desc id="desc">A diagram showing the memory hierarchy, address translation path, and the boundary between hardware and operating system responsibilities.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f3b52"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2764b5"/>
+    </marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      .bg { fill: #fbfcff; }
+      .title { font: 700 28px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #152033; }
+      .subtitle { font: 400 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #5a667a; }
+      .section { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #152033; }
+      .label { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #152033; }
+      .small { font: 400 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #40506a; }
+      .tiny { font: 400 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #5a667a; }
+      .note { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #8a4b00; }
+      .box { fill: #ffffff; stroke: #9aa9bd; stroke-width: 1.6; rx: 8; }
+      .boxBlue { fill: #eef6ff; stroke: #5f92d6; stroke-width: 1.8; rx: 8; }
+      .boxGreen { fill: #effaf3; stroke: #62a87c; stroke-width: 1.8; rx: 8; }
+      .boxAmber { fill: #fff7e8; stroke: #d49a3a; stroke-width: 1.8; rx: 8; }
+      .boxRed { fill: #fff1f1; stroke: #c77777; stroke-width: 1.8; rx: 8; }
+      .line { stroke: #2f3b52; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .blueLine { stroke: #2764b5; stroke-width: 2.4; fill: none; marker-end: url(#arrowBlue); }
+      .dash { stroke: #758399; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+      .boundary { stroke: #c9d2df; stroke-width: 1.4; stroke-dasharray: 6 6; }
+      #arrow path { fill: #2f3b52; }
+      #arrowBlue path { fill: #2764b5; }
+      @media (prefers-color-scheme: dark) {
+        .bg { fill: #111827; }
+        .title, .section, .label { fill: #f3f4f6; }
+        .subtitle, .small, .tiny { fill: #cbd5e1; }
+        .note { fill: #fbbf24; }
+        .box { fill: #1f2937; stroke: #64748b; }
+        .boxBlue { fill: #172554; stroke: #60a5fa; }
+        .boxGreen { fill: #143525; stroke: #4ade80; }
+        .boxAmber { fill: #3b2a12; stroke: #f59e0b; }
+        .boxRed { fill: #3b1d1d; stroke: #f87171; }
+        .line { stroke: #d1d5db; }
+        .blueLine { stroke: #60a5fa; }
+        .dash { stroke: #94a3b8; }
+        .boundary { stroke: #475569; }
+        #arrow path { fill: #d1d5db; }
+        #arrowBlue path { fill: #60a5fa; }
+      }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1120" height="720"/>
+  <text class="title" x="56" y="58">存储系统总览：层次结构与一次访存路径</text>
+  <text class="subtitle" x="56" y="88">左边回答“数据放在哪一层”，右边回答“CPU 给出的地址怎样变成真正的访问”。</text>
+
+  <text class="section" x="70" y="138">存储层次：用局部性弥补速度、容量、成本矛盾</text>
+  <rect class="boxBlue" x="70" y="168" width="190" height="72"/>
+  <text class="label" x="165" y="198" text-anchor="middle">寄存器</text>
+  <text class="small" x="165" y="222" text-anchor="middle">CPU 内部，最快，最小</text>
+
+  <rect class="boxGreen" x="300" y="168" width="190" height="72"/>
+  <text class="label" x="395" y="198" text-anchor="middle">Cache</text>
+  <text class="small" x="395" y="222" text-anchor="middle">缓存主存块</text>
+
+  <rect class="boxAmber" x="530" y="168" width="190" height="72"/>
+  <text class="label" x="625" y="198" text-anchor="middle">主存</text>
+  <text class="small" x="625" y="222" text-anchor="middle">程序运行时直接依赖</text>
+
+  <rect class="boxRed" x="760" y="168" width="190" height="72"/>
+  <text class="label" x="855" y="198" text-anchor="middle">辅存</text>
+  <text class="small" x="855" y="222" text-anchor="middle">磁盘 / SSD，容量大</text>
+
+  <path class="line" d="M260 204 L294 204"/>
+  <path class="line" d="M490 204 L524 204"/>
+  <path class="line" d="M720 204 L754 204"/>
+
+  <text class="tiny" x="80" y="272">越靠左：速度越快、容量越小、单位成本越高</text>
+  <text class="tiny" x="670" y="272">越靠右：速度越慢、容量越大、单位成本越低</text>
+
+  <rect class="box" x="302" y="292" width="190" height="70"/>
+  <text class="label" x="397" y="320" text-anchor="middle">Cache - 主存</text>
+  <text class="small" x="397" y="344" text-anchor="middle">解决 CPU 与主存速度差</text>
+
+  <rect class="box" x="550" y="292" width="210" height="70"/>
+  <text class="label" x="655" y="320" text-anchor="middle">主存 - 辅存</text>
+  <text class="small" x="655" y="344" text-anchor="middle">解决主存容量不足</text>
+
+  <path class="dash" d="M395 292 C395 270 395 260 395 242"/>
+  <path class="dash" d="M655 292 C655 270 690 260 800 242"/>
+
+  <line class="boundary" x1="56" y1="392" x2="1064" y2="392"/>
+
+  <text class="section" x="70" y="435">一次访存路径：地址转换和数据访问不是同一件事</text>
+
+  <rect class="boxBlue" x="70" y="470" width="170" height="76"/>
+  <text class="label" x="155" y="500" text-anchor="middle">CPU</text>
+  <text class="small" x="155" y="524" text-anchor="middle">发出虚拟地址</text>
+
+  <rect class="boxGreen" x="300" y="448" width="170" height="64"/>
+  <text class="label" x="385" y="476" text-anchor="middle">TLB</text>
+  <text class="small" x="385" y="498" text-anchor="middle">缓存页表项</text>
+
+  <rect class="box" x="300" y="548" width="170" height="64"/>
+  <text class="label" x="385" y="576" text-anchor="middle">页表</text>
+  <text class="small" x="385" y="598" text-anchor="middle">虚拟页 → 物理块</text>
+
+  <rect class="boxGreen" x="535" y="470" width="170" height="76"/>
+  <text class="label" x="620" y="500" text-anchor="middle">Cache</text>
+  <text class="small" x="620" y="524" text-anchor="middle">用物理地址查块</text>
+
+  <rect class="boxAmber" x="770" y="448" width="170" height="64"/>
+  <text class="label" x="855" y="476" text-anchor="middle">主存</text>
+  <text class="small" x="855" y="498" text-anchor="middle">目标数据所在层</text>
+
+  <rect class="boxRed" x="770" y="548" width="170" height="64"/>
+  <text class="label" x="855" y="576" text-anchor="middle">辅存</text>
+  <text class="small" x="855" y="598" text-anchor="middle">缺页时调入</text>
+
+  <path class="blueLine" d="M240 498 L294 486"/>
+  <text class="tiny" x="252" y="474">先查 TLB</text>
+  <path class="dash" d="M385 512 L385 542"/>
+  <text class="tiny" x="398" y="532">TLB 未命中</text>
+  <path class="blueLine" d="M470 480 C500 480 500 508 529 508"/>
+  <path class="blueLine" d="M470 580 C506 580 502 530 529 520"/>
+  <text class="tiny" x="493" y="455">得到物理地址</text>
+  <path class="line" d="M705 508 L764 486"/>
+  <text class="tiny" x="715" y="475">Cache 未命中</text>
+  <path class="dash" d="M855 512 L855 542"/>
+  <text class="tiny" x="870" y="532">页面不在主存</text>
+
+  <rect class="boxAmber" x="80" y="642" width="440" height="44"/>
+  <text class="note" x="300" y="670" text-anchor="middle">Cache 缓存的是主存中的数据块 / 指令块</text>
+
+  <rect class="boxBlue" x="590" y="642" width="440" height="44"/>
+  <text class="note" x="810" y="670" text-anchor="middle">TLB 缓存的是页表项，用来加速地址转换</text>
+</svg>

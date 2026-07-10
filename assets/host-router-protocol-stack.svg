@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="500" viewBox="0 0 980 500" role="img" aria-labelledby="title desc">
+  <title id="title">主机与路由器协议栈差异</title>
+  <desc id="desc">主机通常处理到应用层，路由器转发任务通常处理到网络层。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#cbd5e1;--blue:#dbeafe;--bl:#2563eb;--green:#dcfce7;--gl:#16a34a;--amber:#fef3c7;--al:#d97706;--red:#fee2e2;--rl:#dc2626;--purple:#ede9fe;--pl:#7c3aed;--arrow:#475569}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#334155;--blue:#1e3a8a;--bl:#60a5fa;--green:#14532d;--gl:#4ade80;--amber:#713f12;--al:#fbbf24;--red:#7f1d1d;--rl:#f87171;--purple:#4c1d95;--pl:#a78bfa;--arrow:#cbd5e1}}
+    .bg{fill:var(--bg)}.card{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.layer{stroke-width:2}.app{fill:var(--blue);stroke:var(--bl)}.tran{fill:var(--green);stroke:var(--gl)}.net{fill:var(--amber);stroke:var(--al)}.link{fill:var(--red);stroke:var(--rl)}.phy{fill:var(--purple);stroke:var(--pl)}.arrow{stroke:var(--arrow);stroke-width:3;fill:none;marker-end:url(#arrow)}
+    text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:26px;font-weight:700}.h{font-size:21px;font-weight:700;text-anchor:middle}.txt{font-size:16px;text-anchor:middle}.note{font-size:15px;fill:var(--muted)}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 Z" fill="var(--arrow)"/></marker></defs>
+  <rect class="bg" width="980" height="500"/><rect class="card" x="28" y="24" width="924" height="430" rx="16"/>
+  <text class="title" x="58" y="68">主机处理到应用层，路由器转发通常只处理到网络层</text>
+  <g transform="translate(86,106)">
+    <text class="h" x="120" y="0">发送主机</text>
+    <rect class="layer app" x="20" y="24" width="200" height="46" rx="8"/><text class="txt" x="120" y="53">应用层</text>
+    <rect class="layer tran" x="20" y="76" width="200" height="46" rx="8"/><text class="txt" x="120" y="105">运输层</text>
+    <rect class="layer net" x="20" y="128" width="200" height="46" rx="8"/><text class="txt" x="120" y="157">网络层</text>
+    <rect class="layer link" x="20" y="180" width="200" height="46" rx="8"/><text class="txt" x="120" y="209">数据链路层</text>
+    <rect class="layer phy" x="20" y="232" width="200" height="46" rx="8"/><text class="txt" x="120" y="261">物理层</text>
+  </g>
+  <g transform="translate(390,158)">
+    <text class="h" x="100" y="-52">路由器</text>
+    <rect class="layer net" x="0" y="76" width="200" height="46" rx="8"/><text class="txt" x="100" y="105">网络层</text>
+    <rect class="layer link" x="0" y="128" width="200" height="46" rx="8"/><text class="txt" x="100" y="157">数据链路层</text>
+    <rect class="layer phy" x="0" y="180" width="200" height="46" rx="8"/><text class="txt" x="100" y="209">物理层</text>
+    <text class="note" x="0" y="252">拆掉入链路帧头尾，查看 IP 首部，重新封装成下一段链路的帧。</text>
+  </g>
+  <g transform="translate(694,106)">
+    <text class="h" x="120" y="0">接收主机</text>
+    <rect class="layer app" x="20" y="24" width="200" height="46" rx="8"/><text class="txt" x="120" y="53">应用层</text>
+    <rect class="layer tran" x="20" y="76" width="200" height="46" rx="8"/><text class="txt" x="120" y="105">运输层</text>
+    <rect class="layer net" x="20" y="128" width="200" height="46" rx="8"/><text class="txt" x="120" y="157">网络层</text>
+    <rect class="layer link" x="20" y="180" width="200" height="46" rx="8"/><text class="txt" x="120" y="209">数据链路层</text>
+    <rect class="layer phy" x="20" y="232" width="200" height="46" rx="8"/><text class="txt" x="120" y="261">物理层</text>
+  </g>
+  <path class="arrow" d="M306 360 H390"/><path class="arrow" d="M590 360 H674"/>
+</svg>

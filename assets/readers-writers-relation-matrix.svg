@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="540" viewBox="0 0 920 540" role="img" aria-labelledby="title desc">
+  <title id="title">读者-写者关系矩阵</title>
+  <desc id="desc">展示读读共享、读写互斥、写写互斥三种并发关系。</desc>
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      :root {
+        --bg: #ffffff;
+        --panel: #f8fafc;
+        --line: #cbd5e1;
+        --text: #172033;
+        --muted: #64748b;
+        --read: #e0f2fe;
+        --read-line: #0284c7;
+        --write: #fee2e2;
+        --write-line: #dc2626;
+        --share: #dcfce7;
+        --share-line: #16a34a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f172a;
+          --panel: #111827;
+          --line: #334155;
+          --text: #e5e7eb;
+          --muted: #94a3b8;
+          --read: #0c4a6e;
+          --read-line: #38bdf8;
+          --write: #7f1d1d;
+          --write-line: #f87171;
+          --share: #14532d;
+          --share-line: #4ade80;
+        }
+      }
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--text); }
+      .muted { fill: var(--muted); font-size: 22px; }
+      .title { font-size: 34px; font-weight: 700; }
+      .head { font-size: 24px; font-weight: 700; }
+      .body { font-size: 23px; }
+      .small { font-size: 19px; fill: var(--muted); }
+      .cell { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 14; }
+      .share { fill: var(--share); stroke: var(--share-line); }
+      .mutex { fill: var(--write); stroke: var(--write-line); }
+      .reader { fill: var(--read); stroke: var(--read-line); }
+    </style>
+  </defs>
+  <rect width="920" height="540" fill="var(--bg)"/>
+  <text x="58" y="60" class="title">读者-写者的三种关系</text>
+  <text x="58" y="100" class="muted">读者只观察共享数据；写者会修改共享数据。</text>
+
+  <rect x="60" y="150" width="190" height="88" class="cell"/>
+  <rect x="260" y="150" width="270" height="88" class="reader"/>
+  <rect x="540" y="150" width="270" height="88" class="reader"/>
+  <text x="355" y="203" class="head">读者</text>
+  <text x="635" y="203" class="head">写者</text>
+
+  <rect x="60" y="248" width="190" height="108" class="reader"/>
+  <rect x="260" y="248" width="270" height="108" class="share"/>
+  <rect x="540" y="248" width="270" height="108" class="mutex"/>
+  <text x="128" y="312" class="head">读者</text>
+  <text x="345" y="292" class="body">可以并发</text>
+  <text x="314" y="326" class="small">读读共享，不改变文件</text>
+  <text x="625" y="292" class="body">必须互斥</text>
+  <text x="585" y="326" class="small">写入可能改变读到的数据</text>
+
+  <rect x="60" y="366" width="190" height="108" class="reader"/>
+  <rect x="260" y="366" width="270" height="108" class="mutex"/>
+  <rect x="540" y="366" width="270" height="108" class="mutex"/>
+  <text x="128" y="430" class="head">写者</text>
+  <text x="345" y="410" class="body">必须互斥</text>
+  <text x="586" y="410" class="body">必须互斥</text>
+  <text x="316" y="444" class="small">同一时刻不能边读边写</text>
+  <text x="585" y="444" class="small">两个写者会相互覆盖</text>
+
+  <rect x="60" y="488" width="750" height="2" fill="var(--line)"/>
+  <text x="60" y="520" class="small">核心约束：允许多个读者同时读；只要出现写者，就必须独占共享文件。</text>
+</svg>

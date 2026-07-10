@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="560" viewBox="0 0 1040 560" role="img">
+  <title>Karn algorithm</title>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .t{font-size:22px;font-weight:700;fill:#111827}
+    .sh{font-size:16px;font-weight:700;fill:#111827}
+    .ss{font-size:12px;fill:#4b5563}
+    .sm{font-size:14px;font-weight:700;fill:#111827}
+    .sw{font-size:14px;font-weight:700;fill:#fff}
+    .box{fill:#fff;stroke:#e5e7eb;stroke-width:1.5}
+    .f-blue{fill:#eff6ff;stroke:#2563eb;stroke-width:2}
+    .f-amber{fill:#fff7ed;stroke:#d97706;stroke-width:2}
+    .f-green{fill:#ecfdf5;stroke:#059669;stroke-width:2}
+    .f-orange{fill:#fff7ed;stroke:#ea580c;stroke-width:2}
+    @media(prefers-color-scheme:dark){
+      .t,.sh,.sm{fill:#e5e7eb}
+      .ss{fill:#9ca3af}
+      .box{fill:#111827;stroke:#374151}
+      .f-blue{fill:#0f1d33;stroke:#1e40af}
+      .f-amber{fill:#2a1f06;stroke:#92400e}
+      .f-green{fill:#0a1e14;stroke:#047857}
+      .f-orange{fill:#2a1506;stroke:#9a3412}
+    }
+  </style>
+
+  <text x="520" y="36" text-anchor="middle" class="t">Karn 算法 — 解决重传后的 ACK 歧义</text>
+
+  <!-- Case A -->
+  <rect x="20" y="55" width="500" height="36" rx="6" fill="#dc2626"/>
+  <text x="270" y="79" text-anchor="middle" class="sw">情况 A：原报文段丢失 → 重传收到确认</text>
+
+  <rect x="20" y="100" width="500" height="160" rx="6" class="box"/>
+  <line x1="36" y1="120" x2="504" y2="120" stroke="#9ca3af" stroke-width="1"/><text x="36" y="118" class="ss">发送方 A</text>
+  <line x1="36" y1="240" x2="504" y2="240" stroke="#9ca3af" stroke-width="1"/><text x="36" y="252" class="ss">接收方 B</text>
+  <line x1="100" y1="124" x2="100" y2="236" stroke="#2563eb" stroke-width="2"/><text x="100" y="116" text-anchor="middle" class="ss" fill="#2563eb">数据 seq=x</text>
+  <rect x="100" y="134" width="50" height="10" rx="2" fill="#dc2626" opacity="0.3"/><text x="125" y="142" text-anchor="middle" class="ss" fill="#dc2626">RTO</text>
+  <text x="90" y="166" text-anchor="middle" class="ss" fill="#dc2626">× 丢失</text>
+  <line x1="170" y1="124" x2="170" y2="236" stroke="#dc2626" stroke-width="2"/><text x="170" y="116" text-anchor="middle" class="ss" fill="#dc2626">重传 seq=x</text>
+  <line x1="230" y1="236" x2="230" y2="124" stroke="#059669" stroke-width="2"/><text x="230" y="256" text-anchor="middle" class="ss" fill="#059669">ACK ack=x+1</text>
+
+  <rect x="280" y="106" width="225" height="80" rx="6" class="f-orange"/>
+  <text x="392" y="130" text-anchor="middle" class="sm" fill="#ea580c">❓ 发送方无法判断</text>
+  <text x="392" y="152" text-anchor="middle" class="ss" fill="#9a3412">ACK 对应原报文还是重传？</text>
+  <text x="392" y="172" text-anchor="middle" class="ss" fill="#dc2626">若误当作原报文 ACK → RTT 偏大</text>
+
+  <!-- Case B -->
+  <rect x="540" y="55" width="480" height="36" rx="6" fill="#d97706"/>
+  <text x="780" y="79" text-anchor="middle" class="sw">情况 B：ACK 迟到 → 超时重传收到迟到 ACK</text>
+
+  <rect x="540" y="100" width="480" height="160" rx="6" class="box"/>
+  <line x1="556" y1="120" x2="1004" y2="120" stroke="#9ca3af" stroke-width="1"/><text x="556" y="118" class="ss">发送方 A</text>
+  <line x1="556" y1="240" x2="1004" y2="240" stroke="#9ca3af" stroke-width="1"/><text x="556" y="252" class="ss">接收方 B</text>
+  <line x1="600" y1="124" x2="600" y2="236" stroke="#2563eb" stroke-width="2"/><text x="600" y="116" text-anchor="middle" class="ss" fill="#2563eb">数据 seq=x</text>
+  <rect x="600" y="134" width="55" height="10" rx="2" fill="#d97706" opacity="0.3"/><text x="628" y="142" text-anchor="middle" class="ss" fill="#d97706">RTO</text>
+  <line x1="650" y1="236" x2="650" y2="200" stroke="#059669" stroke-width="1.5" stroke-dasharray="4,3"/><text x="650" y="258" text-anchor="middle" class="ss" fill="#059669">ACK 在路上</text>
+  <line x1="690" y1="124" x2="690" y2="236" stroke="#dc2626" stroke-width="2"/><text x="690" y="116" text-anchor="middle" class="ss" fill="#dc2626">超时重传!</text>
+  <line x1="740" y1="236" x2="740" y2="124" stroke="#7c3aed" stroke-width="1.5"/><text x="740" y="256" text-anchor="middle" class="ss" fill="#7c3aed">迟到 ACK ack=x+1</text>
+
+  <rect x="790" y="106" width="215" height="80" rx="6" class="f-orange"/>
+  <text x="897" y="130" text-anchor="middle" class="sm" fill="#ea580c">❓ 发送方无法判断</text>
+  <text x="897" y="152" text-anchor="middle" class="ss" fill="#9a3412">ACK 对应原报文还是重传？</text>
+  <text x="897" y="172" text-anchor="middle" class="ss" fill="#dc2626">若误当作重传 ACK → RTT 偏小</text>
+
+  <!-- Karn rules -->
+  <text x="520" y="310" text-anchor="middle" class="t">Karn 算法规则</text>
+
+  <rect x="20" y="330" width="490" height="110" rx="8" class="f-blue"/>
+  <text x="265" y="362" text-anchor="middle" class="sh" fill="#1e40af">基本规则 — 防错</text>
+  <text x="265" y="388" text-anchor="middle" class="sm">重传过的报文段 → 不采用其 RTT 样本</text>
+  <text x="265" y="412" text-anchor="middle" class="ss">发生重传时 · 不重新计算 RTTₛ · 不重新计算 RTO</text>
+  <text x="265" y="430" text-anchor="middle" class="ss" fill="#2563eb">不确定的样本宁可不用</text>
+
+  <rect x="530" y="330" width="490" height="110" rx="8" class="f-amber"/>
+  <text x="775" y="362" text-anchor="middle" class="sh" fill="#92400e">修正规则 — 防死</text>
+  <text x="775" y="388" text-anchor="middle" class="sm">报文段每重传一次 → RTO 翻倍</text>
+  <text x="775" y="412" text-anchor="middle" class="ss">RTOⁿᵉʷ = 2 × RTOᵒˡᵈ · 避免 RTO 在持续拥塞时僵死</text>
+  <text x="775" y="430" text-anchor="middle" class="ss" fill="#d97706">防止永远不更新 RTO</text>
+
+  <rect x="80" y="460" width="880" height="58" rx="8" class="f-green"/>
+  <text x="520" y="486" text-anchor="middle" class="sm" fill="#065f46">基本规则避免用错误样本估测 RTT · 修正规则让 RTO 随拥塞动态增长</text>
+  <text x="520" y="506" text-anchor="middle" class="ss" fill="#059669">两者配合 · 既不因单个错误样本扭曲 RTT 估计 · 也不在拥塞期间永远不更新 RTO</text>
+</svg>

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="600" viewBox="0 0 1120 600" role="img" aria-labelledby="title desc">
+  <title id="title">总线性能指标关系</title>
+  <desc id="desc">展示总线时钟周期、总线时钟频率、总线周期、总线工作频率、总线宽度和总线带宽之间的关系。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #172033;
+      --muted: #64748b;
+      --line: #94a3b8;
+      --box: #f8fafc;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --orange: #ea580c;
+      --red: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #a8b3c3;
+        --line: #64748b;
+        --box: #111827;
+        --blue: #60a5fa;
+        --green: #4ade80;
+        --orange: #fb923c;
+        --red: #f87171;
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif; }
+    text { fill: var(--fg); }
+    .title { font-size: 30px; font-weight: 700; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .label { font-size: 18px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    .formula { font-size: 18px; font-weight: 700; fill: var(--fg); }
+    .box { fill: var(--box); stroke: var(--line); stroke-width: 1.8; rx: 10; }
+    .arrow { fill: none; stroke: var(--line); stroke-width: 2.2; marker-end: url(#arrow); }
+    .blue { stroke: var(--blue); }
+    .green { stroke: var(--green); }
+    .orange { stroke: var(--orange); }
+    .red { stroke: var(--red); }
+    .chip { fill: var(--box); stroke-width: 2.2; rx: 10; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+  <rect width="1120" height="600" fill="var(--bg)" />
+  <text class="title" x="54" y="58">总线性能指标：先分清“时钟”和“传输”</text>
+  <text class="small" x="54" y="90">总线带宽计算使用的是总线自己的时钟/传输节奏，不能直接把 CPU 主频代入。</text>
+
+  <rect class="chip blue" x="74" y="148" width="230" height="92" />
+  <text class="label" x="189" y="178">总线时钟周期</text>
+  <text class="small" x="106" y="210">Tclk：总线时钟的一个周期</text>
+
+  <rect class="chip blue" x="388" y="148" width="230" height="92" />
+  <text class="label" x="503" y="178">总线时钟频率</text>
+  <text class="small" x="430" y="210">fclk = 1 / Tclk</text>
+
+  <rect class="chip green" x="74" y="312" width="230" height="92" />
+  <text class="label" x="189" y="342">总线周期</text>
+  <text class="small" x="106" y="374">一次总线操作所需时间</text>
+
+  <rect class="chip green" x="388" y="312" width="230" height="92" />
+  <text class="label" x="503" y="342">总线工作频率</text>
+  <text class="small" x="430" y="374">fwork = 1 / Tbus</text>
+
+  <rect class="chip orange" x="720" y="148" width="260" height="92" />
+  <text class="label" x="850" y="178">总线宽度</text>
+  <text class="small" x="760" y="210">一次数据传送的位数，常指数据线根数</text>
+
+  <rect class="chip red" x="720" y="312" width="260" height="92" />
+  <text class="label" x="850" y="342">总线带宽</text>
+  <text class="small" x="760" y="374">单位时间内可传送的数据量</text>
+
+  <path class="arrow" d="M304 194 H388" />
+  <path class="arrow" d="M189 240 V312" />
+  <path class="arrow" d="M304 358 H388" />
+  <path class="arrow" d="M618 358 H720" />
+  <path class="arrow" d="M850 240 V312" />
+
+  <text class="small" x="325" y="184">倒数</text>
+  <text class="small" x="205" y="278">若一次操作占 N 个时钟周期</text>
+  <text class="small" x="650" y="348">乘以</text>
+  <text class="small" x="866" y="278">乘以</text>
+
+  <rect class="box" x="84" y="472" width="938" height="72" />
+  <text class="formula" x="116" y="502">理论带宽 = 每秒数据传送次数 × 每次传送数据量</text>
+  <text class="small" x="116" y="530">常用形式：Bandwidth = fwork × bus width；若每个总线时钟传 m 次数据，则每秒数据传送次数 = fclk × m。</text>
+</svg>

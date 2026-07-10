@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TCP Two Way Handshake Problem</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--red:#dc2626;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--red:#f87171;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:14px}.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:10px;margin-bottom:10px;cursor:pointer}.step b{display:block;margin-bottom:5px}.step span{font-size:14px;color:var(--muted);line-height:1.45}.step.active{outline:2px solid var(--red)}.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:12px}.note{color:var(--muted);line-height:1.6;margin-top:6px}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">两报文握手的问题：旧 SYN 造成假连接</div>
+  <div class="layout"><div id="steps"></div><div class="stage">
+    <svg viewBox="0 0 680 340" role="img" aria-label="两报文握手问题">
+      <defs><marker id="arrB" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker><marker id="arrR" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--red)"/></marker></defs>
+      <text x="150" y="35" text-anchor="middle" fill="var(--text)" font-size="17" font-weight="700">客户端</text><text x="530" y="35" text-anchor="middle" fill="var(--text)" font-size="17" font-weight="700">服务器</text>
+      <line x1="150" y1="55" x2="150" y2="300" stroke="var(--line)" stroke-width="3"/><line x1="530" y1="55" x2="530" y2="300" stroke="var(--line)" stroke-width="3"/>
+      <path id="old" d="M150 80 C310 40,390 125,530 150" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="8 7" marker-end="url(#arrR)"/>
+      <text id="oldText" x="330" y="80" text-anchor="middle" fill="var(--red)" font-size="15">旧 SYN 滞留</text>
+      <path id="reply" d="M530 185 L150 230" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arrB)"/>
+      <text id="replyText" x="340" y="195" text-anchor="middle" fill="var(--text)" font-size="15">SYN+ACK</text>
+      <rect id="bad" x="410" y="250" width="210" height="48" rx="8" fill="none" stroke="var(--red)" stroke-width="3"/>
+      <text id="badText" x="515" y="280" text-anchor="middle" fill="var(--red)" font-size="15">服务器误以为连接建立</text>
+    </svg>
+    <div class="note" id="note"></div>
+  </div></div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+ ["旧请求滞留","客户端旧 SYN 在网络中滞留。","这个 SYN 已经失效，客户端并不再等待它的响应。"],
+ ["旧 SYN 到达","旧 SYN 后来才到达服务器。","服务器无法仅凭 SYN 判断它是不是旧请求。"],
+ ["服务器回复","若只用两报文握手，服务器发出 SYN+ACK 后就可能认为连接已建立。","客户端不会使用这个连接，但服务器已经分配资源。"],
+ ["第三报文的意义","三报文握手要求客户端再确认一次。","服务器收到客户端 ACK 后，才能确认客户端确实要建立本次连接。"]
+];let i=0;const steps=document.getElementById("steps");data.forEach((d,k)=>{const e=document.createElement("div");e.className="step";e.innerHTML=`<b>${k+1}. ${d[0]}</b><span>${d[1]}</span>`;e.onclick=()=>{i=k;render()};steps.appendChild(e)});
+function op(id,on){document.getElementById(id).style.opacity=on?1:.06}
+function render(){[...steps.children].forEach((e,k)=>e.classList.toggle("active",k===i));op("old",i>=0);op("oldText",i>=0);op("reply",i>=2);op("replyText",i>=2);op("bad",i>=2);op("badText",i>=2);note.textContent=data[i][2]}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script>
+</body></html>

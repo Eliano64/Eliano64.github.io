@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">总线事务四阶段</title>
+  <desc id="desc">展示一次总线传输周期由申请分配、寻址、传输和结束四个阶段组成。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --text: #172033;
+      --muted: #526070;
+      --line: #8a97a8;
+      --blue: #2563eb;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+      --soft-blue: #dbeafe;
+      --soft-green: #d1fae5;
+      --soft-orange: #ffedd5;
+      --soft-red: #fee2e2;
+      --panel: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --text: #e5e7eb;
+        --muted: #aab4c3;
+        --line: #687386;
+        --blue: #60a5fa;
+        --green: #34d399;
+        --orange: #fbbf24;
+        --red: #f87171;
+        --soft-blue: #172554;
+        --soft-green: #064e3b;
+        --soft-orange: #451a03;
+        --soft-red: #450a0a;
+        --panel: #111827;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .title { fill: var(--text); font: 700 28px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .label { fill: var(--text); font: 700 20px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .body { fill: var(--muted); font: 16px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .small { fill: var(--muted); font: 14px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .box { stroke-width: 2.2; rx: 12; }
+    .axis { stroke: var(--line); stroke-width: 3; fill: none; }
+    .arrow { fill: var(--line); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; rx: 12; }
+  </style>
+  <rect class="bg" width="1120" height="520"/>
+  <text class="title" x="56" y="58">一次总线事务的四个阶段</text>
+  <text class="body" x="56" y="90">总线是共享资源，一次传输不仅包含数据交换，还包含获得使用权、指出目标和释放总线。</text>
+
+  <line class="axis" x1="110" y1="260" x2="1010" y2="260"/>
+  <polygon class="arrow" points="1010,260 992,250 992,270"/>
+
+  <rect class="box" x="88" y="145" width="210" height="230" fill="var(--soft-blue)" stroke="var(--blue)"/>
+  <text class="label" x="193" y="185" text-anchor="middle">1. 申请分配</text>
+  <text class="body" x="112" y="225">主设备提出请求</text>
+  <text class="body" x="112" y="255">获得下一次总线</text>
+  <text class="body" x="112" y="285">传输周期的使用权</text>
+  <text class="small" x="112" y="330">此阶段只决定谁能用总线</text>
+
+  <rect class="box" x="330" y="145" width="210" height="230" fill="var(--soft-green)" stroke="var(--green)"/>
+  <text class="label" x="435" y="185" text-anchor="middle">2. 寻址</text>
+  <text class="body" x="354" y="225">主设备发出地址</text>
+  <text class="body" x="354" y="255">和读/写等命令</text>
+  <text class="body" x="354" y="285">启动对应从设备</text>
+  <text class="small" x="354" y="330">此阶段确定和谁交换</text>
+
+  <rect class="box" x="572" y="145" width="210" height="230" fill="var(--soft-orange)" stroke="var(--orange)"/>
+  <text class="label" x="677" y="185" text-anchor="middle">3. 传输</text>
+  <text class="body" x="596" y="225">主设备与从设备</text>
+  <text class="body" x="596" y="255">在数据线上交换数据</text>
+  <text class="body" x="596" y="285">可以单向或双向</text>
+  <text class="small" x="596" y="330">真正的数据交换发生在这里</text>
+
+  <rect class="box" x="814" y="145" width="210" height="230" fill="var(--soft-red)" stroke="var(--red)"/>
+  <text class="label" x="919" y="185" text-anchor="middle">4. 结束</text>
+  <text class="body" x="838" y="225">撤除地址、命令</text>
+  <text class="body" x="838" y="255">和数据信息</text>
+  <text class="body" x="838" y="285">释放总线使用权</text>
+  <text class="small" x="838" y="330">总线回到可被申请状态</text>
+
+  <rect class="panel" x="96" y="415" width="928" height="58"/>
+  <text class="body" x="120" y="450">一次总线周期不是单纯的数据传输时间；地址阶段、等待和结束开销都会影响实际有效传输率。</text>
+</svg>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TCP 流量控制过程</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 18px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 22px; margin: 0 0 14px; }
+p { font-size: 17px; line-height: 1.6; }
+.slide { display: none; padding: 28px; gap: 28px; grid-template-columns: 1fr 1fr; align-items: start; }
+.slide.active { display: grid; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+pre { margin: 0; background: var(--code); color: var(--codeText); border-radius: 8px; padding: 16px; overflow: auto; font-size: 15px; line-height: 1.55; }
+code { font-family: Consolas, monospace; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 9px 14px; font-size: 15px; cursor: pointer; }
+.count { color: var(--muted); }
+table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+td { padding: 8px 10px; border: 1px solid var(--border); font-size: 15px; }
+.td-hd { font-weight: 700; background: var(--bg); }
+.val-r { color: var(--red); font-weight: 700; }
+.val-g { color: var(--green); font-weight: 700; }
+.val-b { color: var(--blue); font-weight: 700; }
+.tag { display: inline-block; padding: 2px 9px; border-radius: 4px; font-size: 13px; font-weight: 700; margin-right: 6px; color: #fff; }
+.tag.a { background: var(--blue); } .tag.b { background: var(--green); } .tag.c { background: var(--red); }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24;
+  }
+  .td-hd { background: #1e293b; }
+  button { border-color: #52616b; }
+}
+@media (max-width: 760px) { .slide { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>TCP 流量控制 — 接收窗口 rwnd 动态调整</h1></header>
+
+  <section class="slide active">
+    <div class="panel">
+      <h2><span class="tag a">初始</span>A 连续发送，填满发送窗口</h2>
+      <p>B 初始通告 <code>rwnd=400</code>。A 设 <code>swnd=400</code>，连续发送：</p>
+      <table>
+        <tr class="td-hd"><td>A 发送</td><td>seq=1, DATA 1-100</td><td>可用窗口</td></tr>
+        <tr><td>①</td><td>seq=1, 100B</td><td><span class="val-r">300</span></td></tr>
+        <tr><td>②</td><td>seq=101, 100B</td><td><span class="val-r">200</span></td></tr>
+        <tr><td>③</td><td>seq=201, 100B</td><td><span class="val-r">100</span></td></tr>
+      </table>
+      <p>每次发送后可用窗口减少。窗口仍是 400，但"已发未确认"字节从 0 → 300。</p>
+    </div>
+    <pre><code>/* 发送窗口状态 */
+swnd = 400;
+/* 已发送 1-300，未确认 */
+/* P1=1, P2=301, P3=401 */
+inflight = 300;  // 已发未确认
+usable   = 100;  // 还可发送</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag b">第一次流量控制</span>rwnd 从 400 → 300</h2>
+      <p>B 的应用程序读取速度慢，接收缓存可用空间从 400 降到 300。B 在 ACK 中通告新的 <code>rwnd=300</code>。</p>
+      <table>
+        <tr class="td-hd"><td colspan="3">B → A：ACK=201, rwnd=300</td></tr>
+        <tr><td>含义</td><td colspan="2">201 之前的数据已收到；接收窗口缩小为 300</td></tr>
+        <tr class="td-hd"><td colspan="3">A 的发送窗口变化</td></tr>
+        <tr><td>swnd</td><td><span class="val-b">400 → 300</span></td><td>窗口收缩 → 覆盖 201–500</td></tr>
+        <tr><td>201-300</td><td>已发未确认</td><td>暂留在发送缓存中</td></tr>
+        <tr><td>301-500</td><td>允许发送</td><td>可用窗口 = 200</td></tr>
+      </table>
+    </div>
+    <pre><code>/* A 收到 ACK=201, rwnd=300 后 */
+P1 = 201;  // 后沿前移：1-200 已确认可删除
+P2 = 301;  // 201-300 已发未确认
+P3 = 501;  // 前沿 = 201+300=501
+
+swnd    = P3 - P1 = 300;  // 窗口缩小！
+inflight = P2 - P1 = 100;
+usable   = P3 - P2 = 200;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag a">窗口用完</span>发送 301-500 → 可用窗口归零</h2>
+      <p>A 将窗口内剩余数据发出：</p>
+      <table>
+        <tr class="td-hd"><td>A 发送</td><td>seq=301, DATA 301-400</td><td>可用窗口 = 100</td></tr>
+        <tr class="td-hd"><td>A 发送</td><td>seq=401, DATA 401-500</td><td>可用窗口 = 0</td></tr>
+      </table>
+      <p style="margin-top:12px;"><strong>可用窗口归零 → A 不能再发送新数据。</strong></p>
+      <p>此时 P₁=201, P₂=501, P₃=501。inflight=300, usable=0。</p>
+      <p>如果迟迟收不到 ACK，已发送的数据（201-300, 301-400, 401-500）将等待超时重传。</p>
+    </div>
+    <pre><code>/* 窗口用完 */
+P1 = 201; P2 = 501; P3 = 501;
+inflight = 300; usable = 0;
+
+/* A 暂停发送，等待 ACK */
+/* 如果 201-300 超时 → 重传 */
+/* 如果 B 的 ACK 到达 → 窗口滑动 */</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag c">第二、三次流量控制</span>rwnd → 100 → 0</h2>
+      <p>A 重传 201-300。B 收到后回复 ACK，但 B 的缓存持续堆积：</p>
+      <table>
+        <tr class="td-hd"><td>阶段</td><td>B 通告</td><td>A 响应</td></tr>
+        <tr><td>第二次流量控制</td><td><span class="val-r">ACK=501, rwnd=100</span></td><td>swnd→100，覆盖 501-600</td></tr>
+        <tr><td>A 发送</td><td>—</td><td>seq=501, 100B → 可用窗口归零</td></tr>
+        <tr><td>第三次流量控制</td><td><span class="val-r">ACK=601, rwnd=0</span></td><td><span class="val-r">swnd→0</span>，停止发送</td></tr>
+      </table>
+      <p style="margin-top:12px;">B 的缓存已满，应用进程读取过慢 → rwnd 从 300 → 100 → 0。</p>
+      <p>A 三次被迫收缩发送窗口：<strong>接收方掌握绝对控制权</strong>。</p>
+    </div>
+    <pre><code>/* 流量控制的核心逻辑 */
+/* rwnd 由接收方决定，发送方被动执行 */
+
+// B 应用读得慢 → 缓存满 → rwnd↓
+// B 应用读得快 → 缓存空 → rwnd↑
+// rwnd=0 → A 停止发送
+// A 不主动决定窗口大小
+
+/* 这就是"流量控制"：
+   接收方直接反馈 → 发送方被动适应 */</code></pre>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+function show(nextIndex) {
+  index = (nextIndex + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

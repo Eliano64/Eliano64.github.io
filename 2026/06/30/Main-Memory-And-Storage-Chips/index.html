@@ -1,0 +1,584 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Main Memory And Storage Chips | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="存储单元、编址与容量   概念 含义    存储元 存放 1 bit 信息的基本单位   存储单元 具有一个地址的最小可寻址单位   存储字 一次作为整体读写的一组二进制位   存储字长 一个存储字包含的二进制位数   按字节编址 每个地址对应 1 Byte，现代计算机最常见   按字编址 每个地址对应 1 个字，地址加 1 表示移动 1 个字   若地址有 $n$ 位，最多能表示 $2^n$ 个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Main Memory And Storage Chips">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/30/Main-Memory-And-Storage-Chips/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="存储单元、编址与容量   概念 含义    存储元 存放 1 bit 信息的基本单位   存储单元 具有一个地址的最小可寻址单位   存储字 一次作为整体读写的一组二进制位   存储字长 一个存储字包含的二进制位数   按字节编址 每个地址对应 1 Byte，现代计算机最常见   按字编址 每个地址对应 1 个字，地址加 1 表示移动 1 个字   若地址有 $n$ 位，最多能表示 $2^n$ 个">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-30T13:52:24.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="Memory">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Main Memory And Storage Chips",
+  "url": "https://eliano64.github.io/2026/06/30/Main-Memory-And-Storage-Chips/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-30T13:52:24.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/30/Main-Memory-And-Storage-Chips/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Main Memory And Storage Chips',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Main Memory And Storage Chips</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Main Memory And Storage Chips</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-30T13:52:24.000Z" title="发表于 2026-06-30 21:52:24">2026-06-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.5k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="存储单元、编址与容量"><a href="#存储单元、编址与容量" class="headerlink" title="存储单元、编址与容量"></a>存储单元、编址与容量</h1><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存储元</td>
+<td>存放 1 bit 信息的基本单位</td>
+</tr>
+<tr>
+<td>存储单元</td>
+<td>具有一个地址的最小可寻址单位</td>
+</tr>
+<tr>
+<td>存储字</td>
+<td>一次作为整体读写的一组二进制位</td>
+</tr>
+<tr>
+<td>存储字长</td>
+<td>一个存储字包含的二进制位数</td>
+</tr>
+<tr>
+<td>按字节编址</td>
+<td>每个地址对应 1 Byte，现代计算机最常见</td>
+</tr>
+<tr>
+<td>按字编址</td>
+<td>每个地址对应 1 个字，地址加 1 表示移动 1 个字</td>
+</tr>
+</tbody></table>
+<p>若地址有 $n$ 位，最多能表示 $2^n$ 个地址。若每个地址对应一个存储单元，则最多可寻址 $2^n$ 个存储单元。</p>
+<p>$$<br>\text{存储容量} &#x3D; \text{存储字数} \times \text{存储字长}<br>$$</p>
+<h1 id="存储芯片接口"><a href="#存储芯片接口" class="headerlink" title="存储芯片接口"></a>存储芯片接口</h1><p>一片存储芯片对外主要有四类信号：地址线、数据线、片选线、读写控制线。</p>
+<p><img src="/assets/main-memory-chip-organization.svg"></p>
+<p>若芯片有 $n$ 根地址线、$m$ 根数据线：</p>
+<p>$$<br>\text{芯片容量} &#x3D; 2^n \times m\ bit<br>$$</p>
+<table>
+<thead>
+<tr>
+<th>信号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>地址线</td>
+<td>选择芯片内部的某个存储单元</td>
+</tr>
+<tr>
+<td>数据线</td>
+<td>传送该存储单元读出或写入的数据</td>
+</tr>
+<tr>
+<td>片选线 <code>CS/CE</code></td>
+<td>决定当前芯片是否参与本次访问</td>
+</tr>
+<tr>
+<td>读写控制线 <code>WE/OE</code></td>
+<td>决定本次访问是写还是读</td>
+</tr>
+</tbody></table>
+<p>芯片字长小于 CPU 数据总线宽度时，需要位扩展；芯片字数小于目标主存字数时，需要字扩展。</p>
+<h1 id="主存容量扩展"><a href="#主存容量扩展" class="headerlink" title="主存容量扩展"></a>主存容量扩展</h1><p>设已有芯片规格为：</p>
+<p>$$<br>2^a \times b\ bit<br>$$</p>
+<p>目标主存规格为：</p>
+<p>$$<br>2^A \times B\ bit<br>$$</p>
+<p>则需要：</p>
+<p>$$<br>\text{每组芯片数} &#x3D; \frac{B}{b}<br>$$</p>
+<p>$$<br>\text{芯片组数} &#x3D; \frac{2^A}{2^a} &#x3D; 2^{A-a}<br>$$</p>
+<p>$$<br>\text{总芯片数} &#x3D; \frac{B}{b} \times 2^{A-a}<br>$$</p>
+<h2 id="位扩展"><a href="#位扩展" class="headerlink" title="位扩展"></a>位扩展</h2><p>位扩展用于增加存储字长。多片芯片共用同一组地址线和控制线，每片负责数据总线的一部分位。</p>
+<p><img src="/assets/main-memory-bit-expansion-wiring.svg"></p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">用 `8K × 8 bit` 芯片组成 `8K × 16 bit` 主存：</span></div>
+<div class="callout-content"><ul>
+<li>地址数不变，仍为 <code>8K</code>，所以地址线并联接到两片芯片。</li>
+<li>字长从 8 bit 变 16 bit，所以需要 2 片芯片并行输出。</li>
+<li>两片芯片同时片选，同时读写。</li>
+<li>第一片接 <code>D0-D7</code>，第二片接 <code>D8-D15</code>。</li>
+</ul>
+</div>
+</div>
+## 字扩展
+
+<p>字扩展用于增加存储字数。低位地址线接到每片芯片，高位地址线经过译码器产生片选信号，一次只选中其中一片或一组。</p>
+<p><img src="/assets/main-memory-word-expansion-wiring.svg"></p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">用 `8K × 8 bit` 芯片组成 `16K × 8 bit` 主存：</span></div>
+<div class="callout-content"><ul>
+<li>每片芯片内部需要 $13$ 根地址线，因为 $8K &#x3D; 2^{13}$。</li>
+<li>目标主存需要 $14$ 根地址线，因为 $16K &#x3D; 2^{14}$。</li>
+<li>低 13 位地址 <code>A0-A12</code> 同时接到两片芯片。最高位 <code>A13</code> 作为片选依据：<code>A13=0</code> 选第一片，<code>A13=1</code> 选第二片。</li>
+<li>两片芯片的数据线都接 <code>D0-D7</code>，但由于片选互斥，一次只有一片驱动数据总线。</li>
+</ul>
+</div>
+</div>
+## 字位同时扩展
+
+<p>字位同时扩展就是先用若干片组成一组更宽的存储字，再用多组扩展存储字数。</p>
+<p><img src="/assets/main-memory-word-bit-expansion-wiring.svg"></p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">用 `8K × 8 bit` 芯片组成 `16K × 16 bit` 主存：</span></div>
+<div class="callout-content"><ul>
+<li>字长从 8 bit 扩到 16 bit，每组需要 2 片。</li>
+<li>字数从 8K 扩到 16K，需要 2 组。</li>
+<li>总共需要 $2 \times 2 &#x3D; 4$ 片。每组内部做位扩展，两组之间做字扩展。</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><ul>
+<li>位扩展：地址线并联，数据线分位，片选同时有效。</li>
+<li>字扩展：数据线并联，低位地址并联，高位地址译码片选。</li>
+<li>字位同时扩展：先分组做位扩展，再对组做字扩展。</li>
+</ul>
+</div>
+</div>
+# SRAM 与 DRAM
+
+<p>SRAM 和 DRAM 都是 RAM，但存储元不同，导致速度、成本、刷新、用途都不同。</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>SRAM</th>
+<th>DRAM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存储信息</td>
+<td>双稳态触发器, 有 0&#x2F;1 两种稳定状态</td>
+<td>电容, 是否带电表示 0&#x2F;1</td>
+</tr>
+<tr>
+<td>读出是否破坏</td>
+<td>非破坏性读出</td>
+<td>破坏性读出，读后需要重写</td>
+</tr>
+<tr>
+<td>是否刷新</td>
+<td>不需要</td>
+<td>需要刷新</td>
+</tr>
+<tr>
+<td>速度</td>
+<td>快</td>
+<td>较慢</td>
+</tr>
+<tr>
+<td>集成度</td>
+<td>低</td>
+<td>高</td>
+</tr>
+<tr>
+<td>单位成本</td>
+<td>高</td>
+<td>低</td>
+</tr>
+<tr>
+<td>典型用途</td>
+<td>Cache</td>
+<td>主存</td>
+</tr>
+</tbody></table>
+<p>SRAM 的存储状态只要不断电就能保持，因此称为“静态”。DRAM 的电容电荷会泄漏，即使不断电，也必须周期性刷新，因此称为“动态”。</p>
+<h2 id="DRAM"><a href="#DRAM" class="headerlink" title="DRAM"></a>DRAM</h2><h3 id="DRAM-阵列与地址复用"><a href="#DRAM-阵列与地址复用" class="headerlink" title="DRAM 阵列与地址复用"></a>DRAM 阵列与地址复用</h3><p>DRAM 容量大，如果用一维译码直接选择所有单元，选通线数量过多。实际通常把存储单元排成二维阵列，用行地址和列地址共同定位一个单元。</p>
+<p><img src="/assets/main-memory-dram-address-mux.svg"></p>
+<p>若原本需要 $n$ 位地址，DRAM 可以把地址拆成两次送入：</p>
+<ol>
+<li>先送行地址，锁存在行地址缓冲器中。</li>
+<li>再送列地址，锁存在列地址缓冲器中。</li>
+<li>行译码器选中一行，列译码器在该行中选中目标列。</li>
+</ol>
+<p>这样做的代价是地址要分两次送；好处是芯片地址引脚更少，阵列译码结构也更适合大容量 DRAM。</p>
+<h3 id="DRAM-刷新机制"><a href="#DRAM-刷新机制" class="headerlink" title="DRAM 刷新机制"></a>DRAM 刷新机制</h3><p><img src="/assets/main-memory-dram-refresh.svg"></p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多久刷新一次</td>
+<td>在刷新周期内，每一行至少刷新一次；常用 2ms</td>
+</tr>
+<tr>
+<td>每次刷新多少</td>
+<td>通常按行刷新，不是一个存储元一个存储元刷新</td>
+</tr>
+<tr>
+<td>怎样刷新</td>
+<td>读出一行信息后重新写入</td>
+</tr>
+<tr>
+<td>谁来刷新</td>
+<td>由硬件刷新电路完成，通常不由 CPU 逐条控制</td>
+</tr>
+</tbody></table>
+<p>常见刷新方式：</p>
+<table>
+<thead>
+<tr>
+<th>刷新方式</th>
+<th>做法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>集中刷新</td>
+<td>在一段集中时间内刷新所有行</td>
+<td>正常访存会出现较长“死区”</td>
+</tr>
+<tr>
+<td>分散刷新</td>
+<td>每次正常读写后安排一次刷新</td>
+<td>存取周期变长</td>
+</tr>
+<tr>
+<td>异步刷新</td>
+<td>在刷新周期内分散地产生刷新请求</td>
+<td>死区较短，更均衡</td>
+</tr>
+</tbody></table>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">刷新间隔计算</span></div>
+<div class="callout-content"><p>若 DRAM 阵列有 128 行，刷新周期为 2ms，则平均每隔 $\frac{2ms}{128} \approx 15.6\mu s$ 至少要刷新一行。</p>
+</div>
+</div>
+### DRAM 行缓冲与突发传输
+
+<p>DRAM 访问一行时，整行数据会先进入行缓冲区。若后续访问仍落在同一行，只需改变列地址即可连续读出多个相邻数据，这就是突发传输能够加速连续访问的基础。</p>
+<p><img src="/assets/main-memory-dram-burst-sdram.svg"></p>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>行缓冲</td>
+<td>保存刚打开的一整行，后续列访问更快</td>
+</tr>
+<tr>
+<td>突发传输</td>
+<td>一次给出起始列地址，连续输出多个相邻数据</td>
+</tr>
+</tbody></table>
+<p>行缓冲的效果依赖访问局部性：如果连续访问的数据落在同一行，后续访问可以少做一次“打开行”的准备；如果频繁换行，则需要反复关闭旧行、打开新行，收益会下降。</p>
+<h3 id="SDRAM"><a href="#SDRAM" class="headerlink" title="SDRAM"></a>SDRAM</h3><p>SDRAM 是 Synchronous DRAM，即同步 DRAM。</p>
+<p><strong>它与系统时钟同步</strong>。所以CPU能知道一次访存需要具体的时钟周期数。进而使得CPU不用不断轮询来获取某一时刻存储器的状态，从而可以执行其他指令，提高效率。</p>
+<h1 id="多模块存储器"><a href="#多模块存储器" class="headerlink" title="多模块存储器"></a>多模块存储器</h1><p>根据模块间地址分配方式，多模块存储器分为高位交叉编址和低位交叉编址两种结构。</p>
+<table>
+<thead>
+<tr>
+<th>编址方式</th>
+<th>地址分布</th>
+<th>连续访问效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>高位交叉编址</td>
+<td>连续地址集中在同一模块</td>
+<td>更像单纯扩容，连续访问难以并行</td>
+</tr>
+<tr>
+<td>低位交叉编址</td>
+<td>连续地址轮流落到不同模块</td>
+<td>适合一次读取多个存储单元或流水式连续访问</td>
+</tr>
+</tbody></table>
+<h2 id="低位交叉编址"><a href="#低位交叉编址" class="headerlink" title="低位交叉编址"></a>低位交叉编址</h2><p>低位交叉编址中，若有 $m$ 个模块，则地址 $x$ 所在模块通常由低位决定：</p>
+<p>$$<br>\text{模块号} &#x3D; x \bmod m<br>$$</p>
+<p>低位交叉的两种启动方式：</p>
+<table>
+<thead>
+<tr>
+<th>启动方式</th>
+<th>做法</th>
+<th>适用理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同时启动</td>
+<td>一次向多个模块发出访问请求，各模块并行准备数据</td>
+<td>适合连续取一批数据，强调并行</td>
+</tr>
+<tr>
+<td>分时启动</td>
+<td>每隔一个总线传输周期 $r$ 启动下一个模块</td>
+<td>适合流水线理解，强调不断流</td>
+</tr>
+<tr>
+<td><img src="/assets/main-memory-interleaving-start-modes.svg"></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="分时启动"><a href="#分时启动" class="headerlink" title="分时启动"></a>分时启动</h3><p>一次读写位数为数据总线位数。</p>
+<p>对于为了使流水线不断流，常用条件是：</p>
+<p>$$<br>m \ge \frac{T}{r}<br>$$</p>
+<p>其中 $m$ 为模块数，$T$ 为每个模块的存取周期，$r$ 为总线传输周期或一个字的传输时间。</p>
+<p>由流水线得，连续取$m$字所需时间是：</p>
+<p>$$T+(m-1)r$$</p>
+<h3 id="同时启动"><a href="#同时启动" class="headerlink" title="同时启动"></a>同时启动</h3><p>同时启动是一次向多个存储模块同时发出读写请求，让多个模块在同一个存取周期内并行工作。它适合把多个相邻地址的数据作为一批取出。</p>
+<p>若有 $m$ 个模块，每个模块一次输出一个字，则一次同时启动最多可以得到 $m$ 个字。此时一次读写位数不再只是数据总线位数，而是：</p>
+<p>$$<br>\text{一次读写位数} &#x3D; m \times \text{每个模块的字长}<br>$$</p>
+<p>例如 4 个低位交叉模块同时启动时，连续地址 <code>0, 1, 2, 3</code> 分别落在模块 <code>0, 1, 2, 3</code> 中，可以同时读出 4 个字，再按地址顺序送出。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">边界未对齐会增大访问次数</span></div>
+<div class="callout-content"><p>同时启动也能解释为什么内存要求数据边界对齐。若一个数据刚好落在一次同时启动能覆盖的地址范围内，那么一次启动即可取完；若数据没有按边界对齐，跨过了这一批地址的边界，要想完整读取数据，就必须再启动下一批模块，增大了访问次数。</p>
+<p>假设 4 个模块低位交叉，同时启动一次可取连续 4 个字。若要读取的 4 字数据从地址 <code>0</code> 开始，占用 <code>0, 1, 2, 3</code>，一次启动即可完成；若从地址 <code>2</code> 开始，占用 <code>2, 3, 4, 5</code>，则 <code>2, 3</code> 属于第一批，<code>4, 5</code> 属于下一批，需要两次启动。</p>
+</div>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/30/Main-Memory-And-Storage-Chips/">https://eliano64.github.io/2026/06/30/Main-Memory-And-Storage-Chips/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/30/Memory-System-Overview/" title="Memory System Overview"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Memory System Overview</div></div><div class="info-2"><div class="info-item-1">存储系统存储系统是协同工作的一组不同速度、容量、价格的存储器。 现代计算机不会只使用一种存储器，而是形成层次结构：越靠近 CPU，速度越快、容量越小、单位成本越高；越远离 CPU，速度越慢、容量越大、单位成本越低。 存储器分类存储器可以按多个维度分类。    分类维度 类型 关键点    按层次 寄存器、Cache、主存、辅存 越靠近 CPU 越快、越小、越贵   按介质 半导体、磁表面、光介质 主存和 Cache 多为半导体；磁盘是磁表面；光盘是光介质   按存取方式 随机存取RAM、顺序存取、直接存取（随机存取找块+顺序存取读数据）、相联存取 RAM 任意单元访问时间相同；磁带是顺序存取；磁盘是直接存取；TLB&#x2F;快表体现相联访问思想   按可改写性 读写存储器、只读存储器ROM ROM 名义上只读，但许多 ROM 类器件可擦写   按断电保存性 易失性、非易失性 主存和 Cache 通常易失；磁盘、SSD、ROM 非易失   按读出是否破坏 破坏性读出、非破坏性读出 DRAM 读出后需要重写；SRAM、磁盘、光盘通常非破坏性读出    RAM 和 ROM...</div></div></div></a><a class="pagination-related" href="/2026/07/01/Paging-And-Segmentation/" title="Paging And Segmentation"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Paging And Segmentation</div></div><div class="info-2"><div class="info-item-1">分页、分段连续分配要求进程占用一整段连续物理内存，容易受到外部碎片和连续空间不足的限制。分页和分段都允许进程的逻辑地址空间与物理内存分离，只是划分方式不同：    方式 划分依据 主要目标    分页 按固定大小划分 提高内存利用率，避免外部碎片   分段 按逻辑模块划分 方便共享、保护，符合程序员视角   段页式 先按逻辑模块分段，再把段分页 结合分段和分页的优点    透明性 分页的页号、页内偏移通常由硬件从一维逻辑地址中自动拆出，对所有程序员透明；分段的段名、段号、段内地址更贴近程序逻辑，因此在程序员可见。但无论分页还是分段，最终装入到哪个物理页框或哪段物理内存，仍然对进程透明。   # 基本分页  分页存储把进程的逻辑地址空间划分为大小相等的页，把物理内存划分为同样大小的页框。页可以离散地装入不同页框中。    概念 含义    页 &#x2F; 页面 进程逻辑地址空间的固定大小块   页框 &#x2F; 页帧 &#x2F; 内存块 物理内存中的固定大小块   页号 页面编号，从 0...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E5%8D%95%E5%85%83%E3%80%81%E7%BC%96%E5%9D%80%E4%B8%8E%E5%AE%B9%E9%87%8F"><span class="toc-text">存储单元、编址与容量</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E8%8A%AF%E7%89%87%E6%8E%A5%E5%8F%A3"><span class="toc-text">存储芯片接口</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BB%E5%AD%98%E5%AE%B9%E9%87%8F%E6%89%A9%E5%B1%95"><span class="toc-text">主存容量扩展</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8D%E6%89%A9%E5%B1%95"><span class="toc-text">位扩展</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DRAM"><span class="toc-text">DRAM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#DRAM-%E9%98%B5%E5%88%97%E4%B8%8E%E5%9C%B0%E5%9D%80%E5%A4%8D%E7%94%A8"><span class="toc-text">DRAM 阵列与地址复用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DRAM-%E5%88%B7%E6%96%B0%E6%9C%BA%E5%88%B6"><span class="toc-text">DRAM 刷新机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SDRAM"><span class="toc-text">SDRAM</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E6%A8%A1%E5%9D%97%E5%AD%98%E5%82%A8%E5%99%A8"><span class="toc-text">多模块存储器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8E%E4%BD%8D%E4%BA%A4%E5%8F%89%E7%BC%96%E5%9D%80"><span class="toc-text">低位交叉编址</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E6%97%B6%E5%90%AF%E5%8A%A8"><span class="toc-text">分时启动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%97%B6%E5%90%AF%E5%8A%A8"><span class="toc-text">同时启动</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

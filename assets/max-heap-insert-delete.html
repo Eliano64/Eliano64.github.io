@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Max Heap Insert And Delete</title>
+<style>
+:root{--bg:#fff;--ink:#1f2937;--muted:#64748b;--line:#cbd5e1;--node:#f8fafc;--active:#fed7aa;--move:#dbeafe;--gone:#fee2e2;--accent:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#9ca3af;--line:#475569;--node:#111827;--active:#7c2d12;--move:#172554;--gone:#7f1d1d;--accent:#60a5fa}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:980px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center}.title{font-size:24px;font-weight:750}.sub{color:var(--muted);font-size:14px;margin-top:4px}.btn{border:1px solid var(--line);background:var(--node);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}.controls{display:flex;gap:8px}.stage{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:16px}.array{display:flex;gap:6px;margin-bottom:22px;min-height:64px}.cell{width:54px;height:42px;border:1px solid var(--line);border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--node);font:700 16px ui-monospace,Menlo,monospace;position:relative}.cell::after{content:attr(data-i);position:absolute;bottom:-18px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}.active{background:var(--active)}.move{background:var(--move);border-color:var(--accent)}.gone{background:var(--gone)}.tree{width:100%;height:330px}.edge{stroke:var(--line);stroke-width:2}.n{fill:var(--node);stroke:var(--line);stroke-width:2}.n.active{fill:var(--active)}.n.move{fill:var(--move);stroke:var(--accent)}.n.gone{fill:var(--gone)}.v{fill:var(--ink);font:700 16px ui-monospace,Menlo,monospace;text-anchor:middle;dominant-baseline:central}.idx{fill:var(--muted);font:12px ui-monospace,Menlo,monospace;text-anchor:middle}.explain{line-height:1.75;margin-top:8px}.step{color:var(--muted);font-size:14px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top">
+  <div><div class="title">大根堆插入与删除</div><div class="sub">插入：新元素向上；删除：堆底补位后向下。</div></div>
+  <div class="controls"><button class="btn" id="prev">上一步</button><button class="btn" id="next">下一步</button></div>
+ </div>
+ <div class="stage">
+  <div class="array" id="array"></div>
+  <svg class="tree" viewBox="0 0 900 330" id="tree"></svg>
+  <div class="explain" id="explain"></div>
+  <div class="step" id="step"></div>
+ </div>
+</div>
+<script>
+const pos={0:[450,32],1:[275,106],2:[625,106],3:[185,184],4:[365,184],5:[535,184],6:[715,184],7:[115,262],8:[255,262],9:[435,262]};
+const edges=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6],[3,7],[3,8],[4,9]];
+const steps=[
+{a:[87,45,78,32,17,65,53,9],hi:[0],gone:[],t:'原大根堆。每个父结点都不小于孩子。'},
+{a:[87,45,78,32,17,65,53,9,76],hi:[8,3],gone:[],t:'插入 76：先放到表尾 A[8]，父结点是 A[3]=32。76 更大，向上交换。'},
+{a:[87,45,78,76,17,65,53,9,32],hi:[3,1],gone:[],t:'76 到 A[3] 后继续与父结点 A[1]=45 比较。76 更大，继续上升。'},
+{a:[87,76,78,45,17,65,53,9,32],hi:[1,0],gone:[],t:'76 到 A[1] 后与父结点 A[0]=87 比较。76 不大于 87，停止。'},
+{a:[87,76,78,45,17,65,53,9,32,70],hi:[9,4],gone:[],t:'插入 70：放到表尾 A[9]，父结点是 A[4]=17。70 更大，向上交换。'},
+{a:[87,76,78,45,70,65,53,9,32,17],hi:[4,1],gone:[],t:'70 到 A[4] 后与 A[1]=76 比较。70 不大于 76，停止。'},
+{a:[87,76,78,45,70,65,53,9,32,17],hi:[1],gone:[1],t:'删除结点 A[1]=76：先用堆底 A[9]=17 补到这个位置。'},
+{a:[87,17,78,45,70,65,53,9,32],hi:[1,4],gone:[],t:'17 与孩子 45、70 比较，选择更大的孩子 70 交换。'},
+{a:[87,70,78,45,17,65,53,9,32],hi:[4],gone:[],t:'17 到 A[4]，没有孩子，删除后的堆调整完成。'}
+];
+let cur=0;
+function mark(i,s){if(s.gone.includes(i))return 'gone';if(s.hi.includes(i))return 'move';return ''}
+function render(){
+ const s=steps[cur], arr=document.getElementById('array'), tree=document.getElementById('tree');arr.innerHTML='';tree.innerHTML='';
+ s.a.forEach((v,i)=>{const c=document.createElement('div');c.className='cell '+mark(i,s);c.dataset.i=i;c.textContent=String(v).padStart(2,'0');arr.appendChild(c)});
+ edges.filter(([u,v])=>u<s.a.length&&v<s.a.length).forEach(([u,v])=>{const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('class','edge');l.setAttribute('x1',pos[u][0]);l.setAttribute('y1',pos[u][1]);l.setAttribute('x2',pos[v][0]);l.setAttribute('y2',pos[v][1]);tree.appendChild(l)});
+ s.a.forEach((v,i)=>{const c=document.createElementNS('http://www.w3.org/2000/svg','circle'), tx=document.createElementNS('http://www.w3.org/2000/svg','text'), id=document.createElementNS('http://www.w3.org/2000/svg','text');c.setAttribute('class','n '+mark(i,s));c.setAttribute('cx',pos[i][0]);c.setAttribute('cy',pos[i][1]);c.setAttribute('r',27);tx.setAttribute('class','v');tx.setAttribute('x',pos[i][0]);tx.setAttribute('y',pos[i][1]);tx.textContent=String(v).padStart(2,'0');id.setAttribute('class','idx');id.setAttribute('x',pos[i][0]);id.setAttribute('y',pos[i][1]+42);id.textContent=i;tree.append(c,tx,id)});
+ document.getElementById('explain').innerHTML='<b>'+s.t+'</b><br>大根堆插入只可能破坏祖先方向，所以向上调整；删除或替换只可能破坏子孙方向，所以向下调整。';
+ document.getElementById('step').textContent=`${cur+1} / ${steps.length}`;
+}
+document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

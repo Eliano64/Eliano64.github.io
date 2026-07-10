@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 420" role="img" aria-labelledby="title desc">
+  <title id="title">Disk Address Order</title>
+  <desc id="desc">Comparison of cylinder-surface-sector order and surface-cylinder-sector order.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--good:#2563eb;--bad:#dc2626;--accent:#059669}
+    @media (prefers-color-scheme: dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--good:#60a5fa;--bad:#f87171;--accent:#34d399}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.line{stroke:var(--line);stroke-width:2}.good{stroke:var(--good);fill:none;stroke-width:4}.bad{stroke:var(--bad);fill:none;stroke-width:4}.dotg{fill:var(--good)}.dotb{fill:var(--bad)}.dota{fill:var(--accent)}
+  </style>
+  <rect class="bg" width="980" height="420"/>
+  <text class="t" x="490" y="34" text-anchor="middle" font-size="24" font-weight="700">磁盘物理地址为什么先写柱面号</text>
+  <text class="m" x="490" y="62" text-anchor="middle" font-size="15">连续地址优先在同一柱面内切换盘面，减少磁臂移动</text>
+
+  <rect class="panel" x="40" y="90" width="420" height="280" rx="12"/>
+  <text class="t" x="250" y="122" text-anchor="middle" font-size="19" font-weight="700">(柱面号, 盘面号, 扇区号)</text>
+  <text class="m" x="250" y="148" text-anchor="middle" font-size="14">同一柱面内先换盘面</text>
+  <line class="line" x1="95" y1="200" x2="405" y2="200"/>
+  <line class="line" x1="95" y1="260" x2="405" y2="260"/>
+  <text class="m" x="70" y="205" text-anchor="end" font-size="14">柱面 0</text>
+  <text class="m" x="70" y="265" text-anchor="end" font-size="14">柱面 1</text>
+  <circle class="dotg" cx="140" cy="200" r="8"/><circle class="dotg" cx="210" cy="200" r="8"/><circle class="dotg" cx="280" cy="200" r="8"/><circle class="dotg" cx="350" cy="200" r="8"/>
+  <circle class="dota" cx="140" cy="260" r="8"/><circle class="dota" cx="210" cy="260" r="8"/>
+  <path class="good" d="M140 200 H350"/>
+  <path class="good" d="M350 200 C380 215 380 245 210 260"/>
+  <text class="t" x="250" y="318" text-anchor="middle" font-size="16">读完当前盘面后，只切换磁头</text>
+  <text class="m" x="250" y="342" text-anchor="middle" font-size="14">柱面号不变时，不需要移动磁臂</text>
+
+  <rect class="panel" x="520" y="90" width="420" height="280" rx="12"/>
+  <text class="t" x="730" y="122" text-anchor="middle" font-size="19" font-weight="700">(盘面号, 柱面号, 扇区号)</text>
+  <text class="m" x="730" y="148" text-anchor="middle" font-size="14">同一盘面内先换柱面</text>
+  <line class="line" x1="575" y1="200" x2="885" y2="200"/>
+  <line class="line" x1="575" y1="260" x2="885" y2="260"/>
+  <text class="m" x="550" y="205" text-anchor="end" font-size="14">柱面 0</text>
+  <text class="m" x="550" y="265" text-anchor="end" font-size="14">柱面 1</text>
+  <circle class="dotb" cx="620" cy="200" r="8"/><circle class="dotb" cx="690" cy="200" r="8"/><circle class="dotb" cx="760" cy="200" r="8"/><circle class="dotb" cx="830" cy="200" r="8"/>
+  <circle class="dotb" cx="620" cy="260" r="8"/><circle class="dotb" cx="690" cy="260" r="8"/>
+  <path class="bad" d="M620 200 H830"/>
+  <path class="bad" d="M830 200 C880 220 860 260 620 260"/>
+  <text class="t" x="730" y="318" text-anchor="middle" font-size="16">读完当前磁道后，要换柱面</text>
+  <text class="m" x="730" y="342" text-anchor="middle" font-size="14">柱面号改变意味着磁臂移动，寻道时间增加</text>
+</svg>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sequential Search</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--red:#dc2626;--green:#16a34a;--cell:#e0f2fe}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--red:#f87171;--green:#4ade80;--cell:#172554}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
+h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px}
+button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px}
+.array{display:grid;grid-template-columns:repeat(11,1fr);gap:8px;margin:20px 0 8px}
+.cell{height:58px;border:1px solid var(--line);border-radius:7px;background:var(--cell);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;position:relative}
+.idx{position:absolute;bottom:4px;right:7px;font-size:11px;color:var(--muted);font-weight:400}
+.active{outline:3px solid var(--blue);outline-offset:2px}
+.found{outline:3px solid var(--green);outline-offset:2px}
+.miss{outline:3px solid var(--red);outline-offset:2px}
+.explain{font-size:18px;line-height:1.65;min-height:88px}
+.code{background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-family:Consolas,monospace;font-size:14px;line-height:1.5}
+.bar{height:8px;background:rgba(148,163,184,.25);border-radius:999px;overflow:hidden}.bar i{display:block;height:100%;background:var(--blue);width:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>顺序查找：逐个比较关键字</h1><div class="hint">目标 key = 43；每一步只多一次关键字比较。</div></div>
+    <div><button id="prev">上一步</button> <button id="next">下一步</button></div>
+  </div>
+  <div class="card">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="array" id="array"></div>
+    <div class="explain" id="explain"></div>
+    <pre class="code">int sequential_search(const int a[], int n, int key) {
+    for (int i = 0; i &lt; n; ++i) {
+        // 每进入一次循环，发生一次关键字比较。
+        if (a[i] == key) {
+            return i;
+        }
+    }
+    return -1;
+}</pre>
+  </div>
+</div>
+<script>
+const a=[33,10,13,29,16,19,32,7,43,41,37];
+const steps=[
+  {i:0,t:"从下标 0 开始。比较 a[0]=33 与 43，不相等，继续。"},
+  {i:1,t:"比较 a[1]=10 与 43，不相等。查找长度增加到 2。"},
+  {i:2,t:"比较 a[2]=13 与 43，不相等。"},
+  {i:3,t:"比较 a[3]=29 与 43，不相等。"},
+  {i:4,t:"比较 a[4]=16 与 43，不相等。"},
+  {i:5,t:"比较 a[5]=19 与 43，不相等。"},
+  {i:6,t:"比较 a[6]=32 与 43，不相等。"},
+  {i:7,t:"比较 a[7]=7 与 43，不相等。"},
+  {i:8,found:true,t:"比较 a[8]=43 与 43，相等，查找成功。查找长度为 9。"}
+];
+let k=0;
+const arr=document.getElementById("array");
+a.forEach((v,i)=>{const d=document.createElement("div");d.className="cell";d.innerHTML=`${v}<span class="idx">${i}</span>`;arr.appendChild(d)});
+function render(){[...arr.children].forEach((c,i)=>{c.className="cell"; if(i===steps[k].i)c.classList.add(steps[k].found?"found":"active")});document.getElementById("explain").textContent=steps[k].t;document.getElementById("bar").style.width=((k+1)/steps.length*100)+"%"}
+document.getElementById("prev").onclick=()=>{k=Math.max(0,k-1);render()};
+document.getElementById("next").onclick=()=>{k=Math.min(steps.length-1,k+1);render()};
+render();
+</script>
+</body>
+</html>

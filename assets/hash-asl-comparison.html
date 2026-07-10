@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hash ASL Comparison</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1040px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{font-size:14px;color:var(--muted);margin-top:6px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tabs button.active{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 25%,transparent)}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.explain{font-size:18px;line-height:1.65;min-height:110px}.formula{font:16px/1.55 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap}svg{width:100%;height:auto}.cell{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.empty{fill:#fff;stroke:#94a3b8;stroke-width:2}.hit{fill:#dcfce7;stroke:var(--green);stroke-width:4}.stop{fill:#fee2e2;stroke:var(--red);stroke-width:4}.edge{stroke:#64748b;stroke-width:2}.text{fill:var(--text);font-weight:700;font-size:15px;text-anchor:middle}.idx{fill:var(--muted);font-size:12px;text-anchor:middle}@media(prefers-color-scheme:dark){.cell{fill:#172554;stroke:#38bdf8}.empty{fill:#111827;stroke:#64748b}.hit{fill:#12351f}.stop{fill:#3f1d1d}.edge{stroke:#94a3b8}}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top"><div><h1>散列表 ASL：失败查找的计数差异</h1><div class="hint">开放定址法按探测单元计数；拉链法按关键字比较次数计数。</div></div></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="card"><div class="stage"><svg viewBox="0 0 560 330" id="fig"></svg><div><div class="explain" id="explain"></div><pre class="formula" id="formula"></pre></div></div></div>
+  </div>
+  <script>
+    const cases={
+      open:{name:"开放定址失败",text:"线性探测查找 key=21，H(21)=1。依次检查 1、2、3、4，直到位置 4 是空单元才确定失败。注意：这个“空”单元也算一次探测/比较次数。",formula:"失败查找长度 = 4\n路径：#1 -> #2 -> #3 -> #4(空)\n\n开放定址法失败 ASL：\n对每个可能初始地址，数到第一个空单元为止，空单元计入次数。",type:"open"},
+      chain:{name:"拉链法失败",text:"拉链法查找 key=21，H(21)=8。8 号桶是空链表，查找失败。因为没有任何关键字可比较，所以查找长度为 0。",formula:"失败查找长度 = 0\n路径：bucket[8] 是空链表\n\n拉链法失败 ASL：\n只数链表中的关键字比较次数，空链表不计入 1。",type:"chain"}
+    };
+    let cur="open";
+    const tabs=document.getElementById("tabs");
+    for(const k of Object.keys(cases)){const b=document.createElement("button");b.textContent=cases[k].name;b.dataset.k=k;b.onclick=()=>{cur=k;draw()};tabs.appendChild(b)}
+    function drawOpen(svg){
+      const vals=["","14","2","15","","","19","","","","23","","12"];
+      for(let i=0;i<13;i++){const x=20+i*40, cls=i===4?"stop":(i>=1&&i<=3?"hit":(vals[i]?"cell":"empty"));svg.innerHTML+=`<rect class="${cls}" x="${x}" y="120" width="36" height="42" rx="5"/><text class="text" x="${x+18}" y="147">${vals[i]}</text><text class="idx" x="${x+18}" y="180">${i}</text>`}
+      [1,2,3,4].forEach((v,i)=>{const x=38+v*40;svg.innerHTML+=`<text class="idx" x="${x}" y="105">${i+1}</text>`});
+    }
+    function drawChain(svg){
+      for(let i=0;i<13;i++){const x=20+i*40;svg.innerHTML+=`<rect class="${i===8?'stop':'empty'}" x="${x}" y="80" width="36" height="30" rx="5"/><text class="idx" x="${x+18}" y="128">${i}</text>`}
+      const chains={1:["79","27","1","14"],3:["55","68"],6:["84","19"],7:["20"],10:["10","23"],11:["11"]};
+      for(const [bucket,arr] of Object.entries(chains)){const x=38+Number(bucket)*40;arr.forEach((v,j)=>{const y=150+j*38;svg.innerHTML+=`<line class="edge" x1="${x}" y1="${j===0?110:y-20}" x2="${x}" y2="${y-15}"/><rect class="cell" x="${x-18}" y="${y}" width="36" height="28" rx="5"/><text class="text" x="${x}" y="${y+20}">${v}</text>`})}
+      svg.innerHTML+=`<text class="idx" x="${38+8*40}" y="65">空链表</text>`;
+    }
+    function draw(){
+      const data=cases[cur],svg=document.getElementById("fig");svg.innerHTML="";
+      document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.k===cur));
+      if(data.type==="open")drawOpen(svg);else drawChain(svg);
+      document.getElementById("explain").textContent=data.text;document.getElementById("formula").textContent=data.formula;
+    }
+    draw();
+  </script>
+</body>
+</html>

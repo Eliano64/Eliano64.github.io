@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FIFO Cache Replacement Process</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --text: #111827;
+    --muted: #4b5563;
+    --line: #cbd5e1;
+    --hit: #15803d;
+    --miss: #b91c1c;
+    --accent: #2563eb;
+    --cell: #eef2ff;
+    --empty: #f8fafc;
+    --old: #fef3c7;
+    --new: #dcfce7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827;
+      --panel: #1f2937;
+      --text: #e5e7eb;
+      --muted: #cbd5e1;
+      --line: #475569;
+      --hit: #86efac;
+      --miss: #fca5a5;
+      --accent: #93c5fd;
+      --cell: #1e3a8a;
+      --empty: #111827;
+      --old: #713f12;
+      --new: #14532d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 22px; }
+  header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
+  h1 { margin: 0; font-size: 23px; }
+  .controls { display: flex; gap: 8px; }
+  button {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: 0.95fr 1.25fr; gap: 16px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .label { color: var(--muted); font-size: 14px; }
+  .sequence, .queue { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .token, .qitem {
+    min-width: 34px;
+    padding: 6px 8px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: var(--panel);
+  }
+  .token.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .qitem.old { background: var(--old); color: var(--text); border-color: var(--old); }
+  .qitem.new { background: var(--new); color: var(--text); border-color: var(--new); }
+  .status { font-size: 22px; font-weight: 700; margin: 12px 0 8px; }
+  .hit { color: var(--hit); }
+  .miss { color: var(--miss); }
+  .cache {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 10px 0 16px;
+  }
+  .linebox {
+    min-height: 106px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--cell);
+  }
+  .linebox.empty { background: var(--empty); }
+  .linebox.hitline { outline: 3px solid var(--hit); }
+  .linebox.newline { outline: 3px solid var(--accent); }
+  .linebox.evictline { outline: 3px solid var(--miss); }
+  .value { font-size: 28px; font-weight: 750; margin-top: 8px; }
+  .muted { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 6px; text-align: left; }
+  th { color: var(--muted); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>FIFO 替换过程：固定 Cache 行 + 调入队列</h1>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+      <button id="reset">重置</button>
+    </div>
+  </header>
+  <div class="grid">
+    <section class="panel">
+      <div class="label">访问序列：1 2 3 1 4 2 5 1</div>
+      <div class="sequence" id="seq"></div>
+      <div id="status" class="status"></div>
+      <p id="explain" class="muted"></p>
+      <div class="label">FIFO 队列：左侧最早进入，右侧最新调入</div>
+      <div class="queue" id="queue"></div>
+    </section>
+    <section class="panel">
+      <div class="label">固定物理 Cache 行：命中不会改变行位置，也不会改变 FIFO 队列顺序</div>
+      <div class="cache" id="cache"></div>
+      <table>
+        <thead><tr><th>步</th><th>访问</th><th>结果</th><th>淘汰</th><th>FIFO 队列</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </section>
+  </div>
+</div>
+<script>
+const accesses = [1, 2, 3, 1, 4, 2, 5, 1];
+const capacity = 3;
+let step = 0;
+
+function simulate(upto) {
+  const lines = Array(capacity).fill(null);
+  const queue = [];
+  const rows = [];
+  for (let i = 0; i < upto; i++) {
+    const x = accesses[i];
+    const hitLine = lines.indexOf(x);
+    let result = "命中";
+    let evicted = "";
+    let changedLine = hitLine;
+    if (hitLine === -1) {
+      result = "未命中";
+      const emptyLine = lines.indexOf(null);
+      if (emptyLine !== -1) {
+        lines[emptyLine] = x;
+        queue.push(x);
+        changedLine = emptyLine;
+      } else {
+        evicted = queue.shift();
+        const evictLine = lines.indexOf(evicted);
+        lines[evictLine] = x;
+        queue.push(x);
+        changedLine = evictLine;
+      }
+    }
+    rows.push({
+      i: i + 1,
+      x,
+      result,
+      evicted,
+      changedLine,
+      lines: lines.slice(),
+      queue: queue.slice()
+    });
+  }
+  return { lines, queue, rows };
+}
+
+function render() {
+  const { lines, queue, rows } = simulate(step);
+  const currentRow = rows[rows.length - 1];
+  document.getElementById("seq").innerHTML = accesses.map((x, i) =>
+    `<div class="token ${i === step - 1 ? "active" : ""}">${x}</div>`).join("");
+
+  if (!currentRow) {
+    document.getElementById("status").textContent = "尚未开始";
+    document.getElementById("status").className = "status";
+    document.getElementById("explain").textContent = "FIFO 只关心调入先后。命中时 Cache 行和 FIFO 队列都不移动。";
+  } else {
+    const hit = currentRow.result === "命中";
+    document.getElementById("status").textContent = `第 ${currentRow.i} 步，访问 ${currentRow.x}：${currentRow.result}`;
+    document.getElementById("status").className = `status ${hit ? "hit" : "miss"}`;
+    document.getElementById("explain").textContent = hit
+      ? "命中：只读取已有行，FIFO 队列顺序保持不变。"
+      : (currentRow.evicted
+        ? `未命中且已满：队头 ${currentRow.evicted} 最早进入，被 ${currentRow.x} 替换。`
+        : `未命中但仍有空行：把 ${currentRow.x} 写入空行，并排到队尾。`);
+  }
+
+  const evictCandidate = queue.length === capacity ? queue[0] : null;
+  document.getElementById("queue").innerHTML = queue.length
+    ? queue.map((x, i) => `<div class="qitem ${i === 0 ? "old" : i === queue.length - 1 ? "new" : ""}">${x}</div>`).join("")
+    : `<div class="qitem">空</div>`;
+
+  document.getElementById("cache").innerHTML = lines.map((x, i) => {
+    let cls = x === null ? "empty" : "";
+    if (currentRow && currentRow.result === "命中" && currentRow.changedLine === i) cls += " hitline";
+    if (currentRow && currentRow.result === "未命中" && currentRow.changedLine === i) cls += " newline";
+    if (!currentRow && x === evictCandidate) cls += " evictline";
+    const age = x === null ? "空" : (x === evictCandidate ? "队头，下一次满后未命中会被淘汰" : "保留");
+    return `<div class="linebox ${cls}">
+      <div class="label">Line ${i}</div>
+      <div class="value">${x ?? "-"}</div>
+      <div class="label">${age}</div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("history").innerHTML = rows.map(r =>
+    `<tr><td>${r.i}</td><td>${r.x}</td><td>${r.result}</td><td>${r.evicted || "-"}</td><td>${r.queue.join(" ")}</td></tr>`).join("");
+}
+
+document.getElementById("prev").onclick = () => { step = Math.max(0, step - 1); render(); };
+document.getElementById("next").onclick = () => { step = Math.min(accesses.length, step + 1); render(); };
+document.getElementById("reset").onclick = () => { step = 0; render(); };
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="560" viewBox="0 0 1120 560" role="img" aria-labelledby="title desc">
+  <title id="title">数据链路层逐段传输</title>
+  <desc id="desc">展示端到端分组在每一段链路上被封装成不同数据链路层帧</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--purple:#7c3aed;--red:#dc2626}
+    @media (prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--amber:#fbbf24;--purple:#c4b5fd;--red:#f87171}}
+    .bg{fill:var(--bg)}.node{fill:var(--panel);stroke:var(--line);stroke-width:2}.link{stroke:var(--line);stroke-width:3;marker-end:url(#arrow)}.frame{fill:var(--panel);stroke-width:2}.f1{stroke:var(--blue)}.f2{stroke:var(--green)}.f3{stroke:var(--amber)}.pkt{fill:color-mix(in srgb,var(--purple) 20%,transparent);stroke:var(--purple);stroke-width:2}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.head{font-size:18px;font-weight:700}.small{font-size:15px;fill:var(--muted)}.tag{font-size:14px;font-weight:700}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1120" height="560"/>
+  <text x="48" y="56" class="title">数据链路层只管一段链路上的帧传输</text>
+  <text x="48" y="84" class="small">网络层分组端到端前进；数据链路层帧在每一跳都会重新封装。</text>
+  <g transform="translate(90,150)">
+    <rect x="0" y="40" width="130" height="82" rx="12" class="node"/><text x="65" y="74" text-anchor="middle" class="head">主机 H1</text><text x="65" y="102" text-anchor="middle" class="small">完整协议栈</text>
+    <rect x="285" y="40" width="130" height="82" rx="12" class="node"/><text x="350" y="74" text-anchor="middle" class="head">路由器 R1</text><text x="350" y="102" text-anchor="middle" class="small">到网络层</text>
+    <rect x="570" y="40" width="130" height="82" rx="12" class="node"/><text x="635" y="74" text-anchor="middle" class="head">路由器 R2</text><text x="635" y="102" text-anchor="middle" class="small">到网络层</text>
+    <rect x="855" y="40" width="130" height="82" rx="12" class="node"/><text x="920" y="74" text-anchor="middle" class="head">主机 H2</text><text x="920" y="102" text-anchor="middle" class="small">完整协议栈</text>
+    <path d="M132 80 H275" class="link"/><path d="M417 80 H560" class="link"/><path d="M702 80 H845" class="link"/>
+    <text x="205" y="54" text-anchor="middle" class="small">链路 1</text><text x="490" y="54" text-anchor="middle" class="small">链路 2</text><text x="775" y="54" text-anchor="middle" class="small">链路 3</text>
+    <g transform="translate(25,210)">
+      <rect x="0" y="0" width="250" height="58" rx="8" class="frame f1"/><rect x="68" y="14" width="114" height="30" rx="5" class="pkt"/><text x="34" y="36" text-anchor="middle" class="tag">首部1</text><text x="125" y="36" text-anchor="middle" class="tag">IP 分组</text><text x="216" y="36" text-anchor="middle" class="tag">尾部1</text>
+      <text x="125" y="88" text-anchor="middle" class="small">H1 发往 R1 的帧</text>
+    </g>
+    <g transform="translate(310,210)">
+      <rect x="0" y="0" width="250" height="58" rx="8" class="frame f2"/><rect x="68" y="14" width="114" height="30" rx="5" class="pkt"/><text x="34" y="36" text-anchor="middle" class="tag">首部2</text><text x="125" y="36" text-anchor="middle" class="tag">IP 分组</text><text x="216" y="36" text-anchor="middle" class="tag">尾部2</text>
+      <text x="125" y="88" text-anchor="middle" class="small">R1 重新封装后发往 R2</text>
+    </g>
+    <g transform="translate(595,210)">
+      <rect x="0" y="0" width="250" height="58" rx="8" class="frame f3"/><rect x="68" y="14" width="114" height="30" rx="5" class="pkt"/><text x="34" y="36" text-anchor="middle" class="tag">首部3</text><text x="125" y="36" text-anchor="middle" class="tag">IP 分组</text><text x="216" y="36" text-anchor="middle" class="tag">尾部3</text>
+      <text x="125" y="88" text-anchor="middle" class="small">R2 重新封装后发往 H2</text>
+    </g>
+  </g>
+  <text x="560" y="510" text-anchor="middle" class="small">同一个网络层分组可能经过不同类型链路，因此每一跳的数据链路层帧首部和尾部都可能不同。</text>
+</svg>

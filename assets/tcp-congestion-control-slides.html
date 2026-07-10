@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TCP 拥塞控制四算法</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 18px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 20px; margin: 0 0 12px; }
+p { font-size: 16px; line-height: 1.55; margin: 0 0 8px; }
+.slide { display: none; padding: 24px 28px; gap: 24px; grid-template-columns: 1.2fr 1fr; align-items: start; }
+.slide.active { display: grid; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+pre { margin: 0; background: var(--code); color: var(--codeText); border-radius: 8px; padding: 14px; overflow: auto; font-size: 14px; line-height: 1.55; }
+code { font-family: Consolas, monospace; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 9px 14px; font-size: 15px; cursor: pointer; }
+.count { color: var(--muted); }
+table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+td { padding: 6px 8px; border: 1px solid var(--border); font-size: 14px; text-align: center; }
+.td-hd { font-weight: 700; background: var(--bg); }
+.val-g { color: var(--green); font-weight: 700; }
+.val-b { color: var(--blue); font-weight: 700; }
+.val-r { color: var(--red); font-weight: 700; }
+.val-a { color: var(--amber); font-weight: 700; }
+.tag { display: inline-block; padding: 2px 9px; border-radius: 4px; font-size: 13px; font-weight: 700; margin-right: 6px; color: #fff; }
+.tag.a { background: var(--blue); } .tag.b { background: var(--green); } .tag.c { background: var(--red); } .tag.d { background: var(--amber); } .tag.p { background: var(--purple); }
+
+/* cwnd bar chart */
+.bars { display: flex; gap: 4px; align-items: flex-end; height: 140px; padding: 8px 0; }
+.bar { flex: 1; border-radius: 3px 3px 0 0; min-width: 18px; display: flex; align-items: flex-start; justify-content: center; padding-top: 4px; color: #fff; font-size: 11px; font-weight: 700; }
+.bar.g { background: var(--green); } .bar.b { background: var(--blue); } .bar.r { background: var(--red); }
+.bar-label { font-size: 10px; text-align: center; color: var(--muted); }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24; --purple: #a78bfa;
+  }
+  .td-hd { background: #1e293b; }
+  button { border-color: #52616b; }
+  .bar.g { background: #047857; } .bar.b { background: #1d4ed8; } .bar.r { background: #b91c1c; }
+}
+@media (max-width: 760px) { .slide { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>TCP 拥塞控制 — 慢开始 · 拥塞避免 · 快重传 · 快恢复</h1></header>
+
+  <!-- Page 1: Slow Start -->
+  <section class="slide active">
+    <div class="panel">
+      <h2><span class="tag a">慢开始</span>cwnd 从 1 开始，指数增长</h2>
+      <p>初始 cwnd=1 MSS，每收到 1 个 <strong>新 ACK</strong> → cwnd += 1 MSS。效果：每经过 1 个 RTT，cwnd 翻倍。</p>
+      <table>
+        <tr class="td-hd"><td>轮次</td><td>cwnd（发送数）</td><td>发送报文段序号</td><td>收到 ACK 后 cwnd 变化</td></tr>
+        <tr><td>1</td><td class="val-g">1</td><td>M0</td><td>+1 → <span class="val-g">2</span></td></tr>
+        <tr><td>2</td><td class="val-g">2</td><td>M1, M2</td><td>+2 → <span class="val-g">4</span></td></tr>
+        <tr><td>3</td><td class="val-g">4</td><td>M3~M6</td><td>+4 → <span class="val-g">8</span></td></tr>
+        <tr><td>4</td><td class="val-g">8</td><td>M7~M14</td><td>+8 → <span class="val-g">16</span></td></tr>
+      </table>
+      <p style="margin-top:8px;">cwnd=16 = ssthresh。按本例处理：<span class="val-a">下一轮切换为拥塞避免算法</span></p>
+    </div>
+    <div>
+      <pre><code>/* 慢开始算法 */
+cwnd = 1;  // 初始 1 MSS
+ssthresh = 16;  // 慢开始门限
+
+/* 轮次 1: 发 M0 */
+ACK(M0) → cwnd += 1;  // cwnd = 2
+
+/* 轮次 2: 发 M1, M2 */
+ACK(M1), ACK(M2) → cwnd += 2;  // cwnd = 4
+
+/* 轮次 3: 发 M3~M6 */
+ACK(M3..M6) → cwnd += 4;  // cwnd = 8
+
+/* 轮次 4: 发 M7~M14 */
+ACK(M7..M14) → cwnd += 8;  // cwnd = 16
+
+// cwnd == ssthresh：教材例子按“下一轮切换”处理
+</code></pre>
+      <div class="bars" style="margin-top:12px;">
+        <div><div class="bar g" style="height:8%;">1</div><div class="bar-label">R1</div></div>
+        <div><div class="bar g" style="height:15%;">2</div><div class="bar-label">R2</div></div>
+        <div><div class="bar g" style="height:30%;">4</div><div class="bar-label">R3</div></div>
+        <div><div class="bar g" style="height:56%;">8</div><div class="bar-label">R4</div></div>
+        <div><div class="bar g" style="height:100%;">16</div><div class="bar-label">R5</div></div>
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);">cwnd bar 图：指数增长，4 轮从 1 到 16</p>
+    </div>
+  </section>
+
+  <!-- Page 2: Congestion Avoidance -->
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag b">拥塞避免</span>cwnd 线性增长，每 RTT +1</h2>
+      <p>cwnd &gt; ssthresh 后，改慢为稳：<strong>每经过 1 个完整 RTT</strong> → cwnd += 1 MSS。若 cwnd = ssthresh，慢开始和拥塞避免都可使用；例题常从下一轮按拥塞避免处理。</p>
+      <table>
+        <tr class="td-hd"><td>轮次</td><td>cwnd</td><td>发送报文段序号</td><td>每轮结束后 cwnd</td></tr>
+        <tr><td>5</td><td class="val-b">16</td><td>M15~M30</td><td><span class="val-b">17</span></td></tr>
+        <tr><td>6</td><td class="val-b">17</td><td>M31~M47</td><td><span class="val-b">18</span></td></tr>
+        <tr><td>7</td><td class="val-b">18</td><td>M48~M65</td><td><span class="val-b">19</span></td></tr>
+        <tr><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td></tr>
+        <tr><td>13</td><td class="val-b">24</td><td>M171~M194</td><td><span class="val-r">超时！</span></td></tr>
+      </table>
+      <p style="margin-top:8px;color:var(--red);font-weight:700;">轮次 13：24 个报文段中部分丢失 → 超时重传 → 判断网络拥塞</p>
+    </div>
+    <div>
+      <pre><code>/* 拥塞避免算法 */
+// cwnd > ssthresh → 每 RTT +1
+for (rtt = 5; cwnd < infinity; rtt++) {
+    cwnd += 1;  // 线性增长
+    send(cwnd segments);
+    wait_for_ack();
+}
+
+/* 当 cwnd = 24 时发生超时 */
+// Tahoe 处理：
+ssthresh = cwnd / 2;  // = 12
+cwnd = 1;             // 重回起点
+// 重新执行慢开始...</code></pre>
+      <div class="bars" style="margin-top:12px;">
+        <div><div class="bar b" style="height:100%;">16</div><div class="bar-label">R5</div></div>
+        <div><div class="bar b" style="height:100%;">17</div><div class="bar-label">R6</div></div>
+        <div><div class="bar b" style="height:100%;">18</div><div class="bar-label">R7</div></div>
+        <div><div class="bar b" style="height:100%;">19</div><div class="bar-label">R8</div></div>
+        <div><div class="bar b" style="height:100%;">20</div><div class="bar-label">R9</div></div>
+        <div><div class="bar r" style="height:100%;">24</div><div class="bar-label">R13</div></div>
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);">线性增长缓慢但稳定，直到超时</p>
+    </div>
+  </section>
+
+  <!-- Page 3: Timeout and Restart (Tahoe) -->
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag c">超时重传后</span>cwnd→1，ssthresh←cwnd/2</h2>
+      <p>Tahoe 版本的统一处理：不管什么原因丢包，一旦超时：</p>
+      <table>
+        <tr class="td-hd"><td>动作</td><td>公式</td><td>本例</td></tr>
+        <tr><td>更新 ssthresh</td><td>ssthresh ← max(cwnd/2, 2×MSS)</td><td class="val-a">24/2 = 12</td></tr>
+        <tr><td>重置 cwnd</td><td>cwnd ← 1 MSS</td><td class="val-r">1</td></tr>
+        <tr><td>重新执行</td><td colspan="2">慢开始算法</td></tr>
+      </table>
+      <p style="margin-top:10px;">第二轮慢开始：1→2→4→8→<span class="val-a">12</span>（新 ssthresh）→ 13→14→...</p>
+      <p><strong>关键规律</strong>：ssthresh 总是拥塞发生前 cwnd 的一半，作为"安全窗口"的参考线。</p>
+    </div>
+    <pre><code>/* Tahoe: 超时后的恢复 */
+// 阶段 1: 拥塞检测
+if (timeout) {
+    ssthresh = max(cwnd / 2, 2 * MSS);
+    cwnd = 1;           // 回到原点
+}
+// 阶段 2: 重新慢开始
+while (cwnd < ssthresh) {  // 1→2→4→8→12
+    per_ack: cwnd += 1;   // 指数级
+}
+// 阶段 3: 再次拥塞避免
+while (no_loss) {           // 12→13→14→...
+    per_rtt: cwnd += 1;    // 线性
+}
+/* 问题: 如果只是个别报文段丢失
+   （非拥塞），Tahoe 也会把 cwnd
+   砍到 1 —— 效率损失大 */</code></pre>
+  </section>
+
+  <!-- Page 4: Fast Retransmit -->
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag p">快重传</span>收到 3 个重复 ACK → 立即重传</h2>
+      <p>接收方收到失序报文段时，<strong>立即发送重复 ACK</strong>（不延迟）。发送方据此判断：</p>
+      <table>
+        <tr class="td-hd"><td>事件</td><td>发送方动作</td></tr>
+        <tr><td>收到 ACK(M1)</td><td>正常确认 M1 ✓</td></tr>
+        <tr><td>收到 ACK(M2)</td><td>正常确认 M2 ✓</td></tr>
+        <tr><td>收到 ACK(M2) ×1</td><td>dup ACK #1 — 可能是乱序</td></tr>
+        <tr><td>收到 ACK(M2) ×2</td><td>dup ACK #2 — 注意</td></tr>
+        <tr><td>收到 ACK(M2) <strong>×3</strong></td><td><span class="val-r">dup ACK #3 → 立即重传 M3！不等超时</span></td></tr>
+      </table>
+      <p style="margin-top:8px;"><span class="val-g">意义</span>：收到 3 个重复 ACK 意味着"M3 丢了，但 M4/M5/M6 都到了" → 网络并未拥塞，只是个别丢包。</p>
+    </div>
+    <pre><code>/* 快重传算法 */
+int dup_count = 0;
+int last_ack = 0;
+
+void on_ack(int ack_num) {
+    if (ack_num > last_ack) {
+        // 新的累积确认
+        last_ack = ack_num;
+        dup_count = 0;
+    } else if (ack_num == last_ack) {
+        // 重复确认
+        dup_count++;
+        if (dup_count == 3) {
+            // 立即重传丢失的报文段
+            retransmit(last_ack);
+        }
+    }
+}
+
+/* 快重传避免了等待超时，使
+   整个网络吞吐量提高约 20% */</code></pre>
+  </section>
+
+  <!-- Page 5: Fast Recovery (Reno) and Summary -->
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag d">快恢复</span>Reno：跳过慢开始，直接线性增长</h2>
+      <p>快重传后，Reno 不把 cwnd 降到 1，而是执行快恢复：</p>
+      <table>
+        <tr class="td-hd"><td>步骤</td><td>Tahoe</td><td>Reno（快恢复）</td></tr>
+        <tr><td>ssthresh</td><td class="val-a">cwnd/2</td><td class="val-a">cwnd/2</td></tr>
+        <tr><td>cwnd</td><td class="val-r">1</td><td class="val-g">ssthresh + 3</td></tr>
+        <tr><td>收到 dup ACK</td><td>—</td><td>cwnd += 1（临时扩大）</td></tr>
+        <tr><td>收到新 ACK</td><td>慢开始 1→2→4→...</td><td class="val-g">cwnd = ssthresh，进入拥塞避免</td></tr>
+      </table>
+      <p style="margin-top:10px;"><strong>总结</strong>：拥塞控制的四个算法是逐步演进的——慢开始和拥塞避免是基础（Tahoe, 1988），快重传和快恢复是改进（Reno, 1990）。核心思想：<strong>试探着增加，丢包了就减，但不该减过头</strong>。</p>
+    </div>
+    <pre><code>/* Reno: 快重传 + 快恢复 */
+void on_3_dup_ack() {
+    ssthresh = cwnd / 2;
+    cwnd = ssthresh + 3;
+    // 快恢复阶段
+    retransmit_lost_segment();
+}
+void on_dup_ack_during_recovery() {
+    cwnd += 1;  // 每额外 dup ACK +1
+}
+void on_new_ack() {
+    cwnd = ssthresh;  // 结束快恢复
+    // 直接进入拥塞避免（线性增长）
+}
+
+/* 四种算法总结:
+   ① 慢开始: cwnd 指数增长
+   ② 拥塞避免: cwnd 线性增长
+   ③ 快重传: 3 dup ACK → 立即重传
+   ④ 快恢复: 不降到 1，继续线性
+*/</code></pre>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+function show(nextIndex) {
+  index = (nextIndex + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BFS Shortest Path</title>
+<style>
+  :root{--bg:#fff;--panel:#f8fafc;--text:#0f172a;--muted:#475569;--line:#94a3b8;--edge:#64748b;--hot:#2563eb;--new:#059669;--warn:#d97706}
+  @media (prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#64748b;--edge:#94a3b8;--hot:#60a5fa;--new:#34d399;--warn:#fbbf24}}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,sans-serif}.wrap{padding:18px;max-width:1100px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.title{font-size:22px;font-weight:750}.nav{display:flex;gap:8px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer}.stage{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:14px}.card{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px}.note{font-size:16px;line-height:1.65;color:var(--muted)}svg{width:100%;height:auto}.edge{stroke:var(--edge);stroke-width:3}.tree{stroke:var(--new);stroke-width:5}.node{fill:var(--bg);stroke:var(--edge);stroke-width:2}.node.hot{stroke:var(--hot);stroke-width:4}.node.done{fill:color-mix(in srgb,var(--new) 20%,var(--bg));stroke:var(--new);stroke-width:3}.label{fill:var(--text);font-weight:700;font-size:18px}.dist{fill:var(--muted);font-size:13px}.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{border:1px solid var(--line);padding:7px;text-align:center}.tbl th{color:var(--text)}.queue{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:var(--bg)}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="title">BFS 求无权图单源最短路径</div><div class="note" id="caption"></div></div>
+    <div class="nav"><button class="btn" id="prev">上一页</button><button class="btn" id="next">下一页</button></div>
+  </div>
+  <div class="stage">
+    <div class="card" id="graph"></div>
+    <div class="card">
+      <div class="note" id="explain"></div>
+      <h3>队列</h3><div class="queue" id="queue"></div>
+      <h3>数组</h3><div id="table"></div>
+    </div>
+  </div>
+</div>
+<script>
+const pos={1:[90,135],2:[215,80],3:[340,80],4:[465,135],5:[90,260],6:[215,210],7:[340,210],8:[465,260]};
+const edges=[[2,1],[2,6],[1,5],[6,3],[6,7],[5,3],[3,4],[7,8],[4,8]];
+const steps=[
+ {cap:"初始化：源点 2 入队。",done:[2],tree:[],q:[2],dist:{2:0},prev:{},txt:"BFS 的关键是按层扩展。源点距离为 0，其余顶点暂记为 INF。"},
+ {cap:"访问 2：发现 1 和 6。",done:[2,1,6],tree:[[2,1],[2,6]],q:[1,6],dist:{2:0,1:1,6:1},prev:{1:2,6:2},txt:"顶点 1、6 第一次被访问，因此它们到源点的距离就是 1。"},
+ {cap:"访问 1：发现 5。",done:[2,1,6,5],tree:[[2,1],[2,6],[1,5]],q:[6,5],dist:{2:0,1:1,6:1,5:2},prev:{1:2,6:2,5:1},txt:"从 1 扩展到 5，得到 dist[5]=dist[1]+1=2。"},
+ {cap:"访问 6：发现 3 和 7。",done:[2,1,6,5,3,7],tree:[[2,1],[2,6],[1,5],[6,3],[6,7]],q:[5,3,7],dist:{2:0,1:1,6:1,5:2,3:2,7:2},prev:{1:2,6:2,5:1,3:6,7:6},txt:"同一层的顶点先后出队不影响最短距离，第一次到达仍然是最短。"},
+ {cap:"继续扩展：由 3 发现 4。",done:[2,1,6,5,3,7,4],tree:[[2,1],[2,6],[1,5],[6,3],[6,7],[3,4]],q:[7,4],dist:{2:0,1:1,6:1,5:2,3:2,7:2,4:3},prev:{1:2,6:2,5:1,3:6,7:6,4:3},txt:"已访问顶点不会重复入队，否则会破坏第一次访问对应最短距离的结构。"},
+ {cap:"访问 7：发现 8。",done:[2,1,6,5,3,7,4,8],tree:[[2,1],[2,6],[1,5],[6,3],[6,7],[3,4],[7,8]],q:[4,8],dist:{2:0,1:1,6:1,5:2,3:2,7:2,4:3,8:3},prev:{1:2,6:2,5:1,3:6,7:6,4:3,8:7},txt:"由 prev[8]=7, prev[7]=6, prev[6]=2 可还原 2 -> 6 -> 7 -> 8。"}
+];
+let i=0;
+function key(a,b){return a+"-"+b}
+function render(){
+ const s=steps[i], tree=new Set(s.tree.map(e=>key(e[0],e[1])));
+ document.getElementById("caption").textContent=s.cap;
+ document.getElementById("explain").textContent=s.txt;
+ let lines=edges.map(e=>`<line class="${tree.has(key(e[0],e[1]))?'tree':'edge'}" x1="${pos[e[0]][0]}" y1="${pos[e[0]][1]}" x2="${pos[e[1]][0]}" y2="${pos[e[1]][1]}"/>`).join("");
+ let nodes=Object.keys(pos).map(v=>`<g><circle class="node ${s.done.includes(+v)?'done':''}" cx="${pos[v][0]}" cy="${pos[v][1]}" r="24"/><text class="label" x="${pos[v][0]}" y="${pos[v][1]+6}" text-anchor="middle">${v}</text><text class="dist" x="${pos[v][0]}" y="${pos[v][1]+42}" text-anchor="middle">d=${s.dist[v]??'INF'}</text></g>`).join("");
+ document.getElementById("graph").innerHTML=`<svg viewBox="0 0 560 350">${lines}${nodes}</svg>`;
+ document.getElementById("queue").innerHTML=s.q.map(v=>`<span class="pill">${v}</span>`).join("")||"<span class='pill'>empty</span>";
+ const verts=[1,2,3,4,5,6,7,8];
+ document.getElementById("table").innerHTML=`<table class="tbl"><tr><th>v</th>${verts.map(v=>`<th>${v}</th>`).join("")}</tr><tr><td>dist</td>${verts.map(v=>`<td>${s.dist[v]??'INF'}</td>`).join("")}</tr><tr><td>prev</td>${verts.map(v=>`<td>${s.prev[v]??'-1'}</td>`).join("")}</tr></table>`;
+}
+document.getElementById("prev").onclick=()=>{i=(i+steps.length-1)%steps.length;render()};
+document.getElementById("next").onclick=()=>{i=(i+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

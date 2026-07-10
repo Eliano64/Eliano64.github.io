@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 280">
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      text { font-family: Arial, "Microsoft YaHei", sans-serif; }
+      .title { font-size: 16px; font-weight: 700; fill: #1e293b; }
+      .label { font-size: 13px; }
+      .small { font-size: 11px; }
+      .box { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; }
+      .box-nonascii { fill: #fef2f2; stroke: #dc2626; stroke-width: 1.5; }
+      .box-ascii { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.5; }
+      .box-mime { fill: #fefce8; stroke: #ca8a04; stroke-width: 1.5; }
+      .arrow-sm { stroke: #64748b; stroke-width: 1.2; fill: none; marker-end: url(#arr); }
+      .arrow-mime { stroke: #ca8a04; stroke-width: 1.5; fill: none; marker-end: url(#arrA); }
+      @media (prefers-color-scheme: dark) {
+        .title { fill: #e6edf3; }
+        .box { fill: #16212c; stroke: #334155; }
+        .box-nonascii { fill: #2a1a1a; stroke: #f87171; }
+        .box-ascii { fill: #1e293b; stroke: #3b82f6; }
+        .box-mime { fill: #2a2410; stroke: #fbbf24; }
+        .arrow-sm { stroke: #475569; }
+        .arrow-mime { stroke: #fbbf24; }
+        text { fill: #e6edf3; }
+      }
+    </style>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arrA" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#ca8a04"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="24" text-anchor="middle" class="title">MIME 的作用：将非 ASCII 码转换为 ASCII 码进行传送</text>
+
+  <!-- Sender side -->
+  <text x="180" y="55" text-anchor="middle" class="label" font-weight="700" fill="#dc2626">发送方</text>
+  <rect x="30" y="65" width="300" height="55" rx="6" class="box-nonascii"/>
+  <text x="180" y="88" text-anchor="middle" class="label" fill="#dc2626">非 ASCII 码邮件</text>
+  <text x="180" y="106" text-anchor="middle" class="small" fill="#64748b">中文、图片、音频、视频、二进制文件等</text>
+
+  <!-- MIME conversion box -->
+  <rect x="355" y="60" width="190" height="65" rx="6" class="box-mime"/>
+  <text x="450" y="83" text-anchor="middle" class="label" font-weight="700" fill="#a16207">MIME 转换</text>
+  <text x="450" y="101" text-anchor="middle" class="small" fill="#64748b">非 ASCII → ASCII</text>
+  <text x="450" y="117" text-anchor="middle" class="small" fill="#64748b">Base64 / Quoted-Printable</text>
+
+  <!-- ASCII after MIME -->
+  <rect x="570" y="65" width="300" height="55" rx="6" class="box-ascii"/>
+  <text x="720" y="88" text-anchor="middle" class="label" fill="#2563eb">ASCII 码数据</text>
+  <text x="720" y="106" text-anchor="middle" class="small" fill="#64748b">SMTP 可以传送</text>
+
+  <!-- SMTP arrow -->
+  <path d="M330,93 L355,93" class="arrow-mime"/>
+  <path d="M545,93 L570,93" class="arrow-sm"/>
+
+  <!-- SMTP transport -->
+  <text x="450" y="150" text-anchor="middle" class="label" font-weight="700" fill="#2563eb">SMTP 传送（只能传 ASCII 码）</text>
+  <line x1="30" y1="160" x2="870" y2="160" stroke="#2563eb" stroke-width="2" stroke-dasharray="10,4"/>
+
+  <!-- Receiver side -->
+  <text x="180" y="185" text-anchor="middle" class="label" font-weight="700" fill="#059669">接收方</text>
+
+  <rect x="30" y="195" width="300" height="55" rx="6" class="box-ascii"/>
+  <text x="180" y="218" text-anchor="middle" class="label" fill="#2563eb">ASCII 码数据</text>
+  <text x="180" y="236" text-anchor="middle" class="small" fill="#64748b">SMTP 传送过来的</text>
+
+  <!-- MIME reverse -->
+  <rect x="355" y="190" width="190" height="65" rx="6" class="box-mime"/>
+  <text x="450" y="213" text-anchor="middle" class="label" font-weight="700" fill="#a16207">MIME 逆转换</text>
+  <text x="450" y="231" text-anchor="middle" class="small" fill="#64748b">ASCII → 非 ASCII</text>
+
+  <!-- Original restored -->
+  <rect x="570" y="195" width="300" height="55" rx="6" class="box-nonascii"/>
+  <text x="720" y="218" text-anchor="middle" class="label" fill="#059669">非 ASCII 码邮件</text>
+  <text x="720" y="236" text-anchor="middle" class="small" fill="#64748b">还原为原始格式</text>
+
+  <path d="M330,223 L355,223" class="arrow-sm"/>
+  <path d="M545,223 L570,223" class="arrow-mime"/>
+
+  <!-- Bottom: also used for HTTP -->
+  <rect x="30" y="260" width="840" height="18" rx="3" fill="#fefce8" stroke="#fbbf24" stroke-width="0.5"/>
+  <text x="450" y="273" text-anchor="middle" class="small" fill="#a16207">MIME 不仅用于 SMTP，也用于同样只支持 ASCII 码字符的 HTTP</text>
+  <style>
+    @media (prefers-color-scheme: dark) { rect[fill="#fefce8"] { fill: #2a2410; stroke: #fbbf24; } }
+  </style>
+</svg>

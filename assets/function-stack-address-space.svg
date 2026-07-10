@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="620" viewBox="0 0 980 620" role="img" aria-labelledby="title desc">
+  <title id="title">Process virtual address space and call stack</title>
+  <desc id="desc">A process virtual address space showing code, data, heap and user stack. The stack is in high addresses and grows downward.</desc>
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      :root {
+        --bg: #ffffff;
+        --fg: #17212b;
+        --muted: #5b6773;
+        --line: #26323d;
+        --soft: #eef2f6;
+        --soft2: #f7fafc;
+        --accent: #2563eb;
+        --warn: #dc2626;
+        --green: #15803d;
+        --chip: #dbeafe;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1720;
+          --fg: #e8edf2;
+          --muted: #aab5c0;
+          --line: #d7dee6;
+          --soft: #1c2632;
+          --soft2: #151e28;
+          --accent: #7cb7ff;
+          --warn: #ff8a8a;
+          --green: #77d391;
+          --chip: #173963;
+        }
+      }
+      .bg { fill: var(--bg); }
+      .box { fill: var(--soft2); stroke: var(--line); stroke-width: 2; }
+      .band { fill: var(--soft); stroke: var(--line); stroke-width: 1.5; }
+      .stack { fill: var(--chip); stroke: var(--accent); stroke-width: 2; }
+      .frame { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+      .label { font: 22px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--fg); }
+      .small { font: 17px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--muted); }
+      .code { font: 18px Consolas, "Courier New", monospace; fill: var(--fg); }
+      .accent { fill: var(--accent); }
+      .warn { fill: var(--warn); }
+      .green { fill: var(--green); }
+      .arrow { stroke: var(--line); stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrowAccent { stroke: var(--accent); stroke-width: 2.8; fill: none; marker-end: url(#arrowAccent); }
+      .dash { stroke-dasharray: 8 7; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)"/>
+    </marker>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="620"/>
+  <text x="490" y="52" text-anchor="middle" class="label">进程虚拟地址空间中的函数调用栈</text>
+
+  <rect x="240" y="92" width="420" height="470" rx="8" class="box"/>
+  <line x1="210" y1="105" x2="210" y2="550" class="arrow"/>
+  <text x="170" y="118" text-anchor="middle" class="small">高地址</text>
+  <text x="170" y="552" text-anchor="middle" class="small">低地址</text>
+
+  <rect x="255" y="107" width="390" height="70" class="stack"/>
+  <text x="450" y="140" text-anchor="middle" class="label">用户栈 Stack</text>
+  <text x="450" y="165" text-anchor="middle" class="small">位于高地址，向低地址增长</text>
+
+  <rect x="278" y="196" width="344" height="54" class="band"/>
+  <text x="450" y="230" text-anchor="middle" class="label">未使用区域</text>
+
+  <rect x="255" y="268" width="390" height="72" class="band"/>
+  <text x="450" y="310" text-anchor="middle" class="label">堆 Heap</text>
+  <path d="M 450 340 L 450 382" class="arrowAccent"/>
+  <text x="478" y="370" class="small accent">常向高地址增长</text>
+
+  <rect x="255" y="392" width="390" height="58" class="band"/>
+  <text x="450" y="428" text-anchor="middle" class="label">全局/静态数据</text>
+
+  <rect x="255" y="468" width="390" height="72" class="band"/>
+  <text x="450" y="505" text-anchor="middle" class="label">代码 Text</text>
+  <text x="450" y="529" text-anchor="middle" class="small">机器指令序列</text>
+
+  <path d="M 690 122 C 770 122 770 175 690 175" class="arrowAccent"/>
+  <text x="785" y="142" class="small accent">push / call</text>
+  <text x="785" y="168" class="small accent">使 esp 变小</text>
+
+  <rect x="705" y="250" width="205" height="156" rx="8" class="box"/>
+  <text x="807" y="284" text-anchor="middle" class="label">当前栈帧</text>
+  <text x="724" y="320" class="code">[ebp+8]</text>
+  <text x="810" y="320" class="small">参数</text>
+  <text x="724" y="350" class="code">[ebp+4]</text>
+  <text x="810" y="350" class="small">返回地址</text>
+  <text x="724" y="380" class="code">[ebp-4]</text>
+  <text x="810" y="380" class="small">局部变量</text>
+  <path d="M 705 284 C 660 238 650 165 645 140" class="arrow dash"/>
+
+  <text x="50" y="250" class="small">一次函数调用会在用户栈上形成一个栈帧。</text>
+  <text x="50" y="280" class="small">递归调用只是连续形成多个结构相同、内容独立的栈帧。</text>
+</svg>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSMA/CD Send Process</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f8fafc;--fg:#172033;--muted:#5d6b7e;--line:#8a98aa;--blue:#3478d4;--green:#2f9b5f;--red:#d14343;--amber:#bf7a18;--card:#fff}
+  @media (prefers-color-scheme:dark){:root{--bg:#0b0f14;--fg:#e7edf7;--muted:#b6c2d2;--line:#718096;--blue:#7ab0ff;--green:#67d493;--red:#ff8585;--amber:#ffd166;--card:#111827}}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+  .wrap{max-width:980px;margin:0 auto;padding:24px}
+  h1{font-size:26px;margin:0 0 18px;text-align:center}
+  .stage{display:grid;grid-template-columns:280px 1fr;gap:22px;align-items:start}
+  .steps{display:flex;flex-direction:column;gap:10px}
+  .step{border:1.8px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--card);font-size:16px}
+  .step.active{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 30%,transparent)}
+  svg{width:100%;height:auto;border:1.8px solid var(--line);border-radius:10px;background:var(--card)}
+  text{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+  .muted{fill:var(--muted)}
+  .line{stroke:var(--line);stroke-width:3}
+  .signal{stroke:var(--blue);stroke-width:10;stroke-linecap:round}
+  .remote{stroke:var(--amber);stroke-width:8;stroke-linecap:round}
+  .jam{stroke:var(--red);stroke-width:10;stroke-linecap:round}
+  .listen{stroke:var(--green);stroke-width:5;fill:none}
+  .wait{stroke:var(--amber);stroke-width:5;fill:none;stroke-dasharray:10 8}
+  .controls{display:flex;justify-content:center;gap:12px;margin-top:16px}
+  button{font:inherit;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:8px 14px;cursor:pointer}
+  button:hover{border-color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CSMA/CD 发送过程</h1>
+  <div class="stage">
+    <div class="steps" id="steps"></div>
+    <svg viewBox="0 0 620 430" aria-label="CSMA/CD发送过程示意">
+      <line x1="90" y1="115" x2="540" y2="115" class="line"/>
+      <line x1="90" y1="305" x2="540" y2="305" class="line"/>
+      <text x="64" y="121" text-anchor="end" font-size="18" font-weight="700">站点 A</text>
+      <text x="64" y="311" text-anchor="end" font-size="18" font-weight="700">站点 B</text>
+      <text x="552" y="121" font-size="15">t</text>
+      <text x="552" y="311" font-size="15">t</text>
+      <g id="scene"></g>
+      <text id="caption" x="310" y="390" text-anchor="middle" font-size="18"></text>
+    </svg>
+  </div>
+  <div class="controls">
+    <button id="prev">上一步</button>
+    <button id="next">下一步</button>
+  </div>
+</div>
+<script>
+const data=[
+  {s:"监听信道",c:"发送前先听：若信道忙，就暂不发送。",svg:'<path d="M130 115 C180 80 260 80 310 115" class="listen"/><text x="220" y="72" text-anchor="middle" font-size="16">Carrier Sense</text>'},
+  {s:"信道空闲后发送",c:"信道空闲并经过 96 bit time 的帧间最小间隔后，A 开始发送。",svg:'<path d="M135 115 L420 295" class="signal"/><text x="300" y="210" class="muted" font-size="16">A 的信号沿介质传播</text>'},
+  {s:"远端可能仍以为空闲",c:"A 的信号到达 B 之前，B 可能也检测到本端空闲并开始发送。",svg:'<path d="M135 115 L420 295" class="signal"/><path d="M405 305 L430 305" class="remote"/><text x="430" y="336" text-anchor="middle" font-size="15">B 刚开始发送</text>'},
+  {s:"发生碰撞并返回",c:"碰撞发生在 B 附近；红线向右上方传播，表示碰撞影响在更晚时刻返回 A。",svg:'<path d="M135 115 L420 305" class="signal"/><path d="M405 305 L430 305" class="remote"/><circle cx="420" cy="305" r="10" fill="var(--red)"/><path d="M420 305 L555 115" class="jam"/><circle cx="555" cy="115" r="7" fill="var(--red)"/><text x="455" y="304" font-size="16">碰撞</text><text x="515" y="208" text-anchor="middle" font-size="15">碰撞影响返回 A</text><text x="555" y="94" text-anchor="middle" font-size="14">A 检测到碰撞</text>'},
+  {s:"停止、干扰、退避",c:"A 检测到碰撞后停止正常发送，发送干扰信号，再随机退避后重发。",svg:'<path d="M160 115 C210 165 250 165 300 115" class="wait"/><path d="M360 305 C410 355 450 355 500 305" class="wait"/><text x="330" y="205" text-anchor="middle" font-size="16">Jam + Backoff</text>'}
+];
+let idx=Number(new URLSearchParams(location.search).get("step") || 0);
+if (!Number.isInteger(idx) || idx < 0 || idx >= data.length) idx = 0;
+function render(){
+  steps.innerHTML=data.map((x,i)=>`<div class="step ${i===idx?'active':''}"><b>${i+1}. ${x.s}</b><br>${x.c}</div>`).join("");
+  scene.innerHTML=data[idx].svg;
+  caption.textContent=data[idx].c;
+}
+prev.onclick=()=>{idx=(idx+data.length-1)%data.length;render()};
+next.onclick=()=>{idx=(idx+1)%data.length;render()};
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>万维网缓存与代理服务器</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 16px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 20px; margin: 0; }
+h2 { font-size: 18px; margin: 0 0 10px; }
+p { font-size: 15px; line-height: 1.5; margin: 0 0 6px; }
+.slide { display: none; padding: 20px 28px; }
+.slide.active { display: block; }
+.row { display: flex; gap: 20px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; flex: 1; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+.count { color: var(--muted); }
+.step-num { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--amber); color: #fff; text-align: center; line-height: 22px; font-size: 12px; font-weight: 700; margin-right: 4px; }
+
+.diagram { position: relative; height: 240px; margin: 10px 0; }
+.node { position: absolute; border-radius: 8px; padding: 8px 12px; font-size: 12px; text-align: center; border: 2px solid; }
+.node.host { background: #f0fdf4; border-color: #059669; width: 110px; }
+.node.proxy { background: #fefce8; border-color: #ca8a04; width: 130px; }
+.node.origin { background: #eff6ff; border-color: #2563eb; width: 130px; }
+.node-title { font-weight: 700; font-size: 13px; }
+.node-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.arrow-label { position: absolute; font-size: 11px; font-weight: 700; }
+.step-desc { font-size: 13px; line-height: 1.7; }
+
+table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 13px; }
+td { padding: 6px 8px; border: 1px solid var(--border); }
+.th { background: var(--bg); font-weight: 700; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24;
+  }
+  .node.host { background: #1a2e1f; border-color: #10b981; }
+  .node.proxy { background: #2a2410; border-color: #fbbf24; }
+  .node.origin { background: #1e293b; border-color: #3b82f6; }
+  .th { background: #1e293b; }
+  button { border-color: #52616b; }
+}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>万维网缓存与代理服务器 — 三种工作场景</h1></header>
+
+  <!-- Page 1: Cache hit -->
+  <section class="slide active">
+    <h2><span class="step-num">1</span> 场景一：缓存命中 — 直接返回</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.3;">
+        <div class="diagram" style="height:160px;">
+          <div class="node host" style="left:20px;top:60px;">
+            <div class="node-title">用户主机</div>
+            <div class="node-sub">请求 index.htm</div>
+          </div>
+          <div class="node proxy" style="left:300px;top:60px;">
+            <div class="node-title">代理服务器</div>
+            <div class="node-sub">缓存中有 index.htm 且未过期</div>
+          </div>
+          <div class="node origin" style="left:600px;top:60px;">
+            <div class="node-title">原始服务器</div>
+            <div class="node-sub">（不参与）</div>
+          </div>
+          <div style="position:absolute;left:130px;top:55px;width:170px;text-align:center;">
+            <div style="height:2px;background:var(--green);"></div>
+            <div style="font-size:10px;font-weight:700;color:var(--green);">① HTTP 请求</div>
+          </div>
+          <div style="position:absolute;left:130px;top:90px;width:170px;text-align:center;">
+            <div style="height:2px;background:var(--green);"></div>
+          </div>
+          <div style="position:absolute;left:160px;top:90px;font-size:10px;font-weight:700;color:var(--green);">② 直接返回缓存副本</div>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="step-desc">
+          代理服务器缓存中有用户请求的文档（如 <code>index.htm</code>），且文档<strong>未过期</strong>。<br><br>
+          代理服务器直接从自己的 Web 缓存中取出文档，封装在 HTTP 响应报文中返回给用户主机。<br><br>
+          <strong>原始服务器完全不参与这次请求。</strong>
+        </p>
+        <p style="font-size:13px;color:var(--green);font-weight:700;">最快响应，零因特网流量。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 2: Cache miss -->
+  <section class="slide">
+    <h2><span class="step-num">2</span> 场景二：缓存未命中 — 代理向原始服务器请求</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.3;">
+        <div class="diagram" style="height:180px;">
+          <div class="node host" style="left:20px;top:60px;">
+            <div class="node-title">用户主机</div>
+            <div class="node-sub">请求 index.htm</div>
+          </div>
+          <div class="node proxy" style="left:250px;top:60px;">
+            <div class="node-title">代理服务器</div>
+            <div class="node-sub">缓存中无 index.htm</div>
+          </div>
+          <div class="node origin" style="left:550px;top:60px;">
+            <div class="node-title">原始服务器</div>
+            <div class="node-sub">存有 index.htm</div>
+          </div>
+          <div style="position:absolute;left:130px;top:50px;width:120px;text-align:center;">
+            <div style="height:2px;background:var(--blue);"></div>
+            <div style="font-size:10px;color:var(--blue);">① 请求</div>
+          </div>
+          <div style="position:absolute;left:380px;top:50px;width:170px;text-align:center;">
+            <div style="height:2px;background:var(--blue);"></div>
+            <div style="font-size:10px;color:var(--blue);">② 代理请求原始服务器</div>
+          </div>
+          <div style="position:absolute;left:380px;top:85px;width:170px;text-align:center;">
+            <div style="height:2px;background:var(--green);"></div>
+            <div style="font-size:10px;color:var(--green);">③ 返回文档</div>
+          </div>
+          <div style="position:absolute;left:130px;top:120px;width:120px;text-align:center;">
+            <div style="height:2px;background:var(--green);"></div>
+            <div style="font-size:10px;color:var(--green);">④ 返回文档</div>
+          </div>
+          <div class="node" style="left:250px;top:130px;width:130px;background:#f0fdf4;border-color:#059669;border-style:dashed;">
+            <div class="node-sub" style="color:#059669;">存入缓存</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="step-desc">
+          代理服务器缓存中<strong>没有</strong>用户请求的文档。<br><br>
+          ① 用户主机向代理服务器发请求。<br>
+          ② 代理服务器向因特网上的<strong>原始服务器</strong>发请求。<br>
+          ③ 原始服务器返回文档。<br>
+          ④ 代理服务器将文档<strong>存入 Web 缓存</strong>，同时返回给用户主机。
+        </p>
+        <p style="font-size:13px;color:var(--amber);font-weight:700;">首次请求较慢，但后续相同请求可以命中缓存。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 3: Cache expired - validation -->
+  <section class="slide">
+    <h2><span class="step-num">3</span> 场景三：缓存过期 — 向原始服务器验证</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.3;">
+        <div class="diagram" style="height:220px;">
+          <div class="node host" style="left:20px;top:60px;">
+            <div class="node-title">用户主机</div>
+            <div class="node-sub">请求 index.htm</div>
+          </div>
+          <div class="node proxy" style="left:250px;top:60px;">
+            <div class="node-title">代理服务器</div>
+            <div class="node-sub">缓存中有 index.htm 但已过期</div>
+          </div>
+          <div class="node origin" style="left:550px;top:60px;">
+            <div class="node-title">原始服务器</div>
+            <div class="node-sub">比较修改时间</div>
+          </div>
+          <div style="position:absolute;left:380px;top:95px;width:170px;text-align:center;">
+            <div style="height:2px;background:var(--blue);"></div>
+            <div style="font-size:10px;color:var(--blue);">If-modified-since: 某日期</div>
+          </div>
+          <div style="position:absolute;left:380px;top:130px;width:170px;text-align:center;">
+            <div style="height:2px;background:var(--green);"></div>
+            <div style="font-size:10px;color:var(--green);">304 Not Modified（未修改）</div>
+            <div style="font-size:10px;color:var(--red);margin-top:20px;">或 200 OK + 新文档（已修改）</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="step-desc">
+          代理服务器缓存中有文档但<strong>已过期</strong>。需要向原始服务器验证文档是否有变化。<br><br>
+          代理服务器发送请求，携带 <code>If-modified-since</code> 首部（值为缓存文档的最后修改日期）：<br><br>
+          • <strong>文档未修改</strong> → 原始服务器返回 <code style="color:var(--green);">304 Not Modified</code>（不含实体主体），代理服务器更新该文档的有效日期后返回给用户。<br>
+          • <strong>文档已修改</strong> → 原始服务器返回 <code style="color:var(--red);">200 OK</code> 和新文档，代理服务器更新缓存和有效期后返回给用户。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 4: Summary -->
+  <section class="slide">
+    <h2><span class="step-num">★</span> 代理服务器的三大作用</h2>
+    <div class="row">
+      <div class="panel">
+        <table>
+          <tr class="th"><td>作用</td><td>说明</td></tr>
+          <tr><td><strong>减少出口带宽</strong></td><td>同一个网络（如校园网）内多个用户请求相同的因特网资源时，只需从原始服务器获取一次，后续请求从代理服务器的缓存返回。</td></tr>
+          <tr><td><strong>降低访问延迟</strong></td><td>缓存命中时，响应从本地代理服务器返回——通常比跨因特网从原始服务器获取快得多。</td></tr>
+          <tr><td><strong>减轻原始服务器负载</strong></td><td>大量重复请求被代理服务器拦截并缓存返回，不会到达原始服务器。</td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <p style="font-weight:700;">缓存一致性的关键首部</p>
+        <table>
+          <tr class="th"><td>首部字段</td><td>来源</td><td>含义</td></tr>
+          <tr><td><code>Last-Modified</code></td><td>响应报文</td><td>文档的最后修改时间</td></tr>
+          <tr><td><code>Expires</code></td><td>响应报文</td><td>文档的有效期</td></tr>
+          <tr><td><code>If-modified-since</code></td><td>请求报文</td><td>向服务器验证：自此时间后文档是否修改</td></tr>
+        </table>
+        <p style="font-size:13px;color:var(--muted);margin-top:10px;">
+          核心流程：原始服务器用 <code>Last-Modified</code> 和 <code>Expires</code> 告知缓存策略 → 代理服务器缓存过期后用 <code>If-modified-since</code> 验证 → 未修改返回 304，已修改返回 200+新文档。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+function show(n) {
+  index = (n + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>后缀表达式求值</title>
+  <style>
+    :root{--ink:#17212b;--muted:#5b6876;--line:#334e68;--accent:#0f766e;--warn:#b45309;--bg:#f8fafc;--panel:#fff;--cell:#eef6ff;--code:#111827;--codeText:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header,footer{padding:18px 28px;background:var(--panel);border-bottom:1px solid #dbe3ea}footer{border-top:1px solid #dbe3ea;border-bottom:0;display:flex;justify-content:space-between;align-items:center}.slide{display:none;padding:28px;gap:24px;grid-template-columns:1fr 1fr;align-items:start}.slide.active{display:grid}h1{font-size:24px;margin:0}h2{font-size:27px;margin:0 0 12px}p{font-size:18px;line-height:1.65}.panel{background:var(--panel);border:1px solid #d8e1e8;border-radius:8px;padding:20px}.tokens{display:flex;gap:8px;margin:20px 0}.tok{min-width:48px;height:44px;border:2px solid var(--line);border-radius:8px;background:var(--cell);display:grid;place-items:center;font-weight:700}.mark{outline:4px solid var(--warn);outline-offset:-4px}.stack{display:flex;flex-direction:column-reverse;align-items:flex-start;gap:6px;min-height:150px}.cell{width:120px;height:42px;border:2px solid var(--line);border-radius:8px;background:var(--cell);display:grid;place-items:center;font-weight:700}pre{margin:0;background:var(--code);color:var(--codeText);border-radius:8px;padding:18px;overflow:auto;font-size:16px;line-height:1.55}code{font-family:Consolas,monospace}.count{color:var(--muted)}button{border:1px solid #a7b4c2;background:var(--panel);color:var(--ink);border-radius:6px;padding:9px 14px;font-size:15px;cursor:pointer}
+    @media (prefers-color-scheme:dark){:root{--ink:#e6edf3;--muted:#b8c4cf;--line:#9ccfd8;--accent:#5eead4;--warn:#f6c177;--bg:#0f1720;--panel:#16212c;--cell:#16212c;--code:#080d13;--codeText:#e6edf3}header,footer,.panel{border-color:#2c3a47}button{border-color:#52616b}}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>后缀表达式求值</h1></header>
+  <section class="slide active">
+    <div class="panel">
+      <h2>1. 操作数入栈</h2>
+      <p>以后缀表达式 <code>2 3 + 4 *</code> 为例。扫描到操作数时直接入栈。</p>
+      <div class="tokens"><div class="tok mark">2</div><div class="tok">3</div><div class="tok">+</div><div class="tok">4</div><div class="tok">*</div></div>
+      <div class="stack"><div class="cell">2</div></div>
+    </div>
+    <pre><code>if (token is operand) {
+    Push(&stack, token.value);
+}</code></pre>
+  </section>
+  <section class="slide">
+    <div class="panel">
+      <h2>2. 运算符弹出两个操作数</h2>
+      <p>扫描到 <code>+</code> 时，先弹出右操作数，再弹出左操作数。</p>
+      <div class="tokens"><div class="tok">2</div><div class="tok">3</div><div class="tok mark">+</div><div class="tok">4</div><div class="tok">*</div></div>
+      <div class="stack"><div class="cell">2</div><div class="cell">3</div></div>
+    </div>
+    <pre><code>Pop(&stack, &right);
+Pop(&stack, &left);
+result = left + right;</code></pre>
+  </section>
+  <section class="slide">
+    <div class="panel">
+      <h2>3. 结果再入栈</h2>
+      <p><code>2 + 3 = 5</code>，把结果压回栈，继续扫描后面的 token。</p>
+      <div class="tokens"><div class="tok">2</div><div class="tok">3</div><div class="tok">+</div><div class="tok mark">4</div><div class="tok">*</div></div>
+      <div class="stack"><div class="cell">5</div><div class="cell">4</div></div>
+    </div>
+    <pre><code>Push(&stack, result);</code></pre>
+  </section>
+  <section class="slide">
+    <div class="panel">
+      <h2>4. 最后栈顶就是结果</h2>
+      <p>扫描到 <code>*</code>，计算 <code>5 * 4</code>，最终结果为 <code>20</code>。</p>
+      <div class="tokens"><div class="tok">2</div><div class="tok">3</div><div class="tok">+</div><div class="tok">4</div><div class="tok mark">*</div></div>
+      <div class="stack"><div class="cell">20</div></div>
+    </div>
+    <pre><code>Pop(&stack, &result);
+return result;</code></pre>
+  </section>
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides=[...document.querySelectorAll(".slide")];let index=0;const count=document.getElementById("count");function show(i){index=(i+slides.length)%slides.length;slides.forEach((s,n)=>s.classList.toggle("active",n===index));count.textContent=`${index+1} / ${slides.length}`;}document.getElementById("prev").onclick=()=>show(index-1);document.getElementById("next").onclick=()=>show(index+1);addEventListener("keydown",e=>{if(e.key==="ArrowRight")show(index+1);if(e.key==="ArrowLeft")show(index-1);});show(0);
+</script>
+</body>
+</html>

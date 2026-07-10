@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="430" viewBox="0 0 1040 430" role="img" aria-labelledby="title desc">
+  <title id="title">外存、主存与 I/O 设备关系</title>
+  <desc id="desc">展示 CPU 直接访问主存，辅存数据通常先调入主存，同时外存设备也属于 I/O 设备。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--text:#172033;--muted:#536171;--line:#8090a3;--cpu:#2563eb;--mem:#059669;--io:#d97706;--soft1:#dbeafe;--soft2:#d1fae5;--soft3:#ffedd5;--panel:#f8fafc}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--text:#e5e7eb;--muted:#aab4c3;--line:#687386;--cpu:#60a5fa;--mem:#34d399;--io:#fbbf24;--soft1:#172554;--soft2:#064e3b;--soft3:#451a03;--panel:#111827}}
+    .bg{fill:var(--bg)}.title{fill:var(--text);font:700 26px "Microsoft YaHei",sans-serif}.h{fill:var(--text);font:700 19px "Microsoft YaHei",sans-serif}.body{fill:var(--muted);font:15px "Microsoft YaHei",sans-serif}.box{rx:12;stroke-width:2}.line{stroke:var(--line);stroke-width:2.5;fill:none;marker-end:url(#a)}.dash{stroke-dasharray:8 7}.panel{fill:var(--panel);stroke:var(--line);stroke-width:1.4;rx:12}
+  </style>
+  <defs><marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1040" height="430"/>
+  <text class="title" x="52" y="54">外存既是存储层次的一层，也是 I/O 设备</text>
+  <rect class="box" x="80" y="132" width="170" height="86" fill="var(--soft1)" stroke="var(--cpu)"/>
+  <text class="h" x="165" y="166" text-anchor="middle">CPU</text>
+  <text class="body" x="165" y="194" text-anchor="middle">执行指令、访问地址</text>
+  <rect class="box" x="430" y="118" width="190" height="112" fill="var(--soft2)" stroke="var(--mem)"/>
+  <text class="h" x="525" y="154" text-anchor="middle">主存</text>
+  <text class="body" x="525" y="184" text-anchor="middle">CPU 可直接读写</text>
+  <text class="body" x="525" y="208" text-anchor="middle">断电后通常丢失</text>
+  <rect class="box" x="780" y="118" width="190" height="112" fill="var(--soft3)" stroke="var(--io)"/>
+  <text class="h" x="875" y="154" text-anchor="middle">辅存 / 外存</text>
+  <text class="body" x="875" y="184" text-anchor="middle">磁盘、SSD、U 盘</text>
+  <text class="body" x="875" y="208" text-anchor="middle">非易失、大容量</text>
+  <path class="line" d="M250 175 H430"/>
+  <path class="line dash" d="M620 175 H780"/>
+  <text class="body" x="340" y="158" text-anchor="middle">直接访存</text>
+  <text class="body" x="700" y="158" text-anchor="middle">块调入 / 写回</text>
+  <rect class="panel" x="180" y="294" width="680" height="76"/>
+  <text class="body" x="520" y="326" text-anchor="middle">CPU 通常不能直接执行辅存中的指令，也不能像访问主存一样直接访问辅存。</text>
+  <text class="body" x="520" y="352" text-anchor="middle">外存中的数据要进入主存后，才成为 CPU 可直接处理的数据。</text>
+</svg>

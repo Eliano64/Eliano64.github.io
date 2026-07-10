@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Readers Writers Count Race</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --line: #cbd5e1;
+      --text: #172033;
+      --muted: #64748b;
+      --blue: #dbeafe;
+      --blue-line: #2563eb;
+      --red: #fee2e2;
+      --red-line: #dc2626;
+      --yellow: #fef3c7;
+      --yellow-line: #d97706;
+      --code-bg: #f1f5f9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --line: #334155;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --blue: #1e3a8a;
+        --blue-line: #60a5fa;
+        --red: #7f1d1d;
+        --red-line: #f87171;
+        --yellow: #713f12;
+        --yellow-line: #fbbf24;
+        --code-bg: #020617;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .deck {
+      min-height: 690px;
+      padding: 28px 34px 24px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+    }
+    header { display: flex; justify-content: space-between; align-items: end; gap: 18px; }
+    h1 { margin: 0; font-size: 30px; }
+    .step { color: var(--muted); font-size: 18px; }
+    .stage {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 22px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+      min-height: 470px;
+    }
+    .timeline {
+      display: grid;
+      grid-template-columns: 120px 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .cell {
+      min-height: 58px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 12px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+    }
+    .cell:nth-child(3n) { border-right: 0; }
+    .head { font-weight: 700; background: var(--bg); }
+    .on { background: var(--yellow); outline: 2px solid var(--yellow-line); outline-offset: -2px; }
+    .bad { background: var(--red); outline: 2px solid var(--red-line); outline-offset: -2px; }
+    .ok { background: var(--blue); outline: 2px solid var(--blue-line); outline-offset: -2px; }
+    h2 { margin: 0 0 14px; font-size: 25px; }
+    p { margin: 0 0 13px; font-size: 20px; line-height: 1.55; }
+    code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; }
+    .state {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--bg);
+      min-height: 58px;
+      padding: 10px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .controls { display: flex; justify-content: center; gap: 10px; }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue-line); }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <h1>为什么 count 必须用 mutex 保护</h1>
+      <div class="step" id="stepLabel"></div>
+    </header>
+    <main class="stage">
+      <section class="panel">
+        <div class="timeline" id="timeline"></div>
+      </section>
+      <section class="panel">
+        <h2 id="title"></h2>
+        <p id="body1"></p>
+        <p id="body2"></p>
+        <div class="state">
+          <div class="box" id="s1"></div>
+          <div class="box" id="s2"></div>
+          <div class="box" id="s3"></div>
+        </div>
+      </section>
+    </main>
+    <nav class="controls">
+      <button id="prev" type="button">上一步</button>
+      <button id="next" type="button">下一步</button>
+    </nav>
+  </div>
+  <script>
+    const rows = [
+      ["时刻", "R1", "R2"],
+      ["1", "读取 count，看到 0", ""],
+      ["2", "", "读取 count，也看到 0"],
+      ["3", "执行 P(rw)", ""],
+      ["4", "", "也执行 P(rw)"],
+      ["5", "count++", "等待 rw 或错误阻塞"]
+    ];
+    const steps = [
+      {
+        title: "两个读者几乎同时到达",
+        body1: "假设没有 <code>mutex</code>，<code>count</code> 的判断和修改不是一个不可分割动作。",
+        body2: "两个读者都可能在 <code>count</code> 还是 0 时读到这个旧值。",
+        state: ["count = 0", "rw = 1", "没有保护 count"],
+        hi: [1, 2]
+      },
+      {
+        title: "两个读者都以为自己是第一个",
+        body1: "R1 和 R2 都满足 <code>if count == 0</code>，于是都准备执行 <code>P(rw)</code>。",
+        body2: "但只有真正第一个读者应该锁住 <code>rw</code>；后续读者应该共享已经锁住的读者组访问权。",
+        state: ["两个 if 都为真", "职责重复", "逻辑已经错位"],
+        hi: [3, 4]
+      },
+      {
+        title: "第二个读者可能被错误阻塞",
+        body1: "R1 执行 <code>P(rw)</code> 后，<code>rw</code> 变为 0。R2 再执行 <code>P(rw)</code> 就会被阻塞。",
+        body2: "这违反了读读共享：两个读者本来可以同时读，却因为 <code>count</code> 竞态变成互相阻塞。",
+        state: ["rw = 0", "R2 阻塞", "读读共享被破坏"],
+        hi: [3, 4, 5],
+        bad: true
+      },
+      {
+        title: "用 mutex 把检查和修改包起来",
+        body1: "正确做法是：进入读者组前先 <code>P(mutex)</code>，完成 <code>if count == 0</code>、必要的 <code>P(rw)</code>、<code>count++</code> 后再 <code>V(mutex)</code>。",
+        body2: "退出读者组时，对 <code>count--</code> 和 <code>if count == 0</code> 的检查也必须同样保护。",
+        state: ["检查互斥", "修改互斥", "第一个/最后一个才准确"],
+        hi: [],
+        ok: true
+      }
+    ];
+    let i = 0;
+    function build() {
+      const tl = document.getElementById("timeline");
+      tl.innerHTML = "";
+      rows.forEach((row, idx) => {
+        row.forEach((text, col) => {
+          const div = document.createElement("div");
+          div.className = "cell" + (idx === 0 ? " head" : "");
+          div.dataset.row = idx;
+          div.textContent = text;
+          tl.appendChild(div);
+        });
+      });
+    }
+    function render() {
+      const step = steps[i];
+      document.getElementById("stepLabel").textContent = `${i + 1} / ${steps.length}`;
+      document.getElementById("title").innerHTML = step.title;
+      document.getElementById("body1").innerHTML = step.body1;
+      document.getElementById("body2").innerHTML = step.body2;
+      document.getElementById("s1").textContent = step.state[0];
+      document.getElementById("s2").textContent = step.state[1];
+      document.getElementById("s3").textContent = step.state[2];
+      document.querySelectorAll(".cell").forEach(cell => {
+        cell.classList.remove("on", "bad", "ok");
+        const row = Number(cell.dataset.row);
+        if (step.hi.includes(row)) cell.classList.add(step.bad ? "bad" : "on");
+        if (step.ok && row > 0) cell.classList.add("ok");
+      });
+    }
+    build();
+    document.getElementById("prev").addEventListener("click", () => { i = Math.max(0, i - 1); render(); });
+    document.getElementById("next").addEventListener("click", () => { i = Math.min(steps.length - 1, i + 1); render(); });
+    render();
+  </script>
+</body>
+</html>

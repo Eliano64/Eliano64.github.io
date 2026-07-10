@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bubble Sort</title>
+<style>
+:root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--ok:#059669;--warn:#d97706;--blue:#2563eb;--red:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--ok:#34d399;--warn:#fbbf24;--blue:#60a5fa;--red:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{padding:22px;max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.title{font-weight:800;font-size:22px}.btns{display:flex;gap:8px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:8px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px}.array{display:flex;gap:8px;align-items:flex-start;min-height:132px;flex-wrap:wrap}.cell{width:58px;border:2px solid var(--line);background:var(--bg);border-radius:10px;text-align:center;padding:9px 2px;position:relative}.v{font-size:20px;font-weight:800}.i{font-size:11px;color:var(--muted);margin-top:3px}.cmp{border-color:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 25%,transparent)}.fixed{border-color:var(--ok)}.swap{border-color:var(--blue);transform:translateY(-8px)}.note{font-size:16px;line-height:1.75}.code{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-family:Consolas,monospace;font-size:13px;line-height:1.45}.progress{color:var(--muted);font-size:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.cell{width:50px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="title">冒泡排序：相邻逆序才交换</div><div id="progress" class="progress"></div></div>
+    <div class="btns"><button id="prev" class="btn">上一步</button><button id="next" class="btn">下一步</button></div>
+  </div>
+  <div class="grid">
+    <div class="panel"><div id="array" class="array"></div></div>
+    <div class="panel"><div id="note" class="note"></div><div id="code" class="code"></div></div>
+  </div>
+</div>
+<script>
+const steps=[
+{a:[49,38,65,97,76,13,27,49],cmp:[6,7],n:"这里演示从后向前冒泡。每趟把当前无序区中最小的元素冒到最前面。",c:"for (int j = n - 1; j > i; j--)"},
+{a:[49,38,65,97,76,13,27,49],cmp:[5,6],n:"比较相邻元素 27 和 49，顺序正确，不交换。",c:"if (a[j - 1] > a[j]) swap(...);"},
+{a:[49,38,65,97,76,13,27,49],cmp:[4,5],n:"比较 13 和 27，顺序正确，不交换。",c:"// equal or ordered: no swap"},
+{a:[49,38,65,97,13,76,27,49],cmp:[4,5],swap:[4,5],n:"比较 76 和 13，逆序，交换。较小元素向前移动。",c:"swap(&a[j - 1], &a[j]);"},
+{a:[49,38,65,13,97,76,27,49],cmp:[3,4],swap:[3,4],n:"继续向前比较，13 又跨过 97。",c:"swapped = true;"},
+{a:[49,38,13,65,97,76,27,49],cmp:[2,3],swap:[2,3],n:"13 跨过 65。注意每次只交换相邻元素。",c:"// adjacent swap only"},
+{a:[49,13,38,65,97,76,27,49],cmp:[1,2],swap:[1,2],n:"13 跨过 38。",c:""},
+{a:[13,49,38,65,97,76,27,49],cmp:[0,1],swap:[0,1],fixed:[0],n:"第一趟结束，最小元素 13 到达最终位置。",c:"// a[0] is fixed"},
+{a:[13,27,38,49,49,65,76,97],fixed:[0,1,2,3,4,5,6,7],n:"若某一趟没有发生交换，说明当前序列已经整体有序，可以提前停止。",c:"if (!swapped) break;"}
+];
+let k=0;
+function render(){const s=steps[k], arr=document.getElementById('array');arr.innerHTML='';s.a.forEach((v,i)=>{const d=document.createElement('div');d.className='cell';if(s.cmp?.includes(i))d.classList.add('cmp');if(s.swap?.includes(i))d.classList.add('swap');if(s.fixed?.includes(i))d.classList.add('fixed');d.innerHTML=`<div class="v">${v}</div><div class="i">${i}</div>`;arr.appendChild(d)});note.textContent=s.n;code.textContent=s.c;progress.textContent=`${k+1} / ${steps.length}`;}
+prev.onclick=()=>{k=(k-1+steps.length)%steps.length;render()};next.onclick=()=>{k=(k+1)%steps.length;render()};render();
+</script>
+</body>
+</html>

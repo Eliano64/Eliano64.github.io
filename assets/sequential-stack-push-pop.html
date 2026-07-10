@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>顺序栈进栈与出栈</title>
+  <style>
+    :root{--ink:#17212b;--muted:#5b6876;--line:#334e68;--accent:#0f766e;--warn:#b45309;--bg:#f8fafc;--panel:#fff;--cell:#eef6ff;--code:#111827;--codeText:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header,footer{padding:18px 28px;background:var(--panel);border-bottom:1px solid #dbe3ea}footer{border-top:1px solid #dbe3ea;border-bottom:0;display:flex;justify-content:space-between;align-items:center}h1{font-size:24px;margin:0}.slide{display:none;padding:28px;gap:24px;grid-template-columns:1fr 1fr;align-items:start}.slide.active{display:grid}h2{font-size:27px;margin:0 0 12px}p{font-size:18px;line-height:1.65}.panel{background:var(--panel);border:1px solid #d8e1e8;border-radius:8px;padding:20px}pre{margin:0;background:var(--code);color:var(--codeText);border-radius:8px;padding:18px;overflow:auto;font-size:16px;line-height:1.55}code{font-family:Consolas,monospace}.stack{height:310px;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;gap:6px;padding-top:12px}.cell{width:160px;height:48px;border:2px solid var(--line);border-radius:8px;background:var(--cell);display:grid;place-items:center;font-weight:700;font-size:20px}.empty{background:transparent;border-style:dashed;color:var(--muted)}.mark{outline:4px solid var(--warn);outline-offset:-4px}.label{color:var(--muted);font-weight:700}.count{color:var(--muted)}button{border:1px solid #a7b4c2;background:var(--panel);color:var(--ink);border-radius:6px;padding:9px 14px;font-size:15px;cursor:pointer}
+    @media (prefers-color-scheme:dark){:root{--ink:#e6edf3;--muted:#b8c4cf;--line:#9ccfd8;--accent:#5eead4;--warn:#f6c177;--bg:#0f1720;--panel:#16212c;--cell:#16212c;--code:#080d13;--codeText:#e6edf3}header,footer,.panel{border-color:#2c3a47}button{border-color:#52616b}}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>顺序栈进栈与出栈</h1></header>
+  <section class="slide active">
+    <div class="panel">
+      <h2>1. 空栈</h2>
+      <p><code>top</code> 指向栈顶元素。空栈没有栈顶元素，所以令 <code>top = -1</code>。</p>
+      <div class="stack"><div class="cell empty">data[0]</div><div class="cell empty">data[1]</div><div class="cell empty">data[2]</div><div class="cell empty">data[3]</div></div>
+      <div class="label">top = -1</div>
+    </div>
+    <pre><code>void InitStack(SqStack *stack) {
+    stack->top = -1;
+}</code></pre>
+  </section>
+  <section class="slide">
+    <div class="panel">
+      <h2>2. 进栈：top 先上移</h2>
+      <p>栈未满时，先让 <code>top++</code> 指向新栈顶位置，再写入元素。</p>
+      <div class="stack"><div class="cell mark">x</div><div class="cell empty">data[1]</div><div class="cell empty">data[2]</div><div class="cell empty">data[3]</div></div>
+      <div class="label">top = 0</div>
+    </div>
+    <pre><code>if (stack->top == MaxSize - 1) return false;
+stack->top++;
+stack->data[stack->top] = value;</code></pre>
+  </section>
+  <section class="slide">
+    <div class="panel">
+      <h2>3. 出栈：先取值再下移</h2>
+      <p>栈非空时，先读取当前栈顶，再令 <code>top--</code>。读写顺序反了会取不到正确元素。</p>
+      <div class="stack"><div class="cell">a1</div><div class="cell mark">a2</div><div class="cell empty">data[2]</div><div class="cell empty">data[3]</div></div>
+      <div class="label">pop a2, then top = 0</div>
+    </div>
+    <pre><code>if (stack->top == -1) return false;
+*value = stack->data[stack->top];
+stack->top--;</code></pre>
+  </section>
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides=[...document.querySelectorAll(".slide")];let index=0;const count=document.getElementById("count");function show(i){index=(i+slides.length)%slides.length;slides.forEach((s,n)=>s.classList.toggle("active",n===index));count.textContent=`${index+1} / ${slides.length}`;}document.getElementById("prev").onclick=()=>show(index-1);document.getElementById("next").onclick=()=>show(index+1);addEventListener("keydown",e=>{if(e.key==="ArrowRight")show(index+1);if(e.key==="ArrowLeft")show(index-1);});show(0);
+</script>
+</body>
+</html>

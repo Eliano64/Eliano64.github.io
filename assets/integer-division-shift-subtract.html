@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Divider Logic Structure</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8f6;
+      --panel: #fff;
+      --text: #20242a;
+      --muted: #5b6570;
+      --line: #20242a;
+      --soft: #cbd4dd;
+      --active: #d98600;
+      --data: #2d6f9f;
+      --control: #7a4bb3;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #151719;
+        --panel: #20252a;
+        --text: #edf0f2;
+        --muted: #aeb7c0;
+        --line: #edf0f2;
+        --soft: #3a424b;
+        --active: #ffb84d;
+        --data: #82bee8;
+        --control: #c7a8ff;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+    main { max-width: 1120px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    .sub { margin: 0 0 16px; color: var(--muted); }
+    .stage { background: var(--panel); border: 1px solid var(--soft); border-radius: 8px; padding: 14px; }
+    svg { width: 100%; height: auto; display: block; }
+    .box, .alu, .ctrl { fill: var(--panel); stroke: var(--line); stroke-width: 2.4; }
+    .alu { stroke-width: 3; }
+    .ctrl { rx: 24; }
+    .label { fill: var(--text); font: 700 22px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: var(--muted); font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .value { fill: var(--data); font: 700 20px Consolas, monospace; }
+    .wire { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+    .control { stroke: var(--control); stroke-width: 2.2; stroke-dasharray: 8 7; fill: none; marker-end: url(#arrowCtrl); }
+    .active { stroke: var(--active) !important; stroke-width: 5 !important; }
+    .node-active { stroke: var(--active) !important; stroke-width: 4 !important; }
+    .caption { margin-top: 14px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 14px; }
+    .panel { background: var(--panel); border: 1px solid var(--soft); border-radius: 8px; padding: 14px; }
+    .hint { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .mono { font: 20px/1.6 Consolas, "Microsoft YaHei", monospace; white-space: pre-wrap; }
+    .controls { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+    button { border: 1px solid var(--soft); background: var(--panel); color: var(--text); border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; }
+    button:hover { border-color: var(--data); }
+    .status { color: var(--muted); }
+    @media (max-width: 760px) { main { padding: 14px; } .caption { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>恢复余数除法运算器逻辑结构</h1>
+  <p class="sub">例：13 ÷ 3。先做入口判定；需要逐位试减时，`Y` 保存除数，`R` 保存余数，`Q` 初始保存被除数并逐步写入商。</p>
+  <section class="stage">
+    <svg viewBox="0 0 1080 560" role="img" aria-label="恢复余数除法运算器逻辑结构">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="currentColor"></path>
+        </marker>
+        <marker id="arrowCtrl" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+
+      <rect id="node-y" class="box" x="360" y="26" width="260" height="62"></rect>
+      <text class="label" x="420" y="65">除数寄存器 Y</text>
+      <text id="val-y" class="value" x="468" y="112">0011</text>
+
+      <path id="node-alu" class="alu" d="M285 150 L470 150 L500 182 L530 150 L715 150 L660 252 L340 252 Z"></path>
+      <text class="label" x="424" y="208">32 位 ALU</text>
+      <text class="small" x="732" y="205">加 / 减</text>
+
+      <rect id="node-r" class="box" x="260" y="330" width="306" height="72"></rect>
+      <text class="label" x="324" y="370">余数寄存器 R</text>
+      <text id="val-r" class="value" x="378" y="428">0000</text>
+
+      <rect id="node-q" class="box" x="566" y="330" width="306" height="72"></rect>
+      <text class="label" x="618" y="370">余数/商寄存器 Q</text>
+      <text id="val-q" class="value" x="690" y="428">1101</text>
+      <text class="small" x="498" y="320">64 位</text>
+
+      <rect id="node-ctrl" class="ctrl" x="810" y="186" width="230" height="112" rx="28"></rect>
+      <text class="label" x="856" y="224">控制逻辑</text>
+      <text class="label" x="870" y="257">计数器 Cn</text>
+      <text id="val-judge" class="small" x="858" y="282">判断 R 正负</text>
+
+      <path id="w-y-alu" class="wire" d="M490 88 V150"></path>
+      <text class="small" x="512" y="125">32</text>
+      <path id="w-r-alu" class="wire" d="M410 330 V252"></path>
+      <text class="small" x="428" y="300">32</text>
+      <path id="w-alu-r" class="wire" d="M500 252 V330"></path>
+      <text class="small" x="518" y="295">32</text>
+      <path id="w-shift" class="wire" d="M827 318 H300"></path>
+      <text class="label" x="674" y="310">左移</text>
+      <path id="w-r-ctrl" class="wire" d="M500 402 V490 H930 V298"></path>
+      <text class="small" x="535" y="490">R 正负送控制逻辑</text>
+      <path id="w-ctrl-alu" class="control" d="M810 218 H715"></path>
+      <text class="small" x="744" y="208">加/减</text>
+      <path id="w-ctrl-shift" class="control" d="M810 258 H872 V330"></path>
+      <text class="small" x="890" y="320">左移</text>
+      <path id="w-ctrl-q" class="control" d="M810 292 H872 V394"></path>
+      <text class="small" x="890" y="386">写商位</text>
+    </svg>
+  </section>
+
+  <section class="caption">
+    <div class="panel">
+      <div class="hint">当前步骤</div>
+      <div id="step" class="mono"></div>
+    </div>
+    <div class="panel">
+      <div class="hint">寄存器观察</div>
+      <div id="state" class="mono"></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button id="prev">上一步</button>
+    <button id="next">下一步</button>
+    <span id="status" class="status"></span>
+  </div>
+</main>
+<script>
+  const steps = [
+    { y:"0000", r:"----", q:"----", judge:"入口判定", active:["node-y","node-q","node-ctrl"], step:"入口判定 1：若除数 Y=0，除法无定义，不能启动除法运算。", state:"Y = 0\n停止" },
+    { y:"0011", r:"0000", q:"0010", judge:"直接结束", active:["node-y","node-r","node-q","node-ctrl"], step:"入口判定 2：若 |被除数| < |除数|，商为 0，余数为被除数。", state:"例：2 ÷ 3\n商 = 0000\n余数 = 0010" },
+    { y:"0011", r:"0000", q:"1101", judge:"进入迭代", active:["node-y","node-r","node-q","node-ctrl"], step:"13 ÷ 3 不属于直接结束情况，进入恢复余数除法。初始化：Y=0011，R=0000，Q=1101，Cn=4。", state:"R|Q = 0000 1101" },
+    { r:"0001", q:"1010", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 1 轮，左移：R|Q 整体左移 1 位。", state:"0000 1101 << 1\n= 0001 1010" },
+    { r:"1110", q:"1010", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 1 轮，试减：R = R - Y。结果为负，说明不够减。", state:"0001 - 0011 = 1110\nR 为负" },
+    { r:"0001", q:"1010", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 1 轮，恢复：R = R + Y，Q0 写 0。", state:"1110 + 0011 = 0001\nQ = 1010\nCn=3" },
+    { r:"0011", q:"0100", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 2 轮，左移：R|Q 整体左移 1 位。", state:"0001 1010 << 1\n= 0011 0100" },
+    { r:"0000", q:"0100", judge:"试减非负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 2 轮，试减：R = R - Y。结果非负，说明够减。", state:"0011 - 0011 = 0000\nR 非负" },
+    { r:"0000", q:"0101", judge:"写1", active:["node-q","node-ctrl","w-ctrl-q"], step:"第 2 轮，保留 R，Q0 写 1。", state:"Q = 0101\nCn=2" },
+    { r:"0000", q:"1010", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 3 轮，左移：R|Q 整体左移 1 位。", state:"0000 0101 << 1\n= 0000 1010" },
+    { r:"1101", q:"1010", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 3 轮，试减：R = R - Y。结果为负，不够减。", state:"0000 - 0011 = 1101\nR 为负" },
+    { r:"0000", q:"1010", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 3 轮，恢复 R，Q0 写 0。", state:"1101 + 0011 = 0000\nQ = 1010\nCn=1" },
+    { r:"0001", q:"0100", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 4 轮，左移：R|Q 整体左移 1 位。", state:"0000 1010 << 1\n= 0001 0100" },
+    { r:"1110", q:"0100", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 4 轮，试减：R = R - Y。结果为负，不够减。", state:"0001 - 0011 = 1110\nR 为负" },
+    { r:"0001", q:"0100", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 4 轮，恢复 R，Q0 写 0。计数器归零。", state:"1110 + 0011 = 0001\nQ = 0100\nCn=0" },
+    { r:"0001", q:"0100", judge:"结果检查", active:["node-q","node-ctrl","w-ctrl-q"], step:"结果检查：检查商是否能放入目标商寄存器。若放不下，触发商溢出异常。", state:"本例 Q=0100₂，可放入 4 位商寄存器\n无商溢出" },
+    { r:"0001", q:"0100", judge:"结束", active:["node-r","node-q"], step:"结束：Q 保存商，R 保存余数。", state:"商 Q=0100₂=4\n余数 R=0001₂=1\n13=3×4+1" }
+  ];
+  const ids = ["node-y","node-alu","node-r","node-q","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-shift","w-r-ctrl","w-ctrl-alu","w-ctrl-shift","w-ctrl-q"];
+  let pos = 0;
+  function render() {
+    const s = steps[pos];
+    document.getElementById("val-y").textContent = s.y || "0011";
+    document.getElementById("val-r").textContent = s.r;
+    document.getElementById("val-q").textContent = s.q;
+    document.getElementById("val-judge").textContent = s.judge;
+    document.getElementById("step").textContent = s.step;
+    document.getElementById("state").textContent = s.state;
+    document.getElementById("status").textContent = `${pos + 1} / ${steps.length}`;
+    ids.forEach(id => document.getElementById(id)?.classList.remove("active", "node-active"));
+    s.active.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add(id.startsWith("node") ? "node-active" : "active");
+    });
+  }
+  document.getElementById("prev").addEventListener("click", () => { pos = Math.max(0, pos - 1); render(); });
+  document.getElementById("next").addEventListener("click", () => { pos = Math.min(steps.length - 1, pos + 1); render(); });
+  render();
+</script>
+</body>
+</html>

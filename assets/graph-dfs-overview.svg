@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img" aria-labelledby="title desc">
+  <title id="title">DFS overview</title>
+  <desc id="desc">Depth-first search follows one path as deep as possible, then backtracks through the call stack.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f6f8fb;
+      --text: #172033;
+      --muted: #596578;
+      --edge: #8a94a6;
+      --node: #ffffff;
+      --node-stroke: #2f6fed;
+      --active: #f59e0b;
+      --tree: #16a34a;
+      --stack: #eef2ff;
+      --stack-stroke: #6366f1;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0f14;
+        --panel: #121923;
+        --text: #e7edf6;
+        --muted: #a5b1c2;
+        --edge: #687386;
+        --node: #151e2b;
+        --node-stroke: #7aa2ff;
+        --active: #fbbf24;
+        --tree: #4ade80;
+        --stack: #1e1b4b;
+        --stack-stroke: #a5b4fc;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: color-mix(in srgb, var(--muted), transparent 55%); rx: 12; }
+    .title { fill: var(--text); font: 700 28px "Segoe UI", Arial, sans-serif; }
+    .label { fill: var(--text); font: 600 18px "Segoe UI", Arial, sans-serif; }
+    .small { fill: var(--muted); font: 14px "Segoe UI", Arial, sans-serif; }
+    .edge { stroke: var(--edge); stroke-width: 3; fill: none; }
+    .tree { stroke: var(--tree); stroke-width: 5; fill: none; }
+    .node { fill: var(--node); stroke: var(--node-stroke); stroke-width: 3; }
+    .node-active { fill: var(--active); stroke: var(--active); }
+    .node-text { fill: var(--text); font: 700 18px "Segoe UI", Arial, sans-serif; text-anchor: middle; dominant-baseline: central; }
+    .frame { fill: var(--stack); stroke: var(--stack-stroke); stroke-width: 2; rx: 8; }
+    .frame-text { fill: var(--text); font: 700 15px "Consolas", monospace; text-anchor: middle; dominant-baseline: central; }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.node-active{fill:#92400e;stroke:#fbbf24}}
+  </style>
+
+  <rect class="bg" width="980" height="520"/>
+  <text x="38" y="48" class="title">DFS: 沿一条路走到底，再回退</text>
+  <text x="40" y="78" class="small">递归调用栈记录“当前正在探索的路径”；回退后继续尝试同一顶点的下一个邻接点。</text>
+
+  <rect x="34" y="108" width="590" height="360" class="panel"/>
+  <rect x="650" y="108" width="292" height="360" class="panel"/>
+
+  <path class="edge" d="M180 205 L300 165"/>
+  <path class="edge" d="M180 205 L300 250"/>
+  <path class="edge" d="M300 165 L430 160"/>
+  <path class="edge" d="M300 165 L430 248"/>
+  <path class="edge" d="M300 250 L430 248"/>
+  <path class="edge" d="M430 160 L545 205"/>
+  <path class="edge" d="M430 248 L545 205"/>
+  <path class="edge" d="M300 250 L300 340"/>
+
+  <path class="tree" d="M180 205 L300 165"/>
+  <path class="tree" d="M300 165 L430 160"/>
+  <path class="tree" d="M180 205 L300 250"/>
+  <path class="tree" d="M300 250 L430 248"/>
+  <path class="tree" d="M430 248 L545 205"/>
+
+  <circle class="node" cx="180" cy="205" r="24"/><text class="node-text" x="180" y="205">2</text>
+  <circle class="node" cx="300" cy="165" r="24"/><text class="node-text" x="300" y="165">1</text>
+  <circle class="node" cx="300" cy="250" r="24"/><text class="node-text" x="300" y="250">6</text>
+  <circle class="node" cx="430" cy="160" r="24"/><text class="node-text" x="430" y="160">5</text>
+  <circle class="node node-active" cx="430" cy="248" r="24"/><text class="node-text" x="430" y="248">3</text>
+  <circle class="node" cx="545" cy="205" r="24"/><text class="node-text" x="545" y="205">7</text>
+  <circle class="node" cx="300" cy="340" r="24"/><text class="node-text" x="300" y="340">4</text>
+
+  <text x="64" y="430" class="small">绿色边：递归第一次进入新顶点时记录的树边；高亮顶点：当前栈顶调用。</text>
+
+  <text x="682" y="152" class="label">函数调用栈</text>
+  <rect x="708" y="338" width="154" height="38" class="frame"/><text x="785" y="357" class="frame-text">DFS(2)</text>
+  <rect x="708" y="294" width="154" height="38" class="frame"/><text x="785" y="313" class="frame-text">DFS(6)</text>
+  <rect x="708" y="250" width="154" height="38" class="frame"/><text x="785" y="269" class="frame-text">DFS(3)</text>
+  <text x="682" y="414" class="small">栈顶代表当前顶点；返回时弹出栈帧。</text>
+</svg>

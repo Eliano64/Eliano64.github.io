@@ -1,0 +1,512 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>IPv4 Addressing | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="IPv4 地址的基本含义IPv4 地址是 32 bit 的网络层标识符，通常写成点分十进制形式，例如 192.168.1.130。每 8 bit 写成一个十进制数，四个十进制数之间用点分隔。 IPv4 地址不是分配给“机器整体”的，而是分配给接口的。普通主机通常只有一个联网接口，因此看起来像是一台主机一个 IP 地址；路由器至少有两个接口，因此一个路由器通常有多个 IP 地址。  地址属于接口 路">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPv4 Addressing">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/08/IPv4-Addressing/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="IPv4 地址的基本含义IPv4 地址是 32 bit 的网络层标识符，通常写成点分十进制形式，例如 192.168.1.130。每 8 bit 写成一个十进制数，四个十进制数之间用点分隔。 IPv4 地址不是分配给“机器整体”的，而是分配给接口的。普通主机通常只有一个联网接口，因此看起来像是一台主机一个 IP 地址；路由器至少有两个接口，因此一个路由器通常有多个 IP 地址。  地址属于接口 路">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-08T00:46:37.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="NetworkLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "IPv4 Addressing",
+  "url": "https://eliano64.github.io/2026/07/08/IPv4-Addressing/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-08T00:46:37.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/08/IPv4-Addressing/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'IPv4 Addressing',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">IPv4 Addressing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">IPv4 Addressing</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-08T00:46:37.000Z" title="发表于 2026-07-08 08:46:37">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.9k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="IPv4-地址的基本含义"><a href="#IPv4-地址的基本含义" class="headerlink" title="IPv4 地址的基本含义"></a>IPv4 地址的基本含义</h1><p>IPv4 地址是 32 bit 的网络层标识符，通常写成点分十进制形式，例如 <code>192.168.1.130</code>。每 8 bit 写成一个十进制数，四个十进制数之间用点分隔。</p>
+<p>IPv4 地址不是分配给“机器整体”的，而是分配给<strong>接口</strong>的。普通主机通常只有一个联网接口，因此看起来像是一台主机一个 IP 地址；路由器至少有两个接口，因此一个路由器通常有多个 IP 地址。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">地址属于接口</span></div>
+<div class="callout-content"><p>路由器有多个接口，每个接口连接不同网络，因此每个接口需要自己的 IP 地址。说“一台路由器的 IP 地址”通常是不严谨的，应该说明是哪一个接口的 IP 地址。</p>
+</div>
+</div>
+IPv4 地址在逻辑上分为两部分：
+
+<ul>
+<li>网络前缀：标识接口所在的网络。</li>
+<li>主机号：标识该网络中的具体接口。</li>
+</ul>
+<p>同一网络中的接口应具有相同网络前缀，不同接口的主机号不能相同。路由器转发分组时，主要根据目的 IP 地址中的网络前缀查找下一跳，而不是为每台主机维护一条路由。</p>
+<h1 id="分类编址"><a href="#分类编址" class="headerlink" title="分类编址"></a>分类编址</h1><p>早期 IPv4 使用分类编址，把地址分为 A、B、C、D、E 五类。其中 A、B、C 类可分配给主机或路由器接口；D 类用于多播；E 类保留。</p>
+<p><img src="/assets/ipv4-address-classes.svg" alt="900"></p>
+<p>判断 A&#x2F;B&#x2F;C 类地址时，本质上看的是<strong>最高位二进制前缀</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>最高位前缀</th>
+<th align="right">对应首字节范围</th>
+<th align="right">网络号长度</th>
+<th align="right">主机号长度</th>
+<th>默认子网掩码</th>
+<th align="right">每个网络最大可分配接口数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td><code>0</code></td>
+<td align="right">1-126</td>
+<td align="right">8 bit</td>
+<td align="right">24 bit</td>
+<td><code>255.0.0.0</code></td>
+<td align="right">$2^{24}-2$</td>
+</tr>
+<tr>
+<td>B</td>
+<td><code>10</code></td>
+<td align="right">128-191</td>
+<td align="right">16 bit</td>
+<td align="right">16 bit</td>
+<td><code>255.255.0.0</code></td>
+<td align="right">$2^{16}-2$</td>
+</tr>
+<tr>
+<td>C</td>
+<td><code>110</code></td>
+<td align="right">192-223</td>
+<td align="right">24 bit</td>
+<td align="right">8 bit</td>
+<td><code>255.255.255.0</code></td>
+<td align="right">$2^8-2$</td>
+</tr>
+</tbody></table>
+<p>主机号全 0 的地址表示网络本身，不能分配给接口。主机号全 1 的地址表示该网络的广播地址，也不能分配给接口。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">判断地址能否分配</span></div>
+<div class="callout-content"><p><code>192.0.0.255</code> 是 C 类地址，网络号是 <code>192.0.0</code>，主机号是 <code>255</code>。主机号全 1，所以它是广播地址，不能分配给主机接口。</p>
+</div>
+</div>
+分类编址中还有几类容易混淆的特殊地址：
+
+<table>
+<thead>
+<tr>
+<th>地址形式</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>0.0.0.0</code></td>
+<td>本主机尚未获得正式地址时使用，也可表示默认路由的目的网络</td>
+</tr>
+<tr>
+<td>主机号全 0</td>
+<td>某个网络本身，不能分配给接口</td>
+</tr>
+<tr>
+<td>主机号全 1</td>
+<td>某个网络的广播地址，不能分配给接口</td>
+</tr>
+<tr>
+<td><code>255.255.255.255</code></td>
+<td>受限广播地址，只在本网络内广播，路由器不转发</td>
+</tr>
+<tr>
+<td><code>127.0.0.0/8</code></td>
+<td>本地环回地址，用于本机内部测试和进程通信</td>
+</tr>
+</tbody></table>
+<p><code>127.0.0.1</code> 是最常见的环回地址。发往环回地址的 IP 数据报由本机协议栈处理，不会真正发送到网络链路上。</p>
+<p>分类编址的问题是地址块大小过于固定。一个 C 类网络只有 254 个可分配地址，一个 B 类网络却有 65534 个可分配地址。一个需要几百个地址的单位往往不得不申请 B 类网络，造成大量地址浪费。</p>
+<h1 id="CIDR"><a href="#CIDR" class="headerlink" title="CIDR"></a>CIDR</h1><p>CIDR 使用斜线记法表示网络前缀长度，例如 <code>192.168.1.128/25</code>。它不再依赖 A&#x2F;B&#x2F;C 类边界，而是直接说明前多少 bit 是网络前缀。</p>
+<p>斜线记法 <code>a.b.c.d/n</code> 表示前 <code>n</code> bit 是网络前缀，后 <code>32-n</code> bit 是主机号。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">分类地址和 CIDR 不要混用</span></div>
+<div class="callout-content"><p><code>218.75.230.30</code> 按分类编址看是 C 类地址；但 <code>218.75.230.30/27</code> 的网络前缀是 27 bit。实际使用 CIDR 时，以斜线前缀为准。</p>
+</div>
+</div>
+CIDR 的主要作用有两个：
+
+<ul>
+<li>更灵活地分配地址：地址块不再被固定在 A&#x2F;B&#x2F;C 类边界上，可以按需求分配 <code>/20</code>、<code>/27</code>、<code>/30</code> 等不同大小的地址块。</li>
+<li>支持路由聚合：多个连续地址块可以合并成一条更短前缀的路由，减少路由表项。</li>
+</ul>
+<p><img src="/assets/cidr-address-block.svg" alt="900"></p>
+<p>CIDR 表示法<code>a.b.c.d/n</code>可以确定以下信息：</p>
+<ul>
+<li>前缀长度 <code>/n</code>。</li>
+<li>主机号长度 $32-n$。</li>
+<li>地址块大小 $2^{32-n}$。</li>
+<li>最小地址（网络地址）：主机号全 0。计算方法：<ol>
+<li>根据<code>n/8</code>的商与余数<code>x</code>确定网络前缀-主机号分界线位置属于哪个字节，以及IP地址在该字节处的值<code>y</code></li>
+<li>左侧字节保留，右侧字节全设为0，该字节值设为<code>y&gt;&gt;(8-x)&lt;&lt;(8-x)</code>。即可得到网络地址。</li>
+<li>例：<code>180.80.77.55/22</code>。<code>22/8 = 2</code>和<code>22%8 = 6</code>可确定分界线在第三个字节处，第四字节应全设为0。该字节值设为<code>77&gt;&gt;(8-6)&lt;&lt;(8-6) = 76</code>。所以网络地址为<code>180.80.76.0/22</code></li>
+</ol>
+</li>
+<li>最大地址（广播地址）：主机号全 1。计算方法：<ol>
+<li>计算网络地址。确定网络前缀-主机号分界线位置属于哪个字节，以及网络地址在该字节处的值<code>y</code></li>
+<li>左侧地址保留，右侧字节全设为255，该字节值设为<code>y+2^(8-x)-1</code>。即可得到广播地址</li>
+<li>例：<code>180.80.77.55/22</code>。得到网络地址<code>180.80.76.0/22</code>，且分界线在第三个字节处。该字节值设为<code>76+2^(8-6)-1 = 79</code>，第四字节值设为255。所以广播地址为<code>180.80.79.255/22</code></li>
+</ol>
+</li>
+<li>可分配主机地址：去掉最小地址和最大地址。</li>
+</ul>
+<p>CIDR 地址块有两个关键性质：</p>
+<ul>
+<li>块大小一定是 2 的幂。<code>/n</code> 地址块的大小是 $2^{32-n}$。</li>
+<li>起始地址必须按块大小对齐。也就是说，在整个 IPv4 地址空间中，起始地址前面的地址数量必须是该块大小的整数倍。</li>
+</ul>
+<p>例如 <code>/26</code> 地址块大小为 64，所以在同一个 <code>/24</code> 中，合法起点只能是 <code>.0</code>、<code>.64</code>、<code>.128</code>、<code>.192</code>。<code>192.168.1.32/26</code> 不是合法的 <code>/26</code> 地址块起点，因为 32 不是 64 的整数倍边界。</p>
+<h1 id="子网划分"><a href="#子网划分" class="headerlink" title="子网划分"></a>子网划分</h1><p>子网划分是在已有地址块内部再切出若干更小地址块。原来的主机号中，一部分 bit 被拿来区分子网，剩余 bit 才继续作为子网内主机号。</p>
+<p>划分子网后，IPv4 地址可以看成三级结构：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>网络号</td>
+<td>标识原来的网络</td>
+</tr>
+<tr>
+<td>子网号</td>
+<td>标识内部划分出的子网</td>
+</tr>
+<tr>
+<td>主机号</td>
+<td>标识该子网中的接口</td>
+</tr>
+</tbody></table>
+<p>子网掩码用连续的 1 对应网络号和子网号，用连续的 0 对应主机号。IP 地址与子网掩码逐位与运算，就得到网络地址。</p>
+<p><img src="/assets/subnet-mask-bitwise.svg" alt="900"></p>
+<p>若原主机号长度为 $h$，借出 $s$ bit 作为子网号，则：</p>
+<p>$$<br>\text{子网数量}&#x3D;2^s<br>$$</p>
+<p>$$<br>\text{每个子网地址数}&#x3D;2^{h-s}<br>$$</p>
+<p>$$<br>\text{每个子网可分配接口数}&#x3D;2^{h-s}-2<br>$$</p>
+<p>减 2 是因为每个子网中主机号全 0 的地址作为该子网的网络地址，主机号全 1 的地址作为该子网的广播地址。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">网络地址和广播地址不能分配</span></div>
+<div class="callout-content"><p>一个地址块中最小地址通常是网络地址，最大地址通常是广播地址。计算“可分配主机数”时要减 2；计算“地址块大小”时不要减 2。</p>
+</div>
+</div>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||650)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||650)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/subnetting-calculation-slides.html" style="width:100%;height:650px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>如果每个子网大小相同，只要确定借位数即可。如果每个子网大小不同，就要使用<strong>变长子网掩码</strong>：先分配较大的子网，再分配较小的子网，避免地址空间被切碎。</p>
+<p>当不同网络需要不同数量的地址时，应使用变长子网掩码。基本步骤是：</p>
+<ol>
+<li>统计每个网络需要的地址数，包括主机接口、路由器接口、网络地址和广播地址。</li>
+<li>对每个需求向上取到最近的 2 的幂。</li>
+<li>由地址块大小反推出主机号位数。</li>
+<li>由主机号位数得到前缀长度。</li>
+<li>通常先分配需求最大的网络，再分配较小网络，减少碎片。</li>
+</ol>
+<p>例如某网络需要 28 个地址。最近的 2 的幂是 32，所以主机号需要 5 bit，前缀长度是 $32-5&#x3D;27$，应分配一个 <code>/27</code> 地址块。</p>
+<h2 id="子网划分的判断"><a href="#子网划分的判断" class="headerlink" title="子网划分的判断"></a>子网划分的判断</h2><ol>
+<li>每个候选子网本身是否合法：块大小必须是 2 的幂，起始地址必须按块大小对齐。</li>
+<li>候选子网之间能不能共存：子网之间不能重叠，也不能互相包含。</li>
+<li>子网数量和剩余空间是否匹配：如果题目限定划分为 $k$ 个子网，那么已知子网和候选子网占用名额后，剩余空间也必须能由剩余名额表示成合法 CIDR 块。</li>
+</ol>
+<p><img src="/assets/cidr-subnet-possibility.svg" alt="900"></p>
+<p>上图对应第一类问题：已知其中一个子网，判断候选子网是否可能成为另一个子网。</p>
+<p><code>192.168.9.0/26</code> 会与 <code>192.168.9.128/26</code> 隔开，中间留下 <code>192.168.9.64/26</code>。若它也作为一个子网，则已知子网和候选子网已经占去两个子网名额，只剩一个子网名额；剩余地址空间却分成两段不连续区域，不能合成一个合法 CIDR 子网，因此它不可能是另外两个子网之一。<code>192.168.9.0/25</code>、<code>192.168.9.192/26</code>、<code>192.168.9.192/27</code> 都可以和已知子网共存于一种合法划分中。</p>
+<p><img src="/assets/cidr-minimum-subnet-size.svg" alt="900"></p>
+<p>上图对应第二类问题：已知原地址块和子网数量，判断可能的最小子网规模。</p>
+<p>若把 <code>101.200.16.0/20</code> 划分为 5 个子网，原地址块大小是 $2^{12}&#x3D;4096$。要让 5 个子网都存在，最小子网不能太大：</p>
+<ul>
+<li>若最小子网是 <code>/23</code>，大小为 512，则可以用 <code>2048 + 1024 + 512 + 256 + 256 = 4096</code> 切成 5 个子网。</li>
+<li>若最小子网是 <code>/22</code>，大小为 1024，则 5 个子网至少需要 $5 \times 1024&#x3D;5120$ 个地址，超过原来的 <code>/20</code>。</li>
+</ul>
+<p>所以可能的最小子网大小是 256 个地址，可分配地址数是 $256-2&#x3D;254$。</p>
+<h1 id="路由聚合"><a href="#路由聚合" class="headerlink" title="路由聚合"></a>路由聚合</h1><p>路由聚合是把多个连续地址块合并成一条更短前缀的路由。它能减少路由表项数量，提高查表和路由传播效率。</p>
+<p><img src="/assets/route-aggregation.svg" alt="900"></p>
+<p>例如以下四个连续地址块：</p>
+<ul>
+<li><code>192.168.0.0/24</code></li>
+<li><code>192.168.1.0/24</code></li>
+<li><code>192.168.2.0/24</code></li>
+<li><code>192.168.3.0/24</code></li>
+</ul>
+<p>它们可以聚合为：</p>
+<ul>
+<li><code>192.168.0.0/22</code></li>
+</ul>
+<p>聚合成立需要两个条件：地址块连续，并且它们共享一个更短的共同前缀。不能为了减少路由表项而把不连续或前缀不一致的地址块强行合并，否则会把不属于自己的目的地址也吸进来。</p>
+<p>如果路由表中有多条路由都能匹配同一个目的地址，路由器按<a href="/2026/07/08/IP-Forwarding/#最长前缀匹配" class="wikilink">最长前缀匹配</a>选择路由。前缀越长，表示范围越小，路由越具体。</p>
+<p>例如目的地址 <code>192.168.1.130</code> 同时匹配：</p>
+<table>
+<thead>
+<tr>
+<th>路由项</th>
+<th>是否匹配</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>192.168.0.0/16</code></td>
+<td>是</td>
+<td>较大的聚合路由</td>
+</tr>
+<tr>
+<td><code>192.168.1.0/24</code></td>
+<td>是</td>
+<td>更具体的网络</td>
+</tr>
+<tr>
+<td><code>192.168.1.128/25</code></td>
+<td>是</td>
+<td>最具体的子网</td>
+</tr>
+</tbody></table>
+<p>最终选择 <code>192.168.1.128/25</code>，因为 <code>/25</code> 的前缀最长。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/08/IPv4-Addressing/">https://eliano64.github.io/2026/07/08/IPv4-Addressing/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/07/WAN/" title="WAN"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">WAN</div></div><div class="info-2"><div class="info-item-1">广域网与点对点链路广域网 WAN（Wide Area Network）覆盖范围大，常用于连接相距较远的局域网、园区网、数据中心或运营商网络。它的重点不是“很多主机直接共享一个局域网介质”，而是通过通信子网把远距离节点连接起来。  局域网与广域网的差异可以先这样把握：    对比项 局域网 LAN 广域网 WAN    覆盖范围 房间、楼宇、园区 城市、地区、国家甚至全球   常见管理者 单位、学校、企业内部 运营商、专线服务商、大型机构   典型链路形态 广播链路或交换式局域网 点对点链路、交换网络、运营商承载网络   数据链路层重点 MAC、局域网帧、交换机、VLAN 点对点封装、链路建立、链路配置   典型协议 Ethernet、802.11 PPP、HDLC 等   PPP 主要解决的是：一段点对点链路如何建立、如何配置、如何封装网络层分组、如何成帧和检错。 点对点链路与广播链路的区别如下：    链路类型 链路上有几个发送竞争者 是否需要 MAC 争用机制 例子    点对点链路 2 个端点 通常不需要 用户主机到...</div></div></div></a><a class="pagination-related" href="/2026/07/08/Network-Layer-Services/" title="Network Layer Services"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Network Layer Services</div></div><div class="info-2"><div class="info-item-1">网络层数据链路层只负责一段链路或一个局域网内部的传输。网络层要解决的是更大的问题：把分组从源主机送到目的主机，途中可能经过多个网络、多个路由器和多段链路。 异构网络指底层实现不同的网络。它们可能使用不同的链路层协议、帧格式、链路层地址、最大帧长、差错处理方式和接入机制。网络层用统一的 IP 地址和统一的转发规则，把这些差异屏蔽起来，对上提供一个可互联的 IP 网。   网络层的核心抽象 从 IP 层看，主机只需要知道目的 IP 地址，路由器只需要根据网络层首部进行转发。具体每一段链路怎样成帧、怎样使用 MAC...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#IPv4-%E5%9C%B0%E5%9D%80%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%90%AB%E4%B9%89"><span class="toc-text">IPv4 地址的基本含义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%86%E7%B1%BB%E7%BC%96%E5%9D%80"><span class="toc-text">分类编址</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CIDR"><span class="toc-text">CIDR</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AD%90%E7%BD%91%E5%88%92%E5%88%86"><span class="toc-text">子网划分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%90%E7%BD%91%E5%88%92%E5%88%86%E7%9A%84%E5%88%A4%E6%96%AD"><span class="toc-text">子网划分的判断</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E8%81%9A%E5%90%88"><span class="toc-text">路由聚合</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

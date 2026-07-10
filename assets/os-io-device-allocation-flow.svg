@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">Device Allocation Flow</title>
+  <desc id="desc">Device allocation checks SDT, DCT, COCT and CHCT before starting I/O.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.ok{fill:color-mix(in srgb,var(--green) 16%,var(--bg));stroke:var(--green);stroke-width:2}.wait{fill:color-mix(in srgb,var(--orange) 16%,var(--bg));stroke:var(--orange);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#ba)}.wa{stroke:var(--orange);stroke-width:3;fill:none;marker-end:url(#oa)}
+  </style>
+  <defs>
+    <marker id="ba" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker>
+    <marker id="oa" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--orange)"/></marker>
+  </defs>
+  <rect class="bg" width="1120" height="520"/>
+  <text class="t" x="560" y="42" text-anchor="middle" font-size="24" font-weight="700">设备分配过程</text>
+  <rect class="box" x="55" y="112" width="160" height="72" rx="8"/>
+  <text class="t" x="135" y="154" text-anchor="middle" font-size="16" font-weight="700">进程请求设备</text>
+  <rect class="box" x="275" y="112" width="160" height="72" rx="8"/>
+  <text class="t" x="355" y="144" text-anchor="middle" font-size="16" font-weight="700">查 SDT</text>
+  <text class="m" x="355" y="166" text-anchor="middle" font-size="12">找到 DCT</text>
+  <rect class="box" x="495" y="112" width="160" height="72" rx="8"/>
+  <text class="t" x="575" y="144" text-anchor="middle" font-size="16" font-weight="700">查 DCT</text>
+  <text class="m" x="575" y="166" text-anchor="middle" font-size="12">设备是否空闲</text>
+  <rect class="box" x="715" y="112" width="160" height="72" rx="8"/>
+  <text class="t" x="795" y="144" text-anchor="middle" font-size="16" font-weight="700">查 COCT</text>
+  <text class="m" x="795" y="166" text-anchor="middle" font-size="12">控制器是否空闲</text>
+  <rect class="box" x="935" y="112" width="160" height="72" rx="8"/>
+  <text class="t" x="1015" y="144" text-anchor="middle" font-size="16" font-weight="700">查 CHCT</text>
+  <text class="m" x="1015" y="166" text-anchor="middle" font-size="12">通道是否空闲</text>
+  <rect class="ok" x="935" y="310" width="160" height="72" rx="8"/>
+  <text class="t" x="1015" y="352" text-anchor="middle" font-size="16" font-weight="700">启动 I/O</text>
+  <rect class="wait" x="495" y="300" width="160" height="62" rx="8"/>
+  <text class="t" x="575" y="336" text-anchor="middle" font-size="14" font-weight="700">设备等待队列</text>
+  <rect class="wait" x="715" y="300" width="160" height="62" rx="8"/>
+  <text class="t" x="795" y="336" text-anchor="middle" font-size="14" font-weight="700">控制器等待队列</text>
+  <rect class="wait" x="935" y="410" width="160" height="62" rx="8"/>
+  <text class="t" x="1015" y="446" text-anchor="middle" font-size="14" font-weight="700">通道等待队列</text>
+  <path class="a" d="M215 148 H275"/>
+  <path class="a" d="M435 148 H495"/>
+  <path class="a" d="M655 148 H715"/>
+  <path class="a" d="M875 148 H935"/>
+  <path class="a" d="M1015 184 V310"/>
+  <path class="wa" d="M575 184 V300"/>
+  <path class="wa" d="M795 184 V300"/>
+  <path class="wa" d="M1015 184 C1068 235 1070 365 1015 410"/>
+  <text class="m" x="590" y="222" text-anchor="middle" font-size="13">忙</text>
+  <text class="m" x="810" y="222" text-anchor="middle" font-size="13">忙</text>
+  <text class="m" x="1042" y="250" font-size="13">忙</text>
+  <text class="m" x="1015" y="220" text-anchor="middle" font-size="13">三者都可用</text>
+</svg>

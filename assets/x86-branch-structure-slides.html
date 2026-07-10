@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>x86 Branch Structure</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #111827;
+      --panel: #f8fafc;
+      --code: #eef2ff;
+      --active: #fef3c7;
+      --done: #dcfce7;
+      --skip: #fee2e2;
+      --accent: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #e5e7eb;
+        --panel: #1f2937;
+        --code: #1e3a8a;
+        --active: #713f12;
+        --done: #14532d;
+        --skip: #7f1d1d;
+        --accent: #60a5fa;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    .wrap { padding: 22px 28px; }
+    h1 { margin: 0 0 6px; font-size: 24px; }
+    .hint { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+    .grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; align-items: stretch; }
+    .panel {
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 16px;
+      min-height: 430px;
+    }
+    .code-line {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: 7px;
+      margin: 6px 0;
+      background: var(--code);
+      border: 1px solid transparent;
+      font-family: Consolas, "Cascadia Code", monospace;
+      font-size: 15px;
+    }
+    .code-line.active { background: var(--active); border-color: var(--line); }
+    .code-line.done { background: var(--done); }
+    .code-line.skip { background: var(--skip); color: var(--muted); }
+    .num { color: var(--muted); text-align: right; }
+    .state {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .state-row {
+      border: 1.3px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--bg);
+    }
+    .label { color: var(--muted); font-size: 13px; margin-bottom: 5px; }
+    .value { font-size: 20px; font-weight: 700; }
+    .path {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .path div {
+      border: 1.3px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+      background: var(--bg);
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .path .on { background: var(--active); color: var(--text); }
+    .controls { display: flex; gap: 10px; margin-top: 16px; }
+    button {
+      border: 1.5px solid var(--line);
+      border-radius: 7px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 8px 13px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    .note { margin-top: 14px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>if/else 的机器级控制流</h1>
+    <p class="hint">示例对应 C 条件：if (a &gt; b)。汇编常写成“若 a &lt;= b 就跳到 else”。</p>
+    <div class="grid">
+      <div class="panel">
+        <div id="code"></div>
+        <div class="controls">
+          <button id="prev">上一步</button>
+          <button id="next">下一步</button>
+          <button id="toggle">切换 a 与 b</button>
+        </div>
+        <p class="note">注意 `jle ELSE` 是在排除 if 分支：条件成立时进入 else，条件不成立时顺序进入 if。</p>
+      </div>
+      <div class="panel">
+        <div class="state">
+          <div class="state-row">
+            <div class="label">当前数据</div>
+            <div class="value" id="data"></div>
+          </div>
+          <div class="state-row">
+            <div class="label">最近执行</div>
+            <div class="value" id="stepText"></div>
+          </div>
+          <div class="state-row">
+            <div class="label">控制流结果</div>
+            <div class="value" id="result"></div>
+          </div>
+        </div>
+        <div class="path">
+          <div id="ifPath">if 部分</div>
+          <div id="elsePath">else 部分</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const lines = [
+      "cmp a, b        ; 比较 a 和 b",
+      "jle ELSE        ; 若 a <= b，跳到 else",
+      "; if 部分",
+      "jmp END         ; 跳过 else",
+      "ELSE:",
+      "; else 部分",
+      "END:"
+    ];
+    const cases = [
+      { a: 9, b: 4, branch: "if", flow: [0, 1, 2, 3, 6] },
+      { a: 3, b: 4, branch: "else", flow: [0, 1, 4, 5, 6] }
+    ];
+    let caseIndex = 0;
+    let pos = 0;
+    const code = document.getElementById("code");
+    const data = document.getElementById("data");
+    const stepText = document.getElementById("stepText");
+    const result = document.getElementById("result");
+    const ifPath = document.getElementById("ifPath");
+    const elsePath = document.getElementById("elsePath");
+    function render() {
+      const c = cases[caseIndex];
+      const activeLine = c.flow[pos];
+      code.innerHTML = lines.map((line, i) => {
+        let cls = "code-line";
+        if (i === activeLine) cls += " active";
+        else if (c.flow.slice(0, pos).includes(i)) cls += " done";
+        else if (!c.flow.includes(i)) cls += " skip";
+        return `<div class="${cls}"><span class="num">${i + 1}</span><span>${line}</span></div>`;
+      }).join("");
+      data.textContent = `a = ${c.a}, b = ${c.b}`;
+      stepText.textContent = lines[activeLine].replace(/;.*/, "").trim();
+      result.textContent = c.branch === "if" ? "顺序进入 if 部分" : "跳转进入 else 部分";
+      ifPath.className = c.branch === "if" && pos >= 2 ? "on" : "";
+      elsePath.className = c.branch === "else" && pos >= 2 ? "on" : "";
+    }
+    document.getElementById("next").onclick = () => { pos = Math.min(pos + 1, cases[caseIndex].flow.length - 1); render(); };
+    document.getElementById("prev").onclick = () => { pos = Math.max(pos - 1, 0); render(); };
+    document.getElementById("toggle").onclick = () => { caseIndex = 1 - caseIndex; pos = 0; render(); };
+    render();
+  </script>
+</body>
+</html>

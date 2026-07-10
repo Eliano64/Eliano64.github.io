@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" role="img" aria-labelledby="title desc">
+  <title id="title">CIDR 最小子网规模判断</title>
+  <desc id="desc">把 101.200.16.0/20 划分为 5 个子网，说明可能的最小子网规模。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill:#f8fafc; }
+    .text { fill:#0f172a; font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif; font-size:18px; }
+    .small { fill:#334155; font-size:15px; }
+    .block { fill:#ffffff; stroke:#cbd5e1; stroke-width:2; }
+    .b1 { fill:#dbeafe; stroke:#2563eb; stroke-width:2; }
+    .b2 { fill:#dcfce7; stroke:#16a34a; stroke-width:2; }
+    .b3 { fill:#fef3c7; stroke:#d97706; stroke-width:2; }
+    .b4 { fill:#ede9fe; stroke:#7c3aed; stroke-width:2; }
+    .axis { stroke:#64748b; stroke-width:2; }
+    .brace { stroke:#64748b; stroke-width:2; fill:none; }
+    .label { fill:#0369a1; font-weight:700; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill:#020617; }
+      .text { fill:#e5e7eb; }
+      .small { fill:#cbd5e1; }
+      .block { fill:#0f172a; stroke:#334155; }
+      .b1 { fill:#172554; stroke:#60a5fa; }
+      .b2 { fill:#052e16; stroke:#4ade80; }
+      .b3 { fill:#451a03; stroke:#fbbf24; }
+      .b4 { fill:#2e1065; stroke:#a78bfa; }
+      .axis { stroke:#94a3b8; }
+      .brace { stroke:#94a3b8; }
+      .label { fill:#67e8f9; }
+    }
+  </style>
+  <rect class="bg" width="1100" height="520"/>
+  <text class="text" x="550" y="42" text-anchor="middle" font-size="25" font-weight="700">划分为 5 个子网时，最小子网不能只看“平均大小”</text>
+  <text class="small" x="550" y="76" text-anchor="middle">101.200.16.0/20 一共有 2^(32-20)=4096 个地址</text>
+
+  <g transform="translate(150,130)">
+    <rect class="b1" x="0" y="0" width="800" height="56" rx="5"/>
+    <text class="text" x="400" y="36" text-anchor="middle">101.200.16.0/20：4096 个地址</text>
+  </g>
+
+  <g transform="translate(150,235)">
+    <rect class="b1" x="0" y="0" width="400" height="56" rx="5"/>
+    <rect class="b2" x="400" y="0" width="200" height="56" rx="5"/>
+    <rect class="b3" x="600" y="0" width="100" height="56" rx="5"/>
+    <rect class="b4" x="700" y="0" width="50" height="56" rx="5"/>
+    <rect class="b4" x="750" y="0" width="50" height="56" rx="5"/>
+    <text class="small" x="200" y="35" text-anchor="middle">/21：2048</text>
+    <text class="small" x="500" y="35" text-anchor="middle">/22：1024</text>
+    <text class="small" x="650" y="35" text-anchor="middle">/23：512</text>
+    <text class="small" x="725" y="35" text-anchor="middle">/24</text>
+    <text class="small" x="775" y="35" text-anchor="middle">/24</text>
+    <text class="text" x="400" y="96" text-anchor="middle">2048 + 1024 + 512 + 256 + 256 = 4096</text>
+  </g>
+
+  <g transform="translate(150,385)">
+    <rect class="block" x="0" y="0" width="800" height="58" rx="5"/>
+    <text class="text" x="400" y="36" text-anchor="middle">最小子网大小可以是 256 个地址，即 /24</text>
+    <text class="label" x="400" y="88" text-anchor="middle">可分配地址数 = 256 - 网络地址 - 广播地址 = 254</text>
+  </g>
+</svg>

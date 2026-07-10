@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="500" viewBox="0 0 1120 500" role="img" aria-labelledby="title desc">
+  <title id="title">IP 地址端到端不变，MAC 地址逐跳变化</title>
+  <desc id="desc">分组三跳转发中，IP 首部源目的地址保持不变，链路层帧的 MAC 地址每一跳重新封装。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}.bg{fill:#f8fafc}.text{fill:#0f172a;font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;font-size:17px}.small{fill:#334155;font-size:14px}.box{fill:#fff;stroke:#cbd5e1;stroke-width:2}.node{fill:#dbeafe;stroke:#2563eb;stroke-width:2}.router{fill:#fed7aa;stroke:#f97316;stroke-width:2}.ip{fill:#dcfce7}.mac{fill:#ede9fe}.line{stroke:#64748b;stroke-width:3;marker-end:url(#arrow)}.label{fill:#0369a1;font-weight:700}@media(prefers-color-scheme:dark){.bg{fill:#020617}.text{fill:#e5e7eb}.small{fill:#cbd5e1}.box{fill:#0f172a;stroke:#334155}.node{fill:#172554;stroke:#60a5fa}.router{fill:#431407;stroke:#fb923c}.ip{fill:#052e16}.mac{fill:#2e1065}.line{stroke:#94a3b8}.label{fill:#67e8f9}}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect class="bg" width="1120" height="500"/>
+  <text class="text" x="560" y="42" text-anchor="middle" font-size="25" font-weight="700">跨网络转发：IP 地址不变，MAC 地址逐跳变化</text>
+  <g transform="translate(80,95)">
+    <rect class="node" x="0" y="0" width="90" height="54" rx="8"/><text class="text" x="45" y="34" text-anchor="middle">H1</text>
+    <rect class="router" x="300" y="0" width="90" height="54" rx="8"/><text class="text" x="345" y="34" text-anchor="middle">R1</text>
+    <rect class="router" x="600" y="0" width="90" height="54" rx="8"/><text class="text" x="645" y="34" text-anchor="middle">R2</text>
+    <rect class="node" x="900" y="0" width="90" height="54" rx="8"/><text class="text" x="945" y="34" text-anchor="middle">H2</text>
+    <line class="line" x1="90" y1="27" x2="300" y2="27"/><line class="line" x1="390" y1="27" x2="600" y2="27"/><line class="line" x1="690" y1="27" x2="900" y2="27"/>
+  </g>
+  <g transform="translate(80,190)">
+    <rect class="box" x="0" y="0" width="990" height="66" rx="8"/>
+    <rect class="ip" x="15" y="14" width="300" height="38" rx="6"/><text class="small" x="165" y="38" text-anchor="middle">IP：源 IP1，目的 IP2</text>
+    <rect class="mac" x="345" y="14" width="300" height="38" rx="6"/><text class="small" x="495" y="38" text-anchor="middle">第 1 跳 MAC：MAC1 → MAC3</text>
+    <text class="small" x="790" y="38" text-anchor="middle">H1 发给默认网关 R1</text>
+  </g>
+  <g transform="translate(80,285)">
+    <rect class="box" x="0" y="0" width="990" height="66" rx="8"/>
+    <rect class="ip" x="15" y="14" width="300" height="38" rx="6"/><text class="small" x="165" y="38" text-anchor="middle">IP：源 IP1，目的 IP2</text>
+    <rect class="mac" x="345" y="14" width="300" height="38" rx="6"/><text class="small" x="495" y="38" text-anchor="middle">第 2 跳 MAC：MAC4 → MAC5</text>
+    <text class="small" x="790" y="38" text-anchor="middle">R1 重新封装链路层帧</text>
+  </g>
+  <g transform="translate(80,380)">
+    <rect class="box" x="0" y="0" width="990" height="66" rx="8"/>
+    <rect class="ip" x="15" y="14" width="300" height="38" rx="6"/><text class="small" x="165" y="38" text-anchor="middle">IP：源 IP1，目的 IP2</text>
+    <rect class="mac" x="345" y="14" width="300" height="38" rx="6"/><text class="small" x="495" y="38" text-anchor="middle">第 3 跳 MAC：MAC6 → MAC2</text>
+    <text class="small" x="790" y="38" text-anchor="middle">R2 交付给目的主机 H2</text>
+  </g>
+</svg>

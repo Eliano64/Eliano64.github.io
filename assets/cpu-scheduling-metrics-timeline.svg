@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="620" viewBox="0 0 1160 620" role="img" aria-labelledby="title desc">
+  <title id="title">调度指标统一时间轴</title>
+  <desc id="desc">用三个进程的到达、运行、完成时间展示响应时间、等待时间、周转时间和带权周转时间的计算关系。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --blue:#2563eb; --green:#0f766e; --amber:#b45309; --red:#b42318; --chip:#e6eef9;
+      --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --blue:#7aa2ff; --green:#62d4c5; --amber:#f6b85f; --red:#ff8a80; --chip:#263142;
+        --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:26px; font-weight:700; }
+    .h { fill:var(--text); font-size:18px; font-weight:700; }
+    .t { fill:var(--text); font-size:15px; }
+    .s { fill:var(--muted); font-size:13px; }
+    .axis { stroke:var(--line); stroke-width:2; }
+    .tick { stroke:var(--line); stroke-width:1.4; }
+    .panel { fill:var(--panel); stroke:var(--line); stroke-width:1.4; rx:12; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .run1 { fill:var(--blue); opacity:.82; }
+    .run2 { fill:var(--green); opacity:.82; }
+    .run3 { fill:var(--amber); opacity:.86; }
+    .wait { fill:var(--chip); stroke:var(--line); stroke-width:1.1; rx:6; }
+    .marker { stroke:var(--red); stroke-width:2; stroke-dasharray:5 5; }
+    .blueText { fill:var(--blue); font-size:14px; font-weight:700; }
+    .greenText { fill:var(--green); font-size:14px; font-weight:700; }
+    .amberText { fill:var(--amber); font-size:14px; font-weight:700; }
+    .redText { fill:var(--red); font-size:14px; font-weight:700; }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.run1{fill:#1e3a8a;opacity:1}.run2{fill:#14532d;opacity:1}.run3{fill:#78350f;opacity:1}}
+  </style>
+
+  <text class="title" x="580" y="42" text-anchor="middle">调度指标统一时间轴</text>
+  <text class="s" x="580" y="70" text-anchor="middle">示例：P1 到达 0、运行 4；P2 到达 1、运行 3；P3 到达 2、运行 2。调度顺序：P1 → P2 → P3。</text>
+
+  <line class="axis" x1="110" y1="150" x2="1040" y2="150"/>
+  <g class="t">
+    <text x="110" y="132" text-anchor="middle">0</text>
+    <text x="296" y="132" text-anchor="middle">2</text>
+    <text x="482" y="132" text-anchor="middle">4</text>
+    <text x="668" y="132" text-anchor="middle">6</text>
+    <text x="761" y="132" text-anchor="middle">7</text>
+    <text x="947" y="132" text-anchor="middle">9</text>
+  </g>
+  <g>
+    <line class="tick" x1="110" y1="142" x2="110" y2="158"/>
+    <line class="tick" x1="203" y1="142" x2="203" y2="158"/>
+    <line class="tick" x1="296" y1="142" x2="296" y2="158"/>
+    <line class="tick" x1="482" y1="142" x2="482" y2="158"/>
+    <line class="tick" x1="761" y1="142" x2="761" y2="158"/>
+    <line class="tick" x1="947" y1="142" x2="947" y2="158"/>
+  </g>
+
+  <rect class="run1" x="110" y="170" width="372" height="54" rx="8"/>
+  <text class="h" x="296" y="204" text-anchor="middle">P1 运行 0-4</text>
+  <rect class="run2" x="482" y="170" width="279" height="54" rx="8"/>
+  <text class="h" x="622" y="204" text-anchor="middle">P2 运行 4-7</text>
+  <rect class="run3" x="761" y="170" width="186" height="54" rx="8"/>
+  <text class="h" x="854" y="204" text-anchor="middle">P3 运行 7-9</text>
+
+  <text class="h" x="72" y="295" text-anchor="middle">P1</text>
+  <rect class="run1" x="110" y="268" width="372" height="42" rx="7"/>
+  <text class="t" x="296" y="294" text-anchor="middle">运行</text>
+  <line class="marker" x1="110" y1="250" x2="110" y2="326"/>
+  <line class="marker" x1="482" y1="250" x2="482" y2="326"/>
+  <text class="redText" x="110" y="342" text-anchor="middle">到达/开始</text>
+  <text class="redText" x="482" y="342" text-anchor="middle">完成</text>
+
+  <text class="h" x="72" y="390" text-anchor="middle">P2</text>
+  <rect class="wait" x="203" y="363" width="279" height="42"/>
+  <text class="t" x="342" y="389" text-anchor="middle">等待</text>
+  <rect class="run2" x="482" y="363" width="279" height="42" rx="7"/>
+  <text class="t" x="622" y="389" text-anchor="middle">运行</text>
+  <line class="marker" x1="203" y1="346" x2="203" y2="421"/>
+  <line class="marker" x1="482" y1="346" x2="482" y2="421"/>
+  <line class="marker" x1="761" y1="346" x2="761" y2="421"/>
+  <text class="redText" x="203" y="437" text-anchor="middle">到达</text>
+  <text class="redText" x="482" y="437" text-anchor="middle">开始</text>
+  <text class="redText" x="761" y="437" text-anchor="middle">完成</text>
+
+  <text class="h" x="72" y="486" text-anchor="middle">P3</text>
+  <rect class="wait" x="296" y="459" width="465" height="42"/>
+  <text class="t" x="528" y="485" text-anchor="middle">等待</text>
+  <rect class="run3" x="761" y="459" width="186" height="42" rx="7"/>
+  <text class="t" x="854" y="485" text-anchor="middle">运行</text>
+  <line class="marker" x1="296" y1="442" x2="296" y2="517"/>
+  <line class="marker" x1="761" y1="442" x2="761" y2="517"/>
+  <line class="marker" x1="947" y1="442" x2="947" y2="517"/>
+  <text class="redText" x="296" y="533" text-anchor="middle">到达</text>
+  <text class="redText" x="761" y="533" text-anchor="middle">开始</text>
+  <text class="redText" x="947" y="533" text-anchor="middle">完成</text>
+
+  <rect class="panel" x="170" y="560" width="820" height="42"/>
+  <text class="t" x="580" y="586" text-anchor="middle">先读出到达、开始、完成、运行四个时间，再计算周转、带权周转、等待和响应。</text>
+</svg>

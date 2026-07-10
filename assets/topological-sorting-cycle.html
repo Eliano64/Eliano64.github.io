@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cycle In Topological Sorting</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#0f172a;--muted:#475569;--line:#94a3b8;--edge:#64748b;--hot:#2563eb;--done:#059669;--bad:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#64748b;--edge:#94a3b8;--hot:#60a5fa;--done:#34d399;--bad:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,sans-serif}.wrap{padding:18px;max-width:1060px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px}.title{font-size:22px;font-weight:750}.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer}.stage{display:grid;grid-template-columns:1fr .9fr;gap:16px;margin-top:14px}.card{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px}.note{color:var(--muted);line-height:1.6}.edge{stroke:var(--edge);stroke-width:3;marker-end:url(#arr)}.cycle{stroke:var(--bad);stroke-width:5;marker-end:url(#arrBad)}.removed{stroke:var(--line);stroke-width:2;stroke-dasharray:6 6;opacity:.35;marker-end:url(#arr)}.node{fill:var(--bg);stroke:var(--edge);stroke-width:2}.out{fill:color-mix(in srgb,var(--done) 22%,var(--bg));stroke:var(--done);stroke-width:3}.bad{stroke:var(--bad);stroke-width:4}.label{fill:var(--text);font-weight:700;font-size:17px}.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:var(--bg)}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top"><div><div class="title">有环图：拓扑排序会卡住</div><div class="note" id="cap"></div></div><div><button class="btn" id="prev">上一页</button> <button class="btn" id="next">下一页</button></div></div>
+ <div class="stage"><div class="card" id="graph"></div><div class="card"><div class="note" id="txt"></div><h3>零入度集合</h3><div class="pills" id="ready"></div><h3>输出序列</h3><div class="pills" id="order"></div></div></div>
+</div>
+<script>
+const pos={0:[85,190],1:[240,95],2:[240,285],3:[410,190]};
+const edges=[[0,1],[0,2],[1,3],[3,2],[2,1]];
+const steps=[
+{cap:"开始：0 是唯一入度为 0 的顶点。",out:[],ready:[0],bad:false,txt:"先输出所有没有前驱的顶点。"},
+{cap:"输出 0，删除 0 的出边。",out:[0],ready:[],bad:true,txt:"剩余顶点 1、2、3 的入度都大于 0，没有任何顶点可以继续输出。"},
+{cap:"卡住：剩余部分存在有向环。",out:[0],ready:[],bad:true,txt:"1、3、2 之间形成 1 -> 3 -> 2 -> 1。图未空但没有零入度顶点，所以不存在拓扑序列。"}
+];
+let i=0;
+function render(){
+ const s=steps[i];document.getElementById("cap").textContent=s.cap;document.getElementById("txt").textContent=s.txt;
+ const lines=edges.map(e=>{const cyc=s.bad&&((e[0]===1&&e[1]===3)||(e[0]===3&&e[1]===2)||(e[0]===2&&e[1]===1));return `<line class="${s.out.includes(e[0])?'removed':(cyc?'cycle':'edge')}" x1="${pos[e[0]][0]}" y1="${pos[e[0]][1]}" x2="${pos[e[1]][0]}" y2="${pos[e[1]][1]}"/>`}).join("");
+ const nodes=Object.keys(pos).map(v=>`<g><circle class="node ${s.out.includes(+v)?'out':''} ${s.bad&&!s.out.includes(+v)?'bad':''}" cx="${pos[v][0]}" cy="${pos[v][1]}" r="25"/><text class="label" x="${pos[v][0]}" y="${pos[v][1]+6}" text-anchor="middle">${v}</text></g>`).join("");
+ document.getElementById("graph").innerHTML=`<svg viewBox="0 0 500 380"><defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--edge)"/></marker><marker id="arrBad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--bad)"/></marker></defs>${lines}${nodes}</svg>`;
+ document.getElementById("ready").innerHTML=s.ready.map(v=>`<span class="pill">${v}</span>`).join("")||"<span class='pill'>empty</span>";
+ document.getElementById("order").innerHTML=s.out.map(v=>`<span class="pill">${v}</span>`).join("")||"<span class='pill'>empty</span>";
+}
+document.getElementById("prev").onclick=()=>{i=(i+steps.length-1)%steps.length;render()};document.getElementById("next").onclick=()=>{i=(i+1)%steps.length;render()};render();
+</script>
+</body>
+</html>

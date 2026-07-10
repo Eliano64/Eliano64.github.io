@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cookie 基本工作原理</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 16px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 20px; margin: 0; }
+h2 { font-size: 18px; margin: 0 0 10px; }
+p { font-size: 15px; line-height: 1.5; margin: 0 0 6px; }
+.slide { display: none; padding: 20px 28px; }
+.slide.active { display: block; }
+.row { display: flex; gap: 20px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; flex: 1; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+.count { color: var(--muted); }
+.step-num { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: #fff; text-align: center; line-height: 22px; font-size: 12px; font-weight: 700; margin-right: 4px; }
+
+.diagram { position: relative; height: 260px; margin: 10px 0; }
+.node { position: absolute; border-radius: 8px; padding: 8px 12px; font-size: 13px; text-align: center; border: 2px solid; }
+.node.browser { background: #f0fdf4; border-color: #059669; width: 160px; }
+.node.server { background: #eff6ff; border-color: #2563eb; width: 170px; }
+.node.db { background: #fefce8; border-color: #ca8a04; width: 130px; }
+.node.cookie { background: #f3e8ff; border-color: #7c3aed; width: 130px; }
+.node-title { font-weight: 700; font-size: 14px; }
+.node-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.arrow-label { position: absolute; font-size: 11px; font-weight: 700; }
+.step-desc { font-size: 13px; line-height: 1.7; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24;
+  }
+  .node.browser { background: #1a2e1f; border-color: #10b981; }
+  .node.server { background: #1e293b; border-color: #3b82f6; }
+  .node.db { background: #2a2410; border-color: #fbbf24; }
+  .node.cookie { background: #1e1a2a; border-color: #a78bfa; }
+  button { border-color: #52616b; }
+}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>Cookie 基本工作原理 — 在无状态的 HTTP 之上记住用户</h1></header>
+
+  <!-- Page 1: First visit - no cookie -->
+  <section class="slide active">
+    <h2><span class="step-num">1</span> 初次访问：生成识别码并设置 Cookie</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.3;">
+        <div class="diagram" style="height:220px;">
+          <div class="node browser" style="left:20px;top:60px;">
+            <div class="node-title">浏览器</div>
+            <div class="node-sub">首次访问，无 Cookie</div>
+          </div>
+          <div class="node server" style="left:340px;top:20px;">
+            <div class="node-title">Web 服务器</div>
+            <div class="node-sub">识别新用户</div>
+          </div>
+          <div class="node db" style="left:380px;top:140px;">
+            <div class="node-title">后端数据库</div>
+            <div class="node-sub">新建用户记录</div>
+          </div>
+          <div class="node cookie" style="left:20px;top:170px;">
+            <div class="node-title">Cookie 文件</div>
+            <div class="node-sub">存储识别码</div>
+          </div>
+          <!-- Arrows -->
+          <div style="position:absolute;left:180px;top:62px;width:160px;text-align:center;">
+            <div style="height:2px;background:var(--blue);"></div>
+            <div style="font-size:10px;font-weight:700;color:var(--blue);">① HTTP 请求（无 Cookie 头）</div>
+          </div>
+          <div style="position:absolute;left:460px;top:82px;width:60px;text-align:center;">
+            <div style="height:2px;background:var(--amber);"></div>
+            <div style="font-size:9px;color:var(--amber);">② 生成识别码</div>
+          </div>
+          <div style="position:absolute;left:320px;top:105px;width:180px;text-align:center;">
+            <div style="height:2px;background:var(--green);"></div>
+            <div style="font-size:10px;font-weight:700;color:var(--green);">③ HTTP 响应: Set-Cookie: id=abc123</div>
+          </div>
+          <div style="position:absolute;left:110px;top:160px;width:120px;text-align:center;">
+            <div style="height:2px;background:var(--purple);"></div>
+            <div style="font-size:9px;color:#7c3aed;">④ 存储</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="step-desc">
+          <strong>①</strong> 浏览器初次访问网站，发送 HTTP 请求（不含 Cookie 首部）。<br><br>
+          <strong>②</strong> 服务器检测到没有 Cookie，生成一个唯一的 <strong>Cookie 识别码</strong>（如 <code>id=abc123</code>），并在后端数据库中创建对应记录。<br><br>
+          <strong>③</strong> 服务器在 HTTP 响应报文中添加 <code>Set-Cookie: id=abc123</code> 首部行。<br><br>
+          <strong>④</strong> 浏览器收到响应后，将 Cookie 识别码存入本地的 Cookie 文件。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 2: Subsequent visit - with cookie -->
+  <section class="slide">
+    <h2><span class="step-num">2</span> 再次访问：自动携带 Cookie</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.3;">
+        <div class="diagram" style="height:180px;">
+          <div class="node browser" style="left:20px;top:60px;">
+            <div class="node-title">浏览器</div>
+            <div class="node-sub">Cookie 文件中有 id=abc123</div>
+          </div>
+          <div class="node server" style="left:340px;top:60px;">
+            <div class="node-title">Web 服务器</div>
+            <div class="node-sub">识别用户</div>
+          </div>
+          <div class="node db" style="left:550px;top:25px;">
+            <div class="node-title">后端数据库</div>
+            <div class="node-sub">查询识别码→用户信息</div>
+          </div>
+          <div style="position:absolute;left:180px;top:72px;width:160px;text-align:center;">
+            <div style="height:2px;background:var(--blue);"></div>
+            <div style="font-size:10px;font-weight:700;color:var(--blue);">⑤ HTTP 请求: Cookie: id=abc123</div>
+          </div>
+          <div style="position:absolute;left:470px;top:50px;width:80px;text-align:center;">
+            <div style="height:2px;background:var(--amber);"></div>
+            <div style="font-size:9px;color:var(--amber);">⑥ 查询</div>
+          </div>
+          <div style="position:absolute;left:340px;top:120px;width:160px;text-align:center;">
+            <div style="height:2px;background:var(--green);"></div>
+            <div style="font-size:10px;font-weight:700;color:var(--green);">⑦ HTTP 响应：个性化网页内容</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="step-desc">
+          <strong>⑤</strong> 浏览器再次访问同一网站，自动从 Cookie 文件取出识别码，放入请求报文的 <code>Cookie: id=abc123</code> 首部行。<br><br>
+          <strong>⑥</strong> 服务器根据识别码从后端数据库中找到用户的历史记录和偏好。<br><br>
+          <strong>⑦</strong> 服务器返回为这个用户定制的个性化网页内容。
+        </p>
+        <p style="font-size:13px;color:var(--muted);margin-top:8px;">
+          此后的每次请求，浏览器都自动携带该网站的 Cookie。服务器无需用户每次登录就能识别用户身份。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 3: Summary -->
+  <section class="slide">
+    <h2><span class="step-num">★</span> Cookie 工作流程总结</h2>
+    <div class="row">
+      <div class="panel">
+        <p style="font-weight:700;">关键步骤</p>
+        <p class="step-desc">
+          1. <strong>初次访问</strong>：浏览器发请求（无 Cookie）→ 服务器生成识别码并存数据库 → 响应中 <code>Set-Cookie</code> 返回识别码 → 浏览器存 Cookie 文件。<br>
+          2. <strong>后续访问</strong>：浏览器在每次请求中自动带上 <code>Cookie</code> 头 → 服务器识别用户 → 返回个性化内容。
+        </p>
+        <p style="font-weight:700;margin-top:12px;">两个关键 HTTP 首部</p>
+        <table style="border-collapse:collapse;width:100%;font-size:13px;">
+          <tr style="background:var(--bg);"><td style="padding:6px;border:1px solid var(--border);"><code>Set-Cookie</code></td><td style="padding:6px;border:1px solid var(--border);">响应首部，服务器用来设置 Cookie</td></tr>
+          <tr><td style="padding:6px;border:1px solid var(--border);"><code>Cookie</code></td><td style="padding:6px;border:1px solid var(--border);">请求首部，浏览器用来回传 Cookie</td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <p style="font-weight:700;">Cookie 解决了什么问题</p>
+        <p style="font-size:13px;line-height:1.7;">
+          HTTP 本身是<strong>无状态</strong>协议——每个请求-响应都是独立的，服务器不记得任何历史信息。<br><br>
+          Cookie 在无状态的 HTTP 之上建立了一种<strong>状态维护机制</strong>，使服务器能够：<br>
+          • 识别回头用户<br>
+          • 维护用户登录状态（"记住我"）<br>
+          • 保存购物车内容<br>
+          • 提供个性化推荐<br>
+          • 跟踪用户行为
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+function show(n) {
+  index = (n + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

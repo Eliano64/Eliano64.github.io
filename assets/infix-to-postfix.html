@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>中缀表达式转后缀表达式</title>
+  <style>
+    :root{--ink:#17212b;--muted:#5b6876;--line:#334e68;--accent:#0f766e;--warn:#b45309;--bg:#f8fafc;--panel:#fff;--cell:#eef6ff;--paren:#fff7e6;--code:#111827;--codeText:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header,footer{padding:18px 28px;background:var(--panel);border-bottom:1px solid #dbe3ea}footer{border-top:1px solid #dbe3ea;border-bottom:0;display:flex;justify-content:space-between;align-items:center}.slide{display:none;padding:28px;gap:24px;grid-template-columns:1.05fr .95fr;align-items:start}.slide.active{display:grid}h1{font-size:24px;margin:0}h2{font-size:27px;margin:0 0 12px}p{font-size:18px;line-height:1.62}.panel{background:var(--panel);border:1px solid #d8e1e8;border-radius:8px;padding:20px}.tokens{display:flex;gap:7px;margin:18px 0;flex-wrap:wrap}.tok{min-width:39px;height:40px;border:2px solid var(--line);border-radius:8px;background:var(--cell);display:grid;place-items:center;font-weight:700}.paren{background:var(--paren)}.mark{outline:4px solid var(--warn);outline-offset:-4px}.row{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:start;margin-top:12px}.label{color:var(--muted);font-weight:700}.box{min-height:44px;border:2px solid var(--line);border-radius:8px;padding:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{min-width:34px;height:30px;border-radius:6px;background:var(--cell);border:1px solid var(--line);display:grid;place-items:center;font-weight:700}.pill.paren{background:var(--paren)}.stack{flex-direction:column-reverse;align-items:flex-start;min-height:132px}.note{border-left:4px solid var(--accent);padding:8px 12px;background:color-mix(in srgb,var(--accent) 10%,transparent);font-size:16px;line-height:1.55}pre{margin:0;background:var(--code);color:var(--codeText);border-radius:8px;padding:18px;overflow:auto;font-size:16px;line-height:1.55}code{font-family:Consolas,monospace}.count{color:var(--muted)}button{border:1px solid #a7b4c2;background:var(--panel);color:var(--ink);border-radius:6px;padding:9px 14px;font-size:15px;cursor:pointer}
+    @media (max-width:760px){.slide.active{grid-template-columns:1fr}.tok{min-width:34px}.row{grid-template-columns:84px 1fr}}
+    @media (prefers-color-scheme:dark){:root{--ink:#e6edf3;--muted:#b8c4cf;--line:#9ccfd8;--accent:#5eead4;--warn:#f6c177;--bg:#0f1720;--panel:#16212c;--cell:#16212c;--paren:#2a2113;--code:#080d13;--codeText:#e6edf3}header,footer,.panel{border-color:#2c3a47}button{border-color:#52616b}}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>中缀表达式转后缀表达式：A*(B+C)-D/(E-F)</h1></header>
+
+  <section class="slide active">
+    <div class="panel">
+      <h2>1. 先输出 A，暂存 *</h2>
+      <p>操作数直接进入后缀表达式。扫描到 <code>*</code> 时，右操作数还没有完整出现，所以 <code>*</code> 入运算符栈。</p>
+      <div class="tokens"><div class="tok">A</div><div class="tok mark">*</div><div class="tok paren">(</div><div class="tok">B</div><div class="tok">+</div><div class="tok">C</div><div class="tok paren">)</div><div class="tok">-</div><div class="tok">D</div><div class="tok">/</div><div class="tok paren">(</div><div class="tok">E</div><div class="tok">-</div><div class="tok">F</div><div class="tok paren">)</div></div>
+      <div class="row"><div class="label">输出</div><div class="box"><span class="pill">A</span></div></div>
+      <div class="row"><div class="label">运算符栈</div><div class="box stack"><span class="pill">*</span></div></div>
+    </div>
+    <pre><code>if (isalnum(token)) {
+    postfix[outIndex++] = token;
+} else if (IsOperator(token)) {
+    Push(&operatorStack, token);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>2. 左括号作为栈内边界</h2>
+      <p>扫描到 <code>(</code> 时直接入栈。它把括号内的运算和外层 <code>*</code> 隔开，使括号内低优先级的 <code>+</code> 不会被外层运算提前影响。</p>
+      <div class="tokens"><div class="tok">A</div><div class="tok">*</div><div class="tok paren mark">(</div><div class="tok">B</div><div class="tok">+</div><div class="tok">C</div><div class="tok paren">)</div><div class="tok">-</div><div class="tok">D</div><div class="tok">/</div><div class="tok paren">(</div><div class="tok">E</div><div class="tok">-</div><div class="tok">F</div><div class="tok paren">)</div></div>
+      <div class="row"><div class="label">输出</div><div class="box"><span class="pill">A</span></div></div>
+      <div class="row"><div class="label">运算符栈</div><div class="box stack"><span class="pill">*</span><span class="pill paren">(</span></div></div>
+      <p class="note">遇到当前运算符时，只能和左括号之上的栈顶运算符比较优先级。</p>
+    </div>
+    <pre><code>} else if (token == '(') {
+    Push(&operatorStack, token);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>3. 括号内的 + 暂存</h2>
+      <p>扫描到 <code>B+C</code>：<code>B</code>、<code>C</code> 直接输出，<code>+</code> 入栈。虽然 <code>+</code> 优先级低，但它被左括号保护，属于括号内表达式。</p>
+      <div class="tokens"><div class="tok">A</div><div class="tok">*</div><div class="tok paren">(</div><div class="tok">B</div><div class="tok mark">+</div><div class="tok">C</div><div class="tok paren">)</div><div class="tok">-</div><div class="tok">D</div><div class="tok">/</div><div class="tok paren">(</div><div class="tok">E</div><div class="tok">-</div><div class="tok">F</div><div class="tok paren">)</div></div>
+      <div class="row"><div class="label">输出</div><div class="box"><span class="pill">A</span><span class="pill">B</span><span class="pill">C</span></div></div>
+      <div class="row"><div class="label">运算符栈</div><div class="box stack"><span class="pill">*</span><span class="pill paren">(</span><span class="pill">+</span></div></div>
+    </div>
+    <pre><code>while (GetTop(operatorStack, &topOperator) &&
+       topOperator != '(' &&
+       Priority(topOperator) >= Priority(token)) {
+    Pop(&operatorStack, &topOperator);
+    postfix[outIndex++] = topOperator;
+}
+Push(&operatorStack, token);</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>4. 右括号触发括号内输出</h2>
+      <p>扫描到 <code>)</code> 时，连续弹出并输出运算符，直到遇到 <code>(</code>。括号本身只控制范围，不进入后缀表达式。</p>
+      <div class="tokens"><div class="tok">A</div><div class="tok">*</div><div class="tok paren">(</div><div class="tok">B</div><div class="tok">+</div><div class="tok">C</div><div class="tok paren mark">)</div><div class="tok">-</div><div class="tok">D</div><div class="tok">/</div><div class="tok paren">(</div><div class="tok">E</div><div class="tok">-</div><div class="tok">F</div><div class="tok paren">)</div></div>
+      <div class="row"><div class="label">输出</div><div class="box"><span class="pill">A</span><span class="pill">B</span><span class="pill">C</span><span class="pill">+</span></div></div>
+      <div class="row"><div class="label">运算符栈</div><div class="box stack"><span class="pill">*</span></div></div>
+      <p class="note"><code>B+C</code> 作为一个整体完成，后面才能成为外层 <code>*</code> 的右操作数。</p>
+    </div>
+    <pre><code>} else if (token == ')') {
+    while (GetTop(operatorStack, &topOperator) &&
+           topOperator != '(') {
+        Pop(&operatorStack, &topOperator);
+        postfix[outIndex++] = topOperator;
+    }
+    Pop(&operatorStack, &topOperator);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>5. 外层 - 使 * 先输出</h2>
+      <p>扫描到 <code>-</code> 时，栈顶 <code>*</code> 优先级高于 <code>-</code>，所以先输出 <code>*</code>，再把 <code>-</code> 入栈。</p>
+      <div class="tokens"><div class="tok">A</div><div class="tok">*</div><div class="tok paren">(</div><div class="tok">B</div><div class="tok">+</div><div class="tok">C</div><div class="tok paren">)</div><div class="tok mark">-</div><div class="tok">D</div><div class="tok">/</div><div class="tok paren">(</div><div class="tok">E</div><div class="tok">-</div><div class="tok">F</div><div class="tok paren">)</div></div>
+      <div class="row"><div class="label">输出</div><div class="box"><span class="pill">A</span><span class="pill">B</span><span class="pill">C</span><span class="pill">+</span><span class="pill">*</span></div></div>
+      <div class="row"><div class="label">运算符栈</div><div class="box stack"><span class="pill">-</span></div></div>
+    </div>
+    <pre><code>while (Priority(topOperator) >= Priority(token)) {
+    Pop(&operatorStack, &topOperator);
+    postfix[outIndex++] = topOperator;
+}
+Push(&operatorStack, token);</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>6. 第二组括号保护 E-F</h2>
+      <p>扫描 <code>D/(E-F)</code> 时，<code>/</code> 先入栈；进入括号后，<code>E-F</code> 在左括号之上处理。右括号到来时，<code>-</code> 先输出。</p>
+      <div class="tokens"><div class="tok">A</div><div class="tok">*</div><div class="tok paren">(</div><div class="tok">B</div><div class="tok">+</div><div class="tok">C</div><div class="tok paren">)</div><div class="tok">-</div><div class="tok">D</div><div class="tok">/</div><div class="tok paren">(</div><div class="tok">E</div><div class="tok mark">-</div><div class="tok">F</div><div class="tok paren">)</div></div>
+      <div class="row"><div class="label">输出</div><div class="box"><span class="pill">A</span><span class="pill">B</span><span class="pill">C</span><span class="pill">+</span><span class="pill">*</span><span class="pill">D</span><span class="pill">E</span><span class="pill">F</span><span class="pill">-</span></div></div>
+      <div class="row"><div class="label">运算符栈</div><div class="box stack"><span class="pill">-</span><span class="pill">/</span></div></div>
+      <p class="note"><code>E-F</code> 成为 <code>/</code> 的右操作数，不能先让外层 <code>/</code> 输出。</p>
+    </div>
+    <pre><code>// 右括号只弹出左括号之上的运算符
+while (topOperator != '(') {
+    Pop(&operatorStack, &topOperator);
+    postfix[outIndex++] = topOperator;
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>7. 扫描结束后清空运算符栈</h2>
+      <p>输入处理完后，依次弹出剩余运算符。先输出 <code>/</code>，再输出外层 <code>-</code>。</p>
+      <div class="row"><div class="label">输出</div><div class="box"><span class="pill">A</span><span class="pill">B</span><span class="pill">C</span><span class="pill">+</span><span class="pill">*</span><span class="pill">D</span><span class="pill">E</span><span class="pill">F</span><span class="pill">-</span><span class="pill">/</span><span class="pill">-</span></div></div>
+      <div class="row"><div class="label">结果</div><div class="box"><span class="pill">ABC+*DEF-/-</span></div></div>
+    </div>
+    <pre><code>while (Pop(&operatorStack, &topOperator)) {
+    postfix[outIndex++] = topOperator;
+}
+postfix[outIndex] = '\0';</code></pre>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides=[...document.querySelectorAll(".slide")];let index=0;const count=document.getElementById("count");function show(i){index=(i+slides.length)%slides.length;slides.forEach((s,n)=>s.classList.toggle("active",n===index));count.textContent=`${index+1} / ${slides.length}`;}document.getElementById("prev").onclick=()=>show(index-1);document.getElementById("next").onclick=()=>show(index+1);addEventListener("keydown",e=>{if(e.key==="ArrowRight")show(index+1);if(e.key==="ArrowLeft")show(index-1);});show(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSMA/CA Basic Send Process</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #94a3b8;
+      --border: #cbd5e1;
+      --blue: #2563eb;
+      --green: #059669;
+      --orange: #ea580c;
+      --red: #dc2626;
+      --violet: #7c3aed;
+      --nav: #f59e0b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #020617;
+        --panel: #0f172a;
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+        --line: #64748b;
+        --border: #475569;
+        --blue: #60a5fa;
+        --green: #34d399;
+        --orange: #fb923c;
+        --red: #f87171;
+        --violet: #a78bfa;
+        --nav: #fbbf24;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    }
+    .wrap {
+      width: min(1100px, 100vw);
+      margin: 0 auto;
+      padding: 18px 24px 14px;
+    }
+    h1 {
+      margin: 0 0 14px;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .steps {
+      display: grid;
+      gap: 9px;
+    }
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 92%, var(--blue));
+      padding: 10px 12px;
+      min-height: 68px;
+    }
+    .step.active {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--blue) 28%, transparent);
+    }
+    .step b {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+    .step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.32;
+    }
+    .stage {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      padding: 10px;
+      min-height: 455px;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: 345px;
+    }
+    .caption {
+      margin: 8px auto 0;
+      max-width: 760px;
+      min-height: 42px;
+      text-align: center;
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    button {
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 18px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue); }
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .stage { min-height: 470px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>CSMA/CA 基本发送过程</h1>
+    <div class="layout">
+      <div class="steps" id="steps"></div>
+      <div class="stage">
+        <svg viewBox="0 0 760 420" aria-label="CSMA CA time sequence">
+          <defs>
+            <marker id="arrowBlue" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto">
+              <path d="M1,1 L11,6.5 L1,12 Z" fill="var(--blue)"></path>
+            </marker>
+            <marker id="arrowGreen" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto">
+              <path d="M1,1 L11,6.5 L1,12 Z" fill="var(--green)"></path>
+            </marker>
+          </defs>
+
+          <line x1="105" y1="90" x2="700" y2="90" stroke="var(--line)" stroke-width="2"/>
+          <line x1="105" y1="220" x2="700" y2="220" stroke="var(--line)" stroke-width="2"/>
+          <line x1="105" y1="340" x2="700" y2="340" stroke="var(--line)" stroke-width="2"/>
+          <text x="45" y="98" fill="var(--text)" font-size="18" font-weight="700">源站 A</text>
+          <text x="45" y="228" fill="var(--text)" font-size="18" font-weight="700">目的站 B</text>
+          <text x="35" y="348" fill="var(--text)" font-size="18" font-weight="700">其他站 C</text>
+          <text x="716" y="95" fill="var(--text)" font-size="17">t</text>
+          <text x="716" y="225" fill="var(--text)" font-size="17">t</text>
+          <text x="716" y="345" fill="var(--text)" font-size="17">t</text>
+
+          <g id="difs" opacity="0">
+            <rect x="135" y="64" width="72" height="28" rx="5" fill="var(--orange)" opacity=".20" stroke="var(--orange)"/>
+            <text x="171" y="84" text-anchor="middle" fill="var(--orange)" font-size="15" font-weight="700">DIFS</text>
+          </g>
+          <g id="backoff" opacity="0">
+            <rect x="208" y="64" width="88" height="28" rx="5" fill="var(--violet)" opacity=".20" stroke="var(--violet)" stroke-dasharray="6 5"/>
+            <text x="252" y="84" text-anchor="middle" fill="var(--violet)" font-size="15" font-weight="700">退避</text>
+          </g>
+          <g id="data" opacity="0">
+            <path d="M300 90 L498 220" stroke="var(--blue)" stroke-width="11" opacity=".86" marker-end="url(#arrowBlue)"/>
+            <text x="407" y="144" fill="var(--blue)" font-size="17" font-weight="700" transform="rotate(33 407 144)">DATA</text>
+          </g>
+          <g id="sifs" opacity="0">
+            <rect x="502" y="194" width="58" height="27" rx="5" fill="var(--orange)" opacity=".20" stroke="var(--orange)"/>
+            <text x="531" y="214" text-anchor="middle" fill="var(--orange)" font-size="14" font-weight="700">SIFS</text>
+          </g>
+          <g id="ack" opacity="0">
+            <path d="M560 220 L640 90" stroke="var(--green)" stroke-width="8" opacity=".9" marker-end="url(#arrowGreen)"/>
+            <text x="617" y="164" fill="var(--green)" font-size="16" font-weight="700" transform="rotate(-58 617 164)">ACK</text>
+          </g>
+          <g id="nav" opacity="0">
+            <rect x="300" y="318" width="340" height="38" rx="7" fill="var(--nav)" opacity=".20" stroke="var(--nav)" stroke-width="2"/>
+            <text x="470" y="343" text-anchor="middle" fill="var(--nav)" font-size="17" font-weight="700">NAV：推迟访问信道</text>
+            <line x1="300" y1="300" x2="300" y2="360" stroke="var(--nav)" stroke-width="2" stroke-dasharray="7 6"/>
+            <line x1="640" y1="300" x2="640" y2="360" stroke="var(--nav)" stroke-width="2" stroke-dasharray="7 6"/>
+          </g>
+        </svg>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="prev" type="button">上一步</button>
+      <button id="next" type="button">下一步</button>
+    </div>
+  </div>
+  <script>
+    const slides = [
+      {
+        title: "1. 监听信道",
+        nav: "A 先进行物理载波监听。",
+        body: "源站 A 有帧要发送，先进行物理载波监听。若信道忙，就等待信道变为空闲。",
+        show: []
+      },
+      {
+        title: "2. 等待 DIFS",
+        nav: "普通数据帧先等待 DIFS。",
+        body: "信道空闲后，A 不能立刻发送普通数据帧，而要先等待 DIFS。SIFS 更短，响应帧可优先完成。",
+        show: ["difs"]
+      },
+      {
+        title: "3. 随机退避",
+        nav: "从争用窗口选择退避时间。",
+        body: "若需要退避，A 从争用窗口中随机选择退避时间。信道空闲时倒计时；信道变忙时冻结。",
+        show: ["difs", "backoff"]
+      },
+      {
+        title: "4. 发送数据帧",
+        nav: "退避归零后发送 DATA。",
+        body: "退避计时器减到 0 后，A 发送 DATA。帧中的持续期字段可让其他站点设置 NAV。",
+        show: ["difs", "backoff", "data", "nav"]
+      },
+      {
+        title: "5. 返回 ACK",
+        nav: "B 等待 SIFS 后返回 ACK。",
+        body: "B 正确收到数据帧后，等待 SIFS，然后发送 ACK。SIFS 比 DIFS 短，所以 ACK 优先于普通争用发送。",
+        show: ["difs", "backoff", "data", "sifs", "ack", "nav"]
+      },
+      {
+        title: "6. 超时则重传",
+        nav: "未收到 ACK 则退避重传。",
+        body: "如果 A 在超时时间内没有收到 ACK，就认为帧可能碰撞或丢失，执行退避后重传。",
+        show: ["difs", "backoff", "data", "sifs", "nav"]
+      }
+    ];
+
+    const params = new URLSearchParams(location.search);
+    let index = Number(params.get("step") || 0);
+    if (!Number.isInteger(index) || index < 0 || index >= slides.length) index = 0;
+
+    const steps = document.getElementById("steps");
+    slides.forEach((s, i) => {
+      const div = document.createElement("div");
+      div.className = "step";
+      div.innerHTML = `<b>${s.title}</b><span>${s.nav}</span>`;
+      div.addEventListener("click", () => { index = i; render(); });
+      steps.appendChild(div);
+    });
+
+    function render() {
+      const slide = slides[index];
+      for (const id of ["difs", "backoff", "data", "sifs", "ack", "nav"]) {
+        document.getElementById(id).style.opacity = slide.show.includes(id) ? "1" : "0";
+      }
+      document.querySelectorAll(".step").forEach((el, i) => el.classList.toggle("active", i === index));
+      document.getElementById("caption").textContent = slide.body;
+    }
+    document.getElementById("prev").addEventListener("click", () => {
+      index = (index + slides.length - 1) % slides.length;
+      render();
+    });
+    document.getElementById("next").addEventListener("click", () => {
+      index = (index + 1) % slides.length;
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

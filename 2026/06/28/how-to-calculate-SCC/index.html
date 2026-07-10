@@ -1,0 +1,394 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>How to Calculate SCC | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="强连通分量的常见求法有 Tarjan 和 Kosaraju。Tarjan 更适合理解代码实现，Kosaraju 更适合手算 SCC 个数。 TarjanTarjan 算法可以在线性时间内求出有向图的强连通分量。它的核心是 DFS 时间戳 dfn、追溯值 low 和一个维护当前搜索路径的栈。 dfn 与 low   数组 含义    dfn[u] 顶点 u 第一次被 DFS 访问到的时间戳   lo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Calculate SCC">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/28/how-to-calculate-SCC/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="强连通分量的常见求法有 Tarjan 和 Kosaraju。Tarjan 更适合理解代码实现，Kosaraju 更适合手算 SCC 个数。 TarjanTarjan 算法可以在线性时间内求出有向图的强连通分量。它的核心是 DFS 时间戳 dfn、追溯值 low 和一个维护当前搜索路径的栈。 dfn 与 low   数组 含义    dfn[u] 顶点 u 第一次被 DFS 访问到的时间戳   lo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T04:09:30.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.061Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Graph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "How to Calculate SCC",
+  "url": "https://eliano64.github.io/2026/06/28/how-to-calculate-SCC/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T04:09:30.000Z",
+  "dateModified": "2026-07-10T07:16:51.061Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/28/how-to-calculate-SCC/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'How to Calculate SCC',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">How to Calculate SCC</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">How to Calculate SCC</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T04:09:30.000Z" title="发表于 2026-06-28 12:09:30">2026-06-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.061Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">917</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><a href="/2026/06/28/graph-connectivity-and-components/#强连通分量" class="wikilink">强连通分量</a>的常见求法有 Tarjan 和 Kosaraju。Tarjan 更适合理解代码实现，Kosaraju 更适合手算 SCC 个数。</p>
+<h1 id="Tarjan"><a href="#Tarjan" class="headerlink" title="Tarjan"></a>Tarjan</h1><p>Tarjan 算法可以在线性时间内求出有向图的强连通分量。它的核心是 DFS 时间戳 <code>dfn</code>、追溯值 <code>low</code> 和一个维护当前搜索路径的栈。</p>
+<h2 id="dfn-与-low"><a href="#dfn-与-low" class="headerlink" title="dfn 与 low"></a>dfn 与 low</h2><table>
+<thead>
+<tr>
+<th>数组</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>dfn[u]</code></td>
+<td>顶点 <code>u</code> 第一次被 DFS 访问到的时间戳</td>
+</tr>
+<tr>
+<td><code>low[u]</code></td>
+<td>从 <code>u</code> 出发，沿 DFS 树边向下走，再通过一条返祖边或栈内边能回到的最小 <code>dfn</code></td>
+</tr>
+</tbody></table>
+<p>直观理解：</p>
+<ul>
+<li><code>dfn</code> 记录访问顺序；</li>
+<li><code>low</code> 记录当前顶点所在搜索分支还能向前追溯到哪里；</li>
+<li>当 <code>dfn[u] == low[u]</code> 时，<code>u</code> 是某个强连通分量在 DFS 树中的根。</li>
+</ul>
+<h2 id="栈的作用"><a href="#栈的作用" class="headerlink" title="栈的作用"></a>栈的作用</h2><p>Tarjan 只把“已经访问但尚未确定所属 SCC”的顶点留在栈中。</p>
+<p>遇到边 <code>u -&gt; v</code> 时：</p>
+<ul>
+<li>若 <code>v</code> 没访问过，先 DFS <code>v</code>，回来后用 <code>low[v]</code> 更新 <code>low[u]</code>；</li>
+<li>若 <code>v</code> 仍在栈中，说明 <code>u</code> 能到达当前未完成的搜索路径上的某个点，用 <code>dfn[v]</code> 更新 <code>low[u]</code>；</li>
+<li>若 <code>v</code> 已经出栈，说明 <code>v</code> 所在 SCC 已经结束，不能再用它更新 <code>low[u]</code>。</li>
+</ul>
+<h2 id="C-代码"><a href="#C-代码" class="headerlink" title="C 代码"></a>C 代码</h2><p>下面用链式前向星存有向图。顶点编号为 <code>1..n</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXV 100005</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXE 200005</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> to;</span><br><span class="line">    <span class="type">int</span> next;</span><br><span class="line">&#125; Edge;</span><br><span class="line"></span><br><span class="line">Edge edges[MAXE];</span><br><span class="line"><span class="type">int</span> head[MAXV], edgeCount;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> dfn[MAXV], low[MAXV], timeStamp;</span><br><span class="line"><span class="type">int</span> <span class="built_in">stack</span>[MAXV], top;</span><br><span class="line"><span class="type">int</span> inStack[MAXV];</span><br><span class="line"><span class="type">int</span> belong[MAXV], sccCount;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">addEdge</span><span class="params">(<span class="type">int</span> from, <span class="type">int</span> to)</span> &#123;</span><br><span class="line">    edges[++edgeCount].to = to;</span><br><span class="line">    edges[edgeCount].next = head[from];</span><br><span class="line">    head[from] = edgeCount;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">tarjan</span><span class="params">(<span class="type">int</span> u)</span> &#123;</span><br><span class="line">    dfn[u] = low[u] = ++timeStamp;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">stack</span>[++top] = u;</span><br><span class="line">    inStack[u] = <span class="number">1</span>;  <span class="comment">// u 已访问，但还没有确定所属强连通分量</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> e = head[u]; e != <span class="number">0</span>; e = edges[e].next) &#123;</span><br><span class="line">        <span class="type">int</span> v = edges[e].to;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (dfn[v] == <span class="number">0</span>) &#123;</span><br><span class="line">            tarjan(v);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (low[v] &lt; low[u]) &#123;</span><br><span class="line">                low[u] = low[v];  <span class="comment">// 子树能追溯到更早的顶点，u 也能追溯过去</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (inStack[v]) &#123;</span><br><span class="line">            <span class="keyword">if</span> (dfn[v] &lt; low[u]) &#123;</span><br><span class="line">                low[u] = dfn[v];  <span class="comment">// v 还在栈内，u 能回到当前搜索路径上的 v</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (dfn[u] == low[u]) &#123;</span><br><span class="line">        ++sccCount;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="type">int</span> x = <span class="built_in">stack</span>[top--];</span><br><span class="line">            inStack[x] = <span class="number">0</span>;</span><br><span class="line">            belong[x] = sccCount;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (x == u) &#123;</span><br><span class="line">                <span class="keyword">break</span>;  <span class="comment">// 从栈顶弹到 u，刚好得到一个完整 SCC</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">findSCC</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> u = <span class="number">1</span>; u &lt;= n; ++u) &#123;</span><br><span class="line">        <span class="keyword">if</span> (dfn[u] == <span class="number">0</span>) &#123;</span><br><span class="line">            tarjan(u);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="常见判断"><a href="#常见判断" class="headerlink" title="常见判断"></a>常见判断</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SCC 根</td>
+<td><code>dfn[u] == low[u]</code></td>
+</tr>
+<tr>
+<td>顶点所属 SCC</td>
+<td><code>belong[u]</code></td>
+</tr>
+<tr>
+<td>SCC 个数</td>
+<td><code>sccCount</code></td>
+</tr>
+</tbody></table>
+<h1 id="Kosaraju-手算-SCC-个数"><a href="#Kosaraju-手算-SCC-个数" class="headerlink" title="Kosaraju 手算 SCC 个数"></a>Kosaraju 手算 SCC 个数</h1><div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||820)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||820)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/kosaraju-scc-hand.html" style="width:100%;height:820px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>Kosaraju 分两次 DFS：</p>
+<ol>
+<li>在原图 $G$ 上选一个点 DFS，记录每个顶点的<strong>完成时间</strong>（不是<strong>访问时间</strong>！是<strong>退出递归调用接口的时间</strong>）。</li>
+<li>把所有弧反向，得到反图 $G^T$。</li>
+<li>点按完成时间从大到小，在 $G^T$ 上依次 DFS。</li>
+<li>第二次 DFS 中，每启动一次 DFS 所访问到的一整块，就是一个强连通分量。</li>
+</ol>
+<p>上面的例子中，按顶点编号从小到大、邻接点也从小到大进行第一次 DFS，可得到完成顺序：</p>
+<p>$$<br>7,\ 5,\ 3,\ 2,\ 6,\ 4,\ 1<br>$$</p>
+<p>因此完成时间从大到小为：</p>
+<p>$$<br>1,\ 4,\ 6,\ 2,\ 3,\ 5,\ 7<br>$$</p>
+<p>把所有弧反向后，按这个顺序在反图中 DFS：</p>
+<table>
+<thead>
+<tr>
+<th>入口</th>
+<th>在反图中本轮能到达的未访问顶点</th>
+<th>得到的 SCC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$1$</td>
+<td>$1$</td>
+<td>${1}$</td>
+</tr>
+<tr>
+<td>$4$</td>
+<td>$4$</td>
+<td>${4}$</td>
+</tr>
+<tr>
+<td>$6$</td>
+<td>$6$</td>
+<td>${6}$</td>
+</tr>
+<tr>
+<td>$2$</td>
+<td>$2$</td>
+<td>${2}$</td>
+</tr>
+<tr>
+<td>$3$</td>
+<td>$3$</td>
+<td>${3}$</td>
+</tr>
+<tr>
+<td>$5$</td>
+<td>$5$</td>
+<td>${5}$</td>
+</tr>
+<tr>
+<td>$7$</td>
+<td>$7$</td>
+<td>${7}$</td>
+</tr>
+</tbody></table>
+<p>所以该图有 $7$ 个强连通分量，每个顶点各自构成一个单点 SCC。</p>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">手算优先用 Kosaraju</span></div>
+<div class="callout-content"><p>若题目只要求判断 SCC 个数或划分 SCC，Kosaraju 的两次 DFS 通常比手算 Tarjan 的 <code>dfn/low</code> 更直接。若题目给的是代码、要求解释 <code>low</code>、栈或 SCC 根，则用 Tarjan。</p>
+</div>
+</div>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/28/how-to-calculate-SCC/">https://eliano64.github.io/2026/06/28/how-to-calculate-SCC/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/28/spanning-tree/" title="Spanning Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Spanning Tree</div></div><div class="info-2"><div class="info-item-1">生成树与生成森林生成树讨论的是：在保持全部顶点连通的前提下，把边删到尽可能少。非连通图不能得到覆盖全图的一棵生成树，只能得到生成森林。 相关基础：子图与生成子图、连通性与连通分量。  生成树连通图的生成树是包含图中全部顶点的一个极小连通子图。 若图中有 $n$ 个顶点，则任意生成树都有： $$n-1$$ 条边。 生成树有两个等价的直观判断：    角度 说明    边尽可能少 去掉生成树中任意一条边，图都会变成非连通   无环 在生成树中加入原图里一条额外边，一定会形成回路    极小与极大 连通分量是“极大连通子图”：连通区域已经不能再扩大。生成树是“极小连通子图”：已经连通，但边已经少到不能再删。   ## 生成森林  非连通无向图没有覆盖全图的生成树。此时，对每个连通分量分别取一棵生成树，这些生成树合在一起称为生成森林。 若非连通图有 $n$ 个顶点、$k$ 个连通分量，则其生成森林共有： $$n-k$$ 条边。因为每个连通分量若有 $n_i$ 个顶点，其生成树有 $n_i-1$ 条边，总和为： $$\sum_{i&#x3D;1}^{k}(n_i-1)&#x3D;n-k$$ </div></div></div></a><a class="pagination-related" href="/2026/06/28/minimum-spanning-tree/" title="Minimum Spanning Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Minimum Spanning Tree</div></div><div class="info-2"><div class="info-item-1">最小生成树最小生成树（Minimum Spanning Tree, MST）讨论的是：在一个带权无向连通图中，既要让所有顶点连通，又要让选中边的总代价尽可能低。  什么是最小生成树设带权无向连通图为 $G&#x3D;(V,E)$，$R$ 为 $G$ 的所有生成树的集合。对任意生成树 $T$，它的权值是 $T$ 中所有边权值之和： $$w(T)&#x3D;\sum_{e\in T}w(e)$$ 若某棵生成树 $T$ 满足： $$w(T)&#x3D;\min_{T_i\in R}w(T_i)$$ 则 $T$ 称为 $G$ 的最小生成树，也称最小代价树。  MST 的对象 最小生成树通常只讨论带权无向连通图。“带权”决定有代价可比较；“无向”决定边没有方向限制；“连通”决定存在覆盖全部顶点的一棵生成树。   ## MST 必须同时满足什么     条件 说明    覆盖全部顶点 不能只连接一部分顶点   连通 任意两个顶点之间都有路径   无环 有环就能删去环上的某条边并仍保持连通，不是生成树的最简形态   边数为...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Tarjan"><span class="toc-text">Tarjan</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#dfn-%E4%B8%8E-low"><span class="toc-text">dfn 与 low</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">栈的作用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#C-%E4%BB%A3%E7%A0%81"><span class="toc-text">C 代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%88%A4%E6%96%AD"><span class="toc-text">常见判断</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Kosaraju-%E6%89%8B%E7%AE%97-SCC-%E4%B8%AA%E6%95%B0"><span class="toc-text">Kosaraju 手算 SCC 个数</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

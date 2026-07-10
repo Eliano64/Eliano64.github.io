@@ -1,0 +1,476 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Bus Overview | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="总线总线是一组能为多个部件分时共享的公共信息传送线路。  共享：总线上可以挂接多个部件，部件之间交换的信息都可以通过这组线路传送。 分时：同一时刻只允许一个部件向总线发送信息；其他部件即使也要发送，也必须等待。   总线不是“一根线” 一条总线通常由多根信号线组成。比如一组 32 位数据总线，本质上就是 32 根可并行传送数据位的信号线。   ![](&#x2F;assets&#x2F;bus-basic-share">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bus Overview">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/03/Bus-Overview/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="总线总线是一组能为多个部件分时共享的公共信息传送线路。  共享：总线上可以挂接多个部件，部件之间交换的信息都可以通过这组线路传送。 分时：同一时刻只允许一个部件向总线发送信息；其他部件即使也要发送，也必须等待。   总线不是“一根线” 一条总线通常由多根信号线组成。比如一组 32 位数据总线，本质上就是 32 根可并行传送数据位的信号线。   ![](&#x2F;assets&#x2F;bus-basic-share">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-02T19:16:59.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.001Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="Bus">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bus Overview",
+  "url": "https://eliano64.github.io/2026/07/03/Bus-Overview/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-02T19:16:59.000Z",
+  "dateModified": "2026-07-10T07:16:51.001Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/03/Bus-Overview/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Bus Overview',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Bus Overview</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Bus Overview</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-02T19:16:59.000Z" title="发表于 2026-07-03 03:16:59">2026-07-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.001Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="总线"><a href="#总线" class="headerlink" title="总线"></a>总线</h1><p><strong>总线</strong>是一组能为多个部件<strong>分时共享</strong>的公共信息传送线路。</p>
+<ul>
+<li><strong>共享</strong>：总线上可以挂接多个部件，部件之间交换的信息都可以通过这组线路传送。</li>
+<li><strong>分时</strong>：同一时刻只允许一个部件向总线发送信息；其他部件即使也要发送，也必须等待。</li>
+</ul>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">总线不是“一根线”</span></div>
+<div class="callout-content"><p>一条总线通常由多根信号线组成。比如一组 32 位数据总线，本质上就是 32 根可并行传送数据位的信号线。</p>
+</div>
+</div>
+![](/assets/bus-basic-shared-lines.svg)
+
+<p>早期计算机外部设备少时，可以采用分散连接方式；设备增多后，这种方式不利于随时增减设备。</p>
+<p>总线连接把多个部件挂到一组公共线路上，提高了连接的灵活性。</p>
+<p>代价：既然线路被共享，就会产生争用，需要规定占用关系、传输能力和时间配合。</p>
+<h1 id="按功能分类"><a href="#按功能分类" class="headerlink" title="按功能分类"></a>按功能分类</h1><p>按所在位置和连接对象，总线可分为三类。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>连接范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>片内总线</td>
+<td>CPU 芯片内部</td>
+<td>连接 CPU 内部寄存器、ALU 等部件</td>
+</tr>
+<tr>
+<td>系统总线</td>
+<td>计算机系统内各功能部件之间</td>
+<td>连接 CPU、主存、I&#x2F;O 接口</td>
+</tr>
+<tr>
+<td>通信总线</td>
+<td>计算机系统之间，或计算机与其他系统之间</td>
+<td>也称外部总线，用于系统外部的信息传送</td>
+</tr>
+</tbody></table>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">数据通路和数据总线不是一回事</span></div>
+<div class="callout-content"><p><strong>数据通路</strong>强调数据流经的路径；<strong>数据总线</strong>强调承载数据的线路媒介。数据总线可以是数据通路的一部分，但二者不是同一个概念。</p>
+</div>
+</div>
+
+<h1 id="总线的物理实现"><a href="#总线的物理实现" class="headerlink" title="总线的物理实现"></a>总线的物理实现</h1><p>从物理上看，总线是一组信号线。每根信号线一次传送 1 bit 信息，多根信号线并列使用时，就能在同一时刻传送多位信息。</p>
+<p>同一时刻，总线上的典型关系是：</p>
+<ul>
+<li>只能有一个部件作为<strong>发送者</strong>，把信息送到总线上。</li>
+<li>可以有一个或多个部件作为<strong>接收者</strong>，从总线上读取信息。</li>
+</ul>
+<p>如果两个部件同时向同一组总线发送不同信息，线路上的信号就会冲突。因此，总线系统需要规定谁能在什么时候占用总线。</p>
+<h1 id="总线传输周期的四个阶段"><a href="#总线传输周期的四个阶段" class="headerlink" title="总线传输周期的四个阶段"></a>总线传输周期的四个阶段</h1><p><strong>总线传输周期</strong>也叫总线周期，指一次总线操作所需的完整时间。一个典型总线周期可分为四个阶段。</p>
+<p><img src="/assets/bus-transaction-stages.svg"></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>作用</th>
+<th>关键信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>申请分配阶段</td>
+<td>主设备申请使用总线，并获得下一次传输周期的总线使用权</td>
+<td>谁能使用总线</td>
+</tr>
+<tr>
+<td>寻址阶段</td>
+<td>获得总线使用权的主设备发出从设备地址和有关命令</td>
+<td>访问谁、做什么</td>
+</tr>
+<tr>
+<td>传输阶段</td>
+<td>主设备与从设备进行数据交换</td>
+<td>真正交换数据</td>
+</tr>
+<tr>
+<td>结束阶段</td>
+<td>主设备撤除有关信息，释放总线使用权</td>
+<td>总线恢复可用</td>
+</tr>
+</tbody></table>
+<h1 id="总线的基本特性"><a href="#总线的基本特性" class="headerlink" title="总线的基本特性"></a>总线的基本特性</h1><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>关心什么</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>机械特性</td>
+<td>物理外形和连接方式</td>
+<td>尺寸、形状、管脚数、排列顺序</td>
+</tr>
+<tr>
+<td>电气特性</td>
+<td>信号如何在电气层面有效</td>
+<td>传输方向、有效电平范围</td>
+</tr>
+<tr>
+<td>功能特性</td>
+<td>每根线承担什么功能</td>
+<td>地址线、数据线、控制线</td>
+</tr>
+<tr>
+<td>时间特性</td>
+<td>信号之间的时序关系</td>
+<td>地址何时有效、读写信号何时发出、数据何时稳定</td>
+</tr>
+</tbody></table>
+<h1 id="串行总线与并行总线"><a href="#串行总线与并行总线" class="headerlink" title="串行总线与并行总线"></a>串行总线与并行总线</h1><p>按一次传送信息的方式，总线可以分为<strong>串行总线</strong>和<strong>并行总线</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>基本方式</th>
+<th>优点</th>
+<th>局限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>串行总线</td>
+<td>数据逐位传送</td>
+<td>传输线少、成本低、适合长距离传输，也能节省设备内部布线空间</td>
+<td>发送和接收时需要串并转换</td>
+</tr>
+<tr>
+<td>并行总线</td>
+<td>多位数据同时传送</td>
+<td>逻辑时序较简单，电路实现较容易</td>
+<td>信号线多，占布线空间；长距离成本高；频率升高后线间干扰和等长要求更突出</td>
+</tr>
+</tbody></table>
+<p>并行总线在同一频率下每次能传更多位，但它不意味着一定总是更快。频率、线间干扰、传输距离、编码方式都会影响实际传输能力。</p>
+<h1 id="系统总线的三类信号"><a href="#系统总线的三类信号" class="headerlink" title="系统总线的三类信号"></a>系统总线的三类信号</h1><p>系统总线按传输信息内容可分为<strong>数据总线</strong>、<strong>地址总线</strong>和<strong>控制总线</strong>。</p>
+<p><img src="/assets/system-bus-signal-types.svg"></p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>传什么</th>
+<th>方向</th>
+<th>位数或根数的含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据总线</td>
+<td>各功能部件之间的数据信息，包括指令和操作数</td>
+<td>双向</td>
+<td>位数与机器字长、存储字长有关</td>
+</tr>
+<tr>
+<td>地址总线</td>
+<td>主存单元或 I&#x2F;O 端口的地址</td>
+<td>通常单向，由 CPU 或主设备发出</td>
+<td>位数与主存地址空间大小、设备数量有关</td>
+</tr>
+<tr>
+<td>控制总线</td>
+<td>控制命令和反馈信号</td>
+<td>有出也有入</td>
+<td>一根控制线通常传一种控制或状态信号</td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">总线复用技术</span></div>
+<div class="callout-content"><p>系统总线按功能可以分为地址总线、数据总线和控制总线，但这不等于物理线路一定完全分开。<strong>总线复用</strong>是让同一组物理信号线在不同时间传送不同类型的信息。</p>
+<p>最常见的是<strong>地址&#x2F;数据复用</strong>：先用这组线传送地址，由接收方锁存地址；随后同一组线再传送数据。这样可以减少引脚数和信号线数，但地址和数据不能同时传送，一次总线传输也需要更明确的时序控制。</p>
+</div>
+</div>
+# 系统总线结构
+
+<p><img src="/assets/system-bus-structures.svg"></p>
+<h2 id="单总线结构"><a href="#单总线结构" class="headerlink" title="单总线结构"></a>单总线结构</h2><p>单总线结构中，CPU、主存、I&#x2F;O 设备通过 I&#x2F;O 接口都连接到同一组总线上。</p>
+<p>优点是结构简单、成本低、易于接入新设备。缺点也很直接：所有部件争用唯一总线，带宽低、负载重，不支持多个传送操作并发进行。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">单总线不是一根信号线</span></div>
+<div class="callout-content"><p>“单总线结构”说的是系统里只有一组公共总线，不是说只有一根物理线。这一组总线内部仍然可以细分为地址总线、数据总线和控制总线。</p>
+</div>
+</div>
+## 双总线结构
+
+<p>双总线结构把系统分成两条主要总线：</p>
+<ul>
+<li><strong>主存总线</strong>：用于 CPU、主存和通道之间的数据传送。</li>
+<li><strong>I&#x2F;O 总线</strong>：用于多个外部设备与通道之间的数据传送。</li>
+</ul>
+<p>这里的<strong>通道</strong>是具有特殊功能的处理器，能统一管理 I&#x2F;O 设备。双总线结构把较低速的 I&#x2F;O 设备从主存总线上分离出来，减轻主存总线负担；代价是需要增加通道等硬件。</p>
+<h2 id="三总线结构"><a href="#三总线结构" class="headerlink" title="三总线结构"></a>三总线结构</h2><p>三总线结构进一步把系统中的信息通路分成三条独立总线：</p>
+<ul>
+<li>主存总线。</li>
+<li>I&#x2F;O 总线。</li>
+<li>直接内存访问 DMA 总线。</li>
+</ul>
+<p>DMA 总线用于支持高速 I&#x2F;O 设备和主存之间直接交换数据，使 I&#x2F;O 设备能更快响应命令，提高系统吞吐量。</p>
+<h2 id="四总线结构"><a href="#四总线结构" class="headerlink" title="四总线结构"></a>四总线结构</h2><p>四总线结构通过桥接器把不同层级的总线连接起来。桥接器具有<strong>数据缓冲、转换和控制</strong>功能。</p>
+<div class="callout callout-abstract">
+<div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">Summary</span></div>
+<div class="callout-content"><ul>
+<li>越靠近 CPU 的总线速度通常越快。</li>
+<li>不同层级总线通过桥接器连接，桥接器负责隔离速度差异和协议差异。</li>
+</ul>
+</div>
+</div>
+读四总线结构时，可以按连接路径看：CPU 先接入 CPU 总线；桥接器一侧连接 CPU 总线，另一侧连接主存总线，并向下连接局部总线；第二级桥接器再把局部总线连接到更低速的 I/O 总线。
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/03/Bus-Overview/">https://eliano64.github.io/2026/07/03/Bus-Overview/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/CPU-Multiprocessor-And-Hardware-Multithreading/" title="CPU Multiprocessor And Hardware Multithreading"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">CPU Multiprocessor And Hardware Multithreading</div></div><div class="info-2"><div class="info-item-1">多处理器与硬件多线程看图即可。  多处理器基本概念   类型 核心特征    SISD 单指令流、单数据流。普通单处理器顺序执行程序通常属于这一类。   SIMD 单指令流、多数据流。一条指令同时处理多个具有相同操作的数据，适合向量、数组、图像像素等批量处理。   MISD 多指令流、单数据流。现实中很少见。   MIMD 多指令流、多数据流。多个处理器并行执行不同指令，处理不同数据。   MIMD 又可以分成两类：    类型 存储器关系 通信方式    共享存储多处理器系统 多个处理器共享同一个主存地址空间 可通过 LOAD/STORE 访问共享数据   多计算机系统 每台计算机有自己的私有存储器，物理地址空间相互独立 通过消息传递交换数据    多核处理器 多核处理器是在一个 CPU 芯片中集成多个处理器核心。多个核心通常共享最后一级 Cache，并共享主存储器，因此可看作共享存储多处理器的一种实现形态。   #...</div></div></div></a><a class="pagination-related" href="/2026/07/03/Bus-Performance/" title="Bus Performance"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Bus Performance</div></div><div class="info-2"><div class="info-item-1">性能指标总线性能指标描述的是：一条总线按什么节奏工作、一次能传多少数据、单位时间最多能传多少数据。  常见指标包括：    指标 含义 关注点    总线周期 一次总线操作所需时间 包括申请、寻址、传输、结束等阶段   总线时钟周期 总线时钟的一个周期 记为 $T_{clk}$   总线时钟频率 总线时钟周期的倒数 记为 $f_{clk}&#x3D;1&#x2F;T_{clk}$   总线工作频率 总线实际完成操作或数据传送的频率 常由总线周期或传输节奏决定   总线宽度 总线上一次可传送的数据位数 通常指数据总线根数   总线带宽 单位时间内总线可传送的最大数据量 理论最高传输率   总线复用 同一组线在不同时刻传不同信息 减少线数，增加时序控制要求   信号线数 地址线、数据线、控制线数量的总和 复用会影响物理信号线数    频率看的是总线，不是 CPU 总线性能计算中的“总线频率”“总线时钟频率”指的是总线自己的时钟频率。不要把 CPU 主频直接代入总线带宽公式，除非题目明确说明 CPU 时钟和总线时钟相同。   #...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF"><span class="toc-text">总线</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%89%E5%8A%9F%E8%83%BD%E5%88%86%E7%B1%BB"><span class="toc-text">按功能分类</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF%E7%9A%84%E7%89%A9%E7%90%86%E5%AE%9E%E7%8E%B0"><span class="toc-text">总线的物理实现</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF%E4%BC%A0%E8%BE%93%E5%91%A8%E6%9C%9F%E7%9A%84%E5%9B%9B%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="toc-text">总线传输周期的四个阶段</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%89%B9%E6%80%A7"><span class="toc-text">总线的基本特性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%B2%E8%A1%8C%E6%80%BB%E7%BA%BF%E4%B8%8E%E5%B9%B6%E8%A1%8C%E6%80%BB%E7%BA%BF"><span class="toc-text">串行总线与并行总线</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%80%BB%E7%BA%BF%E7%9A%84%E4%B8%89%E7%B1%BB%E4%BF%A1%E5%8F%B7"><span class="toc-text">系统总线的三类信号</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E6%80%BB%E7%BA%BF%E7%BB%93%E6%9E%84"><span class="toc-text">单总线结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E6%80%BB%E7%BA%BF%E7%BB%93%E6%9E%84"><span class="toc-text">三总线结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E6%80%BB%E7%BA%BF%E7%BB%93%E6%9E%84"><span class="toc-text">四总线结构</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

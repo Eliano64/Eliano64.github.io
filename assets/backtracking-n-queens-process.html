@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backtracking N Queens Process</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --text: #172033;
+    --muted: #5f6c80;
+    --line: #cbd5e1;
+    --accent: #2563eb;
+    --bad: #dc2626;
+    --good: #059669;
+    --cell: #f1f5f9;
+    --cell-alt: #e2e8f0;
+    --attack: rgba(220, 38, 38, 0.16);
+    --queen: #111827;
+    --shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1020;
+      --panel: #111827;
+      --text: #e5e7eb;
+      --muted: #a6adbb;
+      --line: #334155;
+      --accent: #60a5fa;
+      --bad: #fb7185;
+      --good: #34d399;
+      --cell: #1f2937;
+      --cell-alt: #273449;
+      --attack: rgba(251, 113, 133, 0.20);
+      --queen: #f8fafc;
+      --shadow: 0 14px 40px rgba(0, 0, 0, 0.32);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 22px;
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(320px, 440px) 1fr;
+    gap: 18px;
+    align-items: stretch;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 8px;
+    letter-spacing: 0;
+  }
+  .subtitle {
+    color: var(--muted);
+    margin: 0 0 18px;
+    line-height: 1.7;
+  }
+  .board {
+    width: min(100%, 420px);
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--line);
+    margin: 0 auto;
+  }
+  .cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    background: var(--cell);
+    border: 1px solid var(--line);
+    font-size: clamp(18px, 5vw, 38px);
+    font-weight: 700;
+  }
+  .cell.alt { background: var(--cell-alt); }
+  .cell.attack::after {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border-radius: 4px;
+    background: var(--attack);
+    border: 1px solid color-mix(in srgb, var(--bad), transparent 30%);
+  }
+  .cell.try {
+    outline: 4px solid var(--accent);
+    outline-offset: -5px;
+  }
+  .cell.ok {
+    outline: 4px solid var(--good);
+    outline-offset: -5px;
+  }
+  .queen {
+    position: relative;
+    z-index: 1;
+    color: var(--queen);
+  }
+  .meta {
+    display: grid;
+    gap: 10px;
+  }
+  .step-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .explain {
+    color: var(--muted);
+    line-height: 1.8;
+    margin: 0;
+  }
+  .code {
+    margin: 0;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--panel), var(--bg) 55%);
+    overflow: auto;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre;
+  }
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 16px;
+  }
+  button {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font: inherit;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  .counter {
+    margin-left: auto;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 780px) {
+    .stage { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>N 皇后的选择、递归与撤销</h1>
+  <p class="subtitle">以 4 皇后的一条搜索路径为例，观察每次放置后状态如何改变，以及递归返回时为什么必须撤销选择。</p>
+  <section class="stage">
+    <div class="panel">
+      <div id="board" class="board" aria-label="4 皇后棋盘"></div>
+    </div>
+    <div class="panel meta">
+      <p id="title" class="step-title"></p>
+      <p id="explain" class="explain"></p>
+      <pre id="code" class="code"></pre>
+      <div class="toolbar">
+        <button id="prev" type="button">上一页</button>
+        <button id="next" type="button">下一页</button>
+        <span id="counter" class="counter"></span>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const steps = [
+  {
+    title: "从第 0 行开始",
+    queens: [],
+    tryCell: [0, 1],
+    attacks: [],
+    explain: "每一层固定处理一行。本层只枚举列，因此搜索树的第 row 层就是“第 row 行放在哪一列”。",
+    code: "solve_n_queens(row = 0);\nfor (col = 0; col < n; col++)"
+  },
+  {
+    title: "选择：第 0 行放在第 1 列",
+    queens: [[0, 1]],
+    tryCell: null,
+    attacks: [[1,0],[1,1],[1,2],[2,1],[2,3],[3,1]],
+    explain: "放下皇后后，列、两条对角线都会变成不可选状态。下一层只能在未被攻击的位置中继续尝试。",
+    code: "place_queen(0, 1);\nsolve_n_queens(1);"
+  },
+  {
+    title: "递归：第 1 行没有合法位置",
+    queens: [[0, 1]],
+    tryCell: [1, 3],
+    attacks: [[1,0],[1,1],[1,2],[1,3]],
+    explain: "第 1 行所有列都不可行。这条路径不能形成完整解，递归返回到上一层。",
+    code: "if (!can_place(row, col)) {\n    continue;\n}\n/* 本行无可行 col，函数返回 */"
+  },
+  {
+    title: "撤销：回到第 0 行继续试",
+    queens: [],
+    tryCell: [0, 2],
+    attacks: [],
+    explain: "返回第 0 行后，必须撤销刚才放在第 1 列的皇后，否则第 0 行的其他列会被旧状态干扰。",
+    code: "remove_queen(0, 1);\n/* 继续尝试 col = 2 */"
+  },
+  {
+    title: "找到一条可行路径",
+    queens: [[0, 1],[1, 3],[2, 0],[3, 2]],
+    tryCell: null,
+    attacks: [],
+    explain: "当 row == n 时，说明 4 行都已经放入皇后并且互不冲突，当前路径就是一个完整解。",
+    code: "if (row == n) {\n    solution_count++;\n    print_solution();\n    return;\n}"
+  }
+];
+
+let index = 0;
+const board = document.getElementById("board");
+const title = document.getElementById("title");
+const explain = document.getElementById("explain");
+const code = document.getElementById("code");
+const counter = document.getElementById("counter");
+
+function sameCell(a, b) {
+  return a && b && a[0] === b[0] && a[1] === b[1];
+}
+
+function hasCell(list, cell) {
+  return list.some(item => sameCell(item, cell));
+}
+
+function render() {
+  const step = steps[index];
+  board.innerHTML = "";
+
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      const cell = document.createElement("div");
+      const pos = [row, col];
+      cell.className = "cell" + ((row + col) % 2 ? " alt" : "");
+      if (hasCell(step.attacks, pos)) cell.classList.add("attack");
+      if (sameCell(step.tryCell, pos)) cell.classList.add("try");
+      if (hasCell(step.queens, pos)) {
+        cell.classList.add("ok");
+        const queen = document.createElement("span");
+        queen.className = "queen";
+        queen.textContent = "Q";
+        cell.appendChild(queen);
+      }
+      board.appendChild(cell);
+    }
+  }
+
+  title.textContent = step.title;
+  explain.textContent = step.explain;
+  code.textContent = step.code;
+  counter.textContent = `${index + 1} / ${steps.length}`;
+}
+
+document.getElementById("prev").addEventListener("click", () => {
+  index = (index + steps.length - 1) % steps.length;
+  render();
+});
+
+document.getElementById("next").addEventListener("click", () => {
+  index = (index + 1) % steps.length;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

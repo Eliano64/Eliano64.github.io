@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="560" viewBox="0 0 1180 560" role="img" aria-labelledby="title desc">
+  <title id="title">三种交换方式的时序对比</title>
+  <desc id="desc">用时间向下的时空图对比电路交换、报文交换和分组交换。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #cbd5e1;
+      --strong: #475569;
+      --circuit-line: #2563eb;
+      --message: #fef3c7;
+      --message-line: #d97706;
+      --packet: #dcfce7;
+      --packet-line: #16a34a;
+      --phase: #fee2e2;
+      --phase-line: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #334155;
+        --strong: #cbd5e1;
+        --circuit-line: #60a5fa;
+        --message: #713f12;
+        --message-line: #fbbf24;
+        --packet: #14532d;
+        --packet-line: #4ade80;
+        --phase: #7f1d1d;
+        --phase-line: #f87171;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+    .node { stroke: var(--strong); stroke-width: 2; }
+    .axis { stroke: var(--muted); stroke-width: 2; marker-end: url(#arrow); }
+    .wire { stroke: var(--line); stroke-width: 2; }
+    .flow { fill: none; stroke: var(--strong); stroke-width: 2.4; marker-end: url(#arrow); }
+    .setup { fill: none; stroke: var(--strong); stroke-width: 2.4; marker-end: url(#arrow); }
+    .release { fill: none; stroke: var(--strong); stroke-width: 2.4; marker-end: url(#arrow); }
+    .circuit { fill: var(--circuit-line); opacity: .22; stroke: var(--circuit-line); stroke-width: 2; }
+    .message { fill: var(--message); stroke: var(--message-line); stroke-width: 2; opacity: .88; }
+    .packet { fill: var(--packet); stroke: var(--packet-line); stroke-width: 1.8; opacity: .9; }
+    .phase { fill: none; stroke: var(--phase-line); stroke-width: 2.2; marker-start: url(#bar); marker-end: url(#bar); }
+    .phase-bar { stroke: var(--phase-line); stroke-width: 2.2; }
+    text { fill: var(--text); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { font-size: 24px; font-weight: 700; text-anchor: middle; }
+    .label { font-size: 16px; font-weight: 700; text-anchor: middle; }
+    .small { font-size: 13px; fill: var(--muted); text-anchor: middle; }
+    .side { font-size: 15px; fill: var(--muted); text-anchor: start; }
+    .pkt { font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 Z" fill="var(--muted)"/>
+    </marker>
+    <marker id="bar" markerWidth="8" markerHeight="12" refX="4" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M4,0 V12" stroke="var(--phase-line)" stroke-width="2"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1180" height="560"/>
+
+  <g transform="translate(26,28)">
+    <rect class="panel" x="0" y="0" width="356" height="500" rx="12"/>
+    <text class="title" x="178" y="38">电路交换</text>
+    <text class="small" x="178" y="64">先建立连接，通信期间独占通路</text>
+    <line class="axis" x1="42" y1="74" x2="42" y2="458"/>
+    <text class="small" x="76" y="96">时间向下</text>
+    <line class="wire" x1="104" y1="94" x2="104" y2="448"/><line class="wire" x1="178" y1="94" x2="178" y2="448"/><line class="wire" x1="252" y1="94" x2="252" y2="448"/><line class="wire" x1="326" y1="94" x2="326" y2="448"/>
+    <text class="label" x="104" y="476">A</text><text class="label" x="178" y="476">B</text><text class="label" x="252" y="476">C</text><text class="label" x="326" y="476">D</text>
+    <path class="setup" d="M104 112 L178 127 L252 142 L326 157"/>
+    <path class="setup" d="M326 172 L252 187 L178 202 L104 217"/>
+    <polygon class="circuit" points="104,246 326,322 326,422 104,346"/>
+    <path class="flow" d="M104 290 L178 315 L252 340 L326 365"/>
+    <path class="release" d="M104 376 L178 401 L252 426 L326 451"/>
+    <line class="phase-bar" x1="62" y1="112" x2="62" y2="217"/>
+    <line class="phase-bar" x1="62" y1="112" x2="70" y2="112"/>
+    <line class="phase-bar" x1="62" y1="217" x2="70" y2="217"/>
+    <line class="phase-bar" x1="62" y1="246" x2="62" y2="346"/>
+    <line class="phase-bar" x1="62" y1="246" x2="70" y2="246"/>
+    <line class="phase-bar" x1="62" y1="346" x2="70" y2="346"/>
+    <line class="phase-bar" x1="62" y1="376" x2="62" y2="451"/>
+    <line class="phase-bar" x1="62" y1="376" x2="70" y2="376"/>
+    <line class="phase-bar" x1="62" y1="451" x2="70" y2="451"/>
+    <text class="side" x="18" y="168">连接建立</text>
+    <text class="side" x="18" y="301">数据传送</text>
+    <text class="side" x="18" y="414">连接释放</text>
+  </g>
+
+  <g transform="translate(412,28)">
+    <rect class="panel" x="0" y="0" width="356" height="500" rx="12"/>
+    <text class="title" x="178" y="38">报文交换</text>
+    <text class="small" x="178" y="64">整个报文存储后再转发</text>
+    <line class="axis" x1="40" y1="74" x2="40" y2="458"/>
+    <line class="wire" x1="104" y1="94" x2="104" y2="448"/><line class="wire" x1="178" y1="94" x2="178" y2="448"/><line class="wire" x1="252" y1="94" x2="252" y2="448"/><line class="wire" x1="326" y1="94" x2="326" y2="448"/>
+    <text class="label" x="104" y="476">A</text><text class="label" x="178" y="476">B</text><text class="label" x="252" y="476">C</text><text class="label" x="326" y="476">D</text>
+    <polygon class="message" points="104,112 178,140 178,214 104,186"/>
+    <polygon class="message" points="178,214 252,242 252,316 178,288"/>
+    <polygon class="message" points="252,316 326,344 326,418 252,390"/>
+    <text class="pkt" x="142" y="160">报文</text><text class="pkt" x="216" y="262">报文</text><text class="pkt" x="290" y="364">报文</text>
+  </g>
+
+  <g transform="translate(798,28)">
+    <rect class="panel" x="0" y="0" width="356" height="500" rx="12"/>
+    <text class="title" x="178" y="38">分组交换</text>
+    <text class="small" x="178" y="64">拆成分组后流水线式推进</text>
+    <line class="axis" x1="40" y1="74" x2="40" y2="458"/>
+    <line class="wire" x1="104" y1="94" x2="104" y2="448"/><line class="wire" x1="178" y1="94" x2="178" y2="448"/><line class="wire" x1="252" y1="94" x2="252" y2="448"/><line class="wire" x1="326" y1="94" x2="326" y2="448"/>
+    <text class="label" x="104" y="476">A</text><text class="label" x="178" y="476">B</text><text class="label" x="252" y="476">C</text><text class="label" x="326" y="476">D</text>
+    <g>
+      <polygon class="packet" points="104,112 178,132 178,154 104,134"/><text class="pkt" x="141" y="134">P1</text>
+      <polygon class="packet" points="104,136 178,156 178,178 104,158"/><text class="pkt" x="141" y="158">P2</text>
+      <polygon class="packet" points="104,160 178,180 178,202 104,182"/><text class="pkt" x="141" y="182">P3</text>
+      <polygon class="packet" points="104,184 178,204 178,226 104,206"/><text class="pkt" x="141" y="206">P4</text>
+
+      <polygon class="packet" points="178,154 252,174 252,196 178,176"/><text class="pkt" x="215" y="176">P1</text>
+      <polygon class="packet" points="178,178 252,198 252,220 178,200"/><text class="pkt" x="215" y="200">P2</text>
+      <polygon class="packet" points="178,202 252,222 252,244 178,224"/><text class="pkt" x="215" y="224">P3</text>
+      <polygon class="packet" points="178,226 252,246 252,268 178,248"/><text class="pkt" x="215" y="248">P4</text>
+
+      <polygon class="packet" points="252,196 326,216 326,238 252,218"/><text class="pkt" x="289" y="218">P1</text>
+      <polygon class="packet" points="252,220 326,240 326,262 252,242"/><text class="pkt" x="289" y="242">P2</text>
+      <polygon class="packet" points="252,244 326,264 326,286 252,266"/><text class="pkt" x="289" y="266">P3</text>
+      <polygon class="packet" points="252,268 326,288 326,310 252,290"/><text class="pkt" x="289" y="290">P4</text>
+    </g>
+  </g>
+</svg>

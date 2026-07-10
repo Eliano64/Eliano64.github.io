@@ -1,0 +1,360 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>CDMA Code Division Multiplexing | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="CDMA 的基本想法码分复用 CDM 常称为码分多址 CDMA。它允许多个站点在同一时间、同一频带发送数据。接收端能够分离出目标信号，是因为每个站点使用的码片序列互相正交。 CDMA 把一个比特时间划分为 $m$ 个更短的时间片，每个时间片称为码片。每个站点被分配一个唯一的 $m$ 位码片序列。实际系统中常用伪随机码序列，$m$ 常取 $64$ 或 $128$；为了便于手算，例题常使用更短的码片序">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CDMA Code Division Multiplexing">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/07/CDMA-Code-Division-Multiplexing/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="CDMA 的基本想法码分复用 CDM 常称为码分多址 CDMA。它允许多个站点在同一时间、同一频带发送数据。接收端能够分离出目标信号，是因为每个站点使用的码片序列互相正交。 CDMA 把一个比特时间划分为 $m$ 个更短的时间片，每个时间片称为码片。每个站点被分配一个唯一的 $m$ 位码片序列。实际系统中常用伪随机码序列，$m$ 常取 $64$ 或 $128$；为了便于手算，例题常使用更短的码片序">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-07T07:08:21.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.001Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="PhysicalLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CDMA Code Division Multiplexing",
+  "url": "https://eliano64.github.io/2026/07/07/CDMA-Code-Division-Multiplexing/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-07T07:08:21.000Z",
+  "dateModified": "2026-07-10T07:16:51.001Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/07/CDMA-Code-Division-Multiplexing/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CDMA Code Division Multiplexing',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">CDMA Code Division Multiplexing</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">CDMA Code Division Multiplexing</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-07T07:08:21.000Z" title="发表于 2026-07-07 15:08:21">2026-07-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.001Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">756</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="CDMA-的基本想法"><a href="#CDMA-的基本想法" class="headerlink" title="CDMA 的基本想法"></a>CDMA 的基本想法</h1><p>码分复用 CDM 常称为码分多址 CDMA。它允许多个站点在同一时间、同一频带发送数据。接收端能够分离出目标信号，是因为每个站点使用的码片序列互相正交。</p>
+<p>CDMA 把一个比特时间划分为 $m$ 个更短的时间片，每个时间片称为<strong>码片</strong>。每个站点被分配一个唯一的 $m$ 位码片序列。实际系统中常用伪随机码序列，$m$ 常取 $64$ 或 $128$；为了便于手算，例题常使用更短的码片序列。</p>
+<h1 id="码片序列与码片向量"><a href="#码片序列与码片向量" class="headerlink" title="码片序列与码片向量"></a>码片序列与码片向量</h1><p>若某站点的码片序列为：</p>
+<p>$$<br>01011001<br>$$</p>
+<p>计算时通常把 <code>0</code> 记为 $-1$，把 <code>1</code> 记为 $+1$，得到码片向量：</p>
+<p>$$<br>S&#x3D;(-1,+1,-1,+1,+1,-1,-1,+1)<br>$$</p>
+<p>发送数据时：</p>
+<ul>
+<li>发送比特 <code>1</code>：发送本站码片序列 $S$。</li>
+<li>发送比特 <code>0</code>：发送本站码片序列的反码 $-S$。</li>
+</ul>
+<p><img src="/assets/cdma-chip-bit-mapping.svg" alt="900"></p>
+<h1 id="正交与规格化内积"><a href="#正交与规格化内积" class="headerlink" title="正交与规格化内积"></a>正交与规格化内积</h1><p>CDMA 要求不同站点的码片向量互相正交。设 $A$ 和 $B$ 是两个长度为 $m$ 的码片向量，它们的规格化内积为：</p>
+<p>$$<br>\frac{A\cdot B}{m}&#x3D;\frac{a_1b_1+a_2b_2+\cdots+a_mb_m}{m}<br>$$</p>
+<p>如果：</p>
+<p>$$<br>\frac{A\cdot B}{m}&#x3D;0<br>$$</p>
+<p>则 $A$ 和 $B$ 正交。正交意味着接收端用 $A$ 去检查 $B$ 的信号时，结果为 $0$，不会把别的站点误认为本站数据。</p>
+<p><img src="/assets/cdma-orthogonal-inner-product.svg" alt="900"></p>
+<p>三条结果要记牢：</p>
+<table>
+<thead>
+<tr>
+<th>规格化内积</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$S\cdot S&#x2F;m&#x3D;1$</td>
+<td>本站发送 <code>1</code></td>
+</tr>
+<tr>
+<td>$S\cdot(-S)&#x2F;m&#x3D;-1$</td>
+<td>本站发送 <code>0</code></td>
+</tr>
+<tr>
+<td>$S\cdot B&#x2F;m&#x3D;0$</td>
+<td>其他站点信号与本站正交</td>
+</tr>
+</tbody></table>
+<p>若 $S$ 与 $B$ 正交，则 $S$ 与 $-B$ 也正交：</p>
+<p>$$<br>\frac{S\cdot(-B)}{m}&#x3D;-\frac{S\cdot B}{m}&#x3D;0<br>$$</p>
+<h1 id="多站点同时发送"><a href="#多站点同时发送" class="headerlink" title="多站点同时发送"></a>多站点同时发送</h1><p>多个站点同时发送时，信道中的信号是这些站点所发送码片向量的逐位叠加。</p>
+<p>例如：</p>
+<ul>
+<li>A 发送 <code>1</code>，发送 $A$。</li>
+<li>B 发送 <code>0</code>，发送 $-B$。</li>
+<li>C 不发送，视为 $0$ 向量。</li>
+</ul>
+<p>信道中收到的叠加向量为：</p>
+<p>$$<br>R&#x3D;A+(-B)<br>$$</p>
+<p>接收端不知道“肉眼上”哪一部分属于哪个站点，而是用自己的码片向量与 $R$ 做规格化内积。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/cdma-decode-process-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>如果某个接收端使用本站码片向量 $S$ 计算：</p>
+<p>$$<br>\frac{S\cdot R}{m}<br>$$</p>
+<p>那么结果的含义为：</p>
+<table>
+<thead>
+<tr>
+<th>结果</th>
+<th>判定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$1$</td>
+<td>收到本站比特 <code>1</code></td>
+</tr>
+<tr>
+<td>$-1$</td>
+<td>收到本站比特 <code>0</code></td>
+</tr>
+<tr>
+<td>$0$</td>
+<td>没有本站数据</td>
+</tr>
+</tbody></table>
+<h1 id="为什么叠加后还能分开"><a href="#为什么叠加后还能分开" class="headerlink" title="为什么叠加后还能分开"></a>为什么叠加后还能分开</h1><p>关键在于内积的线性性质。若信道中：</p>
+<p>$$<br>R&#x3D;A+(-B)<br>$$</p>
+<p>A 接收时计算：</p>
+<p>$$<br>\frac{A\cdot R}{m}<br>&#x3D;\frac{A\cdot A}{m}-\frac{A\cdot B}{m}<br>&#x3D;1-0&#x3D;1<br>$$</p>
+<p>B 接收时计算：</p>
+<p>$$<br>\frac{B\cdot R}{m}<br>&#x3D;\frac{B\cdot A}{m}-\frac{B\cdot B}{m}<br>&#x3D;0-1&#x3D;-1<br>$$</p>
+<p>C 若与 A、B 都正交，则：</p>
+<p>$$<br>\frac{C\cdot R}{m}<br>&#x3D;\frac{C\cdot A}{m}-\frac{C\cdot B}{m}<br>&#x3D;0-0&#x3D;0<br>$$</p>
+<p>所以，同一个叠加信号 $R$，不同接收端用不同码片向量去“投影”，得到的是各自关心的结果。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/07/CDMA-Code-Division-Multiplexing/">https://eliano64.github.io/2026/07/07/CDMA-Code-Division-Multiplexing/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/07/Physical-Layer-Transmission-Modes/" title="Physical Layer Transmission Modes"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Physical Layer Transmission Modes</div></div><div class="info-2"><div class="info-item-1">传输方式传输方式描述比特在通信双方之间如何组织和发送。它关心三个问题：  多个比特是逐位发送，还是并列发送。 收发双方如何对齐比特时间。 通信双方能否双向发送，能否同时双向发送。  串行传输与并行传输串行和并行讨论的是多个比特在物理线路上如何排列。  串行传输是在一条数据线路上按时间顺序逐位发送。远距离通信常采用串行传输，因为线路少、成本低，不同线路之间的时延偏差和串扰问题少。 并行传输是在多条数据线路上同时发送多个比特。若每条线路的数据传输速率相同，$n$ 条线理论上可达到单条线的 $n$...</div></div></div></a><a class="pagination-related" href="/2026/07/07/Multiplexing-Technologies/" title="Multiplexing Technologies"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Multiplexing Technologies</div></div><div class="info-2"><div class="info-item-1">复用的基本思想复用是让多路信号共享一条物理信道。接收端能够恢复各路信号，是因为发送端在某个维度上把它们区分开：频率、时间、波长或码片序列。  不同复用方式的关键差异如下：    复用方式 划分资源 直观理解    频分复用 FDM 频带 同时发送，各占一段频率   时分复用 TDM 时间 轮流发送，各占固定时隙   统计时分复用 STDM 动态时隙 谁有数据就给谁分配时隙   波分复用 WDM 光波长 光纤中的频分复用   码分复用 CDM&#x2F;CDMA 码片序列 同时同频，用正交码区分   频分复用频分复用把信道频带划分成若干互不重叠的子频带。每一路信号占用其中一段频率，可以在同一时间同时传输。 这种方式适合连续通信。代价是各子频带之间通常要留出保护频带，避免相邻频带互相干扰。 时分复用时分复用让多个用户在不同时间使用同一个信道。一个 TDM 帧是一段固定长度时间，里面分成若干时隙；每个用户在每个 TDM 帧中占有固定时隙。  TDM 帧不是数据链路层的帧 TDM...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#CDMA-%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%83%B3%E6%B3%95"><span class="toc-text">CDMA 的基本想法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A0%81%E7%89%87%E5%BA%8F%E5%88%97%E4%B8%8E%E7%A0%81%E7%89%87%E5%90%91%E9%87%8F"><span class="toc-text">码片序列与码片向量</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E4%BA%A4%E4%B8%8E%E8%A7%84%E6%A0%BC%E5%8C%96%E5%86%85%E7%A7%AF"><span class="toc-text">正交与规格化内积</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E7%AB%99%E7%82%B9%E5%90%8C%E6%97%B6%E5%8F%91%E9%80%81"><span class="toc-text">多站点同时发送</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%A0%E5%8A%A0%E5%90%8E%E8%BF%98%E8%83%BD%E5%88%86%E5%BC%80"><span class="toc-text">为什么叠加后还能分开</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

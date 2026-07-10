@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge Sort Passes</title>
+<style>
+:root{--bg:#fff;--ink:#172033;--muted:#667085;--line:#cbd5e1;--cell:#f8fafc;--run1:#dbeafe;--run2:#dcfce7;--run3:#fef3c7;--run4:#fce7f3;--accent:#2563eb;--code:#0f766e}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#a3aab8;--line:#475569;--cell:#111827;--run1:#172554;--run2:#064e3b;--run3:#713f12;--run4:#831843;--accent:#60a5fa;--code:#5eead4}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.title{font-size:24px;font-weight:760}
+.sub{margin-top:4px;color:var(--muted);font-size:14px}
+.controls{display:flex;gap:8px}
+button{border:1px solid var(--line);background:var(--cell);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.stage{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:18px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:70px;margin-top:8px}
+.cell{width:62px;height:50px;border:1.5px solid var(--line);border-radius:8px;background:var(--cell);display:flex;align-items:center;justify-content:center;font:700 18px ui-monospace,Menlo,monospace;position:relative}
+.cell::after{content:attr(data-i);position:absolute;bottom:-18px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
+.r0{background:var(--run1)}.r1{background:var(--run2)}.r2{background:var(--run3)}.r3{background:var(--run4)}
+.range{position:absolute;top:-21px;color:var(--accent);font:700 12px ui-monospace,Menlo,monospace;white-space:nowrap}
+.explain{margin-top:28px;line-height:1.7}
+.code{margin-top:12px;font-family:ui-monospace,Menlo,monospace;color:var(--code);white-space:pre-wrap}
+.step{margin-top:8px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">二路归并排序：子表长度逐趟翻倍</div>
+      <div class="sub">示例序列：49, 38, 65, 97, 76, 13, 27</div>
+    </div>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="row" id="array"></div>
+    <div class="explain" id="explain"></div>
+    <div class="code" id="code"></div>
+    <div class="step" id="step"></div>
+  </div>
+</div>
+<script>
+const steps=[
+ {a:[49,38,65,97,76,13,27],runs:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]],t:'初始时，每个单独元素都可以看作长度为 1 的有序子表。',c:'width = 1'},
+ {a:[38,49,65,97,13,76,27],runs:[[0,2],[2,4],[4,6],[6,7]],t:'第 1 趟：把相邻的长度 1 子表两两归并，得到长度不超过 2 的有序子表。',c:'Merge [0, 1) 和 [1, 2)；Merge [2, 3) 和 [3, 4)；Merge [4, 5) 和 [5, 6)'},
+ {a:[38,49,65,97,13,27,76],runs:[[0,4],[4,7]],t:'第 2 趟：把相邻的长度 2 子表两两归并，尾部不足 2 个也作为一个有序子表参与归并。',c:'Merge [0, 2) 和 [2, 4)；Merge [4, 6) 和 [6, 7)'},
+ {a:[13,27,38,49,65,76,97],runs:[[0,7]],t:'第 3 趟：归并两个长度不超过 4 的子表，整个序列有序。',c:'Merge [0, 4) 和 [4, 7)'},
+ {a:[13,27,38,49,65,76,97],runs:[[0,7]],t:'若有 n 个元素，二路归并排序需要 ⌈log₂n⌉ 趟归并，每趟处理全部元素。',c:'T(n) = O(n) * ⌈log₂n⌉ = O(nlog₂n)'}
+];
+let cur=0;
+function runClass(i,runs){
+ for(let r=0;r<runs.length;r++){
+  if(i>=runs[r][0]&&i<runs[r][1])return 'r'+(r%4);
+ }
+ return '';
+}
+function render(){
+ const s=steps[cur], root=document.getElementById('array');
+ root.innerHTML='';
+ s.a.forEach((v,i)=>{
+  const b=document.createElement('div');
+  b.className='cell '+runClass(i,s.runs);
+  b.textContent=v;
+  b.dataset.i=i;
+  const run=s.runs.find(x=>x[0]===i);
+  if(run){
+   const tag=document.createElement('span');
+   tag.className='range';
+   tag.textContent='['+run[0]+', '+run[1]+')';
+   b.appendChild(tag);
+  }
+  root.appendChild(b);
+ });
+ document.getElementById('explain').innerHTML='<b>'+s.t+'</b>';
+ document.getElementById('code').textContent=s.c;
+ document.getElementById('step').textContent=(cur+1)+' / '+steps.length;
+}
+document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

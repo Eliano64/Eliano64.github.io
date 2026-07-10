@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430" role="img" aria-labelledby="title desc">
+  <title id="title">奇偶校验</title>
+  <desc id="desc">展示奇偶校验能检测奇数位错误但可能漏检偶数位错误</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--amber:#fbbf24}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.bit{stroke:var(--line);stroke-width:1.3}.data{fill:color-mix(in srgb,var(--blue) 22%,transparent)}.check{fill:color-mix(in srgb,var(--amber) 28%,transparent)}.err{fill:color-mix(in srgb,var(--red) 30%,transparent);stroke:var(--red);stroke-width:2}.ok{fill:color-mix(in srgb,var(--green) 20%,transparent);stroke:var(--green);stroke-width:2}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.head{font-size:20px;font-weight:700}.small{font-size:15px;fill:var(--muted)}.mark{font-size:18px;font-weight:800}
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:light){.small{fill:#334155}}
+  </style>
+  <rect class="bg" width="980" height="430"/>
+  <text x="50" y="56" class="title">奇偶校验：用 1 的个数奇偶性检错</text>
+  <text x="50" y="84" class="small">以下用偶校验为例：添加校验位后，整组码字中 1 的个数应为偶数。</text>
+  <rect x="70" y="130" width="840" height="82" rx="10" class="panel"/>
+  <text x="102" y="180" class="head">发送</text>
+  <g transform="translate(220,150)">
+    <rect x="0" y="0" width="52" height="42" class="bit data"/><text x="26" y="27" text-anchor="middle" class="mark">1</text>
+    <rect x="52" y="0" width="52" height="42" class="bit data"/><text x="78" y="27" text-anchor="middle" class="mark">0</text>
+    <rect x="104" y="0" width="52" height="42" class="bit data"/><text x="130" y="27" text-anchor="middle" class="mark">1</text>
+    <rect x="156" y="0" width="52" height="42" class="bit data"/><text x="182" y="27" text-anchor="middle" class="mark">1</text>
+    <rect x="208" y="0" width="52" height="42" class="bit check"/><text x="234" y="27" text-anchor="middle" class="mark">1</text>
+  </g>
+  <text x="620" y="180" class="small">数据有 3 个 1，补 1 后共有 4 个 1。</text>
+  <rect x="70" y="238" width="405" height="112" rx="10" class="ok"/>
+  <text x="272" y="278" text-anchor="middle" class="head">1 位错误</text>
+  <text x="272" y="316" text-anchor="middle" class="small">1 的个数奇偶性改变，可以检测出来。</text>
+  <rect x="505" y="238" width="405" height="112" rx="10" class="err"/>
+  <text x="707" y="278" text-anchor="middle" class="head">2 位错误</text>
+  <text x="707" y="316" text-anchor="middle" class="small">1 的个数奇偶性可能不变，因此可能漏检。</text>
+</svg>

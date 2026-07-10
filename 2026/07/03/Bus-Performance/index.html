@@ -1,0 +1,424 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Bus Performance | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="性能指标总线性能指标描述的是：一条总线按什么节奏工作、一次能传多少数据、单位时间最多能传多少数据。  常见指标包括：    指标 含义 关注点    总线周期 一次总线操作所需时间 包括申请、寻址、传输、结束等阶段   总线时钟周期 总线时钟的一个周期 记为 $T_{clk}$   总线时钟频率 总线时钟周期的倒数 记为 $f_{clk}&#x3D;1&#x2F;T_{clk}$   总线工作频率">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bus Performance">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/03/Bus-Performance/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="性能指标总线性能指标描述的是：一条总线按什么节奏工作、一次能传多少数据、单位时间最多能传多少数据。  常见指标包括：    指标 含义 关注点    总线周期 一次总线操作所需时间 包括申请、寻址、传输、结束等阶段   总线时钟周期 总线时钟的一个周期 记为 $T_{clk}$   总线时钟频率 总线时钟周期的倒数 记为 $f_{clk}&#x3D;1&#x2F;T_{clk}$   总线工作频率">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-03T02:05:59.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.001Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="Bus">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Bus Performance",
+  "url": "https://eliano64.github.io/2026/07/03/Bus-Performance/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-03T02:05:59.000Z",
+  "dateModified": "2026-07-10T07:16:51.001Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/03/Bus-Performance/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Bus Performance',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Bus Performance</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Bus Performance</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-03T02:05:59.000Z" title="发表于 2026-07-03 10:05:59">2026-07-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.001Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="性能指标"><a href="#性能指标" class="headerlink" title="性能指标"></a>性能指标</h1><p>总线性能指标描述的是：一条总线<strong>按什么节奏工作</strong>、<strong>一次能传多少数据</strong>、<strong>单位时间最多能传多少数据</strong>。</p>
+<p><img src="/assets/bus-performance-metrics.svg"></p>
+<p>常见指标包括：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+<th>关注点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>总线周期</td>
+<td>一次总线操作所需时间</td>
+<td>包括申请、寻址、传输、结束等阶段</td>
+</tr>
+<tr>
+<td>总线时钟周期</td>
+<td>总线时钟的一个周期</td>
+<td>记为 $T_{clk}$</td>
+</tr>
+<tr>
+<td>总线时钟频率</td>
+<td>总线时钟周期的倒数</td>
+<td>记为 $f_{clk}&#x3D;1&#x2F;T_{clk}$</td>
+</tr>
+<tr>
+<td>总线工作频率</td>
+<td>总线实际完成操作或数据传送的频率</td>
+<td>常由总线周期或传输节奏决定</td>
+</tr>
+<tr>
+<td>总线宽度</td>
+<td>总线上一次可传送的数据位数</td>
+<td>通常指数据总线根数</td>
+</tr>
+<tr>
+<td>总线带宽</td>
+<td>单位时间内总线可传送的最大数据量</td>
+<td>理论最高传输率</td>
+</tr>
+<tr>
+<td>总线复用</td>
+<td>同一组线在不同时刻传不同信息</td>
+<td>减少线数，增加时序控制要求</td>
+</tr>
+<tr>
+<td>信号线数</td>
+<td>地址线、数据线、控制线数量的总和</td>
+<td>复用会影响物理信号线数</td>
+</tr>
+</tbody></table>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">频率看的是总线，不是 CPU</span></div>
+<div class="callout-content"><p>总线性能计算中的“总线频率”“总线时钟频率”指的是总线自己的时钟频率。不要把 CPU 主频直接代入总线带宽公式，除非题目明确说明 CPU 时钟和总线时钟相同。</p>
+</div>
+</div>
+# 总线周期与总线时钟周期
+
+<p><strong>总线周期</strong>也叫总线传输周期，是一次总线操作所需的时间。</p>
+<p><strong>总线时钟周期</strong>是总线时钟的一个周期。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">总线周期和总线时钟周期不是固定等同关系</span></div>
+<div class="callout-content"><ul>
+<li>大多数情况下，一个总线周期包含多个总线时钟周期。</li>
+<li>有些情况下，一个总线周期正好等于一个总线时钟周期。</li>
+<li>某些高性能传输方式下，一个总线时钟周期内也可能完成多次数据传送。</li>
+</ul>
+</div>
+</div>
+如果一次总线操作需要 $N$ 个总线时钟周期，则：
+
+<p>$$<br>T_{bus}&#x3D;N \times T_{clk}<br>$$</p>
+<p>$$<br>f_{work}&#x3D;\frac{1}{T_{bus}}&#x3D;\frac{f_{clk}}{N}<br>$$</p>
+<p>这里的 $f_{work}$ 是总线工作频率，表示一秒内能完成多少次这样的总线操作。</p>
+<h1 id="总线宽度"><a href="#总线宽度" class="headerlink" title="总线宽度"></a>总线宽度</h1><p><strong>总线宽度</strong>也叫总线位宽，通常指数据总线的根数，即总线上<strong>同时能够传输的数据位数</strong>。</p>
+<p>例如：</p>
+<ul>
+<li>32 根数据线称为 32 位总线。</li>
+<li>64 根数据线称为 64 位总线。</li>
+</ul>
+<p>如果总线宽度为 $W$ bit，则一次数据传送的数据量为：</p>
+<p>$$<br>\frac{W}{8}\ \text{B}<br>$$</p>
+<h1 id="总线带宽"><a href="#总线带宽" class="headerlink" title="总线带宽"></a>总线带宽</h1><p><strong>总线带宽</strong>可以理解为总线的数据传输率，即单位时间内总线上最多能传送的数据量。</p>
+<p>基本形式是：</p>
+<p>$$<br>\text{总线带宽} &#x3D; \text{每秒数据传送次数} \times \text{每次传送数据量}<br>$$</p>
+<p>若总线工作频率为 $f_{work}$，总线宽度为 $W$ bit，则：</p>
+<p>$$<br>\text{总线带宽} &#x3D; f_{work} \times W\ \text{bit&#x2F;s}<br>$$</p>
+<p>换成字节每秒：</p>
+<p>$$<br>\text{总线带宽} &#x3D; f_{work} \times \frac{W}{8}\ \text{B&#x2F;s}<br>$$</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">理论带宽和有效传输率</span></div>
+<div class="callout-content"><p>总线带宽通常指总线本身能达到的理论最高传输率。计算实际有效数据传输率时，要用传输的有效数据量除以<strong>总耗时</strong>；地址阶段、等待周期、控制开销都会降低有效传输率。</p>
+</div>
+</div>
+## 每个时钟周期传多次数据
+
+<p>有些总线在一个总线时钟周期内可以传送多次数据。例如上升沿传一次、下降沿再传一次。</p>
+<p>若总线时钟频率为 $f_{clk}$，每个总线时钟周期传送 $m$ 次数据，总线宽度为 $W$ bit，则理论带宽为：</p>
+<p>$$<br>\text{总线带宽}&#x3D;f_{clk}\times m\times \frac{W}{8}\ \text{B&#x2F;s}<br>$$</p>
+<p>这里仍然使用的是<strong>总线时钟频率</strong>。</p>
+<h1 id="突发传输"><a href="#突发传输" class="headerlink" title="突发传输"></a>突发传输</h1><p><strong>突发传输</strong>也叫猝发传输。它的特点是：主设备只给出一个首地址，从设备就能从该地址开始连续读出或写入多个数据。</p>
+<p>普通连续传输可能每个数据都要单独给地址：</p>
+<p>$$<br>A_0,D_0;\quad A_1,D_1;\quad A_2,D_2;\quad A_3,D_3<br>$$</p>
+<p>突发传输则可以：</p>
+<p>$$<br>A,\quad D_0,D_1,D_2,D_3<br>$$</p>
+<p>突发传输减少了连续地址访问时重复给地址的开销，适合主存连续单元、Cache 块、I&#x2F;O 数据块等场景。</p>
+<h1 id="总线复用"><a href="#总线复用" class="headerlink" title="总线复用"></a>总线复用</h1><p><strong>总线复用</strong>是指同一组物理信号线在不同时间传输不同信息。它可以用较少的线传输更多类型的信息，从而节省空间、引脚和成本。</p>
+<p><img src="/assets/bus-multiplexing-burst-transfer.svg"></p>
+<p>最常见的是<strong>地址&#x2F;数据复用</strong>：</p>
+<ol>
+<li>先用同一组地址&#x2F;数据线传送地址。</li>
+<li>接收方把地址锁存下来。</li>
+<li>同一组线切换用途，再传送数据。</li>
+</ol>
+<p>这样原本可能需要地址线和数据线两组线路，现在可以用一组复用线完成。但代价是：地址和数据不能同时出现在这组线上，传输过程必须分阶段进行，时序控制更复杂。</p>
+<h1 id="信号线数"><a href="#信号线数" class="headerlink" title="信号线数"></a>信号线数</h1><p>信号线数通常指地址总线、数据总线和控制总线的线数总和。</p>
+<p>如果地址线和数据线完全分开，则物理信号线数较多；如果使用地址&#x2F;数据复用，则物理信号线数可以减少。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">逻辑分类和物理线数不同</span></div>
+<div class="callout-content"><p>即使从功能上仍然说“地址信息”和“数据信息”，它们也可能在物理上使用同一组复用线。逻辑功能是否分开，和物理线路是否分开，是两个不同问题。</p>
+</div>
+</div>
+# 串行和并行的速度判断
+
+<p>总线带宽和两个因素直接相关：</p>
+<p>$$<br>\text{总线带宽}&#x3D;\text{每秒数据传送次数}\times\text{每次传送数据量}<br>$$</p>
+<p>在工作频率相同的情况下，并行总线一次传多位，通常比串行总线快。</p>
+<p>但并行总线的信号线多，工作频率提高后线间干扰、线长匹配、布线空间都会成为问题，频率难以持续提高。串行总线一次传送位数少，但更容易提高工作频率，也更适合长距离传输。因此<strong>并行不一定比串行快</strong>，要结合频率、位宽、传输距离和实际实现判断。</p>
+<h1 id="计算例子"><a href="#计算例子" class="headerlink" title="计算例子"></a>计算例子</h1><p>某同步总线采用地址&#x2F;数据复用方式，其中地址&#x2F;数据线有 32 根；总线时钟频率为 66 MHz；每个总线时钟周期传送两次数据，上升沿和下降沿各传送一次。</p>
+<h2 id="理论最大数据传输率"><a href="#理论最大数据传输率" class="headerlink" title="理论最大数据传输率"></a>理论最大数据传输率</h2><p>每个总线时钟周期传送两次数据，因此每秒数据传送次数为：</p>
+<p>$$<br>66\text{ MHz}\times 2&#x3D;132\text{ M 次&#x2F;s}<br>$$</p>
+<p>总线宽度为：</p>
+<p>$$<br>32\text{ bit}&#x3D;4\text{ B}<br>$$</p>
+<p>所以理论带宽为：</p>
+<p>$$<br>132\times 4\text{ MB&#x2F;s}&#x3D;528\text{ MB&#x2F;s}<br>$$</p>
+<h2 id="突发传输-128-bit-数据的最少时间"><a href="#突发传输-128-bit-数据的最少时间" class="headerlink" title="突发传输 128 bit 数据的最少时间"></a>突发传输 128 bit 数据的最少时间</h2><p>若该总线支持突发传输，传输一个地址占用 1 个总线时钟周期。现在要传输 128 bit 数据：</p>
+<p>$$<br>128\text{ bit}&#x3D;16\text{ B}<br>$$</p>
+<p>每次数据传送 32 bit，即 4 B，所以需要 4 次数据传送。又因为每个总线时钟周期传 2 次数据，所以数据阶段需要：</p>
+<p>$$<br>4 \div 2 &#x3D; 2\text{ 个总线时钟周期}<br>$$</p>
+<p>总共需要：</p>
+<p>$$<br>1 + 2 &#x3D; 3\text{ 个总线时钟周期}<br>$$</p>
+<p>66 MHz 的总线时钟周期约为：</p>
+<p>$$<br>\frac{1}{66\text{ MHz}}\approx 15.15\text{ ns}<br>$$</p>
+<p>因此最少时间约为：</p>
+<p>$$<br>3\times 15.15\text{ ns}\approx 45.45\text{ ns}<br>$$</p>
+<div class="callout callout-abstract">
+<div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">小结</span></div>
+<div class="callout-content"><p>总线性能计算的核心顺序是：</p>
+<ol>
+<li>先确认题目给的是<strong>总线时钟频率</strong>还是总线工作频率。</li>
+<li>再确认一次数据传送的位数，也就是总线宽度。</li>
+<li>如果每个总线时钟周期可传多次数据，要把次数乘进去。</li>
+<li>如果计算实际耗时，要把地址阶段、数据阶段和等待开销分开算。</li>
+</ol>
+</div>
+</div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/03/Bus-Performance/">https://eliano64.github.io/2026/07/03/Bus-Performance/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/Bus-Overview/" title="Bus Overview"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Bus Overview</div></div><div class="info-2"><div class="info-item-1">总线总线是一组能为多个部件分时共享的公共信息传送线路。  共享：总线上可以挂接多个部件，部件之间交换的信息都可以通过这组线路传送。 分时：同一时刻只允许一个部件向总线发送信息；其他部件即使也要发送，也必须等待。   总线不是“一根线” 一条总线通常由多根信号线组成。比如一组 32 位数据总线，本质上就是 32 根可并行传送数据位的信号线。   ![](/assets/bus-basic-shared-lines.svg)  早期计算机外部设备少时，可以采用分散连接方式；设备增多后，这种方式不利于随时增减设备。 总线连接把多个部件挂到一组公共线路上，提高了连接的灵活性。 代价：既然线路被共享，就会产生争用，需要规定占用关系、传输能力和时间配合。 按功能分类按所在位置和连接对象，总线可分为三类。    类型 连接范围 说明    片内总线 CPU 芯片内部 连接 CPU 内部寄存器、ALU 等部件   系统总线 计算机系统内各功能部件之间 连接 CPU、主存、I&#x2F;O...</div></div></div></a><a class="pagination-related" href="/2026/07/03/Bus-Timing/" title="Bus Timing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Bus Timing</div></div><div class="info-2"><div class="info-item-1">总线定时总线定时是指主设备和从设备交换数据时，在时间上如何配合。它本质上是一种协议或规则：什么时候放地址、什么时候放命令、什么时候读数据、什么时候撤销信号。 常见定时方式有四类：    定时方式 核心机制 适合场景    同步定时方式 用统一时钟控制数据传送 总线较短、设备速度接近   异步定时方式 不用统一时钟，靠请求和回答信号握手 设备速度差异较大   半同步通信 统一时钟基础上增加等待信号 大体同步，但允许慢设备插入等待   分离式通信 请求和响应拆成两个子周期 避免从设备准备数据时长期占用总线     同步定时：统一时钟，快而简单，但要求设备速度接近。 异步定时：握手配合，适应性强，但控制复杂、速度较慢。 半同步通信：统一时钟加...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E6%8C%87%E6%A0%87"><span class="toc-text">性能指标</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF%E5%AE%BD%E5%BA%A6"><span class="toc-text">总线宽度</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF%E5%B8%A6%E5%AE%BD"><span class="toc-text">总线带宽</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AA%81%E5%8F%91%E4%BC%A0%E8%BE%93"><span class="toc-text">突发传输</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BA%BF%E5%A4%8D%E7%94%A8"><span class="toc-text">总线复用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E7%BA%BF%E6%95%B0"><span class="toc-text">信号线数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E4%BE%8B%E5%AD%90"><span class="toc-text">计算例子</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%90%86%E8%AE%BA%E6%9C%80%E5%A4%A7%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E7%8E%87"><span class="toc-text">理论最大数据传输率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AA%81%E5%8F%91%E4%BC%A0%E8%BE%93-128-bit-%E6%95%B0%E6%8D%AE%E7%9A%84%E6%9C%80%E5%B0%91%E6%97%B6%E9%97%B4"><span class="toc-text">突发传输 128 bit 数据的最少时间</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

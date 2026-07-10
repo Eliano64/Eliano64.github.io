@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img" aria-labelledby="title desc">
+  <title id="title">Memory access time and cycle time</title>
+  <desc id="desc">Access time is shorter than or equal to memory cycle time because recovery or rewrite may be needed before next access.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L10 5 L0 10 z"/></marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      .bg{fill:#fbfcff}.title{font:700 26px "Microsoft YaHei",Arial,sans-serif;fill:#172033}.head{font:700 17px "Microsoft YaHei",Arial,sans-serif;fill:#172033}.txt{font:400 14px "Microsoft YaHei",Arial,sans-serif;fill:#40506a}.small{font:400 12px "Microsoft YaHei",Arial,sans-serif;fill:#5c687b}.axis{stroke:#27354f;stroke-width:2.3;marker-end:url(#arrow)}.tick{stroke:#27354f;stroke-width:2}.ta{fill:#eef6ff;stroke:#5f92d6;stroke-width:1.8;rx:7}.recover{fill:#fff7e8;stroke:#d49a3a;stroke-width:1.8;rx:7}.tm{fill:none;stroke:#2f6f53;stroke-width:3}.panel{fill:#fff;stroke:#a7b3c5;stroke-width:1.6;rx:9}#arrow path{fill:#27354f}
+      @media (prefers-color-scheme: dark){.bg{fill:#111827}.title,.head{fill:#f3f4f6}.txt,.small{fill:#cbd5e1}.axis,.tick{stroke:#d1d5db}.ta{fill:#172554;stroke:#60a5fa}.recover{fill:#3b2a12;stroke:#f59e0b}.tm{stroke:#4ade80}.panel{fill:#1f2937;stroke:#64748b}#arrow path{fill:#d1d5db}}
+    </style>
+  </defs>
+  <rect class="bg" width="980" height="520"/>
+  <text class="title" x="48" y="54">存取时间与存取周期</text>
+  <text class="txt" x="48" y="86">存取时间描述“本次操作多久完成”；存取周期描述“多久后才能发起下一次独立访问”。</text>
+
+  <line class="axis" x1="90" y1="210" x2="890" y2="210"/>
+  <line class="tick" x1="130" y1="190" x2="130" y2="235"/>
+  <line class="tick" x1="410" y1="190" x2="410" y2="235"/>
+  <line class="tick" x1="760" y1="190" x2="760" y2="235"/>
+  <text class="small" x="130" y="258" text-anchor="middle">启动访问</text>
+  <text class="small" x="410" y="258" text-anchor="middle">数据有效 / 写入完成</text>
+  <text class="small" x="760" y="258" text-anchor="middle">允许下一次访问</text>
+
+  <rect class="ta" x="130" y="128" width="280" height="48"/>
+  <text class="head" x="270" y="158" text-anchor="middle">存取时间 Ta</text>
+  <rect class="recover" x="410" y="128" width="350" height="48"/>
+  <text class="head" x="585" y="158" text-anchor="middle">恢复 / 重写 / 刷新 / 准备</text>
+
+  <path class="tm" d="M130 320 L760 320"/>
+  <line class="tick" x1="130" y1="302" x2="130" y2="338"/>
+  <line class="tick" x1="760" y1="302" x2="760" y2="338"/>
+  <text class="head" x="445" y="354" text-anchor="middle">存取周期 Tm</text>
+
+  <rect class="panel" x="190" y="405" width="600" height="72"/>
+  <text class="head" x="490" y="435" text-anchor="middle">通常 Tm ≥ Ta</text>
+  <text class="txt" x="490" y="462" text-anchor="middle">DRAM 读出可能破坏原信息，需要重写；恢复时间越长，周期与存取时间差距越明显。</text>
+</svg>

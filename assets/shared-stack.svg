@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="360" viewBox="0 0 820 360" role="img" aria-labelledby="title desc">
+  <title id="title">Shared Stack</title>
+  <desc id="desc">Two stacks share one array and grow toward each other from both ends.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --ink: #17212b;
+      --muted: #5b6876;
+      --line: #334e68;
+      --left: #0f766e;
+      --right: #7c3aed;
+      --empty: #f4f6f8;
+      --left-cell: #e6fffb;
+      --right-cell: #f3ecff;
+      --warn: #b45309;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #e6edf3;
+        --muted: #b8c4cf;
+        --line: #9ccfd8;
+        --left: #5eead4;
+        --right: #c4b5fd;
+        --empty: #1b2430;
+        --left-cell: #102926;
+        --right-cell: #241b36;
+        --warn: #f6c177;
+      }
+    }
+    text { font-family: Arial, "Microsoft YaHei", sans-serif; fill: var(--ink); }
+    .label { font-size: 18px; font-weight: 700; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .index { font-size: 13px; fill: var(--muted); }
+    .left-cell { fill: var(--left-cell); stroke: var(--line); stroke-width: 2; }
+    .right-cell { fill: var(--right-cell); stroke: var(--line); stroke-width: 2; }
+    .empty-cell { fill: var(--empty); stroke: var(--line); stroke-width: 2; stroke-dasharray: 5 4; }
+    .left-arrow { stroke: var(--left); stroke-width: 3; fill: none; marker-end: url(#leftArrow); }
+    .right-arrow { stroke: var(--right); stroke-width: 3; fill: none; marker-end: url(#rightArrow); }
+    .warn { stroke: var(--warn); stroke-width: 3; fill: none; marker-end: url(#warnArrow); }
+  </style>
+  <defs>
+    <marker id="leftArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--left)"/>
+    </marker>
+    <marker id="rightArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--right)"/>
+    </marker>
+    <marker id="warnArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="var(--warn)"/>
+    </marker>
+  </defs>
+
+  <text class="label" x="54" y="46">Stack 0</text>
+  <text class="small" x="54" y="70">grows from low index to high index</text>
+  <text class="label" x="640" y="46">Stack 1</text>
+  <text class="small" x="548" y="70">grows from high index to low index</text>
+
+  <g transform="translate(70 120)">
+    <rect class="left-cell" x="0" y="0" width="70" height="66" rx="6"/>
+    <rect class="left-cell" x="70" y="0" width="70" height="66" rx="6"/>
+    <rect class="left-cell" x="140" y="0" width="70" height="66" rx="6"/>
+    <rect class="empty-cell" x="210" y="0" width="70" height="66" rx="6"/>
+    <rect class="empty-cell" x="280" y="0" width="70" height="66" rx="6"/>
+    <rect class="right-cell" x="350" y="0" width="70" height="66" rx="6"/>
+    <rect class="right-cell" x="420" y="0" width="70" height="66" rx="6"/>
+    <rect class="right-cell" x="490" y="0" width="70" height="66" rx="6"/>
+
+    <text class="label" x="24" y="40">a</text>
+    <text class="label" x="94" y="40">b</text>
+    <text class="label" x="164" y="40">c</text>
+    <text class="small" x="226" y="40">free</text>
+    <text class="small" x="296" y="40">free</text>
+    <text class="label" x="374" y="40">z</text>
+    <text class="label" x="444" y="40">y</text>
+    <text class="label" x="514" y="40">x</text>
+
+    <text class="index" x="27" y="92">0</text>
+    <text class="index" x="88" y="92">...</text>
+    <text class="index" x="153" y="92">top0</text>
+    <text class="index" x="363" y="92">top1</text>
+    <text class="index" x="507" y="92">MaxSize-1</text>
+
+    <path class="left-arrow" d="M98 -30 H188"/>
+    <text class="small" x="92" y="-40">Push0: top0++</text>
+    <path class="right-arrow" d="M462 -30 H372"/>
+    <text class="small" x="390" y="-40">Push1: top1--</text>
+
+    <path class="warn" d="M208 120 C244 150 318 150 352 120"/>
+    <text class="small" x="180" y="174">Full when top0 + 1 == top1</text>
+  </g>
+
+  <text class="small" x="88" y="306">Initialization: top0 = -1, top1 = MaxSize. The free area is always between the two stack tops.</text>
+</svg>

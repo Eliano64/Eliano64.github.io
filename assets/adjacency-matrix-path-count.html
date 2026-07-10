@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adjacency Matrix Path Count</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--ink:#0f172a;--muted:#475569;--line:#cbd5e1;--accent:#2563eb;--hot:#dc2626;--soft:#dbeafe}
+  @media (prefers-color-scheme:dark){:root{--bg:#0b1220;--panel:#111827;--ink:#f8fafc;--muted:#cbd5e1;--line:#334155;--accent:#60a5fa;--hot:#fb7185;--soft:#1e3a8a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif}
+  .deck{min-height:740px;padding:24px;display:grid;grid-template-rows:auto 1fr auto;gap:14px}
+  header,footer{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  h1{font-size:24px;margin:0}
+  .hint{color:var(--muted);font-size:14px}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;grid-template-columns:330px 1fr;gap:22px;align-items:center}
+  svg{width:100%;height:auto}
+  .node{fill:var(--panel);stroke:var(--accent);stroke-width:4}
+  .edge{stroke:var(--muted);stroke-width:4;fill:none;stroke-linecap:round}
+  .edge.hot{stroke:var(--hot)}
+  .label{fill:var(--ink);font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
+  table{border-collapse:collapse;font-size:20px;margin:10px 0}
+  th,td{width:50px;height:40px;text-align:center;border:1px solid var(--line)}
+  th{color:var(--muted);background:color-mix(in srgb,var(--panel) 80%,var(--soft))}
+  td.hot{outline:3px solid var(--hot);outline-offset:-3px;background:var(--soft);font-weight:800}
+  .formula{font-size:20px;line-height:1.7;margin-top:12px}
+  .formula strong{color:var(--hot)}
+  .grid{display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start}
+  button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 14px;font-size:15px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="deck">
+  <header>
+    <h1>用 A² 统计长度为 2 的路径数</h1>
+    <div class="hint">点击卡片或使用按钮翻页</div>
+  </header>
+  <main class="stage" id="stage"></main>
+  <footer>
+    <button id="prev" type="button">上一页</button>
+    <div class="hint" id="count"></div>
+    <button id="next" type="button">下一页</button>
+  </footer>
+</div>
+<script>
+const vertices = ["A","B","C","D"];
+const A = [[0,1,0,0],[1,0,1,1],[0,1,0,1],[0,1,1,0]];
+const A2 = [[1,0,1,1],[0,3,1,1],[1,1,2,1],[1,1,1,2]];
+const slides = [
+  {hot:null, path:null, note:"矩阵 A 只记录长度为 1 的相邻关系：A[i][j]=1 表示 i 到 j 有一条边。"},
+  {hot:[0,3], path:["A","B","D"], note:"A²[A][D] 统计 A 到 D 的长度为 2 的路径数。中间点枚举 A、B、C、D，只有 A-B-D 成立，所以结果为 1。"},
+  {hot:[1,1], path:["B","A","B"], note:"A²[B][B] 统计从 B 出发走两条边又回到 B 的走法。B-A-B、B-C-B、B-D-B 共 3 条，所以结果为 3。"},
+  {hot:[2,2], path:["C","B","C"], note:"A²[C][C] 表示 C 走两步回到 C 的路径数。C-B-C、C-D-C 共 2 条。"},
+  {hot:null, path:null, note:"一般地，Aⁿ[i][j] 等于从顶点 i 到顶点 j 的长度为 n 的路径条数。这里的长度按边数计。"}
+];
+let index=0;
+function graph(path){
+  const p={A:[70,105],B:[205,70],C:[120,235],D:[265,205]};
+  const edges=[["A","B"],["B","C"],["B","D"],["C","D"]];
+  const lines=edges.map(e=>{
+    const hot = path && ((path[0]===e[0]&&path[1]===e[1])||(path[0]===e[1]&&path[1]===e[0])||(path[1]===e[0]&&path[2]===e[1])||(path[1]===e[1]&&path[2]===e[0]));
+    return `<line class="edge ${hot?"hot":""}" x1="${p[e[0]][0]}" y1="${p[e[0]][1]}" x2="${p[e[1]][0]}" y2="${p[e[1]][1]}"/>`;
+  }).join("");
+  const nodes=vertices.map(v=>`<circle class="node" cx="${p[v][0]}" cy="${p[v][1]}" r="27"/><text class="label" x="${p[v][0]}" y="${p[v][1]+1}">${v}</text>`).join("");
+  return `<svg viewBox="0 0 330 310">${lines}${nodes}</svg>`;
+}
+function table(mat,hot,title){
+  let html = `<div><strong>${title}</strong><table><tr><th></th>${vertices.map(v=>`<th>${v}</th>`).join("")}</tr>`;
+  vertices.forEach((r,i)=>{
+    html += `<tr><th>${r}</th>`;
+    vertices.forEach((c,j)=>{
+      html += `<td class="${hot&&hot[0]===i&&hot[1]===j?"hot":""}">${mat[i][j]}</td>`;
+    });
+    html += "</tr>";
+  });
+  return html + "</table></div>";
+}
+function formula(s){
+  const h=s.hot;
+  if(!h) return `<p class="formula">${s.note}</p>`;
+  const r=vertices[h[0]], c=vertices[h[1]];
+  const terms=vertices.map((v,k)=>`A[${r}][${v}]A[${v}][${c}]`).join(" + ");
+  return `<p class="formula"><strong>A²[${r}][${c}]</strong> = ${terms}<br>${s.note}</p>`;
+}
+function render(){
+  const s=slides[index];
+  document.getElementById("stage").innerHTML = `<div>${graph(s.path)}</div><div class="grid">${table(A,null,"A")}${table(A2,s.hot,"A²")}</div>${formula(s)}`;
+  document.getElementById("count").textContent = `${index+1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick=e=>{e.stopPropagation();index=(index-1+slides.length)%slides.length;render();};
+document.getElementById("next").onclick=e=>{e.stopPropagation();index=(index+1)%slides.length;render();};
+document.body.onclick=()=>{index=(index+1)%slides.length;render();};
+render();
+</script>
+</body>
+</html>

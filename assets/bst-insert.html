@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BST Insert</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #fff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --blue: #2563eb;
+      --green: #16a34a;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #334155;
+        --blue: #60a5fa;
+        --green: #4ade80;
+      }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: auto;
+      padding: 22px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+    }
+
+    .explain {
+      font-size: 18px;
+      line-height: 1.65;
+      min-height: 58px;
+    }
+
+    .code {
+      font: 14px/1.45 Consolas, monospace;
+      background: rgba(148, 163, 184, .12);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .node {
+      fill: #e0f2fe;
+      stroke: #0284c7;
+      stroke-width: 2;
+    }
+
+    .new {
+      fill: #dcfce7;
+      stroke: var(--green);
+      stroke-width: 4;
+    }
+
+    .cur {
+      stroke: var(--blue);
+      stroke-width: 5;
+    }
+
+    .line {
+      stroke: #64748b;
+      stroke-width: 2;
+    }
+
+    .t {
+      fill: var(--text);
+      font-weight: 700;
+      font-size: 16px;
+      text-anchor: middle;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .node {
+        fill: #172554;
+        stroke: #38bdf8;
+      }
+
+      .new {
+        fill: #12351f;
+      }
+
+      .line {
+        stroke: #94a3b8;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .stage {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>BST 插入：新结点一定成为叶子</h1>
+        <div class="hint">插入 key = 12；先查找失败位置，再挂到父结点的空指针。</div>
+      </div>
+      <div>
+        <button id="prev">上一步</button>
+        <button id="next">下一步</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="stage">
+        <svg viewBox="0 0 520 380" id="tree"></svg>
+        <div>
+          <div class="explain" id="explain"></div>
+          <pre class="code">BSTNode *bst_insert(BSTNode *root, int key) {
+    // parent 记录 current 的父结点，最后用它挂接新叶子。
+    BSTNode *parent = NULL;
+    BSTNode *current = root;
+
+    while (current != NULL) {
+        parent = current;
+
+        // 约定不插入重复关键字；原树不变，仍返回原根。
+        if (key == current->key) {
+            return root;
+        }
+
+        // 插入位置沿查找路径向下定位。
+        if (key < current->key) {
+            current = current->left;
+        } else {
+            current = current->right;
+        }
+    }
+
+    // current 为 NULL，说明 parent 的某个空孩子就是插入位置。
+    BSTNode *node = new_node(key);
+    if (node == NULL) {
+        return root;
+    }
+
+    if (parent == NULL) {
+        // 原树为空，新结点就是整棵树的新根。
+        return node;
+    }
+
+    if (key < parent->key) {
+        parent->left = node;
+    } else {
+        parent->right = node;
+    }
+
+    return root;
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const base = {
+      19: [260, 45],
+      13: [150, 135],
+      50: [370, 135],
+      11: [80, 225],
+      26: [220, 225],
+      66: [440, 225],
+      21: [170, 315],
+      30: [270, 315],
+      60: [390, 315],
+      70: [490, 315]
+    };
+    const edges = [
+      [19, 13], [19, 50], [13, 11], [13, 26], [50, 66],
+      [26, 21], [26, 30], [66, 60], [66, 70]
+    ];
+    const steps = [
+      { cur: 19, t: "从根结点 19 开始。12 < 19，进入左子树。" },
+      { cur: 13, t: "比较 12 与 13：12 < 13，进入左子树。" },
+      { cur: 11, t: "比较 12 与 11：12 > 11，应进入右子树。" },
+      { cur: 11, add: true, t: "11 的右孩子为空，查找失败位置确定。把 12 挂为 11 的右孩子；新插入结点一定是叶子。" }
+    ];
+    let stepIndex = 0;
+
+    function draw() {
+      const step = steps[stepIndex];
+      const svg = document.getElementById("tree");
+      const explain = document.getElementById("explain");
+      const nodes = { ...base };
+      const currentEdges = [...edges];
+
+      if (step.add) {
+        nodes[12] = [125, 315];
+        currentEdges.push([11, 12]);
+      }
+
+      svg.innerHTML = "";
+      for (const [a, b] of currentEdges) {
+        const p = nodes[a];
+        const q = nodes[b];
+        svg.innerHTML += `<line class="line" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`;
+      }
+
+      for (const [value, position] of Object.entries(nodes)) {
+        let className = "node";
+        if (Number(value) === 12) {
+          className = "new";
+        } else if (Number(value) === step.cur) {
+          className += " cur";
+        }
+        svg.innerHTML += `<circle class="${className}" cx="${position[0]}" cy="${position[1]}" r="26"/>`;
+        svg.innerHTML += `<text class="t" x="${position[0]}" y="${position[1] + 6}">${value}</text>`;
+      }
+
+      explain.textContent = step.t;
+    }
+
+    document.getElementById("prev").onclick = () => {
+      stepIndex = Math.max(0, stepIndex - 1);
+      draw();
+    };
+    document.getElementById("next").onclick = () => {
+      stepIndex = Math.min(steps.length - 1, stepIndex + 1);
+      draw();
+    };
+    draw();
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TCP Three Way Handshake</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--green:#16a34a;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:14px}.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:10px;margin-bottom:10px;cursor:pointer}.step b{display:block;margin-bottom:5px}.step span{font-size:14px;color:var(--muted);line-height:1.45}.step.active{outline:2px solid var(--blue)}.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:12px}.note{color:var(--muted);line-height:1.6;margin-top:6px}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">TCP 三报文握手</div>
+  <div class="layout">
+    <div id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 680 360" role="img" aria-label="TCP 三报文握手过程">
+        <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker></defs>
+        <text x="150" y="35" text-anchor="middle" fill="var(--text)" font-size="17" font-weight="700">客户端</text>
+        <text x="530" y="35" text-anchor="middle" fill="var(--text)" font-size="17" font-weight="700">服务器</text>
+        <line x1="150" y1="55" x2="150" y2="310" stroke="var(--line)" stroke-width="3"/>
+        <line x1="530" y1="55" x2="530" y2="310" stroke="var(--line)" stroke-width="3"/>
+        <text id="cs" x="150" y="335" text-anchor="middle" fill="var(--green)" font-size="15"></text>
+        <text id="ss" x="530" y="335" text-anchor="middle" fill="var(--green)" font-size="15"></text>
+        <path id="m1" d="M150 90 L530 135" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path id="m2" d="M530 170 L150 215" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path id="m3" d="M150 250 L530 285" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <text id="l1" x="340" y="105" text-anchor="middle" fill="var(--text)" font-size="15">SYN=1, seq=x</text>
+        <text id="l2" x="340" y="180" text-anchor="middle" fill="var(--text)" font-size="15">SYN=1, ACK=1, seq=y, ack=x+1</text>
+        <text id="l3" x="340" y="260" text-anchor="middle" fill="var(--text)" font-size="15">ACK=1, seq=x+1, ack=y+1</text>
+      </svg>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+  ["服务器监听","服务器被动打开，进入 LISTEN。","服务器创建 TCB，等待连接请求。","CLOSED","LISTEN"],
+  ["客户端发送 SYN","客户端主动打开，发送连接请求。","SYN 消耗序号 x，客户端下一个可用序号是 x+1。","SYN-SENT","LISTEN"],
+  ["服务器回复 SYN+ACK","服务器同意连接并给出自己的初始序号。","ack=x+1 确认客户端 SYN；SYN=1, seq=y 也消耗服务器序号 y。","SYN-SENT","SYN-RCVD"],
+  ["客户端发送 ACK","客户端确认服务器的 SYN。","服务器收到第三个报文后，双方进入 ESTABLISHED。","ESTABLISHED","ESTABLISHED"]
+];
+let i=0;const steps=document.getElementById("steps");
+data.forEach((d,k)=>{const e=document.createElement("div");e.className="step";e.innerHTML=`<b>${k+1}. ${d[0]}</b><span>${d[1]}</span>`;e.onclick=()=>{i=k;render()};steps.appendChild(e)});
+function op(id,on){document.getElementById(id).style.opacity=on?1:.06}
+function render(){[...steps.children].forEach((e,k)=>e.classList.toggle("active",k===i));op("m1",i>=1);op("l1",i>=1);op("m2",i>=2);op("l2",i>=2);op("m3",i>=3);op("l3",i>=3);note.textContent=data[i][2];cs.textContent=data[i][3];ss.textContent=data[i][4]}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script>
+</body>
+</html>

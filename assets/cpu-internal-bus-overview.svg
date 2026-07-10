@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="360" viewBox="0 0 980 360" role="img" aria-labelledby="title desc">
+  <title id="title">CPU 内部总线示意</title>
+  <desc id="desc">展示 CPU 内部寄存器、ALU、MAR、MDR 通过内部总线交换信息，控制器发出控制信号选择数据通路。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #cbd5e1;
+      --box: #f8fafc;
+      --bus: #2563eb;
+      --ctrl: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #475569;
+        --box: #111827;
+        --bus: #60a5fa;
+        --ctrl: #f87171;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .title { font: 700 24px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); }
+    .note { font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .box { fill: var(--box); stroke: var(--line); stroke-width: 1.5; rx: 8; }
+    .label { font: 700 16px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; }
+    .small { font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); text-anchor: middle; }
+    .bus { stroke: var(--bus); stroke-width: 10; stroke-linecap: round; }
+    .wire { fill: none; stroke: var(--line); stroke-width: 2.5; marker-end: url(#arrowLine); marker-start: url(#arrowLineStart); }
+    .ctrl { fill: none; stroke: var(--ctrl); stroke-width: 2.5; stroke-dasharray: 7 5; marker-end: url(#arrowCtrl); }
+  </style>
+  <defs>
+    <marker id="arrowLine" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+    </marker>
+    <marker id="arrowLineStart" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 10 0 L 0 5 L 10 10 z" fill="var(--line)" />
+    </marker>
+    <marker id="arrowCtrl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ctrl)" />
+    </marker>
+  </defs>
+  <rect class="bg" width="980" height="360" />
+  <text class="title" x="48" y="44">CPU 内部总线</text>
+  <text class="note" x="48" y="72">内部总线是 CPU 内部部件交换信息的公共通路；控制信号决定谁输出、谁接收。</text>
+
+  <line class="bus" x1="120" y1="178" x2="860" y2="178" />
+  <text class="label" x="490" y="205">CPU 内部总线</text>
+
+  <g>
+    <rect class="box" x="92" y="104" width="105" height="52" />
+    <text class="label" x="144.5" y="132">PC</text>
+    <path class="wire" d="M 145 156 L 145 173" />
+
+    <rect class="box" x="232" y="104" width="105" height="52" />
+    <text class="label" x="284.5" y="132">IR</text>
+    <path class="wire" d="M 285 156 L 285 173" />
+
+    <rect class="box" x="372" y="104" width="105" height="52" />
+    <text class="label" x="424.5" y="132">GPR</text>
+    <path class="wire" d="M 425 156 L 425 173" />
+
+    <rect class="box" x="512" y="104" width="105" height="52" />
+    <text class="label" x="564.5" y="132">ACC</text>
+    <path class="wire" d="M 565 156 L 565 173" />
+
+    <rect class="box" x="652" y="104" width="105" height="52" />
+    <text class="label" x="704.5" y="132">MAR</text>
+    <path class="wire" d="M 705 156 L 705 173" />
+
+    <rect class="box" x="792" y="104" width="105" height="52" />
+    <text class="label" x="844.5" y="132">MDR</text>
+    <path class="wire" d="M 845 156 L 845 173" />
+  </g>
+
+  <g>
+    <rect class="box" x="352" y="238" width="160" height="58" />
+    <text class="label" x="432" y="264">ALU</text>
+    <text class="small" x="432" y="284">算术/逻辑运算</text>
+    <path class="wire" d="M 432 238 L 432 184" />
+
+    <rect class="box" x="570" y="238" width="190" height="58" />
+    <text class="label" x="665" y="264">主存接口</text>
+    <text class="small" x="665" y="284">MAR 给地址，MDR 传数据</text>
+    <path class="wire" d="M 705 238 L 705 184" />
+    <path class="wire" d="M 845 238 L 845 184" />
+  </g>
+
+  <g>
+    <rect class="box" x="68" y="238" width="190" height="58" />
+    <text class="label" x="163" y="264">控制器</text>
+    <text class="small" x="163" y="284">发出 out / in 控制信号</text>
+    <path class="ctrl" d="M 258 262 C 332 226, 420 214, 488 184" />
+    <path class="ctrl" d="M 258 276 C 425 320, 650 320, 792 188" />
+  </g>
+</svg>

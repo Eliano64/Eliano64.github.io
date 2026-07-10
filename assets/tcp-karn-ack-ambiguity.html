@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Karn 算法 — ACK 歧义</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --send: #2563eb; --ack: #059669; --lost: #dc2626; --rto: #d97706; --late: #8b5cf6;
+  --bg-send-light: #dbeafe; --bg-ack-light: #d1fae5; --bg-warn-light: #fef3c7; --bg-red-light: #fee2e2; --bg-amb-light: #fff7ed;
+  --tx-send: #1e40af; --tx-ack: #065f46; --tx-red: #991b1b; --tx-warn: #92400e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 18px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 22px; margin: 0 0 12px; }
+p { font-size: 17px; line-height: 1.6; }
+.slide { display: none; padding: 28px; gap: 28px; grid-template-columns: 1fr 1fr; align-items: start; }
+.slide.active { display: grid; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+pre { margin: 0; background: var(--code); color: var(--codeText); border-radius: 8px; padding: 16px; overflow: auto; font-size: 15px; line-height: 1.55; }
+code { font-family: Consolas, monospace; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 9px 14px; font-size: 15px; cursor: pointer; }
+.count, .label { color: var(--muted); }
+.tag { display: inline-block; padding: 2px 9px; border-radius: 4px; font-size: 13px; font-weight: 700; margin-right: 6px; }
+.tag.send { background: var(--bg-send-light); color: var(--tx-send); }
+.tag.ack  { background: var(--bg-ack-light); color: var(--tx-ack); }
+.tag.retx { background: var(--bg-red-light); color: var(--tx-red); }
+.tag.time { background: var(--bg-warn-light); color: var(--tx-warn); }
+
+.timeline { position: relative; height: 240px; margin-top: 24px; }
+.tl-host { position: absolute; left: 8px; font-size: 14px; font-weight: 700; color: var(--muted); }
+.tl-a { top: 0; } .tl-b { top: 200px; }
+.tl-bar { position: absolute; left: 60px; right: 20px; height: 2px; background: #9ca3af; }
+.tl-bar.a { top: 30px; } .tl-bar.b { top: 210px; }
+.msg { position: absolute; text-align: center; }
+.msg.data { background: var(--bg-send-light); border: 2px solid var(--send); border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--tx-send); }
+.msg.ack  { background: var(--bg-ack-light); border: 2px solid var(--ack); border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--tx-ack); }
+.msg.retx { background: var(--bg-red-light); border: 2px solid var(--lost); border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--tx-red); }
+.msg.lost { background: var(--bg-red-light); border: 2px dashed var(--lost); border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--tx-red); opacity: 0.6; }
+.dot { width: 8px; height: 8px; border-radius: 4px; position: absolute; }
+.dot.lost { background: var(--lost); }
+.msg-line { position: absolute; left: 0; width: 100%; border-top: 1.5px dashed var(--rto); }
+.msg-line span { position: absolute; right: 2px; top: -10px; font-size: 11px; color: var(--rto); font-weight: 700; }
+.amb-box { background: var(--bg-amb-light); border: 2px solid #ea580c; border-radius: 8px; padding: 12px; margin-top: 12px; }
+.amb-box h3 { color: #ea580c; margin: 0 0 6px; font-size: 16px; }
+.amb-box p { margin: 2px 0; font-size: 14px; color: #9a3412; }
+.amb-box .wrong { color: #dc2626; font-weight: 700; }
+.amb-box .right { color: #059669; font-weight: 700; }
+table { border-collapse: collapse; }
+td { padding: 10px; border: 1px solid var(--border); }
+.tr-send { background: var(--bg-send-light); }
+.tr-ack  { background: var(--bg-ack-light); }
+.tr-warn { background: var(--bg-warn-light); }
+.tr-red  { background: var(--bg-red-light); }
+.tr-late { background: #ede9fe; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --bg-send-light: #1e3a5f; --bg-ack-light: #133d2a; --bg-warn-light: #3d2f12; --bg-red-light: #3b1010; --bg-amb-light: #2a1506;
+    --tx-send: #93c5fd; --tx-ack: #6ee7b7; --tx-red: #fca5a5; --tx-warn: #fcd34d;
+    --send: #60a5fa; --ack: #34d399; --lost: #f87171; --rto: #fbbf24; --late: #a78bfa;
+  }
+  button { border-color: #52616b; }
+  .amb-box h3 { color: #fb923c; }
+  .amb-box p { color: #fdba74; }
+  .amb-box .wrong { color: #f87171; }
+  .amb-box .right { color: #34d399; }
+  .tr-late { background: #1e1b4b; }
+}
+@media (max-width: 760px) { .slide { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>Karn 算法 — ACK 歧义问题</h1></header>
+
+  <section class="slide active">
+    <div class="panel">
+      <h2><span class="tag retx">情况 A</span>原报文段丢失 → 重传 → 收到确认</h2>
+      <p>发送方发出 <code>seq=200</code> 的数据报文段，该段在传输中<strong>丢失</strong>。超时后重传，收到 ACK。此 ACK 实际是对<strong>重传报文段</strong>的确认。</p>
+      <div class="timeline">
+        <div class="tl-host tl-a">发送方 A</div><div class="tl-host tl-b">接收方 B</div>
+        <div class="tl-bar a"></div><div class="tl-bar b"></div>
+        <div class="msg data" style="left:70px;top:80px;">数据 seq=200</div>
+        <div class="msg lost" style="left:70px;top:120px;">× 在途中丢失</div>
+        <div class="msg-line" style="top:34px;left:70px;width:70px;"><span>RTO</span></div>
+        <div class="msg retx" style="left:160px;top:80px;">重传 seq=200</div>
+        <div class="msg ack" style="left:230px;top:156px;">ACK ack=201</div>
+      </div>
+      <div class="amb-box">
+        <h3>⚠ 发送方无法判断</h3>
+        <p>这个 ACK 是对<strong>原报文段</strong>的确认，还是对<strong>重传报文段</strong>的确认？</p>
+        <p>实际上是对<strong>重传报文段</strong>的确认。若<span class="wrong">误当作原报文段</span>的 ACK 来测 RTT → <span class="wrong">RTT 偏大</span></p>
+      </div>
+    </div>
+    <pre><code>/* 发送方视角 */
+send(seq=200);           // 发送数据
+/* 超时 ... */
+retransmit(seq=200);     // 重传
+recv(ack=201);           // 收到确认
+/* ❓ 这个 ACK 对应哪次发送？ */
+/* 无法用它的时间戳计算 RTT */</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2><span class="tag time">情况 B</span>ACK 迟到 → 超时重传 → 迟到 ACK 到达</h2>
+      <p>发送方发出 <code>seq=200</code>，接收方正常收到并回 ACK。但 ACK 因网络延迟未能及时到达，触发超时重传。<strong>重传后</strong>，迟到的原 ACK 才到达。</p>
+      <div class="timeline">
+        <div class="tl-host tl-a">发送方 A</div><div class="tl-host tl-b">接收方 B</div>
+        <div class="tl-bar a"></div><div class="tl-bar b"></div>
+        <div class="msg data" style="left:70px;top:80px;">数据 seq=200</div>
+        <div class="msg ack" style="left:112px;top:156px;">ACK 在路上…</div>
+        <div class="msg-line" style="top:34px;left:70px;width:58px;"><span>RTO</span></div>
+        <div class="msg retx" style="left:146px;top:80px;">超时重传!</div>
+        <div class="msg ack" style="left:210px;top:156px;border-color:var(--late);color:#7c3aed;background:#ede9fe;">迟到 ACK ack=201</div>
+        <div class="dot lost" style="left:148px;top:31px;"></div>
+      </div>
+      <div class="amb-box">
+        <h3>⚠ 发送方无法判断</h3>
+        <p>这个迟到的 ACK 是对<strong>原报文段</strong>的确认，还是对<strong>重传报文段</strong>的确认？</p>
+        <p>实际上是对<strong>原报文段</strong>的确认。若<span class="wrong">误当作重传报文段</span>的 ACK 来测 RTT → <span class="wrong">RTT 偏小</span></p>
+      </div>
+    </div>
+    <pre><code>/* 发送方视角 */
+send(seq=200);           // 发送数据
+/* 超时，但原 ACK 其实在路上 */
+retransmit(seq=200);     // 不必要重传
+recv(ack=201);           // 迟到 ACK 到达
+/* ❓ 对应原报文还是重传？ */
+/* 无法用它的时间戳计算 RTT */</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>Karn 算法 — 基本规则</h2>
+      <p><strong>凡是重传过的报文段，不采用其 RTT 样本。</strong></p>
+      <p>一旦发生重传，本轮不更新 <code>RTTₛ</code>，也不重新计算 <code>RTO</code>。宁可暂时不更新，也不要用错误样本污染 RTT 估计。</p>
+      <hr style="border-color:var(--border); margin:18px 0;">
+      <h2>修正规则 — 防止 RTO 永远不更新</h2>
+      <p>如果网络时延突然持续增大：RTO 太小 → 每次都超时重传 → Karn 基本规则拒绝所有 RTT 样本 → RTO 永远不变 → 反复重传。</p>
+      <p><strong>修正：报文段每重传一次，RTO 翻倍。</strong></p>
+      <p style="font-size:20px;text-align:center;font-weight:700;color:var(--rto);margin:16px 0;">RTOⁿᵉʷ = 2 × RTOᵒˡᵈ</p>
+      <p>这让 RTO 在持续拥塞时快速增长，避免反复重传加重拥塞。等网络恢复正常后，新 RTT 样本会重新纠正 RTO。</p>
+    </div>
+    <pre><code>/* Karn 算法伪代码 */
+function updateRTO(rtt_sample) {
+  if (was_retransmitted) {
+    /* 基本规则：不用重传样本 */
+    /* 修正规则：每次重传 RTO 翻倍 */
+    RTO = RTO * 2;
+    return;  // 不更新 RTTs 和 RTTd
+  }
+  /* 正常样本：按 RFC6298 更新 */
+  RTTs = (1-α)*RTTs + α*rtt_sample;
+  RTTd = (1-β)*RTTd + β*|RTTs-rtt_sample|;
+  RTO = RTTs + 4*RTTd;
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>总结：Karn 算法解决的核心矛盾</h2>
+      <table style="width:100%;">
+        <tr class="tr-send"><td style="font-weight:700;width:20%;">问题</td><td>重传后收到 ACK，无法判断是对原报文还是重传报文的确认</td></tr>
+        <tr class="tr-ack"><td style="font-weight:700;">错误后果</td><td>情况 A → RTT 偏大，情况 B → RTT 偏小，都会导致 RTO 计算错误</td></tr>
+        <tr class="tr-warn"><td style="font-weight:700;">基本规则</td><td>重传报文段的 RTT 样本一律不用 → 避免错误样本污染估计</td></tr>
+        <tr class="tr-red"><td style="font-weight:700;">副作用</td><td>网络持续拥塞时 RTO 永远不更新 → 反复超时重传</td></tr>
+        <tr class="tr-late"><td style="font-weight:700;">修正规则</td><td>每重传一次 RTO 翻倍 → RTO 随拥塞增长，避免死循环</td></tr>
+      </table>
+      <p style="margin-top:16px;color:var(--muted);">核心思想：不确定的样本宁可不用；但也不能因为不用就让 RTO 在真实拥塞中僵死。</p>
+    </div>
+    <pre><code>/* 记忆口诀 */
+/* 样本不靠谱 → 不用 */
+/* 反复超时 → RTO 翻倍 */
+/* 恢复正常 → 重新测量 */
+/* 自适应于网络状态 */</code></pre>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+const count = document.getElementById("count");
+function show(nextIndex) {
+  index = (nextIndex + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  count.textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

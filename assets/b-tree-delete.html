@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>B Tree Delete</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1120px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{font-size:14px;color:var(--muted);margin-top:6px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tabs button.active{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 25%,transparent)}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.12fr .88fr;gap:14px}.explain{font-size:18px;line-height:1.65;min-height:116px}.code{font:14px/1.45 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;overflow:auto}svg{width:100%;height:auto}.edge{stroke:#64748b;stroke-width:2}.node{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.hot{fill:#fee2e2;stroke:var(--red);stroke-width:4}.ok{fill:#dcfce7;stroke:var(--green);stroke-width:4}.text{fill:var(--text);font-weight:700;font-size:15px;text-anchor:middle}@media(prefers-color-scheme:dark){.edge{stroke:#94a3b8}.node{fill:#172554;stroke:#38bdf8}.hot{fill:#3f1d1d}.ok{fill:#12351f}}@media(max-width:820px){.stage{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>5 阶 B 树删除：三层树上的借、合并、替代</h1>
+        <div class="hint">5 阶：除根外每个结点至少 2 个关键字，最多 4 个关键字。</div>
+      </div>
+      <div><button id="prev">上一步</button> <button id="next">下一步</button></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="card">
+      <div class="stage">
+        <svg viewBox="0 0 700 470" id="tree"></svg>
+        <div>
+          <div class="explain" id="explain"></div>
+          <pre class="code" id="code"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const cases = {
+      borrow: {
+        name: "兄弟够借",
+        code: "删除后若终端结点低于下限：\n1. 先看相邻兄弟是否超过下限。\n2. 若右兄弟够借：\n   父结点分隔关键字下移；\n   右兄弟最小关键字上移到父结点。\n3. 若左兄弟够借则对称处理。\n4. 借完后父结点仍承担区间分隔作用。",
+        steps: [
+          { text: "初始是一棵合法三层 5 阶 B 树。删除 55 后，终端结点只剩 60，低于下限 2；它的右兄弟 75、80、82 有 3 个关键字，够借。", nodes: [
+            ["50",350,55,"node"],["20 35",185,155,"node"],["70 85",515,155,"node"],
+            ["5 10",70,315,"node"],["25 30",185,315,"node"],["40 45",300,315,"node"],
+            ["60",410,315,"hot"],["75 80 82",525,315,"ok"],["90 95",640,315,"node"]
+          ], edges: [["50","20 35"],["50","70 85"],["20 35","5 10"],["20 35","25 30"],["20 35","40 45"],["70 85","60"],["70 85","75 80 82"],["70 85","90 95"]]},
+          { text: "从右兄弟借：父结点中的 70 下移到左侧缺少结点；右兄弟最小关键字 75 上移，替代父结点中的 70。", nodes: [
+            ["50",350,55,"node"],["20 35",185,155,"node"],["75 85",515,155,"ok"],
+            ["5 10",70,315,"node"],["25 30",185,315,"node"],["40 45",300,315,"node"],
+            ["60 70",410,315,"ok"],["80 82",525,315,"node"],["90 95",640,315,"node"]
+          ], edges: [["50","20 35"],["50","75 85"],["20 35","5 10"],["20 35","25 30"],["20 35","40 45"],["75 85","60 70"],["75 85","80 82"],["75 85","90 95"]]}
+        ]
+      },
+      merge: {
+        name: "合并并向上",
+        code: "若相邻兄弟也只有下限个关键字：\n1. 不能借，只能合并。\n2. 缺少结点 + 父分隔关键字 + 兄弟结点 合成一个结点。\n3. 父结点少一个关键字和一个孩子。\n4. 若父结点低于下限，继续向上处理。\n5. 若根被合并为空，删除旧根，合并结点成为新根。",
+        steps: [
+          { text: "删除 55 后，终端结点只剩 60，低于下限。右兄弟 75、80 只有 2 个关键字，刚好是下限，不够借。", nodes: [
+            ["50",350,55,"node"],["20 35",185,155,"node"],["70 85",515,155,"node"],
+            ["5 10",70,315,"node"],["25 30",185,315,"node"],["40 45",300,315,"node"],
+            ["60",410,315,"hot"],["75 80",525,315,"hot"],["90 95",640,315,"node"]
+          ], edges: [["50","20 35"],["50","70 85"],["20 35","5 10"],["20 35","25 30"],["20 35","40 45"],["70 85","60"],["70 85","75 80"],["70 85","90 95"]]},
+          { text: "把父结点中的 70 拉下来，与 60、75、80 合并。右侧内部结点从 70、85 变成 85，只剩 1 个关键字，作为非根内部结点又低于下限。", nodes: [
+            ["50",350,55,"node"],["20 35",185,155,"node"],["85",515,155,"hot"],
+            ["5 10",70,315,"node"],["25 30",185,315,"node"],["40 45",300,315,"node"],
+            ["60 70 75 80",455,315,"ok"],["90 95",610,315,"node"]
+          ], edges: [["50","20 35"],["50","85"],["20 35","5 10"],["20 35","25 30"],["20 35","40 45"],["85","60 70 75 80"],["85","90 95"]]},
+          { text: "右侧内部结点低于下限，左侧兄弟 20、35 也只有 2 个关键字，不够借。于是把左兄弟、根关键字 50、右侧结点 85 合并。", nodes: [
+            ["20 35 50 85",350,120,"ok"],
+            ["5 10",70,315,"node"],["25 30",210,315,"node"],["40 45",350,315,"node"],["60 70 75 80",500,315,"node"],["90 95",640,315,"node"]
+          ], edges: [["20 35 50 85","5 10"],["20 35 50 85","25 30"],["20 35 50 85","40 45"],["20 35 50 85","60 70 75 80"],["20 35 50 85","90 95"]]},
+          { text: "原根被合并到 0 个关键字，删除旧根。合并后的结点成为新根，树高从 3 层降为 2 层。", nodes: [
+            ["20 35 50 85",350,120,"ok"],
+            ["5 10",70,315,"node"],["25 30",210,315,"node"],["40 45",350,315,"node"],["60 70 75 80",500,315,"node"],["90 95",640,315,"node"]
+          ], edges: [["20 35 50 85","5 10"],["20 35 50 85","25 30"],["20 35 50 85","40 45"],["20 35 50 85","60 70 75 80"],["20 35 50 85","90 95"]]}
+        ]
+      },
+      internal: {
+        name: "非终端结点",
+        code: "若删除关键字在非终端结点：\n1. 用直接前驱或直接后继替代。\n2. 直接后继：右侧子树中最左下关键字。\n3. 替代后，到终端结点删除原后继。\n4. 若终端结点低于下限，再进入借或合并流程。",
+        steps: [
+          { text: "删除内部关键字 70。它在非终端结点中，不能直接挖空；先找它的直接后继，也就是右侧子树中最左下的关键字 75。", nodes: [
+            ["50",350,55,"node"],["20 35",185,155,"node"],["70 85",515,155,"hot"],
+            ["5 10",70,315,"node"],["25 30",185,315,"node"],["40 45",300,315,"node"],
+            ["55 60",410,315,"node"],["75 80 82",525,315,"ok"],["90 95",640,315,"node"]
+          ], edges: [["50","20 35"],["50","70 85"],["20 35","5 10"],["20 35","25 30"],["20 35","40 45"],["70 85","55 60"],["70 85","75 80 82"],["70 85","90 95"]]},
+          { text: "用 75 替代内部关键字 70；然后在终端结点中删除原来的 75。", nodes: [
+            ["50",350,55,"node"],["20 35",185,155,"node"],["75 85",515,155,"ok"],
+            ["5 10",70,315,"node"],["25 30",185,315,"node"],["40 45",300,315,"node"],
+            ["55 60",410,315,"node"],["80 82",525,315,"node"],["90 95",640,315,"node"]
+          ], edges: [["50","20 35"],["50","75 85"],["20 35","5 10"],["20 35","25 30"],["20 35","40 45"],["75 85","55 60"],["75 85","80 82"],["75 85","90 95"]]},
+          { text: "删除原后继后，终端结点还剩 80、82，未低于下限，删除结束。", nodes: [
+            ["50",350,55,"node"],["20 35",185,155,"node"],["75 85",515,155,"node"],
+            ["5 10",70,315,"node"],["25 30",185,315,"node"],["40 45",300,315,"node"],
+            ["55 60",410,315,"node"],["80 82",525,315,"ok"],["90 95",640,315,"node"]
+          ], edges: [["50","20 35"],["50","75 85"],["20 35","5 10"],["20 35","25 30"],["20 35","40 45"],["75 85","55 60"],["75 85","80 82"],["75 85","90 95"]]}
+        ]
+      }
+    };
+    let cur="borrow",idx=0;
+    const tabs=document.getElementById("tabs");
+    for(const k of Object.keys(cases)){const b=document.createElement("button");b.textContent=cases[k].name;b.dataset.k=k;b.onclick=()=>{cur=k;idx=0;draw()};tabs.appendChild(b)}
+    function draw(){
+      const data=cases[cur],s=data.steps[idx],svg=document.getElementById("tree"),map=new Map(s.nodes.map(n=>[n[0],n]));
+      document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.k===cur));
+      svg.innerHTML="";
+      for(const [a,b] of s.edges){const p=map.get(a),q=map.get(b);svg.innerHTML+=`<line class="edge" x1="${p[1]}" y1="${p[2]+25}" x2="${q[1]}" y2="${q[2]-25}"/>`;}
+      for(const [name,x,y,cls] of s.nodes){const w=Math.max(74,name.length*10+30);svg.innerHTML+=`<rect class="${cls}" x="${x-w/2}" y="${y-25}" width="${w}" height="50" rx="8"/><text class="text" x="${x}" y="${y+6}">${name}</text>`;}
+      document.getElementById("explain").textContent=s.text;document.getElementById("code").textContent=data.code;
+    }
+    document.getElementById("prev").onclick=()=>{idx=Math.max(0,idx-1);draw()};
+    document.getElementById("next").onclick=()=>{idx=Math.min(cases[cur].steps.length-1,idx+1);draw()};
+    draw();
+  </script>
+</body>
+</html>

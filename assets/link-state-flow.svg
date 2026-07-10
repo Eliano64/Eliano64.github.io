@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="250" viewBox="0 0 980 250" role="img" aria-labelledby="title desc">
+  <title id="title">Link state routing flow</title>
+  <desc id="desc">Link state routing discovers neighbors, measures costs, floods LSAs, builds LSDB and computes shortest paths.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #172033; }
+    .box { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 10; }
+    .hot { fill: #fff7ed; stroke: #ea580c; }
+    .arrow { stroke: #475569; stroke-width: 2.5; marker-end: url(#arrow); }
+    .label { font-size: 17px; font-weight: 700; }
+    .small { font-size: 14px; }
+    @media (prefers-color-scheme: dark) {
+      text { fill: #e5e7eb; }
+      .box { fill: #111827; stroke: #94a3b8; }
+      .hot { fill: #2b1708; stroke: #fb923c; }
+      .arrow { stroke: #cbd5e1; }
+    }
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker></defs>
+  <text x="490" y="35" text-anchor="middle" class="label">链路状态路由选择的基本过程</text>
+  <rect x="35" y="85" width="150" height="80" class="box"/>
+  <text x="110" y="116" text-anchor="middle" class="label">发现邻居</text>
+  <text x="110" y="143" text-anchor="middle" class="small">Hello 分组</text>
+  <line x1="185" y1="125" x2="225" y2="125" class="arrow"/>
+  <rect x="225" y="85" width="150" height="80" class="box"/>
+  <text x="300" y="116" text-anchor="middle" class="label">测量代价</text>
+  <text x="300" y="143" text-anchor="middle" class="small">链路状态</text>
+  <line x1="375" y1="125" x2="415" y2="125" class="arrow"/>
+  <rect x="415" y="85" width="150" height="80" class="box hot"/>
+  <text x="490" y="116" text-anchor="middle" class="label">洪泛 LSA</text>
+  <text x="490" y="143" text-anchor="middle" class="small">让全区域知道变化</text>
+  <line x1="565" y1="125" x2="605" y2="125" class="arrow"/>
+  <rect x="605" y="85" width="150" height="80" class="box"/>
+  <text x="680" y="116" text-anchor="middle" class="label">形成 LSDB</text>
+  <text x="680" y="143" text-anchor="middle" class="small">拓扑数据库一致</text>
+  <line x1="755" y1="125" x2="795" y2="125" class="arrow"/>
+  <rect x="795" y="85" width="150" height="80" class="box"/>
+  <text x="870" y="116" text-anchor="middle" class="label">计算最短路</text>
+  <text x="870" y="143" text-anchor="middle" class="small">生成路由表</text>
+  <text x="490" y="210" text-anchor="middle" class="small">链路状态变化时重新洪泛；稳定时只需要维护邻居和定期更新</text>
+</svg>

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="540" viewBox="0 0 1080 540" role="img" aria-labelledby="title desc">
+  <title id="title">普通临界区与内核临界区的调度差异</title>
+  <desc id="desc">普通临界区访问用户资源时可以调度；内核临界区访问内核管理数据结构时通常不能调度。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --normal:#dcfce7; --kernel:#fee2e2; --data:#fff7ed; --cpu:#dbeafe; --bad:#b91c1c;
+      --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --normal:#1f4036; --kernel:#4a2528; --data:#3b3025; --cpu:#223553; --bad:#ff8aa0;
+        --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:26px; font-weight:700; }
+    .panel { fill:var(--panel); stroke:var(--line); stroke-width:1.5; rx:16; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .head { fill:var(--text); font-size:20px; font-weight:700; }
+    .text { fill:var(--text); font-size:14px; }
+    .muted { fill:var(--muted); font-size:13px; }
+    .box { stroke:var(--line); stroke-width:1.3; rx:12; }
+    .arrow { stroke:var(--line); stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+    .bad { stroke:var(--bad); stroke-width:2.4; fill:none; stroke-dasharray:8 6; marker-end:url(#arrowBad); }
+    .badText { fill:var(--bad); font-size:14px; font-weight:700; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)"/>
+    </marker>
+    <marker id="arrowBad" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--bad)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="540" y="42" text-anchor="middle">为什么普通临界区可以调度，内核临界区通常不能</text>
+
+  <g transform="translate(48 84)">
+    <rect class="panel" x="0" y="0" width="472" height="390"/>
+    <text class="head" x="236" y="40" text-anchor="middle">普通临界区</text>
+    <text class="muted" x="236" y="66" text-anchor="middle">访问普通临界资源，例如打印机</text>
+
+    <rect class="box" x="62" y="108" width="148" height="58" fill="var(--cpu)"/>
+    <text class="text" x="136" y="142" text-anchor="middle">进程 A 运行</text>
+    <rect class="box" x="262" y="108" width="148" height="58" fill="var(--data)"/>
+    <text class="text" x="336" y="142" text-anchor="middle">打印机被占用</text>
+    <path class="arrow" d="M210 137 L262 137"/>
+
+    <rect class="box" x="62" y="228" width="148" height="58" fill="var(--normal)"/>
+    <text class="text" x="136" y="262" text-anchor="middle">发生调度</text>
+    <rect class="box" x="262" y="228" width="148" height="58" fill="var(--cpu)"/>
+    <text class="text" x="336" y="262" text-anchor="middle">进程 B 运行</text>
+    <path class="arrow" d="M136 166 L136 228"/>
+    <path class="arrow" d="M210 257 L262 257"/>
+
+    <text class="muted" x="236" y="344" text-anchor="middle">打印机慢，但不直接阻塞内核调度数据结构。</text>
+    <text class="muted" x="236" y="370" text-anchor="middle">若一直禁止调度，CPU 可能被白白浪费。</text>
+  </g>
+
+  <g transform="translate(560 84)">
+    <rect class="panel" x="0" y="0" width="472" height="390"/>
+    <text class="head" x="236" y="40" text-anchor="middle">内核程序临界区</text>
+    <text class="muted" x="236" y="66" text-anchor="middle">访问内核管理数据结构，例如就绪队列</text>
+
+    <rect class="box" x="54" y="100" width="154" height="58" fill="var(--cpu)"/>
+    <text class="text" x="131" y="134" text-anchor="middle">内核代码运行</text>
+    <rect class="box" x="264" y="100" width="154" height="58" fill="var(--kernel)"/>
+    <text class="text" x="341" y="134" text-anchor="middle">锁住就绪队列</text>
+    <path class="arrow" d="M208 129 L264 129"/>
+
+    <rect class="box" x="54" y="228" width="154" height="58" fill="var(--cpu)"/>
+    <text class="text" x="131" y="262" text-anchor="middle">想进行调度</text>
+    <rect class="box" x="264" y="228" width="154" height="58" fill="var(--data)"/>
+    <text class="text" x="341" y="262" text-anchor="middle">调度也要访问队列</text>
+    <path class="bad" d="M131 158 L131 228"/>
+    <path class="bad" d="M208 257 L264 257"/>
+
+    <text class="badText" x="236" y="326" text-anchor="middle">还没解锁就切换，调度程序可能卡在同一个内核资源上</text>
+    <text class="muted" x="236" y="370" text-anchor="middle">所以内核临界区通常要求尽快执行完再调度。</text>
+  </g>
+</svg>

@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 520" role="img" aria-labelledby="title desc">
+  <title id="title">Insertion sorting methods overview</title>
+  <desc id="desc">A compact comparison of direct insertion sort, binary insertion sort, and shell sort.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --text: #111827;
+      --muted: #475569;
+      --line: #94a3b8;
+      --blue: #2563eb;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+      --shadow: rgba(15, 23, 42, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #64748b;
+        --blue: #60a5fa;
+        --green: #34d399;
+        --orange: #fbbf24;
+        --red: #f87171;
+        --shadow: rgba(0, 0, 0, .35);
+      }
+    }
+    svg { background: var(--bg); }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--text); }
+    .title { font-size: 24px; font-weight: 700; }
+    .sub { font-size: 14px; fill: var(--muted); }
+    .card { fill: var(--panel); stroke: var(--line); stroke-width: 1.4; filter: drop-shadow(0 8px 12px var(--shadow)); }
+    .head { font-size: 18px; font-weight: 700; }
+    .body { font-size: 14px; fill: var(--muted); }
+    .pill { fill: none; stroke-width: 2; }
+    .arrow { fill: none; stroke: var(--line); stroke-width: 2.2; marker-end: url(#arrow); }
+    .b { fill: var(--blue); }
+    .g { fill: var(--green); }
+    .o { fill: var(--orange); }
+    .r { fill: var(--red); }
+    .box { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; rx: 8; }
+    .boxText { font-size: 16px; font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="48" class="title">插入类排序的共同骨架</text>
+  <text x="40" y="76" class="sub">把一个待排元素插入到前面某个“已按规则有序”的区域中；差别在于“有序区域如何定义、插入位置如何找”。</text>
+
+  <rect x="40" y="110" width="280" height="330" rx="14" class="card"/>
+  <text x="68" y="148" class="head">直接插入排序</text>
+  <text x="68" y="178" class="body">前缀 A[0..i-1] 已有序</text>
+  <text x="68" y="204" class="body">从右向左比较并后移</text>
+  <text x="68" y="230" class="body">找到位置后放入 temp</text>
+  <text x="68" y="258" class="body">稳定；顺序表 O(n²)</text>
+  <g transform="translate(68 302)">
+    <rect x="0" y="0" width="42" height="42" class="box"/><text x="21" y="27" text-anchor="middle" class="boxText">13</text>
+    <rect x="48" y="0" width="42" height="42" class="box"/><text x="69" y="27" text-anchor="middle" class="boxText">38</text>
+    <rect x="96" y="0" width="42" height="42" class="box"/><text x="117" y="27" text-anchor="middle" class="boxText">49</text>
+    <rect x="144" y="0" width="42" height="42" class="box"/><text x="165" y="27" text-anchor="middle" class="boxText">76</text>
+    <rect x="192" y="0" width="42" height="42" class="box"/><text x="213" y="27" text-anchor="middle" class="boxText">97</text>
+    <path d="M205 -18 C164 -40 91 -40 50 -18" class="arrow"/>
+    <text x="128" y="-26" text-anchor="middle" class="sub">较大元素右移</text>
+  </g>
+
+  <rect x="350" y="110" width="280" height="330" rx="14" class="card"/>
+  <text x="378" y="148" class="head">折半插入排序</text>
+  <text x="378" y="178" class="body">先在有序前缀中折半定位</text>
+  <text x="378" y="204" class="body">low 是最终插入位置</text>
+  <text x="378" y="230" class="body">相等时向右找，保持稳定</text>
+  <text x="378" y="258" class="body">比较减少；移动不变</text>
+  <g transform="translate(378 302)">
+    <rect x="0" y="0" width="42" height="42" class="box"/><text x="21" y="27" text-anchor="middle" class="boxText">20</text>
+    <rect x="48" y="0" width="42" height="42" class="box"/><text x="69" y="27" text-anchor="middle" class="boxText">30</text>
+    <rect x="96" y="0" width="42" height="42" class="box"/><text x="117" y="27" text-anchor="middle" class="boxText">40</text>
+    <rect x="144" y="0" width="42" height="42" class="box"/><text x="165" y="27" text-anchor="middle" class="boxText">60</text>
+    <rect x="192" y="0" width="42" height="42" class="box"/><text x="213" y="27" text-anchor="middle" class="boxText">70</text>
+    <path d="M21 58 L21 44" class="arrow"/><text x="21" y="78" text-anchor="middle" class="sub">low</text>
+    <path d="M117 58 L117 44" class="arrow"/><text x="117" y="78" text-anchor="middle" class="sub">mid</text>
+    <path d="M213 58 L213 44" class="arrow"/><text x="213" y="78" text-anchor="middle" class="sub">high</text>
+  </g>
+
+  <rect x="660" y="110" width="280" height="330" rx="14" class="card"/>
+  <text x="688" y="148" class="head">希尔排序</text>
+  <text x="688" y="178" class="body">按增量 d 分成若干子表</text>
+  <text x="688" y="204" class="body">每个子表做直接插入</text>
+  <text x="688" y="230" class="body">逐步缩小 d，最后 d=1</text>
+  <text x="688" y="258" class="body">不稳定；仅适合顺序表</text>
+  <g transform="translate(688 302)">
+    <rect x="0" y="0" width="36" height="36" class="box"/><text x="18" y="24" text-anchor="middle" class="boxText">49</text>
+    <rect x="42" y="0" width="36" height="36" class="box"/><text x="60" y="24" text-anchor="middle" class="boxText">38</text>
+    <rect x="84" y="0" width="36" height="36" class="box"/><text x="102" y="24" text-anchor="middle" class="boxText">65</text>
+    <rect x="126" y="0" width="36" height="36" class="box"/><text x="144" y="24" text-anchor="middle" class="boxText">97</text>
+    <rect x="168" y="0" width="36" height="36" class="box"/><text x="186" y="24" text-anchor="middle" class="boxText">76</text>
+    <rect x="210" y="0" width="36" height="36" class="box"/><text x="228" y="24" text-anchor="middle" class="boxText">13</text>
+    <path d="M18 -10 C62 -42 142 -42 186 -10" class="arrow"/>
+    <path d="M60 50 C104 82 184 82 228 50" class="arrow"/>
+    <text x="123" y="-34" text-anchor="middle" class="sub">d=4 同组</text>
+  </g>
+
+  <text x="40" y="485" class="sub">考点抓手：直接插入看“后移”；折半插入看“low 定位 + 相等向右”；希尔排序看“分组插入 + 增量序列 + 不稳定”。</text>
+</svg>

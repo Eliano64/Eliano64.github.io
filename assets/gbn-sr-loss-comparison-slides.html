@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GBN 与 SR 丢帧对比</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--amber:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:1120px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.title{font-size:28px;font-weight:800}.sub{font-size:15px;color:var(--muted);margin-top:6px}.controls{display:flex;gap:8px;flex-wrap:wrap}.controls button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer}.controls button.active{background:var(--blue);border-color:var(--blue);color:#fff}.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.card{border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:14px}.head{font-size:22px;font-weight:800;margin-bottom:6px}.desc{font-size:17px;line-height:1.65;min-height:86px}.desc b{color:var(--blue)}svg{width:100%;height:360px}.axis{stroke:var(--line);stroke-width:2}.msg{stroke:var(--blue);stroke-width:4;marker-end:url(#arrowB)}.ack{stroke:var(--green);stroke-width:4;marker-end:url(#arrowG)}.bad{stroke:var(--red);stroke-width:4;stroke-dasharray:8 6;marker-end:url(#arrowR)}.drop{fill:var(--red);font-weight:900}.cache{fill:var(--amber);font-weight:900}.t{fill:var(--text);font-size:15px;font-weight:700}.m{fill:var(--muted);font-size:14px}
+@media(max-width:900px){.top{display:block}.controls{margin-top:12px}.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top">
+<div><div class="title">同一丢帧场景：接收窗口大小决定处理方式</div><div class="sub">发送窗口内连续发送 0,1,2,3，其中 1 丢失或出错。</div></div>
+<div class="controls"><button data-step="0" class="active">发送</button><button data-step="1">接收处理</button><button data-step="2">重传</button><button data-step="3">交付</button></div>
+</div>
+<section class="cols">
+<article class="card"><div class="head">GBN：接收窗口为 1</div><svg id="gbn" viewBox="0 0 520 360"></svg><div class="desc" id="gbnText"></div></article>
+<article class="card"><div class="head">SR：接收窗口大于 1</div><svg id="sr" viewBox="0 0 520 360"></svg><div class="desc" id="srText"></div></article>
+</section>
+</main>
+<script>
+const NS="http://www.w3.org/2000/svg";
+function base(svg){
+ svg.innerHTML='<defs><marker id="arrowB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--blue)"/></marker><marker id="arrowG" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--green)"/></marker><marker id="arrowR" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--red)"/></marker></defs>';
+ [["line",70,30,70,330],["line",450,30,450,330]].forEach(a=>{const l=document.createElementNS(NS,"line");l.setAttribute("x1",a[1]);l.setAttribute("y1",a[2]);l.setAttribute("x2",a[3]);l.setAttribute("y2",a[4]);l.setAttribute("class","axis");svg.appendChild(l);});
+ txt(svg,70,22,"发送方","t","middle");txt(svg,450,22,"接收方","t","middle");
+}
+function line(svg,cls,x1,y1,x2,y2,label,dy=-8){const l=document.createElementNS(NS,"line");l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);l.setAttribute("class",cls);svg.appendChild(l);txt(svg,(x1+x2)/2,(y1+y2)/2+dy,label,cls==="bad"?"drop":"t","middle");}
+function txt(svg,x,y,s,cls="t",anchor="start"){const t=document.createElementNS(NS,"text");t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("class",cls);t.setAttribute("text-anchor",anchor);t.textContent=s;svg.appendChild(t);}
+const states=[
+ {gbn:"发送方连续发出 0,1,2,3。1 在链路上丢失或出错。", sr:"发送方连续发出 0,1,2,3。1 在链路上丢失或出错。"},
+ {gbn:"接收方只期待 1。2、3 虽然到达，但失序，<b>直接丢弃</b>。", sr:"2、3 落在接收窗口内，接收方先<b>缓存失序分组</b>并分别确认。"},
+ {gbn:"发送方从 1 开始回退重传：1、2、3 都要重传。", sr:"发送方只重传没有被确认的 1。"},
+ {gbn:"1、2、3 重传后按序到达，接收方才能继续交付。", sr:"1 到达后，接收方把缓存的 2、3 接上，一次按序交付。"}
+];
+function render(i){
+ const g=document.getElementById("gbn"), s=document.getElementById("sr");base(g);base(s);
+ line(g,"msg",70,55,450,90,"0");line(g,"bad",70,90,310,118,"1 丢失");line(g,"msg",70,125,450,160,"2");line(g,"msg",70,160,450,195,"3");
+ line(s,"msg",70,55,450,90,"0");line(s,"bad",70,90,310,118,"1 丢失");line(s,"msg",70,125,450,160,"2");line(s,"msg",70,160,450,195,"3");
+ if(i>=1){txt(g,450,178,"丢弃 2","drop","middle");txt(g,450,213,"丢弃 3","drop","middle");line(g,"ack",450,102,70,142,"ACK0");txt(s,450,178,"缓存 2","cache","middle");txt(s,450,213,"缓存 3","cache","middle");line(s,"ack",450,102,70,142,"ACK0");line(s,"ack",450,178,70,222,"ACK2");line(s,"ack",450,213,70,260,"ACK3");}
+ if(i>=2){line(g,"msg",70,230,450,260,"重传 1");line(g,"msg",70,260,450,292,"重传 2");line(g,"msg",70,292,450,324,"重传 3");line(s,"msg",70,250,450,288,"只重传 1");}
+ if(i>=3){txt(g,450,345,"交付 1,2,3","t","middle");txt(s,450,320,"交付 1,2,3","t","middle");}
+ document.getElementById("gbnText").innerHTML=states[i].gbn;document.getElementById("srText").innerHTML=states[i].sr;document.querySelectorAll("button").forEach((b,k)=>b.classList.toggle("active",k===i));
+}
+document.querySelectorAll("button").forEach((b,i)=>b.addEventListener("click",()=>render(i)));render(0);
+</script>
+</body>
+</html>

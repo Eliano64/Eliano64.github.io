@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="680" viewBox="0 0 1040 680" role="img">
+  <title>TCP congestion window cwnd curve — slow start + congestion avoidance + timeout</title>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .t{font-size:22px;font-weight:700;fill:#111827}
+    .sh{font-size:16px;font-weight:700;fill:#111827}
+    .ss{font-size:12px;fill:#4b5563}
+    .sm{font-size:14px;font-weight:700;fill:#111827}
+    .sw{font-size:13px;font-weight:700;fill:#fff}
+    .box{fill:#fff;stroke:#d1d5db;stroke-width:1.5}
+    .axis{stroke:#9ca3af;stroke-width:1.5}
+    .grid{stroke:#e5e7eb;stroke-width:0.8;stroke-dasharray:4,4}
+    .cv-ss{fill:none;stroke:#059669;stroke-width:3}
+    .cv-ca{fill:none;stroke:#2563eb;stroke-width:3}
+    .cv-to{fill:none;stroke:#dc2626;stroke-width:1.5;stroke-dasharray:6,3}
+    .cv-ss2{fill:none;stroke:#059669;stroke-width:3}
+    .cv-ca2{fill:none;stroke:#2563eb;stroke-width:3}
+    .dot{fill:#059669}
+    .dot-b{fill:#2563eb}
+    .dot-r{fill:#dc2626}
+    .tag-g{fill:#059669}
+    .tag-b{fill:#2563eb}
+    .tag-r{fill:#dc2626}
+    .tag-a{fill:#d97706}
+    .f-blue{fill:#eff6ff;stroke:#2563eb;stroke-width:1.5}
+    .f-green{fill:#ecfdf5;stroke:#059669;stroke-width:1.5}
+    .f-red{fill:#fef2f2;stroke:#dc2626;stroke-width:1.5}
+    .f-amber{fill:#fff7ed;stroke:#d97706;stroke-width:1.5}
+    .lb-blue{fill:#dbeafe}
+    .lb-green{fill:#d1fae5}
+    .lb-red{fill:#fee2e2}
+    @media(prefers-color-scheme:dark){
+      .t,.sh,.sm{fill:#e5e7eb}
+      .ss{fill:#9ca3af}
+      .box{fill:#111827;stroke:#374151}
+      .axis{stroke:#4b5563}
+      .grid{stroke:#1f2937}
+      .cv-ss{stroke:#10b981}
+      .cv-ca{stroke:#3b82f6}
+      .cv-ss2{stroke:#10b981}
+      .cv-ca2{stroke:#3b82f6}
+      .cv-to{stroke:#f87171}
+      .dot{fill:#10b981}
+      .dot-b{fill:#3b82f6}
+      .dot-r{fill:#f87171}
+      .tag-g{fill:#047857}
+      .tag-b{fill:#1d4ed8}
+      .tag-r{fill:#b91c1c}
+      .tag-a{fill:#b45309}
+      .f-blue{fill:#0f1d33;stroke:#1e40af}
+      .f-green{fill:#0a1e14;stroke:#047857}
+      .f-red{fill:#2e0a0a;stroke:#991b1b}
+      .f-amber{fill:#2a1f06;stroke:#92400e}
+      .lb-blue{fill:#0c1929}
+      .lb-green{fill:#071a10}
+      .lb-red{fill:#220808}
+    }
+    /* contrast-audit-fix */
+  .contrast-label{fill:#fff;paint-order:stroke fill;stroke:#065f46;stroke-width:2px}@media(prefers-color-scheme:dark){.contrast-label{stroke:#052e16}}
+  </style>
+
+  <text x="520" y="34" text-anchor="middle" class="t">TCP 拥塞窗口 cwnd 变化曲线 — 慢开始 + 拥塞避免（单位：MSS）</text>
+
+  <!-- Plot area: x in [80,960], y in [70,450] → X maps 0-28 to 880px, Y maps 0-28 to 380px -->
+  <!-- Axes -->
+  <line x1="80" y1="450" x2="960" y2="450" class="axis"/>
+  <line x1="80" y1="70" x2="80" y2="450" class="axis"/>
+  <text x="960" y="470" text-anchor="middle" class="sh">传输轮次</text>
+  <text x="30" y="265" text-anchor="middle" class="sh" transform="rotate(-90,30,265)">cwnd (MSS)</text>
+
+  <!-- Y-axis grid and labels -->
+  <line x1="80" y1="422" x2="960" y2="422" class="grid"/> <!-- cwnd=2 → y=422 -->
+  <line x1="80" y1="382" x2="960" y2="382" class="grid"/> <!-- cwnd=6 → y=382... -->
+  <!-- I'll label key values -->
+  <text x="72" y="440" text-anchor="end" class="ss">1</text>
+  <text x="72" y="400" text-anchor="end" class="ss">4</text>
+  <text x="72" y="345" text-anchor="end" class="ss">8</text>
+  <text x="72" y="291" text-anchor="end" class="ss">12</text>
+  <text x="72" y="237" text-anchor="end" class="ss">16</text>
+  <text x="72" y="183" text-anchor="end" class="ss">20</text>
+  <text x="72" y="128" text-anchor="end" class="ss">24</text>
+
+  <!-- Horizontal reference lines -->
+  <line x1="82" y1="386" x2="960" y2="386" class="grid"/>
+  <line x1="82" y1="345" x2="960" y2="345" class="grid"/>
+  <line x1="82" y1="304" x2="960" y2="304" class="grid"/>
+  <line x1="82" y1="264" x2="960" y2="264" class="grid"/>
+  <line x1="82" y1="210" x2="960" y2="210" class="grid"/>
+  <line x1="82" y1="155" x2="960" y2="155" class="grid"/>
+
+  <!-- ssthresh reference lines -->
+  <line x1="82" y1="264" x2="350" y2="264" stroke="#d97706" stroke-width="2" stroke-dasharray="8,4"/>
+  <rect x="110" y="252" width="70" height="20" rx="3" class="tag-a"/>
+  <text x="145" y="266" text-anchor="middle" class="sw" style="font-size:10px;">ssthresh=16</text>
+
+  <!-- X-axis labels for key round numbers -->
+  <text x="142" y="468" text-anchor="middle" class="ss">2</text>
+  <text x="206" y="468" text-anchor="middle" class="ss">4</text>
+  <text x="270" y="468" text-anchor="middle" class="ss">6</text>
+  <text x="334" y="468" text-anchor="middle" class="ss">8</text>
+  <text x="398" y="468" text-anchor="middle" class="ss">10</text>
+  <text x="462" y="468" text-anchor="middle" class="ss">12</text>
+
+  <!-- === PHASE 1: Slow Start === -->
+  <!-- cwnd: 1→2 (r0→r1), 2→4 (r1→r2), 4→8 (r2→r3), 8→16 (r3→r4) -->
+  <!-- y(cwnd) = 450 - cwnd * (380/28) = 450 - cwnd*13.57 -->
+  <!-- x(round) = 80 + round * (880/26) = 80 + round*33.85 -->
+  <!-- r0: cwnd=1 → (80, 436) -->
+  <!-- r1: cwnd=2 → (114, 423) -->
+  <!-- r2: cwnd=4 → (148, 396) -->
+  <!-- r3: cwnd=8 → (182, 341) -->
+  <!-- r4: cwnd=16 → (215, 233) -->
+
+  <polyline points="80,436 114,423 148,396 182,341 215,233" class="cv-ss"/>
+  <circle cx="80" cy="436" r="4" class="dot"/>
+  <circle cx="114" cy="423" r="4" class="dot"/>
+  <circle cx="148" cy="396" r="4" class="dot"/>
+  <circle cx="182" cy="341" r="4" class="dot"/>
+  <circle cx="215" cy="233" r="5" class="dot"/>
+  <text x="215" y="223" text-anchor="middle" class="sm" fill="#059669">到达 ssthresh</text>
+  <text x="215" y="247" text-anchor="middle" class="ss" fill="#d97706">切换算法 ↓</text>
+
+  <!-- Slow start label -->
+  <rect x="100" y="90" width="130" height="26" rx="4" class="tag-g"/>
+  <text x="165" y="100" text-anchor="middle" class="sw" style="font-size:11px;">慢开始：指数增长</text>
+  <text x="165" y="115" text-anchor="middle" class="ss contrast-label">每收到 1 个 ACK → cwnd += 1</text>
+  <text x="165" y="130" text-anchor="middle" class="ss">每轮 cwnd 翻倍</text>
+
+  <!-- === PHASE 1: Congestion Avoidance === -->
+  <!-- cwnd grows +1 per round: 16→17(r5), 17→18(r6), ... 23→24(r12) -->
+  <!-- r5: cwnd=17 → (249, 219) -->
+  <!-- r6: cwnd=18 → (283, 206) -->
+  <!-- r7: cwnd=19 → (317, 192) -->
+  <!-- r8: cwnd=20 → (351, 179) -->
+  <!-- r9: cwnd=21 → (385, 165) -->
+  <!-- r10: cwnd=22 → (418, 152) -->
+  <!-- r11: cwnd=23 → (452, 138) -->
+  <!-- r12: cwnd=24 → (486, 124) -->
+
+  <polyline points="215,233 249,219 283,206 317,192 351,179 385,165 418,152 452,138 486,124" class="cv-ca"/>
+  <circle cx="249" cy="219" r="4" class="dot-b"/>
+  <circle cx="283" cy="206" r="4" class="dot-b"/>
+  <circle cx="317" cy="192" r="4" class="dot-b"/>
+  <circle cx="351" cy="179" r="4" class="dot-b"/>
+  <circle cx="385" cy="165" r="4" class="dot-b"/>
+  <circle cx="418" cy="152" r="4" class="dot-b"/>
+  <circle cx="452" cy="138" r="4" class="dot-b"/>
+  <circle cx="486" cy="124" r="5" class="dot-r"/>
+
+  <!-- Congestion avoidance label -->
+  <rect x="270" y="78" width="148" height="26" rx="4" class="tag-b"/>
+  <text x="344" y="93" text-anchor="middle" class="sw" style="font-size:11px;">拥塞避免：线性增长</text>
+  <text x="344" y="113" text-anchor="middle" class="ss" style="font-size:11px;">每经过 1 个 RTT → cwnd += 1</text>
+
+  <!-- === TIMEOUT === -->
+  <!-- r13: cwnd=1 → (520, 436) -->
+  <line x1="486" y1="124" x2="520" y2="436" class="cv-to"/>
+  <circle cx="520" cy="436" r="5" class="dot-r"/>
+
+  <!-- Timeout callout -->
+  <rect x="488" y="95" width="175" height="54" rx="5" class="f-red"/>
+  <text x="575" y="114" text-anchor="middle" class="sh" fill="#991b1b">⏱ 超时重传</text>
+  <text x="575" y="133" text-anchor="middle" class="ss">判断网络拥塞</text>
+  <text x="575" y="148" text-anchor="middle" class="ss">ssthresh ← 24/2 = 12</text>
+
+  <!-- === PHASE 2: Slow Start (restart) === -->
+  <!-- ssthresh=12, cwnd=1 -->
+  <!-- r13: cwnd=1 → (520, 436) -->
+  <!-- r14: cwnd=2 → (554, 423) -->
+  <!-- r15: cwnd=4 → (588, 396) -->
+  <!-- r16: cwnd=8 → (622, 341) -->
+  <!-- r17: cwnd=12 → (656, 287) -->
+
+  <polyline points="520,436 554,423 588,396 622,341 656,287" class="cv-ss2"/>
+  <circle cx="554" cy="423" r="4" class="dot"/>
+  <circle cx="588" cy="396" r="4" class="dot"/>
+  <circle cx="622" cy="341" r="4" class="dot"/>
+  <circle cx="656" cy="287" r="5" class="dot"/>
+  <text x="656" y="277" text-anchor="middle" class="sm" fill="#059669">到达新 ssthresh</text>
+
+  <!-- New ssthresh line -->
+  <line x1="82" y1="287" x2="700" y2="287" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="385" y="275" width="75" height="20" rx="3" class="tag-a"/>
+  <text x="422" y="289" text-anchor="middle" class="sw" style="font-size:10px;">ssthresh=12</text>
+
+  <!-- === PHASE 2: Congestion Avoidance === -->
+  <!-- cwnd: 12→13(r18), 13→14(r19), ... -->
+  <!-- r18: cwnd=13 → (690, 274) -->
+  <!-- r19: cwnd=14 → (724, 260) -->
+  <!-- r20: cwnd=15 → (758, 246) -->
+  <!-- r21: cwnd=16 → (792, 233) -->
+  <!-- r22: cwnd=17 → (826, 219) -->
+  <!-- r23: cwnd=18 → (860, 206) -->
+
+  <polyline points="656,287 690,274 724,260 758,246 792,233 826,219 860,206" class="cv-ca2"/>
+  <circle cx="690" cy="274" r="4" class="dot-b"/>
+  <circle cx="724" cy="260" r="4" class="dot-b"/>
+  <circle cx="758" cy="246" r="4" class="dot-b"/>
+  <circle cx="792" cy="233" r="4" class="dot-b"/>
+  <circle cx="826" cy="219" r="4" class="dot-b"/>
+  <circle cx="860" cy="206" r="4" class="dot-b"/>
+
+  <!-- Dotted continuation -->
+  <line x1="860" y1="206" x2="920" y2="190" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- Algorithm zone labels at bottom -->
+  <rect x="80" y="488" width="800" height="44" rx="5" class="box"/>
+  <rect x="90" y="496" width="160" height="28" rx="4" class="tag-g"/>
+  <text x="170" y="515" text-anchor="middle" class="sw" style="font-size:11px;">慢开始（Slow Start）</text>
+  <text x="340" y="495" text-anchor="middle" class="ss">cwnd &lt; ssthresh</text>
+  <text x="340" y="512" text-anchor="middle" class="ss" style="font-size:11px;">指数增长：每收到 1 ACK → cwnd += 1 MSS</text>
+
+  <line x1="460" y1="510" x2="480" y2="510" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="490" y="496" width="170" height="28" rx="4" class="tag-b"/>
+  <text x="575" y="515" text-anchor="middle" class="sw" style="font-size:11px;">拥塞避免（CA）</text>
+  <text x="755" y="495" text-anchor="middle" class="ss">cwnd &gt;= ssthresh</text>
+  <text x="755" y="512" text-anchor="middle" class="ss" style="font-size:11px;">线性增长：每 RTT → cwnd += 1 MSS</text>
+
+  <defs>
+    <marker id="ar" markerWidth="7" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="#9ca3af"/></marker>
+  </defs>
+
+  <!-- Summary rules at bottom -->
+  <rect x="80" y="548" width="880" height="52" rx="5" class="f-amber"/>
+  <text x="520" y="572" text-anchor="middle" class="sh" fill="#92400e">超时后的统一动作（Tahoe）</text>
+  <text x="520" y="592" text-anchor="middle" class="sm">ssthresh ← max( cwnd/2, 2×MSS )  ·  cwnd ← 1 MSS  ·  重新执行慢开始</text>
+
+  <!-- Legend -->
+  <rect x="80" y="615" width="880" height="48" rx="5" class="box"/>
+  <line x1="110" y1="639" x2="140" y2="639" class="cv-ss"/><circle cx="125" cy="639" r="3" class="dot"/><text x="148" y="643" class="ss">慢开始（指数）</text>
+  <line x1="280" y1="639" x2="310" y2="639" class="cv-ca"/><circle cx="295" cy="639" r="3" class="dot-b"/><text x="318" y="643" class="ss">拥塞避免（线性）</text>
+  <line x1="460" y1="639" x2="490" y2="639" class="cv-to"/><circle cx="475" cy="639" r="3" class="dot-r"/><text x="498" y="643" class="ss">超时后 cwnd 骤降</text>
+  <text x="700" y="643" class="ss">注意：讨论拥塞控制时 swnd = cwnd，窗口单位用 MSS 简化计算</text>
+</svg>

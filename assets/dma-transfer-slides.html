@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DMA Transfer Process</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --panel: #f8fafc;
+      --blue: #2563eb;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --fg: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #475569;
+        --panel: #111827;
+        --blue: #60a5fa;
+        --green: #34d399;
+        --orange: #fbbf24;
+        --red: #f87171;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 18px 22px 22px; }
+    header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 12px; }
+    h1 { margin: 0; font-size: 24px; letter-spacing: 0; }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--fg);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue); }
+    .stage {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 14px 16px 16px;
+      min-height: 610px;
+    }
+    svg { display: block; width: 100%; height: 500px; }
+    .caption { margin: 8px 4px 0; color: var(--muted); font-size: 15px; line-height: 1.55; }
+    .progress { color: var(--muted); min-width: 54px; text-align: center; font-size: 14px; }
+    .box { fill: var(--bg); stroke: var(--line); stroke-width: 2; }
+    .active { fill: color-mix(in srgb, var(--blue) 18%, var(--bg)); stroke: var(--blue); stroke-width: 3; }
+    .mem { fill: color-mix(in srgb, var(--green) 14%, var(--bg)); stroke: var(--green); stroke-width: 2; }
+    .device { fill: color-mix(in srgb, var(--orange) 16%, var(--bg)); stroke: var(--orange); stroke-width: 2; }
+    .warn { fill: color-mix(in srgb, var(--red) 12%, var(--bg)); stroke: var(--red); stroke-width: 2; }
+    .txt { fill: var(--fg); }
+    .muted { fill: var(--muted); }
+    .blue { stroke: var(--blue); stroke-width: 4; fill: none; marker-end: url(#blueArrow); }
+    .green { stroke: var(--green); stroke-width: 4; fill: none; marker-end: url(#greenArrow); }
+    .orange { stroke: var(--orange); stroke-width: 3; fill: none; marker-end: url(#orangeArrow); }
+    .red { stroke: var(--red); stroke-width: 3; fill: none; marker-end: url(#redArrow); stroke-dasharray: 8 6; }
+    .bus { stroke: var(--line); stroke-width: 8; stroke-linecap: round; }
+    .dim { opacity: .24; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>DMA 数据输入过程</h1>
+      <div class="controls">
+        <button id="prev" type="button">上一步</button>
+        <span class="progress" id="progress"></span>
+        <button id="next" type="button">下一步</button>
+      </div>
+    </header>
+    <section class="stage">
+      <svg viewBox="0 0 1080 500" role="img" aria-label="DMA 数据输入过程">
+        <defs>
+          <marker id="blueArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"></path></marker>
+          <marker id="greenArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--green)"></path></marker>
+          <marker id="orangeArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--orange)"></path></marker>
+          <marker id="redArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--red)"></path></marker>
+        </defs>
+
+        <line class="bus" x1="120" y1="258" x2="990" y2="258"></line>
+        <text class="muted" x="555" y="286" text-anchor="middle" font-size="13">系统总线 / 主存通路</text>
+
+        <g id="cpu" class="node">
+          <rect class="box" x="58" y="118" width="140" height="98" rx="8"></rect>
+          <text class="txt" x="128" y="154" text-anchor="middle" font-size="18" font-weight="700">CPU</text>
+          <text class="muted" x="128" y="181" text-anchor="middle" font-size="13">设置参数</text>
+        </g>
+        <g id="dma" class="node">
+          <rect class="box" x="318" y="95" width="300" height="252" rx="10"></rect>
+          <text class="txt" x="468" y="127" text-anchor="middle" font-size="19" font-weight="700">DMA 控制器</text>
+          <rect class="box" x="348" y="155" width="108" height="42" rx="5"></rect>
+          <text class="txt" x="402" y="181" text-anchor="middle" font-size="13">DR</text>
+          <rect class="box" x="480" y="155" width="108" height="42" rx="5"></rect>
+          <text class="txt" x="534" y="181" text-anchor="middle" font-size="13">MAR</text>
+          <rect class="box" x="348" y="222" width="108" height="42" rx="5"></rect>
+          <text class="txt" x="402" y="248" text-anchor="middle" font-size="13">DC</text>
+          <rect class="box" x="480" y="222" width="108" height="42" rx="5"></rect>
+          <text class="txt" x="534" y="248" text-anchor="middle" font-size="13">CR</text>
+          <rect class="box" x="378" y="292" width="180" height="36" rx="5"></rect>
+          <text class="muted" x="468" y="315" text-anchor="middle" font-size="12">控制与时序逻辑</text>
+        </g>
+        <g id="mem" class="node">
+          <rect class="mem" x="800" y="102" width="162" height="102" rx="8"></rect>
+          <text class="txt" x="881" y="141" text-anchor="middle" font-size="18" font-weight="700">主存缓冲区</text>
+          <text class="muted" x="881" y="169" text-anchor="middle" font-size="13">接收输入块</text>
+        </g>
+        <g id="dev" class="node">
+          <rect class="device" x="800" y="320" width="162" height="102" rx="8"></rect>
+          <text class="txt" x="881" y="359" text-anchor="middle" font-size="18" font-weight="700">块设备</text>
+          <text class="muted" x="881" y="387" text-anchor="middle" font-size="13">准备数据</text>
+        </g>
+
+        <path id="p-setup" class="orange hidden" d="M198 166 C245 166 260 210 318 210"></path>
+        <text id="t-setup" class="muted hidden" x="255" y="150" text-anchor="middle" font-size="13">方向 / 主存地址 / 设备地址 / 长度</text>
+
+        <path id="p-dev" class="orange hidden" d="M800 370 C710 370 690 310 618 310"></path>
+        <text id="t-dev" class="muted hidden" x="705" y="394" text-anchor="middle" font-size="13">设备数据就绪，提出 DMA 请求</text>
+
+        <path id="p-bus" class="red hidden" d="M468 95 C430 54 175 58 140 118"></path>
+        <text id="t-bus" class="muted hidden" x="324" y="58" text-anchor="middle" font-size="13">DMA 控制器申请总线，CPU 让出总线控制权</text>
+
+        <path id="p-data1" class="green hidden" d="M800 371 C700 360 650 260 618 176"></path>
+        <path id="p-data2" class="green hidden" d="M618 176 C705 145 740 152 800 153"></path>
+        <text id="t-data" class="muted hidden" x="704" y="225" text-anchor="middle" font-size="13">设备数据经 DMA 控制器写入主存</text>
+
+        <path id="p-update" class="blue hidden" d="M402 264 V292 M534 197 V222"></path>
+        <text id="t-update" class="muted hidden" x="468" y="380" text-anchor="middle" font-size="13">每传一次：主存地址自动修改，计数器递减</text>
+
+        <path id="p-irq" class="red hidden" d="M402 155 C340 78 190 82 140 118"></path>
+        <text id="t-irq" class="muted hidden" x="270" y="94" text-anchor="middle" font-size="13">块传送完成，DMA 发中断请求</text>
+      </svg>
+      <p class="caption" id="caption"></p>
+    </section>
+  </div>
+
+  <script>
+    const steps = [
+      {
+        node: "cpu",
+        show: ["p-setup", "t-setup"],
+        text: "CPU 做传送前预处理：把传输方向、主存起始地址、设备地址或端口、传送长度写入 DMA 控制器，然后启动 DMA。"
+      },
+      {
+        node: "dev",
+        show: ["p-dev", "t-dev"],
+        text: "设备准备好一个字或一小段数据后，先把数据送到控制器侧，并向 DMA 控制器提出 DMA 请求。"
+      },
+      {
+        node: "dma",
+        show: ["p-bus", "t-bus"],
+        text: "DMA 控制器向 CPU 或总线仲裁逻辑申请总线。CPU 在合适的边界让出总线，DMA 接管总线控制权。"
+      },
+      {
+        node: "mem",
+        show: ["p-data1", "p-data2", "t-data"],
+        text: "DMA 控制器控制一次数据传送。以输入为例，数据从设备侧进入 DMA 控制器，再直接写入主存缓冲区，不经过 CPU 寄存器。"
+      },
+      {
+        node: "dma",
+        show: ["p-update", "t-update"],
+        text: "每完成一次传送，DMA 控制器自动修改主存地址寄存器，并更新数据计数器。若计数未结束，继续等待下一次设备请求。"
+      },
+      {
+        node: "cpu",
+        show: ["p-irq", "t-irq"],
+        text: "整块数据传送完成后，DMA 控制器向 CPU 发中断。CPU 转入内核做后处理，例如检查状态、释放或提交缓冲区、唤醒等待进程。"
+      }
+    ];
+    let index = 0;
+    const nodes = Array.from(document.querySelectorAll(".node"));
+    const flowIds = ["p-setup","t-setup","p-dev","t-dev","p-bus","t-bus","p-data1","p-data2","t-data","p-update","t-update","p-irq","t-irq"];
+    const caption = document.getElementById("caption");
+    const progress = document.getElementById("progress");
+    function render() {
+      const step = steps[index];
+      nodes.forEach(group => {
+        const rect = group.querySelector("rect");
+        group.classList.toggle("dim", group.id !== step.node);
+        if (rect) {
+          rect.classList.remove("active");
+          if (group.id === step.node) rect.classList.add("active");
+        }
+      });
+      flowIds.forEach(id => document.getElementById(id).classList.add("hidden"));
+      step.show.forEach(id => document.getElementById(id).classList.remove("hidden"));
+      caption.textContent = step.text;
+      progress.textContent = `${index + 1} / ${steps.length}`;
+    }
+    document.getElementById("prev").addEventListener("click", () => {
+      index = (index + steps.length - 1) % steps.length;
+      render();
+    });
+    document.getElementById("next").addEventListener("click", () => {
+      index = (index + 1) % steps.length;
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Readers Writers Reader Flow</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --line: #cbd5e1;
+      --text: #172033;
+      --muted: #64748b;
+      --blue: #dbeafe;
+      --blue-line: #2563eb;
+      --red: #fee2e2;
+      --red-line: #dc2626;
+      --green: #dcfce7;
+      --green-line: #16a34a;
+      --yellow: #fef3c7;
+      --yellow-line: #d97706;
+      --code: #0f172a;
+      --code-bg: #f1f5f9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --line: #334155;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --blue: #1e3a8a;
+        --blue-line: #60a5fa;
+        --red: #7f1d1d;
+        --red-line: #f87171;
+        --green: #14532d;
+        --green-line: #4ade80;
+        --yellow: #713f12;
+        --yellow-line: #fbbf24;
+        --code: #e5e7eb;
+        --code-bg: #020617;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .deck {
+      width: 100%;
+      min-height: 690px;
+      padding: 28px 34px 24px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+    }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+    h1 { margin: 0; font-size: 30px; line-height: 1.2; }
+    .step { color: var(--muted); font-size: 18px; }
+    .stage {
+      display: grid;
+      grid-template-columns: 1.35fr 0.9fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+    .diagram, .explain {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .diagram { min-height: 470px; }
+    .process-svg { width: 100%; height: 470px; display: block; }
+    .shape { stroke-width: 2.5; transition: stroke .2s ease, stroke-width .2s ease, opacity .2s ease; }
+    .reader-shape { fill: var(--blue); stroke: var(--blue-line); }
+    .writer-shape { fill: var(--red); stroke: var(--red-line); }
+    .file-shape { fill: var(--green); stroke: var(--green-line); }
+    .sem-shape { fill: var(--yellow); stroke: var(--yellow-line); }
+    .counter-shape { fill: var(--bg); stroke: var(--line); }
+    .node text {
+      fill: var(--text);
+      font-size: 20px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .path { stroke: var(--muted); stroke-width: 3; fill: none; marker-end: url(#arrow); opacity: .35; transition: opacity .2s ease, stroke .2s ease; }
+    .path.on { stroke: var(--blue-line); opacity: 1; }
+    .node.blocked .shape { stroke: var(--red-line); stroke-width: 6; }
+    .node.active .shape { stroke: var(--green-line); stroke-width: 6; }
+    .dim { opacity: .38; }
+    .explain h2 { margin: 0 0 14px; font-size: 25px; }
+    .explain p { margin: 0 0 12px; font-size: 20px; line-height: 1.55; }
+    .state {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: var(--bg);
+      font-size: 18px;
+    }
+    code { color: var(--code); background: var(--code-bg); padding: 1px 5px; border-radius: 5px; }
+    .controls { display: flex; gap: 10px; justify-content: center; align-items: center; }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue-line); }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <h1>第一个读者上锁，最后一个读者解锁</h1>
+      <div class="step" id="stepLabel"></div>
+    </header>
+    <main class="stage">
+      <section class="diagram" aria-label="读者写者过程图">
+        <svg class="process-svg" viewBox="0 0 650 470" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <path id="pR1" class="path" d="M144 110 C224 110 274 108 345 103"/>
+          <path id="pR2" class="path" d="M144 208 C228 208 286 202 342 186"/>
+          <path id="pR3" class="path" d="M144 306 C228 306 290 286 330 255"/>
+          <path id="pFile1" class="path" d="M411 133 C418 158 418 184 418 214"/>
+          <path id="pFile2" class="path" d="M418 206 L418 214"/>
+          <path id="pW" class="path" d="M144 404 C232 404 288 350 330 296"/>
+          <g id="r1" class="node">
+            <rect class="shape reader-shape" x="58" y="84" width="86" height="52" rx="11"/>
+            <text x="101" y="110">R1</text>
+          </g>
+          <g id="r2" class="node">
+            <rect class="shape reader-shape" x="58" y="182" width="86" height="52" rx="11"/>
+            <text x="101" y="208">R2</text>
+          </g>
+          <g id="r3" class="node">
+            <rect class="shape reader-shape" x="58" y="280" width="86" height="52" rx="11"/>
+            <text x="101" y="306">R3</text>
+          </g>
+          <g id="w1" class="node">
+            <rect class="shape writer-shape" x="58" y="378" width="86" height="52" rx="11"/>
+            <text x="101" y="404">W1</text>
+          </g>
+          <g id="rw" class="node">
+            <rect class="shape sem-shape" x="348" y="74" width="126" height="58" rx="12"/>
+            <text id="rwText" x="411" y="103">rw = 1</text>
+          </g>
+          <g id="counter" class="node">
+            <rect class="shape counter-shape" x="335" y="164" width="180" height="42" rx="10"/>
+            <text id="counterText" x="425" y="185">count = 0</text>
+          </g>
+          <g id="file" class="node">
+            <rect class="shape file-shape" x="330" y="214" width="190" height="82" rx="12"/>
+            <text x="425" y="255">共享文件</text>
+          </g>
+          <g id="mutex" class="node">
+            <rect class="shape sem-shape" x="348" y="346" width="126" height="58" rx="12"/>
+            <text x="411" y="375">mutex = 1</text>
+          </g>
+        </svg>
+      </section>
+      <section class="explain">
+        <h2 id="title"></h2>
+        <p id="body1"></p>
+        <p id="body2"></p>
+        <div class="state">
+          <div class="box" id="s1"></div>
+          <div class="box" id="s2"></div>
+          <div class="box" id="s3"></div>
+        </div>
+      </section>
+    </main>
+    <nav class="controls">
+      <button id="prev" type="button">上一步</button>
+      <button id="next" type="button">下一步</button>
+    </nav>
+  </div>
+  <script>
+    const steps = [
+      {
+        title: "初始状态",
+        body1: "没有读者正在读，写者也没有占有共享文件。",
+        body2: "此时 <code>rw = 1</code>，表示文件访问权空闲；<code>count = 0</code>。",
+        state: ["rw = 1", "count = 0", "写者可申请"],
+        cls: {}
+      },
+      {
+        title: "R1 是第一个读者",
+        body1: "R1 进入时先互斥修改 <code>count</code>。因为修改前 <code>count == 0</code>，它负责执行 <code>P(rw)</code>。",
+        body2: "这一步把共享文件从写者手里锁住。后续写者必须等待读者组整体退出。",
+        state: ["rw = 0", "count = 1", "R1 正在读"],
+        cls: { r1: "active", rw: "active", file: "active", pR1: "on", pFile1: "on" }
+      },
+      {
+        title: "后续读者共享文件",
+        body1: "R2、R3 进入时只需要把 <code>count</code> 加一。因为 <code>count</code> 已经不是 0，它们不再执行 <code>P(rw)</code>。",
+        body2: "多个读者可以同时读同一个文件，关键是它们不修改文件内容。",
+        state: ["rw = 0", "count = 3", "R1/R2/R3 正在读"],
+        cls: { r1: "active", r2: "active", r3: "active", rw: "active", file: "active", pR1: "on", pR2: "on", pR3: "on", pFile1: "on", pFile2: "on" }
+      },
+      {
+        title: "写者在读者组外等待",
+        body1: "W1 到达后执行 <code>P(rw)</code>，但 <code>rw == 0</code>，所以它不能和读者同时访问文件。",
+        body2: "只要至少还有一个读者正在读，写者就必须等待。",
+        state: ["rw = 0", "count = 2", "W1 阻塞"],
+        cls: { r1: "dim", r2: "active", r3: "active", w1: "blocked", rw: "active", file: "active", pR2: "on", pR3: "on", pW: "on" }
+      },
+      {
+        title: "最后一个读者解锁",
+        body1: "读者退出时也要互斥修改 <code>count</code>。当最后一个读者使 <code>count</code> 变成 0 时，它负责执行 <code>V(rw)</code>。",
+        body2: "这一步把共享文件访问权还给等待队列，写者才可能继续执行。",
+        state: ["rw = 1", "count = 0", "唤醒写者"],
+        cls: { r1: "dim", r2: "dim", r3: "dim", w1: "active", rw: "active", file: "active", pW: "on" }
+      }
+    ];
+    const requestedStep = Number(new URLSearchParams(location.search).get("step"));
+    let i = Number.isFinite(requestedStep) ? Math.min(Math.max(requestedStep - 1, 0), steps.length - 1) : 0;
+    const ids = ["r1", "r2", "r3", "w1", "rw", "file", "mutex", "pR1", "pR2", "pR3", "pFile1", "pFile2", "pW"];
+    function render() {
+      const step = steps[i];
+      document.getElementById("stepLabel").textContent = `${i + 1} / ${steps.length}`;
+      document.getElementById("title").innerHTML = step.title;
+      document.getElementById("body1").innerHTML = step.body1;
+      document.getElementById("body2").innerHTML = step.body2;
+      document.getElementById("s1").textContent = step.state[0];
+      document.getElementById("s2").textContent = step.state[1];
+      document.getElementById("s3").textContent = step.state[2];
+      document.getElementById("rwText").textContent = step.state[0];
+      document.getElementById("counterText").textContent = step.state[1];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove("active", "blocked", "dim", "on");
+        if (step.cls[id]) step.cls[id].split(" ").forEach(c => el.classList.add(c));
+      });
+    }
+    document.getElementById("prev").addEventListener("click", () => { i = Math.max(0, i - 1); render(); });
+    document.getElementById("next").addEventListener("click", () => { i = Math.min(steps.length - 1, i + 1); render(); });
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600" role="img">
+  <title>Tail drop and global sync vs AQM/RED</title>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .t{font-size:22px;font-weight:700;fill:#111827}
+    .sh{font-size:16px;font-weight:700;fill:#111827}
+    .ss{font-size:12px;fill:#4b5563}
+    .sm{font-size:14px;font-weight:700;fill:#111827}
+    .sw{font-size:13px;font-weight:700;fill:#fff}
+    .box{fill:#fff;stroke:#d1d5db;stroke-width:1.5}
+    .f-blue{fill:#eff6ff;stroke:#2563eb;stroke-width:2}
+    .f-green{fill:#ecfdf5;stroke:#059669;stroke-width:2}
+    .f-red{fill:#fef2f2;stroke:#dc2626;stroke-width:2}
+    .f-amber{fill:#fff7ed;stroke:#d97706;stroke-width:2}
+    .tag-b{fill:#2563eb}
+    .tag-g{fill:#059669}
+    .tag-r{fill:#dc2626}
+    .tag-a{fill:#d97706}
+    .ln-red{stroke:#dc2626;stroke-width:2;fill:none}
+    .ln-green{stroke:#059669;stroke-width:2;fill:none}
+    .ln-blue{stroke:#2563eb;stroke-width:2;fill:none}
+    @media(prefers-color-scheme:dark){
+      .t,.sh,.sm{fill:#e5e7eb}
+      .ss{fill:#9ca3af}
+      .box{fill:#111827;stroke:#374151}
+      .f-blue{fill:#0f1d33;stroke:#1e40af}
+      .f-green{fill:#0a1e14;stroke:#047857}
+      .f-red{fill:#2e0a0a;stroke:#991b1b}
+      .f-amber{fill:#2a1f06;stroke:#92400e}
+      .tag-b{fill:#1d4ed8}
+      .tag-g{fill:#047857}
+      .tag-r{fill:#b91c1c}
+      .tag-a{fill:#b45309}
+    }
+  </style>
+
+  <text x="520" y="34" text-anchor="middle" class="t">路由器队列管理：尾部丢弃（全局同步） vs 主动队列管理 AQM/RED</text>
+
+  <!-- ===== LEFT: Tail Drop → Global Sync ===== -->
+  <rect x="20" y="55" width="500" height="280" rx="6" class="f-red"/>
+  <text x="270" y="82" text-anchor="middle" class="sh" fill="#991b1b">尾部丢弃策略 → 全局同步</text>
+
+  <!-- Router queue visualization -->
+  <text x="270" y="105" text-anchor="middle" class="sm">路由器缓存队列（FIFO + 尾部丢弃）</text>
+  <rect x="40" y="115" width="460" height="40" rx="4" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+  <!-- Packets filling up -->
+  <rect x="45" y="120" width="16" height="30" rx="2" fill="#2563eb"/><text x="53" y="140" text-anchor="middle" class="sw" style="font-size:8px;">1</text>
+  <rect x="64" y="120" width="16" height="30" rx="2" fill="#2563eb"/><text x="72" y="140" text-anchor="middle" class="sw" style="font-size:8px;">2</text>
+  <rect x="83" y="120" width="16" height="30" rx="2" fill="#2563eb"/><text x="91" y="140" text-anchor="middle" class="sw" style="font-size:8px;">3</text>
+  <rect x="102" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="121" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="140" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="159" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="178" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="197" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="216" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="235" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="254" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="273" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="292" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="311" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="330" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="349" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="368" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="387" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="406" y="120" width="16" height="30" rx="2" fill="#2563eb"/><rect x="425" y="120" width="16" height="30" rx="2" fill="#dc2626"/>
+  <rect x="444" y="120" width="16" height="30" rx="2" fill="#dc2626"/>
+  <rect x="463" y="120" width="16" height="30" rx="2" fill="#dc2626"/>
+  <!-- X marks for dropped -->
+  <text x="431" y="140" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">×</text>
+  <text x="450" y="140" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">×</text>
+  <text x="470" y="140" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">×</text>
+
+  <text x="270" y="172" text-anchor="middle" class="ss" fill="#dc2626">队列满 → 后续所有到达分组全部丢弃（尾部丢弃）</text>
+
+  <!-- Global sync illustration: 3 connections' cwnd all drop together -->
+  <text x="270" y="198" text-anchor="middle" class="sh" fill="#991b1b">后果：全局同步</text>
+
+  <!-- Simplified cwnd curves for 3 connections all dropping together -->
+  <rect x="40" y="212" width="460" height="110" rx="4" class="box"/>
+  <text x="270" y="232" text-anchor="middle" class="ss">多个 TCP 连接被同一路由器丢弃分组 → 同时超时 → 同时进入慢开始</text>
+
+  <!-- Three synced curves -->
+  <polyline points="60,310 100,295 140,265 180,240 210,235 250,230" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+  <polyline points="60,315 100,300 140,270 180,245 210,240 250,235" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <polyline points="60,320 100,305 140,275 180,250 210,245 250,240" fill="none" stroke="#059669" stroke-width="1.5"/>
+
+  <rect x="380" y="250" width="110" height="50" rx="4" class="f-red"/>
+  <text x="435" y="270" text-anchor="middle" class="sh" fill="#991b1b" style="font-size:13px;">全网络吞吐量</text>
+  <text x="435" y="290" text-anchor="middle" class="sh" fill="#991b1b" style="font-size:13px;">剧烈振荡！</text>
+
+  <!-- ===== RIGHT: AQM/RED ===== -->
+  <rect x="540" y="55" width="480" height="280" rx="6" class="f-green"/>
+  <text x="780" y="82" text-anchor="middle" class="sh" fill="#065f46">主动队列管理 AQM / RED</text>
+
+  <!-- RED queue -->
+  <text x="780" y="105" text-anchor="middle" class="sm">RED 路由器队列（双门限）</text>
+  <rect x="560" y="115" width="440" height="40" rx="4" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+
+  <!-- Partially filled queue -->
+  <rect x="565" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="584" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="603" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="622" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="641" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="660" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="679" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="698" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="717" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+  <rect x="736" y="120" width="16" height="30" rx="2" fill="#2563eb"/>
+
+  <!-- RED zone markers -->
+  <line x1="770" y1="112" x2="770" y2="158" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="770" y="170" text-anchor="middle" class="ss" fill="#d97706">min</text>
+  <line x1="900" y1="112" x2="900" y2="158" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="900" y="170" text-anchor="middle" class="ss" fill="#dc2626">max</text>
+
+  <!-- Zone labels -->
+  <text x="680" y="172" text-anchor="middle" class="ss" fill="#059669">正常转发</text>
+  <text x="835" y="172" text-anchor="middle" class="ss" fill="#d97706">以概率 p 随机丢弃</text>
+  <text x="945" y="172" text-anchor="middle" class="ss" fill="#dc2626">全部丢弃</text>
+
+  <!-- Drop probability curve -->
+  <text x="780" y="198" text-anchor="middle" class="sh" fill="#065f46">RED 丢弃概率曲线</text>
+  <rect x="560" y="212" width="440" height="110" rx="4" class="box"/>
+
+  <!-- Axes -->
+  <line x1="580" y1="310" x2="980" y2="310" stroke="#9ca3af" stroke-width="1"/>
+  <line x1="580" y1="230" x2="580" y2="310" stroke="#9ca3af" stroke-width="1"/>
+  <text x="780" y="325" text-anchor="middle" class="ss">平均队列长度</text>
+  <text x="575" y="270" text-anchor="middle" class="ss" transform="rotate(-90,575,270)">丢弃概率 p</text>
+
+  <!-- Step-shaped probability curve -->
+  <polyline points="580,310 670,310 670,305 740,280 830,250 900,245 900,230" fill="none" stroke="#d97706" stroke-width="2.5"/>
+  <text x="610" y="308" class="ss" fill="#059669">p=0</text>
+  <text x="740" y="260" class="ss" fill="#d97706">0 &lt; p &lt; 1</text>
+  <text x="910" y="242" class="ss" fill="#dc2626">p=1</text>
+
+  <text x="780" y="340" text-anchor="middle" class="ss" style="font-size:10px;">min_threshold 以下不丢 · min～max 之间概率递增 · max 以上全丢</text>
+
+  <!-- ===== BOTTOM: Comparison ===== -->
+  <rect x="20" y="355" width="1000" height="230" rx="6" class="box"/>
+
+  <text x="520" y="385" text-anchor="middle" class="t">全局同步 vs AQM/RED — 对 TCP 拥塞控制的影响</text>
+
+  <!-- Left: Tail Drop -->
+  <rect x="40" y="405" width="460" height="70" rx="4" class="f-red"/>
+  <text x="270" y="430" text-anchor="middle" class="sh" fill="#991b1b">尾部丢弃 → 全局同步</text>
+  <text x="270" y="452" text-anchor="middle" class="ss">所有 TCP 连接同时超时 → cwnd 同时降为 1 → 同时慢开始</text>
+  <text x="270" y="468" text-anchor="middle" class="ss">→ 网络吞吐量剧烈振荡，带宽利用率低</text>
+
+  <!-- Right: RED -->
+  <rect x="540" y="405" width="460" height="70" rx="4" class="f-green"/>
+  <text x="770" y="430" text-anchor="middle" class="sh" fill="#065f46">AQM/RED → 分散拥塞信号</text>
+  <text x="770" y="452" text-anchor="middle" class="ss">随机丢弃 → 只有部分连接触发超时 → 不同连接不同时间降速</text>
+  <text x="770" y="468" text-anchor="middle" class="ss">→ 避免全局同步，网络吞吐量平稳</text>
+
+  <!-- Impact curves at bottom -->
+  <rect x="40" y="490" width="460" height="80" rx="4" class="box"/>
+  <text x="270" y="512" text-anchor="middle" class="sh">网络吞吐量随时间变化</text>
+  <!-- Tail drop oscillating -->
+  <polyline points="60,555 120,555 160,530 200,470 240,510 280,555 320,555 360,530 400,470 440,510 480,555" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+  <text x="270" y="575" text-anchor="middle" class="ss" fill="#dc2626">尾部丢弃：剧烈振荡</text>
+
+  <rect x="540" y="490" width="460" height="80" rx="4" class="box"/>
+  <text x="770" y="512" text-anchor="middle" class="sh">网络吞吐量随时间变化</text>
+  <!-- RED smooth -->
+  <path d="M 560,545 Q 620,545 650,540 Q 700,530 720,535 Q 760,540 800,535 Q 850,528 880,532 Q 930,540 980,530" fill="none" stroke="#059669" stroke-width="2.5"/>
+  <text x="770" y="575" text-anchor="middle" class="ss" fill="#059669">RED：平稳波动</text>
+</svg>

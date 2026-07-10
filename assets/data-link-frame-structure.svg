@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430" role="img" aria-labelledby="title desc">
+  <title id="title">组帧结构</title>
+  <desc id="desc">展示帧首部、数据载荷、帧尾部和帧定界</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626}
+    @media (prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--amber:#fbbf24;--red:#f87171}}
+    .bg{fill:var(--bg)}.box{stroke:var(--line);stroke-width:2}.h{fill:color-mix(in srgb,var(--blue) 25%,transparent)}.p{fill:color-mix(in srgb,var(--green) 22%,transparent)}.t{fill:color-mix(in srgb,var(--amber) 28%,transparent)}.flag{fill:color-mix(in srgb,var(--red) 20%,transparent);stroke:var(--red);stroke-width:2}.brace{fill:none;stroke:var(--line);stroke-width:2}.arr{stroke:var(--line);stroke-width:2;marker-end:url(#arrow)}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.head{font-size:19px;font-weight:700}.small{font-size:15px;fill:var(--muted)}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="980" height="430"/>
+  <text x="50" y="56" class="title">组帧：把网络层分组放入有边界的帧</text>
+  <g transform="translate(90,145)">
+    <rect x="0" y="0" width="80" height="74" rx="8" class="flag"/><text x="40" y="43" text-anchor="middle" class="head">定界</text>
+    <rect x="80" y="0" width="160" height="74" class="box h"/><text x="160" y="43" text-anchor="middle" class="head">帧首部</text>
+    <rect x="240" y="0" width="330" height="74" class="box p"/><text x="405" y="43" text-anchor="middle" class="head">数据载荷</text>
+    <rect x="570" y="0" width="160" height="74" class="box t"/><text x="650" y="43" text-anchor="middle" class="head">帧尾部</text>
+    <rect x="730" y="0" width="80" height="74" rx="8" class="flag"/><text x="770" y="43" text-anchor="middle" class="head">定界</text>
+    <path d="M80 108 H730" class="brace"/>
+    <path d="M80 108 v-14 M730 108 v-14"/>
+    <text x="405" y="140" text-anchor="middle" class="small">接收方靠边界和字段含义识别一帧，而不是凭“看起来像一段数据”来猜。</text>
+  </g>
+  <g>
+    <path d="M210 260 V320" class="arr"/><text x="210" y="350" text-anchor="middle" class="small">控制信息</text>
+    <path d="M495 260 V320" class="arr"/><text x="495" y="350" text-anchor="middle" class="small">来自网络层的数据</text>
+    <path d="M740 260 V320" class="arr"/><text x="740" y="350" text-anchor="middle" class="small">常含差错检测信息</text>
+  </g>
+</svg>

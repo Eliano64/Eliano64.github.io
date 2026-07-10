@@ -1,0 +1,24 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>并查集</title><style>:root{color-scheme:light dark;--bg:#f8fafc;--fg:#111827;--card:#fff;--line:#334155;--accent:#2563eb}@media(prefers-color-scheme:dark){:root{--bg:#020617;--fg:#e5e7eb;--card:#0f172a;--line:#94a3b8;--accent:#60a5fa}}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui}.wrap{max-width:980px;margin:auto;padding:22px}.slide{display:none;background:var(--card);border:1px solid color-mix(in srgb,var(--line) 35%,transparent);border-radius:8px;padding:20px;min-height:540px}.active{display:block}button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;padding:7px 12px}.code{background:color-mix(in srgb,var(--line) 10%,transparent);padding:12px;border-radius:8px;white-space:pre;overflow:auto}table{border-collapse:collapse;margin-top:12px}td,th{border:1px solid var(--line);padding:8px 12px}</style></head><body><div class="wrap"><h1>并查集</h1><button id="prev">上一页</button> <button id="next">下一页</button>
+<section class="slide active"><h2>1. 双亲数组表示互不相交的集合</h2><p>每个元素保存双亲下标；根结点保存负数。初始时每个元素都是根。</p><table><tr><th>i</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td></tr><tr><th>S[i]</th><td>-1</td><td>-1</td><td>-1</td><td>-1</td><td>-1</td></tr></table></section>
+<section class="slide"><h2>2. Find 沿双亲指针向上找根</h2><div class="code">int Find(int parent[], int x) {
+    while (parent[x] >= 0) {
+        x = parent[x];
+    }
+    return x;
+}</div><p>最坏时间取决于树高。未优化时，树高可能达到 O(n)。</p></section>
+<section class="slide"><h2>3. 按规模合并让树尽量矮</h2><div class="code">void UnionBySize(int parent[], int a, int b) {
+    int rootA = Find(parent, a);
+    int rootB = Find(parent, b);
+    if (rootA == rootB) return;
+    if (parent[rootA] > parent[rootB]) {
+        int tmp = rootA; rootA = rootB; rootB = tmp;
+    }
+    parent[rootA] += parent[rootB];
+    parent[rootB] = rootA;
+}</div><p>根结点保存负的集合规模，因此规模越大，数值越小。</p></section>
+<section class="slide"><h2>4. 路径压缩改写查找路径</h2><div class="code">int FindCompress(int parent[], int x) {
+    if (parent[x] < 0) return x;
+    parent[x] = FindCompress(parent, parent[x]);
+    return parent[x];
+}</div><p>找到根后，路径上的每个结点都直接指向根。配合按规模合并后，常见规模下操作开销接近常数。</p></section>
+<p id="page"></p></div><script>const slides=[...document.querySelectorAll('.slide')];let i=0;function show(n){i=(n+slides.length)%slides.length;slides.forEach((s,k)=>s.classList.toggle('active',k===i));page.textContent=`${i+1} / ${slides.length}`}prev.onclick=()=>show(i-1);next.onclick=()=>show(i+1);show(0)</script></body></html>

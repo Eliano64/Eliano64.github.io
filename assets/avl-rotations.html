@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AVL Rotations</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1040px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px;margin-top:6px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.explain{font-size:18px;line-height:1.65;min-height:86px}.code{font:14px/1.45 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;overflow:auto}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.tabs button.active{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 25%,transparent)}svg{width:100%;height:auto}.edge{stroke:#64748b;stroke-width:2}.node{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.hot{fill:#fee2e2;stroke:var(--red);stroke-width:4}.newroot{fill:#dcfce7;stroke:var(--green);stroke-width:4}.sub{fill:#f1f5f9;stroke:#94a3b8;stroke-width:2}.t{fill:var(--text);font-weight:700;font-size:17px;text-anchor:middle}.s{fill:var(--muted);font-size:14px;text-anchor:middle}@media(prefers-color-scheme:dark){.edge{stroke:#94a3b8}.node{fill:#172554;stroke:#38bdf8}.hot{fill:#3f1d1d}.newroot{fill:#12351f}.sub{fill:#1f2937;stroke:#64748b}}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>AVL 插入后的最小不平衡子树调整</h1>
+        <div class="hint">先找到离插入点最近的失衡祖先 A，再看插入点落在 A 的哪条孙子分支。</div>
+      </div>
+      <div><button id="prev">上一步</button> <button id="next">下一步</button></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="card">
+      <div class="stage">
+        <svg viewBox="0 0 560 390" id="tree"></svg>
+        <div>
+          <div class="explain" id="explain"></div>
+          <pre class="code" id="code"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const cases = {
+      LL: {
+        name: "LL：右单旋",
+        code: "A 失衡，BF(A) = +2\n插入点在 A 的左孩子 B 的左子树\n\n调整：\n1. B 上升为该子树新根\n2. A 下降为 B 的右孩子\n3. B 原右子树 BR 改接为 A 的左子树",
+        steps: [
+          { text: "插入发生在 B 的左侧，A 的左子树高度增加，A 从 +1 变成 +2。", nodes:[["A",280,70,"hot"],["B",190,160,"node"],["AR",390,160,"sub"],["BL",120,260,"sub"],["BR",260,260,"sub"]], edges:[["A","B"],["A","AR"],["B","BL"],["B","BR"]] },
+          { text: "右旋：B 上升，A 下降。注意 BR 的关键字满足 B < BR < A，所以 BR 可以接到 A 的左侧。", nodes:[["B",280,70,"newroot"],["BL",170,180,"sub"],["A",390,180,"node"],["BR",320,290,"sub"],["AR",460,290,"sub"]], edges:[["B","BL"],["B","A"],["A","BR"],["A","AR"]] }
+        ]
+      },
+      RR: {
+        name: "RR：左单旋",
+        code: "A 失衡，BF(A) = -2\n插入点在 A 的右孩子 B 的右子树\n\n调整：\n1. B 上升为该子树新根\n2. A 下降为 B 的左孩子\n3. B 原左子树 BL 改接为 A 的右子树",
+        steps: [
+          { text: "插入发生在 B 的右侧，A 的右子树高度增加，A 从 -1 变成 -2。", nodes:[["A",280,70,"hot"],["AL",170,160,"sub"],["B",390,160,"node"],["BL",320,260,"sub"],["BR",460,260,"sub"]], edges:[["A","AL"],["A","B"],["B","BL"],["B","BR"]] },
+          { text: "左旋：B 上升，A 下降。BL 满足 A < BL < B，因此改接为 A 的右子树。", nodes:[["B",280,70,"newroot"],["A",170,180,"node"],["BR",390,180,"sub"],["AL",100,290,"sub"],["BL",240,290,"sub"]], edges:[["B","A"],["B","BR"],["A","AL"],["A","BL"]] }
+        ]
+      },
+      LR: {
+        name: "LR：C 一步上升",
+        code: "A 失衡，BF(A) = +2\n插入点在 A 的左孩子 B 的右子树 C\n\n一步到位：\n1. C 成为新根\n2. C->left = B，C->right = A\n3. CL 挂到 B 的右边\n4. CR 挂到 A 的左边\n\n等价于：先左旋 B，再右旋 A",
+        steps: [
+          { text: "插入点在左孩子 B 的右侧，这是 LR。此时 C 是 A、B、C 三者中关键字居中的结点。", nodes:[["A",280,60,"hot"],["B",180,150,"node"],["AR",390,150,"sub"],["BL",110,250,"sub"],["C",250,250,"node"],["CL",210,340,"sub"],["CR",300,340,"sub"]], edges:[["A","B"],["A","AR"],["B","BL"],["B","C"],["C","CL"],["C","CR"]] },
+          { text: "一步重连：C 上升为根，B 和 A 分别成为 C 的左右孩子；CL 挂到 B 的右边，CR 挂到 A 的左边。", nodes:[["C",280,70,"newroot"],["B",170,180,"node"],["A",390,180,"node"],["BL",100,300,"sub"],["CL",240,300,"sub"],["CR",330,300,"sub"],["AR",460,300,"sub"]], edges:[["C","B"],["C","A"],["B","BL"],["B","CL"],["A","CR"],["A","AR"]] },
+          { text: "这样画的依据是中序关系：BL < B < CL < C < CR < A < AR。所有子树都挂在唯一能保持 BST 性质的位置。", nodes:[["C",280,70,"newroot"],["B",170,180,"node"],["A",390,180,"node"],["BL",100,300,"sub"],["CL",240,300,"sub"],["CR",330,300,"sub"],["AR",460,300,"sub"]], edges:[["C","B"],["C","A"],["B","BL"],["B","CL"],["A","CR"],["A","AR"]] }
+        ]
+      },
+      RL: {
+        name: "RL：C 一步上升",
+        code: "A 失衡，BF(A) = -2\n插入点在 A 的右孩子 B 的左子树 C\n\n一步到位：\n1. C 成为新根\n2. C->left = A，C->right = B\n3. CL 挂到 A 的右边\n4. CR 挂到 B 的左边\n\n等价于：先右旋 B，再左旋 A",
+        steps: [
+          { text: "插入点在右孩子 B 的左侧，这是 RL。此时 C 是 A、B、C 三者中关键字居中的结点。", nodes:[["A",280,60,"hot"],["AL",170,150,"sub"],["B",390,150,"node"],["C",320,250,"node"],["BR",460,250,"sub"],["CL",270,340,"sub"],["CR",360,340,"sub"]], edges:[["A","AL"],["A","B"],["B","C"],["B","BR"],["C","CL"],["C","CR"]] },
+          { text: "一步重连：C 上升为根，A 和 B 分别成为 C 的左右孩子；CL 挂到 A 的右边，CR 挂到 B 的左边。", nodes:[["C",280,70,"newroot"],["A",170,180,"node"],["B",390,180,"node"],["AL",100,300,"sub"],["CL",240,300,"sub"],["CR",330,300,"sub"],["BR",460,300,"sub"]], edges:[["C","A"],["C","B"],["A","AL"],["A","CL"],["B","CR"],["B","BR"]] },
+          { text: "这样画的依据是中序关系：AL < A < CL < C < CR < B < BR。所有子树都挂在唯一能保持 BST 性质的位置。", nodes:[["C",280,70,"newroot"],["A",170,180,"node"],["B",390,180,"node"],["AL",100,300,"sub"],["CL",240,300,"sub"],["CR",330,300,"sub"],["BR",460,300,"sub"]], edges:[["C","A"],["C","B"],["A","AL"],["A","CL"],["B","CR"],["B","BR"]] }
+        ]
+      }
+    };
+    let current = "LL";
+    let step = 0;
+    const tabs = document.getElementById("tabs");
+    for (const key of Object.keys(cases)) {
+      const button = document.createElement("button");
+      button.textContent = cases[key].name;
+      button.onclick = () => { current = key; step = 0; draw(); };
+      button.dataset.key = key;
+      tabs.appendChild(button);
+    }
+    function draw() {
+      const data = cases[current];
+      const item = data.steps[step];
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.key === current));
+      document.getElementById("explain").textContent = item.text;
+      document.getElementById("code").textContent = data.code;
+      const map = new Map(item.nodes.map(n => [n[0], n]));
+      const svg = document.getElementById("tree");
+      svg.innerHTML = "";
+      for (const [a, b] of item.edges) {
+        const p = map.get(a), q = map.get(b);
+        svg.innerHTML += `<line class="edge" x1="${p[1]}" y1="${p[2]}" x2="${q[1]}" y2="${q[2]}"/>`;
+      }
+      for (const [name, x, y, cls] of item.nodes) {
+        if (cls === "sub") {
+          svg.innerHTML += `<rect class="sub" x="${x - 34}" y="${y - 22}" width="68" height="44" rx="8"/><text class="s" x="${x}" y="${y + 5}">${name}</text>`;
+        } else {
+          svg.innerHTML += `<circle class="${cls}" cx="${x}" cy="${y}" r="28"/><text class="t" x="${x}" y="${y + 6}">${name}</text>`;
+        }
+      }
+    }
+    document.getElementById("prev").onclick = () => { step = Math.max(0, step - 1); draw(); };
+    document.getElementById("next").onclick = () => { step = Math.min(cases[current].steps.length - 1, step + 1); draw(); };
+    draw();
+  </script>
+</body>
+</html>

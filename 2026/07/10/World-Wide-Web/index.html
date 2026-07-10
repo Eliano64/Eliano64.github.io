@@ -1,0 +1,658 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>World Wide Web | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="万维网是什么万维网（World Wide Web，WWW）并非某种特殊的计算机网络——它是一个大规模的、联机式的信息储藏所，是运行在因特网上的一个分布式应用。万维网利用网页之间的超链接，将不同网站的网页链接成一张逻辑上的信息网。 万维网的核心思想很简单：用户点击链接，浏览器向对应服务器请求文档，服务器将文档返回给浏览器，浏览器渲染展示。背后的关键协议就是 HTTP（超文本传输协议）。 URL：统一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="World Wide Web">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/10/World-Wide-Web/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="万维网是什么万维网（World Wide Web，WWW）并非某种特殊的计算机网络——它是一个大规模的、联机式的信息储藏所，是运行在因特网上的一个分布式应用。万维网利用网页之间的超链接，将不同网站的网页链接成一张逻辑上的信息网。 万维网的核心思想很简单：用户点击链接，浏览器向对应服务器请求文档，服务器将文档返回给浏览器，浏览器渲染展示。背后的关键协议就是 HTTP（超文本传输协议）。 URL：统一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-10T01:59:13.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="ApplicationLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "World Wide Web",
+  "url": "https://eliano64.github.io/2026/07/10/World-Wide-Web/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-10T01:59:13.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/10/World-Wide-Web/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'World Wide Web',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">World Wide Web</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">World Wide Web</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.9k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="万维网是什么"><a href="#万维网是什么" class="headerlink" title="万维网是什么"></a>万维网是什么</h1><p><strong>万维网</strong>（World Wide Web，WWW）并非某种特殊的计算机网络——它是一个大规模的、联机式的信息储藏所，是运行在因特网上的一个<strong>分布式应用</strong>。万维网利用网页之间的<strong>超链接</strong>，将不同网站的网页链接成一张逻辑上的信息网。</p>
+<p>万维网的核心思想很简单：用户点击链接，浏览器向对应服务器请求文档，服务器将文档返回给浏览器，浏览器渲染展示。背后的关键协议就是 <strong>HTTP</strong>（超文本传输协议）。</p>
+<h1 id="URL：统一资源定位符"><a href="#URL：统一资源定位符" class="headerlink" title="URL：统一资源定位符"></a>URL：统一资源定位符</h1><p>万维网上的每一个文档（网页、图片、视频等）在整个因特网范围内都有唯一的标识符——<strong>统一资源定位符 URL</strong>。</p>
+<p><img src="/assets/url-format.svg" alt="900"></p>
+<p>URL 的一般格式：</p>
+<p>$$<br>\text{&lt;协议&gt;:&#x2F;&#x2F;&lt;主机&gt;:&lt;端口&gt;&#x2F;&lt;路径&gt;}<br>$$</p>
+<table>
+<thead>
+<tr>
+<th>组成部分</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>协议</td>
+<td>访问资源所用的应用层协议</td>
+<td><code>http</code>、<code>https</code>、<code>ftp</code></td>
+</tr>
+<tr>
+<td>主机</td>
+<td>存放资源的服务器的域名或 IP 地址</td>
+<td><code>www.hnust.edu.cn</code></td>
+</tr>
+<tr>
+<td>端口</td>
+<td>服务器监听的端口号（可省略，使用协议默认端口）</td>
+<td>HTTP 默认 <code>80</code>，HTTPS 默认 <code>443</code></td>
+</tr>
+<tr>
+<td>路径</td>
+<td>资源在服务器上的位置路径</td>
+<td><code>/index.htm</code>、<code>/images/logo.png</code></td>
+</tr>
+</tbody></table>
+<p>例如 <code>http://www.hnust.edu.cn:80/index.htm</code> 中：</p>
+<ul>
+<li>协议 <code>http</code> → 使用 HTTP。</li>
+<li>主机 <code>www.hnust.edu.cn</code> → 湖南科技大学 Web 服务器。</li>
+<li>端口 <code>80</code> → HTTP 默认端口，通常省略不写。</li>
+<li>路径 <code>/index.htm</code> → 请求网站首页文件。</li>
+</ul>
+<blockquote>
+<p>用户通常只需要在浏览器地址栏输入域名和路径。协议和端口如果使用默认值，浏览器会自动补充。</p>
+</blockquote>
+<h1 id="万维网文档"><a href="#万维网文档" class="headerlink" title="万维网文档"></a>万维网文档</h1><p>万维网服务器上的文档通常由三种类型的文件构成：</p>
+<ul>
+<li><strong>HTML</strong>（超文本标记语言）：定义网页的<strong>结构</strong>和内容。包含文本、图片、链接等元素，由浏览器解析并渲染。</li>
+<li><strong>CSS</strong>（层叠样式表）：定义网页的<strong>样式</strong>。控制颜色、字体、布局等视觉呈现。</li>
+<li><strong>JavaScript</strong>：定义网页的<strong>行为</strong>。实现交互功能、动态内容更新等。</li>
+</ul>
+<p>这些文档可以是事先设计好的<strong>静态页面</strong>，也可以是服务器后端程序根据用户请求自动生成的<strong>动态页面</strong>。无论哪种，最终都需要通过 HTTP 从服务器传送给用户浏览器进行解析和渲染。</p>
+<h1 id="HTTP-的操作过程"><a href="#HTTP-的操作过程" class="headerlink" title="HTTP 的操作过程"></a>HTTP 的操作过程</h1><p><strong>超文本传输协议</strong>（HTTP）定义了浏览器（HTTP 客户）如何向万维网服务器（HTTP 服务器）请求万维网文档，以及服务器如何把文档传送给浏览器。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||650)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||650)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/http-operation-process-slides.html" style="width:100%;height:650px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>HTTP 的基本操作过程：</p>
+<ol>
+<li>浏览器解析 URL，得到服务器的域名和端口号。</li>
+<li>浏览器与服务器建立 <strong>TCP 连接</strong>（HTTP 默认端口 <strong>80</strong>）。</li>
+<li>浏览器通过 TCP 连接发送 <strong>HTTP 请求报文</strong>。</li>
+<li>服务器收到请求报文后，执行相应操作，发回 <strong>HTTP 响应报文</strong>。</li>
+<li>根据 HTTP 版本和首部设置决定 TCP 连接是否释放。</li>
+<li>浏览器解析响应报文中的文档内容并渲染。</li>
+</ol>
+<h1 id="HTTP-1-0-与-HTTP-1-1"><a href="#HTTP-1-0-与-HTTP-1-1" class="headerlink" title="HTTP&#x2F;1.0 与 HTTP&#x2F;1.1"></a>HTTP&#x2F;1.0 与 HTTP&#x2F;1.1</h1><p>HTTP 有两个主要版本，它们的核心区别在于如何使用 TCP 连接。</p>
+<h2 id="非持续连接（HTTP-1-0）"><a href="#非持续连接（HTTP-1-0）" class="headerlink" title="非持续连接（HTTP&#x2F;1.0）"></a>非持续连接（HTTP&#x2F;1.0）</h2><p>HTTP&#x2F;1.0 默认使用<strong>非持续连接</strong>（non-persistent connection）：浏览器为<strong>每个请求对象</strong>单独建立一个 TCP 连接，服务器返回该对象后即释放连接。</p>
+<p><img src="/assets/http-1.0-2rtt.svg" alt="900"></p>
+<p>对于每个对象，时间开销为 <strong>2 RTT + 文档传输时延</strong>：</p>
+<ul>
+<li>RTT1：TCP 三报文握手建立连接。</li>
+<li>RTT2：HTTP 请求报文发出，到 HTTP 响应报文第一个字节到达。</li>
+</ul>
+<p>如果一个网页包含 $n$ 个引用对象（图片、CSS、JS 等），就需要建立 $n+1$ 个 TCP 连接（$n$ 个对象 + 1 个 HTML 页面），总时延巨大。</p>
+<p>为减小时延，HTTP&#x2F;1.0 浏览器通常建立<strong>多个并行的 TCP 连接</strong>同时请求多个对象。但这会大量占用服务器资源，加重服务器负担。</p>
+<h2 id="持续连接（HTTP-1-1）"><a href="#持续连接（HTTP-1-1）" class="headerlink" title="持续连接（HTTP&#x2F;1.1）"></a>持续连接（HTTP&#x2F;1.1）</h2><p>HTTP&#x2F;1.1 默认使用<strong>持续连接</strong>（persistent connection）：一个 TCP 连接建立后，可以<strong>连续传送多个</strong> HTTP 请求和响应，直到明确断开。这避免了每个对象都经历 TCP 握手和慢开始的代价。</p>
+<p><img src="/assets/http-persistent-vs-nonpersistent.svg" alt="900"></p>
+<p>HTTP&#x2F;1.1 的持续连接有两种工作方式：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>非流水线方式</th>
+<th>流水线方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>请求顺序</td>
+<td>客户发送一个请求 → 收到响应 → 再发下一个请求</td>
+<td>客户<strong>连续发送</strong>多个请求，不逐个等待响应</td>
+</tr>
+<tr>
+<td>RTT 等待</td>
+<td>每个后续对象通常仍增加 1 RTT</td>
+<td>一批请求可共用约 1 RTT 的等待</td>
+</tr>
+<tr>
+<td>RTT 开销</td>
+<td>第一个请求后，每个后续请求仍需 1 RTT</td>
+<td>一批请求只需 1 RTT 的等待时间</td>
+</tr>
+<tr>
+<td>实现复杂度</td>
+<td>简单</td>
+<td>较复杂（需匹配请求与响应顺序）</td>
+</tr>
+<tr>
+<td>使用情况</td>
+<td>最简单、最常见的持续连接方式</td>
+<td>HTTP&#x2F;1.1 允许使用，但浏览器实践中很少启用</td>
+</tr>
+</tbody></table>
+<p>流水线方式虽然减少 RTT 等待，但服务器必须按请求顺序返回响应。若前一个响应生成或传输很慢，后续响应会被它挡住，形成 <strong>HTTP&#x2F;1.1 队头阻塞</strong>。HTTP&#x2F;2 的多路复用消除了 HTTP 层按响应顺序造成的阻塞，但其 TCP 连接仍可能因丢包发生传输层队头阻塞；HTTP&#x2F;3 改用 QUIC 后才进一步隔离不同流之间的丢包影响。</p>
+<h2 id="HTTP-1-0-与-HTTP-1-1-对比"><a href="#HTTP-1-0-与-HTTP-1-1-对比" class="headerlink" title="HTTP&#x2F;1.0 与 HTTP&#x2F;1.1 对比"></a>HTTP&#x2F;1.0 与 HTTP&#x2F;1.1 对比</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>HTTP&#x2F;1.0</th>
+<th>HTTP&#x2F;1.1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>连接方式</td>
+<td>默认<strong>非持续连接</strong></td>
+<td>默认<strong>持续连接</strong></td>
+</tr>
+<tr>
+<td>TCP 连接数</td>
+<td>每请求一个对象建立一个 TCP 连接</td>
+<td>一个 TCP 连接可传送多个请求和响应</td>
+</tr>
+<tr>
+<td>RTT 开销</td>
+<td>每个对象 2 RTT</td>
+<td>首次 2 RTT，后续对象可复用连接</td>
+</tr>
+<tr>
+<td>流水线</td>
+<td>不支持</td>
+<td>协议允许，但实际很少使用</td>
+</tr>
+<tr>
+<td><code>Host</code> 首部</td>
+<td>可选</td>
+<td><strong>必须</strong>——支持虚拟主机（同一 IP 开放多个网站）</td>
+</tr>
+<tr>
+<td>方法与首部</td>
+<td>基本方法和首部较少</td>
+<td>方法和首部机制更丰富</td>
+</tr>
+<tr>
+<td>缓存控制</td>
+<td>较简单</td>
+<td>更完善（<code>Cache-Control</code> 等）</td>
+</tr>
+</tbody></table>
+<h1 id="HTTP-报文格式"><a href="#HTTP-报文格式" class="headerlink" title="HTTP 报文格式"></a>HTTP 报文格式</h1><p>HTTP 报文分为两种：<strong>请求报文</strong>和<strong>响应报文</strong>。两者的结构类似，都是 ASCII 文本（人类可读）。</p>
+<p><img src="/assets/http-request-response-format.svg" alt="900"></p>
+<h2 id="请求报文"><a href="#请求报文" class="headerlink" title="请求报文"></a>请求报文</h2><p>HTTP 请求报文包含请求行、首部行和可选的实体主体；首部与实体主体之间用空行分隔。按报文中的可见区域可列为：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>内容</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>请求行</strong></td>
+<td>方法 + 空格 + URL + 空格 + 版本 + CRLF</td>
+<td>第一行，必须。<code>GET /index.htm HTTP/1.1</code></td>
+</tr>
+<tr>
+<td><strong>首部行</strong></td>
+<td>首部字段名 + <code>:</code> + 空格 + 值 + CRLF</td>
+<td>可有多行。如 <code>Host:</code>、<code>Connection:</code>、<code>User-Agent:</code></td>
+</tr>
+<tr>
+<td><strong>空行</strong></td>
+<td>CRLF</td>
+<td>首部行结束标志</td>
+</tr>
+<tr>
+<td><strong>实体主体</strong></td>
+<td>数据</td>
+<td>通常不使用（GET 请求一般无实体主体）</td>
+</tr>
+</tbody></table>
+<p>常用 HTTP 请求方法：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>GET</code></td>
+<td>请求读取 URL 所标志的文档</td>
+</tr>
+<tr>
+<td><code>HEAD</code></td>
+<td>请求读取 URL 所标志文档的<strong>首部</strong>（不返回文档体）</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td>向服务器提交数据（如表单）</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td>在指明的 URL 下存储一个文档</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td>删除 URL 所标志的文档</td>
+</tr>
+<tr>
+<td><code>CONNECT</code></td>
+<td>用于代理服务器</td>
+</tr>
+<tr>
+<td><code>OPTIONS</code></td>
+<td>请求一些选项信息</td>
+</tr>
+<tr>
+<td><code>TRACE</code></td>
+<td>用于环回测试</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td>对 PUT 的补充，用于局部更新</td>
+</tr>
+</tbody></table>
+<h2 id="响应报文"><a href="#响应报文" class="headerlink" title="响应报文"></a>响应报文</h2><p>HTTP 响应报文包含状态行、首部行和可选的实体主体，同样用空行分隔首部与主体：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>内容</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>状态行</strong></td>
+<td>版本 + 空格 + 状态码 + 空格 + 短语 + CRLF</td>
+<td>第一行，必须。<code>HTTP/1.1 200 OK</code></td>
+</tr>
+<tr>
+<td><strong>首部行</strong></td>
+<td>同请求报文</td>
+<td>如 <code>Content-Type:</code>、<code>Content-Length:</code></td>
+</tr>
+<tr>
+<td><strong>空行</strong></td>
+<td>CRLF</td>
+<td>首部行结束标志</td>
+</tr>
+<tr>
+<td><strong>实体主体</strong></td>
+<td>返回的文档内容</td>
+<td>如 HTML 文件</td>
+</tr>
+</tbody></table>
+<p>常见 HTTP 状态码：</p>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>短语</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>200</code></td>
+<td>OK</td>
+<td>请求成功</td>
+</tr>
+<tr>
+<td><code>202</code></td>
+<td>Accepted</td>
+<td>已接受请求</td>
+</tr>
+<tr>
+<td><code>301</code></td>
+<td>Moved Permanently</td>
+<td>永久重定向</td>
+</tr>
+<tr>
+<td><code>304</code></td>
+<td>Not Modified</td>
+<td>文档未修改（用于缓存验证）</td>
+</tr>
+<tr>
+<td><code>400</code></td>
+<td>Bad Request</td>
+<td>请求报文有语法错误</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td>Not Found</td>
+<td>服务器找不到请求的资源</td>
+</tr>
+<tr>
+<td><code>500</code></td>
+<td>Internal Server Error</td>
+<td>服务器内部错误</td>
+</tr>
+</tbody></table>
+<h1 id="Cookie：让-HTTP-“记住”用户"><a href="#Cookie：让-HTTP-“记住”用户" class="headerlink" title="Cookie：让 HTTP “记住”用户"></a>Cookie：让 HTTP “记住”用户</h1><p>HTTP 本身是<strong>无状态</strong>的——服务器不保存任何有关客户的历史请求信息。这意味着如果用户连续两次请求同一个网站，服务器无法知道这是同一个用户。</p>
+<p><strong>Cookie</strong> 是一种在无状态的 HTTP 之上维护用户状态的机制。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||580)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||580)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/cookie-workflow-slides.html" style="width:100%;height:580px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>Cookie 的基本工作流程：</p>
+<ol>
+<li>用户初次访问网站时，浏览器发送 HTTP 请求报文（不含 Cookie）。</li>
+<li>服务器为其生成一个唯一的 <strong>Cookie 识别码</strong>，并在后端数据库中创建记录。</li>
+<li>服务器在 HTTP 响应报文中通过 <strong><code>Set-Cookie</code> 首部行</strong>将识别码返回给浏览器。</li>
+<li>浏览器将识别码存储在 Cookie 文件中。</li>
+<li>用户之后每次访问该网站时，浏览器自动从 Cookie 文件中取出识别码，放入 HTTP 请求报文的 <strong><code>Cookie</code> 首部行</strong>中。</li>
+<li>服务器根据识别码从数据库中取出用户信息，返回个性化内容。</li>
+</ol>
+<p>Cookie 的关键首部：</p>
+<ul>
+<li>响应报文：<code>Set-Cookie: &lt;识别码&gt;</code>（服务器设置 Cookie）。</li>
+<li>请求报文：<code>Cookie: &lt;识别码&gt;</code>（浏览器回传 Cookie）。</li>
+</ul>
+<blockquote>
+<p>Cookie 只是维护状态的诸多方法之一。它常用于”记住我”、购物车、个性化推荐等场景。</p>
+</blockquote>
+<h1 id="万维网缓存与代理服务器"><a href="#万维网缓存与代理服务器" class="headerlink" title="万维网缓存与代理服务器"></a>万维网缓存与代理服务器</h1><p>万维网缓存（Web Cache）把最近的一些请求和响应暂存在本地，以提高万维网的效率。缓存可以位于客户机中；位于客户与原始服务器之间的中间系统上的 Web 缓存称为<strong>代理服务器</strong>。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/web-cache-proxy-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>代理服务器的工作方式：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>代理服务器行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>缓存命中</strong></td>
+<td>请求到达代理服务器 → 缓存中有对应文档且未过期 → 直接返回给客户</td>
+</tr>
+<tr>
+<td><strong>缓存未命中</strong></td>
+<td>请求到达代理服务器 → 缓存中无对应文档 → 代理服务器向原始服务器请求 → 存入缓存 → 返回给客户</td>
+</tr>
+<tr>
+<td><strong>缓存过期</strong></td>
+<td>代理服务器向原始服务器发送验证请求（携带 <code>If-modified-since</code> 头）→ 原始服务器判断是否修改</td>
+</tr>
+</tbody></table>
+<h2 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h2><p>原始服务器通常为每个响应的对象设定两个时间字段：</p>
+<ul>
+<li>**<code>Last-Modified</code>**：文档最后修改时间。</li>
+<li>**<code>Expires</code>**：文档有效期。</li>
+</ul>
+<p>当代理服务器中的文档过期后，代理服务器向原始服务器发送验证请求，携带 <strong><code>If-Modified-Since</code></strong> 首部（值为该文档的修改日期）：</p>
+<ul>
+<li>文档<strong>未修改</strong> → 原始服务器返回 <code>304 Not Modified</code>（不含实体主体），代理服务器更新文档有效期。</li>
+<li>文档<strong>已修改</strong> → 原始服务器返回 <code>200 OK</code> 和新文档，代理服务器更新缓存和有效期。</li>
+</ul>
+<p>代理服务器的作用：</p>
+<ul>
+<li><strong>减少出口带宽</strong>：校园网或公司网络内的用户请求相同资源时，只需一次从因特网获取。</li>
+<li><strong>降低访问延迟</strong>：缓存命中时，响应从本地代理服务器返回，远快于从原始服务器获取。</li>
+<li><strong>减轻原始服务器负载</strong>：大量重复请求被代理服务器拦截，不到达原始服务器。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/10/World-Wide-Web/">https://eliano64.github.io/2026/07/10/World-Wide-Web/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Network-Application-Models</div></div><div class="info-2"><div class="info-item-1">应用层解决什么问题应用层是 TCP&#x2F;IP 体系结构的顶层，离用户最近。它的任务是通过应用进程之间的交互来实现特定网络应用——浏览器访问网页、邮件客户端收发邮件、FTP 工具传文件，都是在应用层完成的。 网络应用程序只运行在端系统中。运输层已经为应用层提供了端到端的进程间逻辑通信，应用开发人员只需要关心应用协议和用户界面，不需要考虑路由器和交换机等核心网络设备。 应用层的内容不是一种通用的传输机制，而是几个具体的网络应用协议。在学这些协议之前，先看清楚它们采用什么样的网络应用架构。 应用进程之间的通信方式主要有两种：客户&#x2F;服务器（C&#x2F;S）方式和对等（P2P）方式。 客户&#x2F;服务器方式客户&#x2F;服务器（Client&#x2F;Server）方式中，通信双方的角色是不对等的：  客户是服务请求方，主动向服务器发起通信。 服务器是服务提供方，被动等待客户请求。   C&#x2F;S 方式的特点：  服务器始终运行，等待客户的服务请求。 服务器具有固定的运输层端口号（如 Web 服务器端口 80），运行服务器程序的主机也有固定的 IP...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%87%E7%BB%B4%E7%BD%91%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">万维网是什么</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#URL%EF%BC%9A%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%AE%9A%E4%BD%8D%E7%AC%A6"><span class="toc-text">URL：统一资源定位符</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%87%E7%BB%B4%E7%BD%91%E6%96%87%E6%A1%A3"><span class="toc-text">万维网文档</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HTTP-%E7%9A%84%E6%93%8D%E4%BD%9C%E8%BF%87%E7%A8%8B"><span class="toc-text">HTTP 的操作过程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HTTP-1-0-%E4%B8%8E-HTTP-1-1"><span class="toc-text">HTTP&#x2F;1.0 与 HTTP&#x2F;1.1</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E6%8C%81%E7%BB%AD%E8%BF%9E%E6%8E%A5%EF%BC%88HTTP-1-0%EF%BC%89"><span class="toc-text">非持续连接（HTTP&#x2F;1.0）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%81%E7%BB%AD%E8%BF%9E%E6%8E%A5%EF%BC%88HTTP-1-1%EF%BC%89"><span class="toc-text">持续连接（HTTP&#x2F;1.1）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP-1-0-%E4%B8%8E-HTTP-1-1-%E5%AF%B9%E6%AF%94"><span class="toc-text">HTTP&#x2F;1.0 与 HTTP&#x2F;1.1 对比</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HTTP-%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F"><span class="toc-text">HTTP 报文格式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E6%8A%A5%E6%96%87"><span class="toc-text">请求报文</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%8D%E5%BA%94%E6%8A%A5%E6%96%87"><span class="toc-text">响应报文</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Cookie%EF%BC%9A%E8%AE%A9-HTTP-%E2%80%9C%E8%AE%B0%E4%BD%8F%E2%80%9D%E7%94%A8%E6%88%B7"><span class="toc-text">Cookie：让 HTTP “记住”用户</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%87%E7%BB%B4%E7%BD%91%E7%BC%93%E5%AD%98%E4%B8%8E%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">万维网缓存与代理服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-text">缓存一致性</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

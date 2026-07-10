@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="620" viewBox="0 0 1180 620" role="img" aria-labelledby="title desc">
+  <title id="title">Orthogonal list and adjacency multilist</title>
+  <desc id="desc">Basic node fields of orthogonal list for directed graphs and adjacency multilist for undirected graphs.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    svg{background:transparent;font-family:"Segoe UI",Arial,sans-serif}
+    .panel{fill:#f8fafc;stroke:#cbd5e1;stroke-width:2}
+    .box{fill:#fff;stroke:#94a3b8;stroke-width:1.8}
+    .head{fill:#eff6ff;stroke:#60a5fa}
+    .arc{fill:#dcfce7;stroke:#22c55e}
+    .edge{fill:#fef3c7;stroke:#f59e0b}
+    .line{stroke:#64748b;stroke-width:2.4;fill:none;marker-end:url(#arrow)}
+    .title{fill:#0f172a;font-size:25px;font-weight:750}
+    .text{fill:#0f172a;font-size:18px;font-weight:650}
+    .small{fill:#334155;font-size:15px}
+    .tag{fill:#7c2d12;font-size:15px;font-weight:700}
+    #arrow path{fill:#64748b}
+    @media(prefers-color-scheme:dark){
+      .panel{fill:#111827;stroke:#334155}.box{fill:#0b1220;stroke:#475569}.head{fill:#172554;stroke:#60a5fa}.arc{fill:#14532d;stroke:#22c55e}.edge{fill:#78350f;stroke:#f59e0b}
+      .line{stroke:#cbd5e1}.title,.text{fill:#f8fafc}.small{fill:#cbd5e1}.tag{fill:#fdba74}#arrow path{fill:#cbd5e1}
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L8,3 z"/>
+    </marker>
+  </defs>
+
+  <rect class="panel" x="30" y="34" width="540" height="540" rx="10"/>
+  <rect class="panel" x="610" y="34" width="540" height="540" rx="10"/>
+
+  <text class="title" x="62" y="78">十字链表：有向图</text>
+  <text class="small" x="62" y="108">一个弧结点同时挂在“弧尾的出边链”和“弧头的入边链”上。</text>
+
+  <g transform="translate(70 145)">
+    <rect class="head" x="0" y="0" width="110" height="42"/><text class="text" x="55" y="27" text-anchor="middle">A</text>
+    <rect class="box" x="126" y="0" width="92" height="42"/><text class="small" x="172" y="26" text-anchor="middle">firstin</text>
+    <rect class="box" x="226" y="0" width="102" height="42"/><text class="small" x="277" y="26" text-anchor="middle">firstout</text>
+    <text class="tag" x="342" y="27">顶点结点</text>
+    <rect class="head" x="0" y="62" width="110" height="42"/><text class="text" x="55" y="89" text-anchor="middle">B</text>
+    <rect class="box" x="126" y="62" width="92" height="42"/><text class="small" x="172" y="88" text-anchor="middle">firstin</text>
+    <rect class="box" x="226" y="62" width="102" height="42"/><text class="small" x="277" y="88" text-anchor="middle">firstout</text>
+  </g>
+
+  <g transform="translate(76 295)">
+    <rect class="arc" x="0" y="0" width="82" height="42"/><text class="small" x="41" y="26" text-anchor="middle">tailvex</text>
+    <rect class="arc" x="84" y="0" width="86" height="42"/><text class="small" x="127" y="26" text-anchor="middle">headvex</text>
+    <rect class="arc" x="172" y="0" width="66" height="42"/><text class="small" x="205" y="26" text-anchor="middle">info</text>
+    <rect class="arc" x="0" y="46" width="118" height="42"/><text class="small" x="59" y="72" text-anchor="middle">hlink</text>
+    <rect class="arc" x="120" y="46" width="118" height="42"/><text class="small" x="179" y="72" text-anchor="middle">tlink</text>
+    <text class="tag" x="262" y="26">弧结点</text>
+    <text class="small" x="262" y="58">tailvex：弧尾顶点编号</text>
+    <text class="small" x="262" y="84">headvex：弧头顶点编号</text>
+    <text class="small" x="262" y="110">hlink：弧头相同的下一条弧</text>
+    <text class="small" x="262" y="136">tlink：弧尾相同的下一条弧</text>
+  </g>
+  <path class="line" d="M348 166 C430 180 444 282 312 310"/>
+  <path class="line" d="M242 228 C305 244 302 282 194 344"/>
+  <text class="small" x="386" y="185">firstout 找出边</text>
+  <text class="small" x="246" y="251">firstin 找入边</text>
+
+  <text class="title" x="642" y="78">邻接多重表：无向图</text>
+  <text class="small" x="642" y="108">一条无向边只存一个边结点，同时属于两个端点的边链。</text>
+
+  <g transform="translate(650 145)">
+    <rect class="head" x="0" y="0" width="110" height="42"/><text class="text" x="55" y="27" text-anchor="middle">A</text>
+    <rect class="box" x="126" y="0" width="122" height="42"/><text class="small" x="187" y="26" text-anchor="middle">firstedge</text>
+    <rect class="head" x="0" y="62" width="110" height="42"/><text class="text" x="55" y="89" text-anchor="middle">D</text>
+    <rect class="box" x="126" y="62" width="122" height="42"/><text class="small" x="187" y="88" text-anchor="middle">firstedge</text>
+    <text class="tag" x="270" y="27">顶点结点</text>
+  </g>
+
+  <g transform="translate(650 295)">
+    <rect class="edge" x="0" y="0" width="62" height="42"/><text class="small" x="31" y="26" text-anchor="middle">i</text>
+    <rect class="edge" x="64" y="0" width="62" height="42"/><text class="small" x="95" y="26" text-anchor="middle">j</text>
+    <rect class="edge" x="128" y="0" width="80" height="42"/><text class="small" x="168" y="26" text-anchor="middle">info</text>
+    <rect class="edge" x="0" y="46" width="104" height="42"/><text class="small" x="52" y="72" text-anchor="middle">iLink</text>
+    <rect class="edge" x="106" y="46" width="102" height="42"/><text class="small" x="157" y="72" text-anchor="middle">jLink</text>
+    <text class="tag" x="236" y="26">边结点</text>
+    <text class="small" x="236" y="58">i, j：边依附的两个顶点编号</text>
+    <text class="small" x="236" y="84">iLink：依附于 i 的下一条边</text>
+    <text class="small" x="236" y="110">jLink：依附于 j 的下一条边</text>
+  </g>
+  <path class="line" d="M898 166 C950 210 928 270 790 314"/>
+  <path class="line" d="M898 228 C956 250 930 326 758 364"/>
+  <text class="small" x="936" y="203">从端点 A 的边链进入</text>
+  <text class="small" x="936" y="249">从端点 D 的边链进入</text>
+</svg>

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multilevel Feedback Queue</title>
+  <style>
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --grid:#cbd5e1; --queue:#e6eef9; --active:#fff4cc;
+      --p1:#2563eb; --p2:#0f766e; --p3:#b45309; --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --grid:#455366; --queue:#263142; --active:#42391e;
+        --p1:#7aa2ff; --p2:#62d4c5; --p3:#f6b85f; --shadow:rgba(0,0,0,.38);
+      }
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:800px; background:var(--bg); color:var(--text); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; display:flex; flex-direction:column; }
+    header { padding:18px 24px 8px; text-align:center; }
+    h1 { margin:0; font-size:24px; }
+    .sub { margin-top:7px; color:var(--muted); font-size:14px; }
+    main { flex:1; padding:10px 22px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .panel { border:1.4px solid var(--line); border-radius:12px; background:var(--panel); box-shadow:0 6px 16px var(--shadow); padding:14px; }
+    svg { width:100%; height:400px; display:block; }
+    .queues { display:grid; gap:12px; }
+    .q { border:1px solid var(--line); border-radius:10px; padding:10px; background:var(--queue); min-height:76px; }
+    .q.active { background:var(--active); }
+    .qhead { display:flex; justify-content:space-between; color:var(--muted); font-size:13px; margin-bottom:8px; }
+    .chips { display:flex; gap:8px; min-height:34px; align-items:center; overflow:hidden; }
+    .chip { min-width:70px; text-align:center; color:#fff; font-weight:700; padding:8px 10px; border-radius:8px; border:1px solid var(--line); }
+    .empty { color:var(--muted); }
+    .note { margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--queue); line-height:1.5; }
+    footer { display:flex; align-items:center; justify-content:center; gap:12px; padding:10px 20px 18px; }
+    button { border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; padding:8px 14px; cursor:pointer; font-size:14px; }
+    .count { color:var(--muted); min-width:70px; text-align:center; font-size:14px; }
+    @media (max-width:900px) { body { min-height:980px; } main { grid-template-columns:1fr; } svg { height:360px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>多级反馈队列：队列迁移过程</h1>
+    <div class="sub">Q1 优先级最高，时间片最小；Q3 优先级最低，时间片最大。</div>
+  </header>
+  <main>
+    <section class="panel"><svg id="chart" viewBox="0 0 760 400" role="img"></svg></section>
+    <section class="panel">
+      <div class="queues" id="queues"></div>
+      <div class="note" id="note"></div>
+    </section>
+  </main>
+  <footer>
+    <button id="prev" type="button">上一页</button>
+    <div class="count" id="count"></div>
+    <button id="next" type="button">下一页</button>
+  </footer>
+  <script>
+    const colors = { P1:"var(--p1)", P2:"var(--p2)", P3:"var(--p3)" };
+    const rows = ["P1", "P2", "P3"];
+    const segments = [
+      ["P1",0,1,"Q1"], ["P2",1,2,"Q1"], ["P1",2,4,"Q2"], ["P2",4,5,"Q2"],
+      ["P3",5,6,"Q1"], ["P2",6,8,"Q2"], ["P1",8,12,"Q3"], ["P1",12,13,"Q3"]
+    ];
+    const slides = [
+      { t:0, run:"P1", q:"Q1", queues:{Q1:[],Q2:[],Q3:[]}, note:"P1 到达后先进入最高优先级队列 Q1，获得 1 个时间单位。" },
+      { t:1, run:"P2", q:"Q1", queues:{Q1:[],Q2:["P1"],Q3:[]}, note:"P1 用完 Q1 时间片仍未完成，降到 Q2 队尾。P2 在 1 时刻到达 Q1，优先运行。" },
+      { t:2, run:"P1", q:"Q2", queues:{Q1:[],Q2:["P2"],Q3:[]}, note:"P2 用完 Q1 时间片仍未完成，降到 Q2。Q1 为空后，才从 Q2 队头选择 P1。" },
+      { t:4, run:"P2", q:"Q2", queues:{Q1:[],Q2:[],Q3:["P1"]}, note:"P1 用完 Q2 的 2 个时间单位仍未完成，降到 Q3。Q2 队头 P2 开始运行。" },
+      { t:5, run:"P3", q:"Q1", queues:{Q1:[],Q2:["P2"],Q3:["P1"]}, note:"P3 在 5 时刻到达最高优先级队列 Q1，抢占正在 Q2 运行的 P2；P2 回到原队列 Q2 队尾。" },
+      { t:6, run:"P2", q:"Q2", queues:{Q1:[],Q2:[],Q3:["P1"]}, note:"P3 很短，在 Q1 中运行 1 个时间单位后完成。Q1 为空，再回到 Q2 运行 P2。" },
+      { t:8, run:"P1", q:"Q3", queues:{Q1:[],Q2:[],Q3:[]}, note:"P2 完成后，高级队列为空，才轮到最低优先级 Q3 中的 P1。P1 获得 4 个时间单位。" },
+      { t:12, run:"P1", q:"Q3", queues:{Q1:[],Q2:[],Q3:[]}, note:"P1 在 Q3 用完 4 个时间单位后还剩 1。最低级队列没有再向下迁移，仍放回 Q3；由于没有其他进程，继续运行到完成。" }
+    ];
+    const requestedStep = Number(new URLSearchParams(location.search).get("step"));
+    let index = Number.isInteger(requestedStep) ? Math.min(Math.max(requestedStep, 0), slides.length - 1) : 0;
+    const svg = document.getElementById("chart");
+    function x(t) { return 90 + t * 46; }
+    function y(p) { return 68 + rows.indexOf(p) * 72; }
+    function draw(slide) {
+      const ticks = [0,1,2,4,5,6,8,12,13];
+      const visible = segments.filter(s => s[1] < slide.t || (s[1] === slide.t && s[0] === slide.run));
+      const grid = ticks.map(t => `<line x1="${x(t)}" y1="48" x2="${x(t)}" y2="304" stroke="var(--grid)" stroke-dasharray="4 6"/>`).join("");
+      const rowLines = rows.map(p => `<text x="52" y="${y(p)+21}" fill="var(--text)" font-size="16" font-weight="700" text-anchor="middle">${p}</text><line x1="90" y1="${y(p)+28}" x2="688" y2="${y(p)+28}" stroke="var(--grid)"/>`).join("");
+      const bars = visible.map(([p,s,e,q]) => {
+        const w = x(e)-x(s);
+        return `<rect x="${x(s)}" y="${y(p)}" width="${w}" height="32" rx="5" fill="${colors[p]}" stroke="var(--line)"/><text x="${x(s)+w/2}" y="${y(p)+21}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${q} ${s}-${e}</text>`;
+      }).join("");
+      const labels = ticks.map(t => `<text x="${x(t)}" y="340" fill="var(--text)" font-size="12" font-weight="700" text-anchor="middle">${t}</text>`).join("");
+      svg.innerHTML = `<line x1="90" y1="304" x2="688" y2="304" stroke="var(--line)" stroke-width="2"/><line x1="90" y1="48" x2="90" y2="304" stroke="var(--line)" stroke-width="2"/>${grid}${rowLines}${bars}${labels}<text x="390" y="374" fill="var(--muted)" font-size="13" text-anchor="middle">用完本级时间片且未完成：下降一级；高优先级新进程到达：抢占低优先级运行进程。</text>`;
+    }
+    function renderQueues(slide) {
+      const spec = [["Q1","优先级高，时间片 1"],["Q2","中等优先级，时间片 2"],["Q3","优先级低，时间片 4"]];
+      document.getElementById("queues").innerHTML = spec.map(([q,desc]) => {
+        const list = slide.queues[q];
+        return `<div class="q ${slide.q === q ? "active" : ""}"><div class="qhead"><strong>${q}</strong><span>${desc}</span></div><div class="chips">${list.length ? list.map(p => `<div class="chip" style="background:${colors[p]}">${p}</div>`).join("") : `<span class="empty">空</span>`}</div></div>`;
+      }).join("");
+    }
+    function render() {
+      const s = slides[index];
+      draw(s);
+      renderQueues(s);
+      document.getElementById("note").textContent = `${s.t} 时刻：${s.note}`;
+      document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+    }
+    document.getElementById("prev").addEventListener("click", () => { index = (index + slides.length - 1) % slides.length; render(); });
+    document.getElementById("next").addEventListener("click", () => { index = (index + 1) % slides.length; render(); });
+    render();
+  </script>
+</body>
+</html>

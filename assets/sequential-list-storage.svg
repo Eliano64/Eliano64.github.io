@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="310" viewBox="0 0 920 310" role="img" aria-labelledby="title desc">
+  <title id="title">Sequential list storage</title>
+  <desc id="desc">A sequential list stores adjacent logical elements in adjacent memory cells.</desc>
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      .cell{fill:#f8fbff;stroke:#31572c;stroke-width:2}
+      .used{fill:#e9f7ef}
+      .empty{fill:#f6f7f9;stroke-dasharray:5 4}
+      .txt{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:18px;fill:#1f2933}
+      .small{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;fill:#52616b}
+      .formula{font-family:Consolas,monospace;font-size:17px;fill:#1f2933}
+      @media (prefers-color-scheme: dark){
+        svg{background:#0f1720}
+        .cell{fill:#16212c;stroke:#95d5b2}
+        .used{fill:#13251e}
+        .empty{fill:#1b2430;stroke:#7b8794}
+        .txt,.formula{fill:#e6edf3}
+        .small{fill:#b8c4cf}
+      }
+    </style>
+  </defs>
+  <text class="txt" x="40" y="42">顺序表：逻辑相邻，物理也相邻</text>
+  <text class="small" x="40" y="68">第 i 个元素可由首地址和元素大小直接计算，因此按位查找为 O(1)。</text>
+  <g transform="translate(60 115)">
+    <rect class="cell used" x="0" y="0" width="92" height="58"/>
+    <rect class="cell used" x="92" y="0" width="92" height="58"/>
+    <rect class="cell used" x="184" y="0" width="92" height="58"/>
+    <rect class="cell used" x="276" y="0" width="92" height="58"/>
+    <rect class="cell used" x="368" y="0" width="92" height="58"/>
+    <rect class="cell empty" x="460" y="0" width="92" height="58"/>
+    <rect class="cell empty" x="552" y="0" width="92" height="58"/>
+    <text class="txt" x="34" y="36">a1</text>
+    <text class="txt" x="126" y="36">a2</text>
+    <text class="txt" x="218" y="36">a3</text>
+    <text class="txt" x="310" y="36">a4</text>
+    <text class="txt" x="402" y="36">a5</text>
+    <text class="small" x="486" y="35">free</text>
+    <text class="small" x="578" y="35">free</text>
+    <text class="small" x="0" y="88">data[0]</text>
+    <text class="small" x="92" y="88">data[1]</text>
+    <text class="small" x="184" y="88">data[2]</text>
+    <text class="small" x="276" y="88">data[3]</text>
+    <text class="small" x="368" y="88">data[4]</text>
+  </g>
+  <text class="formula" x="60" y="250">LOC(a_i) = LOC(L) + (i - 1) * sizeof(ElemType)</text>
+  <text class="small" x="60" y="280">length = 5, MaxSize = 7；只能访问 data[0] 到 data[length - 1] 中的有效元素。</text>
+</svg>

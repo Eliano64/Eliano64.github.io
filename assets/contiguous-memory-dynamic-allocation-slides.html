@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynamic Partition Allocation</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --text: #111827;
+    --muted: #4b5563;
+    --line: #cbd5e1;
+    --accent: #2563eb;
+    --free: #dcfce7;
+    --used: #e0e7ff;
+    --pick: #fef3c7;
+    --bad: #fee2e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827;
+      --panel: #1f2937;
+      --text: #e5e7eb;
+      --muted: #cbd5e1;
+      --line: #475569;
+      --accent: #93c5fd;
+      --free: #14532d;
+      --used: #1e3a8a;
+      --pick: #713f12;
+      --bad: #7f1d1d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 20px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+  h1 { margin: 0; font-size: 22px; }
+  .controls { display: flex; gap: 8px; }
+  button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: 1.02fr 1fr; gap: 14px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); margin: 8px 0 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 18px; height: 12px; border: 1px solid var(--line); border-radius: 3px; }
+  .mem { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; height: 54px; display: flex; margin: 10px 0; }
+  .seg { display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--line); min-width: 34px; font-weight: 650; }
+  .seg:last-child { border-right: 0; }
+  .free { background: var(--free); }
+  .used { background: var(--used); }
+  .pick { background: var(--pick); outline: 3px solid var(--accent); outline-offset: -3px; }
+  .bad { background: var(--bad); }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 6px; text-align: left; }
+  th { color: var(--muted); font-weight: 650; }
+  .title { font-weight: 750; font-size: 18px; margin-bottom: 4px; }
+  .muted { color: var(--muted); }
+  .result { margin-top: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>动态分区分配：同一请求在不同算法下的选择</h1>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+      <button id="reset">重置</button>
+    </div>
+  </header>
+  <div class="grid">
+    <section class="panel">
+      <div id="stepTitle" class="title"></div>
+      <div id="explain" class="muted"></div>
+      <div class="legend">
+        <span class="chip"><span class="swatch used"></span>已分配</span>
+        <span class="chip"><span class="swatch free"></span>空闲</span>
+        <span class="chip"><span class="swatch pick"></span>本算法选中</span>
+      </div>
+      <div id="mem" class="mem"></div>
+      <div id="result" class="result"></div>
+    </section>
+    <section class="panel">
+      <div class="title">空闲分区</div>
+      <table>
+        <thead><tr><th>起始地址</th><th>大小</th><th>是否满足 9MB</th><th>说明</th></tr></thead>
+        <tbody id="holes"></tbody>
+      </table>
+      <div class="title" style="margin-top:14px;">算法规则</div>
+      <table>
+        <thead><tr><th>算法</th><th>选择规则</th></tr></thead>
+        <tbody>
+          <tr><td>首次适应</td><td>从低地址开始，选第一个足够大的空闲分区</td></tr>
+          <tr><td>最佳适应</td><td>选能满足请求的最小空闲分区</td></tr>
+          <tr><td>最坏适应</td><td>选最大的空闲分区</td></tr>
+          <tr><td>邻近适应</td><td>从上次查找结束处继续查找，选第一个足够大的空闲分区</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>
+<script>
+const segments = [
+  { type: "used", size: 8, label: "OS" },
+  { type: "used", size: 12, label: "P1" },
+  { type: "free", size: 6, start: 20 },
+  { type: "used", size: 10, label: "P2" },
+  { type: "free", size: 18, start: 36 },
+  { type: "used", size: 6, label: "P3" },
+  { type: "free", size: 10, start: 60 },
+  { type: "used", size: 8, label: "P4" },
+  { type: "free", size: 20, start: 78 }
+];
+const request = 9;
+const steps = [
+  { name: "初始状态", pick: null, explain: "新进程申请 9MB。6MB 空闲区不能满足，其余 18MB、10MB、20MB 都可以满足。", result: "不同算法面对同一组空闲分区，会选择不同的位置。" },
+  { name: "首次适应", pick: 4, explain: "从低地址开始找。6MB 不够，18MB 是第一个足够大的空闲分区。", result: "在 18MB 分区中分出 9MB，剩余 9MB 空闲。" },
+  { name: "最佳适应", pick: 6, explain: "在所有能满足 9MB 的空闲分区中，10MB 最小。", result: "在 10MB 分区中分出 9MB，剩余 1MB，容易留下很小的外部碎片。" },
+  { name: "最坏适应", pick: 8, explain: "选择最大的空闲分区，当前最大的是 20MB。", result: "在 20MB 分区中分出 9MB，剩余 11MB；但大分区会更快被消耗。" },
+  { name: "邻近适应", pick: 8, explain: "假设上次查找停在 P3 之后，则从后面继续找。先遇到 10MB，若请求为 9MB 会选 10MB；若指针已越过 10MB，则继续循环到 20MB。", result: "邻近适应减少每次从头扫描的开销，但可能更均匀地消耗高地址大分区。" }
+];
+let step = 0;
+
+function renderMem(pick) {
+  const total = segments.reduce((s, x) => s + x.size, 0);
+  return segments.map((seg, i) => {
+    const cls = i === pick ? "pick" : seg.type;
+    const label = seg.type === "free" ? `${seg.size}M` : seg.label;
+    return `<div class="seg ${cls}" style="width:${seg.size / total * 100}%">${label}</div>`;
+  }).join("");
+}
+
+function render() {
+  const s = steps[step];
+  document.getElementById("stepTitle").textContent = `${step + 1}. ${s.name}`;
+  document.getElementById("explain").textContent = s.explain;
+  document.getElementById("mem").innerHTML = renderMem(s.pick);
+  document.getElementById("result").textContent = s.result;
+  document.getElementById("holes").innerHTML = segments
+    .filter(x => x.type === "free")
+    .map(x => `<tr><td>${x.start}MB</td><td>${x.size}MB</td><td>${x.size >= request ? "是" : "否"}</td><td>${x.size >= request ? `可剩 ${x.size - request}MB` : "太小"}</td></tr>`)
+    .join("");
+}
+
+document.getElementById("prev").onclick = () => { step = Math.max(0, step - 1); render(); };
+document.getElementById("next").onclick = () => { step = Math.min(steps.length - 1, step + 1); render(); };
+document.getElementById("reset").onclick = () => { step = 0; render(); };
+render();
+</script>
+</body>
+</html>

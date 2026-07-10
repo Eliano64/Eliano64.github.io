@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="740" viewBox="0 0 1120 740" role="img" aria-labelledby="title desc">
+  <title id="title">Original, Ones Complement, Twos Complement, Excess Code</title>
+  <desc id="desc">A static comparison diagram for signed number encodings.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    .bg { fill: #f7f7f4; }
+    .panel { fill: #fff; stroke: #ccd4dc; stroke-width: 2; }
+    .title { fill: #20262d; font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .h { fill: #20262d; font: 700 20px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .t { fill: #46505a; font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: #5f6873; font: 13px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .head { fill: #eef6fc; stroke: #2f6f9f; stroke-width: 1.5; }
+    .cell { fill: #fff; stroke: #d7dde3; stroke-width: 1.2; }
+    .warn { fill: #fff5e8; stroke: #a86620; stroke-width: 2; rx: 8; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #151719; }
+      .panel, .cell { fill: #202428; stroke: #3a4149; }
+      .title, .h { fill: #edf0f2; }
+      .t { fill: #c6ccd3; }
+      .small { fill: #aab2bc; }
+      .head { fill: #1f3443; stroke: #7db7e8; }
+      .warn { fill: #3b2d1c; stroke: #f0b86d; }
+    }
+  </style>
+  <rect class="bg" width="1120" height="740"/>
+  <text class="title" x="48" y="58">有符号数编码对比</text>
+  <text class="t" x="48" y="88">同一个真值可以有多种机器表示；考试重点是转换规则、0 的个数和表示范围。</text>
+
+  <rect class="panel" x="48" y="124" width="1024" height="450" rx="8"/>
+  <rect class="head" x="80" y="164" width="150" height="54"/>
+  <rect class="head" x="230" y="164" width="250" height="54"/>
+  <rect class="head" x="480" y="164" width="210" height="54"/>
+  <rect class="head" x="690" y="164" width="170" height="54"/>
+  <rect class="head" x="860" y="164" width="170" height="54"/>
+  <text class="h" x="126" y="198">编码</text>
+  <text class="h" x="310" y="198">负数规则</text>
+  <text class="h" x="535" y="198">0 的表示</text>
+  <text class="h" x="727" y="198">整数范围</text>
+  <text class="h" x="895" y="198">典型用途</text>
+
+  <g>
+    <rect class="cell" x="80" y="218" width="150" height="78"/>
+    <rect class="cell" x="230" y="218" width="250" height="78"/>
+    <rect class="cell" x="480" y="218" width="210" height="78"/>
+    <rect class="cell" x="690" y="218" width="170" height="78"/>
+    <rect class="cell" x="860" y="218" width="170" height="78"/>
+    <text class="h" x="126" y="252">原码</text>
+    <text class="t" x="250" y="244">符号位为 1，数值位</text>
+    <text class="t" x="250" y="268">表示绝对值</text>
+    <text class="t" x="505" y="258">+0 与 -0</text>
+    <text class="t" x="708" y="258">-(2^n-1) 到 2^n-1</text>
+    <text class="t" x="884" y="258">直观表示</text>
+  </g>
+  <g>
+    <rect class="cell" x="80" y="296" width="150" height="78"/>
+    <rect class="cell" x="230" y="296" width="250" height="78"/>
+    <rect class="cell" x="480" y="296" width="210" height="78"/>
+    <rect class="cell" x="690" y="296" width="170" height="78"/>
+    <rect class="cell" x="860" y="296" width="170" height="78"/>
+    <text class="h" x="126" y="330">反码</text>
+    <text class="t" x="250" y="322">符号位不变，数值位</text>
+    <text class="t" x="250" y="346">逐位取反</text>
+    <text class="t" x="505" y="336">+0 与 -0</text>
+    <text class="t" x="708" y="336">-(2^n-1) 到 2^n-1</text>
+    <text class="t" x="884" y="336">过渡形式</text>
+  </g>
+  <g>
+    <rect class="cell" x="80" y="374" width="150" height="78"/>
+    <rect class="cell" x="230" y="374" width="250" height="78"/>
+    <rect class="cell" x="480" y="374" width="210" height="78"/>
+    <rect class="cell" x="690" y="374" width="170" height="78"/>
+    <rect class="cell" x="860" y="374" width="170" height="78"/>
+    <text class="h" x="126" y="408">补码</text>
+    <text class="t" x="250" y="400">反码末位加 1</text>
+    <text class="t" x="250" y="424">符号位参与运算</text>
+    <text class="t" x="505" y="414">只有一种 0</text>
+    <text class="t" x="708" y="414">-2^n 到 2^n-1</text>
+    <text class="t" x="884" y="414">整数运算</text>
+  </g>
+  <g>
+    <rect class="cell" x="80" y="452" width="150" height="78"/>
+    <rect class="cell" x="230" y="452" width="250" height="78"/>
+    <rect class="cell" x="480" y="452" width="210" height="78"/>
+    <rect class="cell" x="690" y="452" width="170" height="78"/>
+    <rect class="cell" x="860" y="452" width="170" height="78"/>
+    <text class="h" x="126" y="486">移码</text>
+    <text class="t" x="250" y="478">在补码基础上</text>
+    <text class="t" x="250" y="502">符号位取反</text>
+    <text class="t" x="505" y="492">只有一种 0</text>
+    <text class="t" x="708" y="492">-2^n 到 2^n-1</text>
+    <text class="t" x="884" y="492">阶码比较</text>
+  </g>
+
+  <rect class="warn" x="82" y="620" width="954" height="64"/>
+  <text class="h" x="112" y="650">易混点</text>
+  <text class="t" x="210" y="650">原码和反码关于原点对称且有两个 0；补码和移码只有一个 0，因此能多表示一个最小负数。</text>
+</svg>

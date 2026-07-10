@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BST Delete One Child</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #fff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --red: #dc2626;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #334155;
+        --blue: #60a5fa;
+        --green: #4ade80;
+        --red: #f87171;
+      }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: auto;
+      padding: 22px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 14px;
+    }
+
+    .explain {
+      min-height: 70px;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .code {
+      font: 14px/1.45 Consolas, monospace;
+      white-space: pre-wrap;
+      overflow: auto;
+      background: rgba(148, 163, 184, .12);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+    }
+
+    marker path {
+      fill: var(--green);
+    }
+
+    .edge {
+      stroke: #64748b;
+      stroke-width: 2;
+    }
+
+    .edge-cut {
+      stroke: var(--red);
+      stroke-width: 3;
+      stroke-dasharray: 8 6;
+    }
+
+    .edge-new {
+      stroke: var(--green);
+      stroke-width: 4;
+      marker-end: url(#arrow);
+    }
+
+    .node {
+      fill: #e0f2fe;
+      stroke: #0284c7;
+      stroke-width: 2;
+    }
+
+    .target {
+      fill: #fee2e2;
+      stroke: var(--red);
+      stroke-width: 4;
+    }
+
+    .child {
+      fill: #dcfce7;
+      stroke: var(--green);
+      stroke-width: 4;
+    }
+
+    .text {
+      fill: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      text-anchor: middle;
+    }
+
+    .label {
+      fill: var(--muted);
+      font-size: 13px;
+      text-anchor: middle;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .edge {
+        stroke: #94a3b8;
+      }
+
+      .node {
+        fill: #172554;
+        stroke: #38bdf8;
+      }
+
+      .target {
+        fill: #3f1d1d;
+      }
+
+      .child {
+        fill: #12351f;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .stage {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>BST 删除只有一棵子树的结点</h1>
+        <div class="hint">删除 key = 70；唯一子树接到 70 原来的位置。</div>
+      </div>
+      <div>
+        <button id="prev">上一步</button>
+        <button id="next">下一步</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="stage">
+        <svg viewBox="0 0 520 390" id="tree"></svg>
+        <div>
+          <div class="explain" id="explain"></div>
+          <pre class="code">if (root->left == NULL || root->right == NULL) {
+    // 只有一棵子树时，child 指向那棵唯一子树。
+    BSTNode *child = root->left != NULL ? root->left : root->right;
+
+    free(root);
+
+    // 父结点接回 child，等价于用唯一子树替代 root。
+    return child;
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const originalNodes = {
+      50: [260, 45],
+      26: [160, 135],
+      66: [360, 135],
+      21: [90, 225],
+      30: [230, 225],
+      60: [320, 225],
+      70: [430, 225],
+      68: [390, 315]
+    };
+    const originalEdges = [[50, 26], [50, 66], [26, 21], [26, 30], [66, 60], [66, 70], [70, 68]];
+    const steps = [
+      { target: 70, child: 68, text: "定位到 70。它没有右子树，只有左子树 68。" },
+      { target: 70, child: 68, cut: true, text: "child 指向 68。删除 70 后，递归返回 child，让父结点 66 的 right 接回 68。" },
+      { replaced: true, child: 68, text: "68 接到 70 原来的位置，成为 66 的右孩子。因为 68 仍大于 66，BST 性质保持。" }
+    ];
+    let index = 0;
+
+    function currentGraph(step) {
+      if (!step.replaced) {
+        return {
+          nodes: originalNodes,
+          edges: originalEdges
+        };
+      }
+
+      return {
+        nodes: {
+          50: [260, 45],
+          26: [160, 135],
+          66: [360, 135],
+          21: [90, 225],
+          30: [230, 225],
+          60: [320, 225],
+          68: [430, 225]
+        },
+        edges: [[50, 26], [50, 66], [26, 21], [26, 30], [66, 60], [66, 68]]
+      };
+    }
+
+    function draw() {
+      const step = steps[index];
+      const graph = currentGraph(step);
+      const svg = document.getElementById("tree");
+      const explain = document.getElementById("explain");
+      svg.innerHTML = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>`;
+
+      for (const [a, b] of graph.edges) {
+        const p = graph.nodes[a];
+        const q = graph.nodes[b];
+        const cls = step.cut && (b === 70 || b === 68) ? "edge-cut" : "edge";
+        svg.innerHTML += `<line class="${cls}" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`;
+      }
+
+      if (step.cut) {
+        svg.innerHTML += `<line class="edge-new" x1="380" y1="150" x2="396" y2="289"/>`;
+        svg.innerHTML += `<text class="label" x="420" y="175">66->right = child</text>`;
+      }
+
+      for (const [value, point] of Object.entries(graph.nodes)) {
+        let cls = "node";
+        if (Number(value) === step.target) {
+          cls = "target";
+        }
+        if (Number(value) === step.child) {
+          cls = "child";
+        }
+        svg.innerHTML += `<circle class="${cls}" cx="${point[0]}" cy="${point[1]}" r="26"/>`;
+        svg.innerHTML += `<text class="text" x="${point[0]}" y="${point[1] + 6}">${value}</text>`;
+      }
+
+      explain.textContent = step.text;
+    }
+
+    document.getElementById("prev").onclick = () => {
+      index = Math.max(0, index - 1);
+      draw();
+    };
+    document.getElementById("next").onclick = () => {
+      index = Math.min(steps.length - 1, index + 1);
+      draw();
+    };
+    draw();
+  </script>
+</body>
+</html>

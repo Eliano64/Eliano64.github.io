@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420">
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill: #f8fafc; }
+    .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+    .node { fill: #e0f2fe; stroke: #0284c7; stroke-width: 2; }
+    .sub { fill: #dcfce7; stroke: #16a34a; stroke-width: 2; }
+    .edge { stroke: #64748b; stroke-width: 2; }
+    .text { fill: #0f172a; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    .title { font-size: 24px; font-weight: 700; }
+    .label { font-size: 18px; font-weight: 700; }
+    .small { font-size: 15px; }
+    .formula { font-size: 21px; font-weight: 700; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0b1020; }
+      .panel { fill: #111827; stroke: #334155; }
+      .node { fill: #172554; stroke: #38bdf8; }
+      .sub { fill: #12351f; stroke: #4ade80; }
+      .edge { stroke: #94a3b8; }
+      .text { fill: #e5e7eb; }
+    }
+  </style>
+  <rect class="bg" x="0" y="0" width="980" height="420"/>
+  <rect class="panel" x="28" y="28" width="924" height="364" rx="8"/>
+  <text class="text title" x="60" y="72">高度为 h 的 AVL 树：最少结点的分治拆法</text>
+
+  <line class="edge" x1="490" y1="118" x2="305" y2="220"/>
+  <line class="edge" x1="490" y1="118" x2="675" y2="220"/>
+  <circle class="node" cx="490" cy="118" r="34"/>
+  <text class="text label" x="490" y="125" text-anchor="middle">root</text>
+
+  <rect class="sub" x="190" y="210" width="230" height="98" rx="8"/>
+  <text class="text label" x="305" y="250" text-anchor="middle">高度 h - 1</text>
+  <text class="text small" x="305" y="279" text-anchor="middle">仍取最少结点：N(h - 1)</text>
+
+  <rect class="sub" x="560" y="210" width="230" height="98" rx="8"/>
+  <text class="text label" x="675" y="250" text-anchor="middle">高度 h - 2</text>
+  <text class="text small" x="675" y="279" text-anchor="middle">仍取最少结点：N(h - 2)</text>
+
+  <text class="text small" x="490" y="344" text-anchor="middle">要让总高度达到 h，至少有一棵子树高度为 h - 1；为了尽量少放结点，另一棵子树取允许的最低高度 h - 2。</text>
+  <text class="text formula" x="490" y="374" text-anchor="middle">N(h) = N(h - 1) + N(h - 2) + 1</text>
+</svg>

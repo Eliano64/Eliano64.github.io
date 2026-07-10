@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DNS 递归查询过程</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 16px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 20px; margin: 0; }
+h2 { font-size: 18px; margin: 0 0 10px; }
+p { font-size: 15px; line-height: 1.5; margin: 0 0 6px; }
+.slide { display: none; padding: 20px 28px; }
+.slide.active { display: block; }
+.row { display: flex; gap: 20px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; flex: 1; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+.count { color: var(--muted); }
+
+/* Diagram elements */
+.diagram { position: relative; height: 280px; margin: 10px 0; }
+.node { position: absolute; border-radius: 8px; padding: 6px 10px; font-size: 12px; text-align: center; border: 1.5px solid; }
+.node.host { background: #f0fdf4; border-color: #059669; }
+.node.local { background: #eff6ff; border-color: #2563eb; }
+.node.root { background: #fef2f2; border-color: #dc2626; }
+.node.tld { background: #fefce8; border-color: #ca8a04; }
+.node.auth { background: #f3e8ff; border-color: #7c3aed; }
+.node-title { font-weight: 700; font-size: 13px; }
+.node-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+.arrow { position: absolute; height: 1.5px; background: var(--red); }
+.arrow::after { content: ""; position: absolute; right: 0; top: -3px; width: 0; height: 0; border-left: 6px solid var(--red); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.arrow-label { position: absolute; font-size: 10px; font-weight: 700; color: var(--red); }
+
+.step-desc { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+.step-num { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; text-align: center; line-height: 22px; font-size: 12px; font-weight: 700; margin-right: 4px; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24;
+  }
+  .node.host { background: #1a2e1f; border-color: #10b981; }
+  .node.local { background: #1e293b; border-color: #3b82f6; }
+  .node.root { background: #2a1a1a; border-color: #f87171; }
+  .node.tld { background: #2a2410; border-color: #fbbf24; }
+  .node.auth { background: #1e1a2a; border-color: #a78bfa; }
+  button { border-color: #52616b; }
+}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>DNS 递归查询 — 逐级委托、逐级返回</h1></header>
+
+  <!-- Page 1: Host → Local (recursive) -->
+  <section class="slide active">
+    <h2><span class="step-num">1</span> 主机向本地域名服务器发起递归查询</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.4;">
+        <div class="diagram">
+          <div class="node host" style="left:10px;top:100px;width:130px;">
+            <div class="node-title">用户主机</div>
+            <div class="node-sub">查询 y.abc.com</div>
+          </div>
+          <div class="node local" style="left:300px;top:100px;width:160px;">
+            <div class="node-title">本地域名服务器</div>
+            <div class="node-sub">接受递归查询委托</div>
+          </div>
+          <div style="position:absolute;left:140px;top:115px;width:160px;text-align:center;">
+            <div style="height:1.5px;background:var(--red);"></div>
+            <div style="font-size:10px;font-weight:700;color:var(--red);margin-top:2px;">① 递归查询 y.abc.com</div>
+          </div>
+        </div>
+        <p class="step-desc">主机发出一次查询请求后，后面的所有查询工作都<strong>委托</strong>给本地域名服务器完成。主机只需等待最终结果。</p>
+      </div>
+      <div class="panel">
+        <p><strong>递归查询的特征</strong></p>
+        <p style="font-size:13px;">查询者发出请求后，被查询的服务器<strong>代替查询者</strong>完成后续所有查询步骤，最终把完整结果返回给查询者。</p>
+        <p style="font-size:13px;margin-top:8px;">对查询者而言：<strong>一次请求 → 一次响应</strong>。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 2: Local → Root (recursive) -->
+  <section class="slide">
+    <h2><span class="step-num">2</span> 本地域名服务器向根域名服务器递归查询</h2>
+    <div class="row">
+      <div class="panel" style="flex:1.4;">
+        <div class="diagram">
+          <div class="node local" style="left:100px;top:100px;width:160px;">
+            <div class="node-title">本地域名服务器</div>
+            <div class="node-sub">委托根服务器查询</div>
+          </div>
+          <div class="node root" style="left:400px;top:100px;width:160px;">
+            <div class="node-title">根域名服务器</div>
+            <div class="node-sub">接受递归查询委托</div>
+          </div>
+          <div style="position:absolute;left:260px;top:115px;width:140px;text-align:center;">
+            <div style="height:1.5px;background:var(--red);"></div>
+            <div style="font-size:10px;font-weight:700;color:var(--red);margin-top:2px;">② 递归查询 y.abc.com</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <p style="font-size:13px;">本地域名服务器继续委托根域名服务器。根服务器如果不知道最终结果，又继续委托给顶级域名服务器……</p>
+        <p style="font-size:13px;margin-top:6px;color:var(--red);"><strong>问题</strong>：每一级服务器都被迫承担递归查询的负担，特别是根域名服务器压力极大。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 3: Root → TLD → Authoritative (recursive chain) -->
+  <section class="slide">
+    <h2><span class="step-num">3</span> 逐级递归委托，直到权限域名服务器</h2>
+    <div class="panel">
+      <div class="diagram" style="height:200px;">
+        <div class="node local" style="left:20px;top:70px;width:150px;">
+          <div class="node-title">本地域名服务器</div>
+        </div>
+        <div class="node root" style="left:210px;top:70px;width:150px;">
+          <div class="node-title">根域名服务器</div>
+        </div>
+        <div class="node tld" style="left:400px;top:70px;width:150px;">
+          <div class="node-title">com 顶级域名服务器</div>
+        </div>
+        <div class="node auth" style="left:590px;top:70px;width:160px;">
+          <div class="node-title">abc.com 权限服务器</div>
+          <div class="node-sub">知道 y.abc.com 的 IP</div>
+        </div>
+        <div style="position:absolute;left:170px;top:85px;width:40px;text-align:center;"><div style="height:1.5px;background:var(--red);"></div></div>
+        <div style="position:absolute;left:360px;top:85px;width:40px;text-align:center;"><div style="height:1.5px;background:var(--red);"></div></div>
+        <div style="position:absolute;left:550px;top:85px;width:40px;text-align:center;"><div style="height:1.5px;background:var(--red);"></div></div>
+        <div style="position:absolute;left:90px;top:130px;font-size:12px;color:var(--muted);">② 递归</div>
+        <div style="position:absolute;left:280px;top:130px;font-size:12px;color:var(--muted);">③ 递归</div>
+        <div style="position:absolute;left:470px;top:130px;font-size:12px;color:var(--muted);">④ 递归</div>
+      </div>
+      <p class="step-desc">递归查询形成一条委托链：本地 → 根 → 顶级 → 权限。权限域名服务器知道最终答案。</p>
+    </div>
+  </section>
+
+  <!-- Page 4: Result returns back along the chain -->
+  <section class="slide">
+    <h2><span class="step-num">4</span> 查询结果沿委托链逐级返回</h2>
+    <div class="panel">
+      <div class="diagram" style="height:200px;">
+        <div class="node host" style="left:20px;top:70px;width:130px;">
+          <div class="node-title">用户主机</div>
+          <div class="node-sub">得到 IP 地址</div>
+        </div>
+        <div class="node local" style="left:180px;top:70px;width:150px;">
+          <div class="node-title">本地域名服务器</div>
+        </div>
+        <div class="node root" style="left:360px;top:70px;width:150px;">
+          <div class="node-title">根域名服务器</div>
+        </div>
+        <div class="node tld" style="left:540px;top:70px;width:150px;">
+          <div class="node-title">com 顶级域名服务器</div>
+        </div>
+        <div class="node auth" style="left:720px;top:70px;width:160px;">
+          <div class="node-title">abc.com 权限服务器</div>
+          <div class="node-sub">IP = 1.2.3.4</div>
+        </div>
+        <div style="position:absolute;left:150px;top:120px;text-align:center;font-size:13px;color:var(--green);font-weight:700;">←⑧ 返回结果</div>
+        <div style="position:absolute;left:330px;top:120px;text-align:center;font-size:13px;color:var(--green);font-weight:700;">←⑦ 返回</div>
+        <div style="position:absolute;left:510px;top:120px;text-align:center;font-size:13px;color:var(--green);font-weight:700;">←⑥ 返回</div>
+        <div style="position:absolute;left:690px;top:120px;text-align:center;font-size:13px;color:var(--green);font-weight:700;">←⑤ 返回</div>
+      </div>
+      <p class="step-desc">权限域名服务器找到 IP 后，结果<strong>沿原委托链逐级往回传递</strong>，最终到达用户主机。</p>
+      <p style="font-size:13px;color:var(--red);margin-top:6px;"><strong>递归查询对各级域名服务器负担太大</strong>，在因特网 DNS 中很少全程使用。</p>
+    </div>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+function show(n) {
+  index = (n + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  document.getElementById("count").textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

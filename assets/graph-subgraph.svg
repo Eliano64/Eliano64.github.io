@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="500" viewBox="0 0 980 500" role="img" aria-labelledby="title desc">
+  <title id="title">Subgraph and spanning subgraph</title>
+  <desc id="desc">Original graph, subgraph, invalid edge selection, and spanning subgraph.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    svg{background:transparent;font-family:"Segoe UI",Arial,sans-serif}
+    .panel{fill:#f8fafc;stroke:#cbd5e1;stroke-width:2}.edge{stroke:#64748b;stroke-width:3;fill:none;stroke-linecap:round}
+    .bad{stroke:#dc2626;stroke-width:3;fill:none;stroke-linecap:round;stroke-dasharray:8 6}.node{fill:#fff;stroke:#2563eb;stroke-width:3}
+    .faded{fill:#fff;stroke:#94a3b8;stroke-width:2;opacity:.55}.text{fill:#0f172a;font-size:21px;font-weight:650}.small{fill:#334155;font-size:16px}
+    @media (prefers-color-scheme:dark){.panel{fill:#111827;stroke:#334155}.edge{stroke:#cbd5e1}.bad{stroke:#f87171}.node,.faded{fill:#0b1220}.text{fill:#f8fafc}.small{fill:#cbd5e1}}
+  </style>
+  <rect class="panel" x="26" y="30" width="220" height="410" rx="10"/>
+  <rect class="panel" x="266" y="30" width="220" height="410" rx="10"/>
+  <rect class="panel" x="506" y="30" width="220" height="410" rx="10"/>
+  <rect class="panel" x="746" y="30" width="210" height="410" rx="10"/>
+  <text class="text" x="62" y="78">原图 G</text>
+  <text class="text" x="304" y="78">子图 G'</text>
+  <text class="text" x="538" y="78">非法选择</text>
+  <text class="text" x="770" y="78">生成子图</text>
+
+  <g transform="translate(0,0)">
+    <line class="edge" x1="90" y1="150" x2="180" y2="140"/><line class="edge" x1="90" y1="150" x2="105" y2="285"/><line class="edge" x1="180" y1="140" x2="200" y2="275"/><line class="edge" x1="105" y1="285" x2="200" y2="275"/><line class="edge" x1="180" y1="140" x2="105" y2="285"/>
+    <circle class="node" cx="90" cy="150" r="22"/><text class="text" x="83" y="157">A</text><circle class="node" cx="180" cy="140" r="22"/><text class="text" x="173" y="147">B</text><circle class="node" cx="105" cy="285" r="22"/><text class="text" x="98" y="292">C</text><circle class="node" cx="200" cy="275" r="22"/><text class="text" x="193" y="282">D</text>
+  </g>
+  <g transform="translate(240,0)">
+    <line class="edge" x1="90" y1="150" x2="180" y2="140"/><line class="edge" x1="90" y1="150" x2="105" y2="285"/>
+    <circle class="node" cx="90" cy="150" r="22"/><text class="text" x="83" y="157">A</text><circle class="node" cx="180" cy="140" r="22"/><text class="text" x="173" y="147">B</text><circle class="node" cx="105" cy="285" r="22"/><text class="text" x="98" y="292">C</text><circle class="faded" cx="200" cy="275" r="22"/><text class="small" x="194" y="281">D</text>
+  </g>
+  <g transform="translate(480,0)">
+    <line class="bad" x1="180" y1="140" x2="200" y2="275"/>
+    <circle class="node" cx="180" cy="140" r="22"/><text class="text" x="173" y="147">B</text><circle class="faded" cx="200" cy="275" r="22"/><text class="small" x="194" y="281">D</text>
+    <text class="small" x="52" y="355">选了边 BD，却没有把 D</text><text class="small" x="52" y="382">作为子图顶点保留下来</text>
+  </g>
+  <g transform="translate(720,0)">
+    <line class="edge" x1="90" y1="150" x2="180" y2="140"/><line class="edge" x1="90" y1="150" x2="105" y2="285"/><line class="edge" x1="105" y1="285" x2="200" y2="275"/>
+    <circle class="node" cx="90" cy="150" r="22"/><text class="text" x="83" y="157">A</text><circle class="node" cx="180" cy="140" r="22"/><text class="text" x="173" y="147">B</text><circle class="node" cx="105" cy="285" r="22"/><text class="text" x="98" y="292">C</text><circle class="node" cx="200" cy="275" r="22"/><text class="text" x="193" y="282">D</text>
+    <text class="small" x="54" y="355">顶点全集不变</text><text class="small" x="54" y="382">边可以减少</text>
+  </g>
+</svg>

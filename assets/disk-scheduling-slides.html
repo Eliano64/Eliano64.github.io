@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Disk Scheduling Process</title>
+<style>
+:root{--bg:#ffffff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--accent:#2563eb;--ok:#059669;--warn:#d97706;--bad:#dc2626;--purple:#7c3aed;--track:#e5e7eb}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--accent:#60a5fa;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--purple:#c084fc;--track:#1f2937}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:22px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px}
+.title{font-size:22px;font-weight:800}
+.sub{font-size:14px;color:var(--muted);margin-top:5px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:8px 12px;cursor:pointer}
+button.active{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 24%,transparent)}
+.grid{display:grid;grid-template-columns:1.35fr .9fr;gap:14px}
+.panel{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px}
+svg{width:100%;height:auto;display:block}
+.note{line-height:1.7;font-size:15px}
+.note h2{font-size:19px;margin:0 0 10px}
+.formula{font-family:Consolas,"Courier New",monospace;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:10px;white-space:pre-wrap}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:13px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.request{background:var(--accent)}.start{background:var(--ok)}.end{background:var(--bad)}
+@media(max-width:880px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">磁盘调度：同一组请求的寻道过程</div>
+      <div class="sub">初始磁头在 100 号磁道，请求序列：55, 58, 39, 18, 90, 160, 150, 38, 184。磁道范围按 0 到 200 处理，SCAN 类算法初始向磁道号增大的方向移动。</div>
+    </div>
+    <div class="btns" id="buttons"></div>
+  </div>
+  <div class="grid">
+    <div class="panel">
+      <svg id="chart" viewBox="0 0 900 410" role="img" aria-label="磁盘调度寻道过程图"></svg>
+      <div class="legend">
+        <span><span class="dot start"></span>初始位置</span>
+        <span><span class="dot request"></span>请求磁道</span>
+        <span><span class="dot end"></span>结束位置</span>
+      </div>
+    </div>
+    <div class="panel note" id="note"></div>
+  </div>
+</div>
+<script>
+const maxTrack=200;
+const data=[
+  {
+    name:"FCFS",
+    path:[100,55,58,39,18,90,160,150,38,184],
+    text:"按请求到达顺序服务。它不看磁头当前位置和后续请求分布，所以路径可能在磁盘两端反复跳动。",
+    calc:"|55-100| + |58-55| + |39-58| + |18-39| + |90-18| + |160-90| + |150-160| + |38-150| + |184-38| = 498"
+  },
+  {
+    name:"SSTF",
+    path:[100,90,58,55,39,38,18,150,160,184],
+    text:"每一步都选离当前磁头最近的请求。局部移动距离短，但若近处请求持续到来，远处请求可能长期等待。",
+    calc:"|90-100| + |58-90| + |55-58| + |39-55| + |38-39| + |18-38| + |150-18| + |160-150| + |184-160| = 248"
+  },
+  {
+    name:"SCAN",
+    path:[100,150,160,184,200,90,58,55,39,38,18],
+    text:"磁头先沿一个方向移动并服务沿途请求，到达边界后反向。这里先向大磁道号方向移动，所以会先服务 150 到 184，再到边界 200 后返回。",
+    calc:"(200-100) + (200-18) = 282"
+  },
+  {
+    name:"LOOK",
+    path:[100,150,160,184,90,58,55,39,38,18],
+    text:"LOOK 是 SCAN 的常见优化：当前方向已经没有请求时就反向，不必走到物理边界。这里服务到最大请求 184 后直接返回。",
+    calc:"(184-100) + (184-18) = 250"
+  },
+  {
+    name:"C-SCAN",
+    path:[100,150,160,184,200,0,18,38,39,55,58,90],
+    jump:[[200,0]],
+    text:"C-SCAN 只在一个方向服务请求。到达高端边界后快速回到低端边界，回程不服务，再继续向大磁道号方向服务。",
+    calc:"(200-100) + (200-0) + (90-0) = 390"
+  },
+  {
+    name:"C-LOOK",
+    path:[100,150,160,184,18,38,39,55,58,90],
+    jump:[[184,18]],
+    text:"C-LOOK 是 C-SCAN 的常见优化：不走到物理边界，而是在最大请求和最小请求之间回跳。回跳过程不服务请求。",
+    calc:"(184-100) + (184-18) + (90-18) = 322"
+  }
+];
+let current=0;
+const svg=document.getElementById("chart");
+const note=document.getElementById("note");
+const buttons=document.getElementById("buttons");
+const ns="http://www.w3.org/2000/svg";
+function el(name,attrs={},text=""){
+  const node=document.createElementNS(ns,name);
+  Object.entries(attrs).forEach(([k,v])=>node.setAttribute(k,v));
+  if(text)node.textContent=text;
+  return node;
+}
+function x(t){return 58+t/maxTrack*790}
+function y(i){return 74+i*34}
+function dist(path){let s=0;for(let i=1;i<path.length;i++)s+=Math.abs(path[i]-path[i-1]);return s}
+function draw(){
+  const d=data[current];
+  svg.innerHTML="";
+  svg.appendChild(el("rect",{x:0,y:0,width:900,height:410,rx:12,fill:"var(--bg)"}));
+  svg.appendChild(el("line",{x1:58,y1:48,x2:848,y2:48,stroke:"var(--line)","stroke-width":2}));
+  [0,50,100,150,200].forEach(t=>{
+    svg.appendChild(el("line",{x1:x(t),y1:42,x2:x(t),y2:54,stroke:"var(--line)","stroke-width":2}));
+    svg.appendChild(el("text",{x:x(t),y:30,"text-anchor":"middle",fill:"var(--muted)","font-size":13},String(t)));
+  });
+  for(let i=0;i<d.path.length;i++){
+    svg.appendChild(el("line",{x1:58,y1:y(i),x2:848,y2:y(i),stroke:"var(--track)","stroke-width":1}));
+    svg.appendChild(el("text",{x:26,y:y(i)+5,fill:"var(--muted)","font-size":13},String(i)));
+  }
+  for(let i=0;i<d.path.length-1;i++){
+    const a=d.path[i],b=d.path[i+1];
+    const jump=d.jump?.some(([p,q])=>p===a&&q===b);
+    svg.appendChild(el("line",{x1:x(a),y1:y(i),x2:x(b),y2:y(i+1),stroke:jump?"var(--warn)":"var(--accent)","stroke-width":3,"stroke-dasharray":jump?"8 6":"0"}));
+  }
+  d.path.forEach((t,i)=>{
+    let color=i===0?"var(--ok)":(i===d.path.length-1?"var(--bad)":"var(--accent)");
+    svg.appendChild(el("circle",{cx:x(t),cy:y(i),r:8,fill:color,stroke:"var(--bg)","stroke-width":2}));
+    svg.appendChild(el("text",{x:x(t),y:y(i)-13,"text-anchor":"middle",fill:"var(--fg)","font-size":13,"font-weight":"700"},String(t)));
+  });
+  note.innerHTML=`<h2>${d.name}</h2><p>${d.text}</p><div class="formula">总移动磁道数：${dist(d.path)}\n${d.calc}</div>`;
+  [...buttons.children].forEach((b,i)=>b.classList.toggle("active",i===current));
+}
+data.forEach((d,i)=>{
+  const b=document.createElement("button");
+  b.textContent=d.name;
+  b.onclick=()=>{current=i;draw()};
+  buttons.appendChild(b);
+});
+draw();
+</script>
+</body>
+</html>

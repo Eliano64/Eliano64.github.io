@@ -1,0 +1,462 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>IPv6 | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="IPv6IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网规模增长。IPv6 把地址长度扩展到 128 bit，同时调整首部结构、扩展首部、地址类型和控制协议。 IPv6 仍提供无连接、尽最大努力交付的不可靠数据报服务。它不是把 IP 变成可靠协议，而是在地址空间和转发机制上做了新设计。 主要变化IPv6 的主要变化包括：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPv6">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/08/IPv6/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="IPv6IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网规模增长。IPv6 把地址长度扩展到 128 bit，同时调整首部结构、扩展首部、地址类型和控制协议。 IPv6 仍提供无连接、尽最大努力交付的不可靠数据报服务。它不是把 IP 变成可靠协议，而是在地址空间和转发机制上做了新设计。 主要变化IPv6 的主要变化包括：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-08T08:05:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="NetworkLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "IPv6",
+  "url": "https://eliano64.github.io/2026/07/08/IPv6/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-08T08:05:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/08/IPv6/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'IPv6',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">IPv6</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">IPv6</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-08T08:05:00.000Z" title="发表于 2026-07-08 16:05:00">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.5k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="IPv6"><a href="#IPv6" class="headerlink" title="IPv6"></a>IPv6</h1><p>IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网规模增长。IPv6 把地址长度扩展到 128 bit，同时调整首部结构、扩展首部、地址类型和控制协议。</p>
+<p>IPv6 仍提供无连接、尽最大努力交付的不可靠数据报服务。它不是把 IP 变成可靠协议，而是在地址空间和转发机制上做了新设计。</p>
+<h1 id="主要变化"><a href="#主要变化" class="headerlink" title="主要变化"></a>主要变化</h1><p>IPv6 的主要变化包括：</p>
+<ul>
+<li>地址长度从 32 bit 增加到 128 bit。</li>
+<li>基本首部固定为 40 字节。</li>
+<li>取消 IPv4 首部中的首部长度、首部检验和、标识、标志、片偏移等字段。</li>
+<li>使用扩展首部承载选项和分片等功能。</li>
+<li>使用“下一个首部”字段串联扩展首部或上层协议。</li>
+<li>引入流标号，便于标识同一类需要特殊处理的数据报序列。</li>
+<li>不使用广播，把广播看作多播的特殊情形。</li>
+<li>不使用 ARP，邻站发现由 ICMPv6 完成。</li>
+</ul>
+<p><img src="/assets/ipv4-ipv6-header-comparison.svg" alt="900"></p>
+<h1 id="基本首部"><a href="#基本首部" class="headerlink" title="基本首部"></a>基本首部</h1><p>IPv6 基本首部固定 40 字节。</p>
+<p><img src="/assets/ipv6-basic-header.svg" alt="900"></p>
+<p>IPv6 基本首部字段如下：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th align="right">长度</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>版本</td>
+<td align="right">4 bit</td>
+<td>IPv6 中取值为 6</td>
+</tr>
+<tr>
+<td>通信量类</td>
+<td align="right">8 bit</td>
+<td>区分不同类型或优先级的数据报</td>
+</tr>
+<tr>
+<td>流标号</td>
+<td align="right">20 bit</td>
+<td>标识同一流中的 IPv6 数据报</td>
+</tr>
+<tr>
+<td>有效载荷长度</td>
+<td align="right">16 bit</td>
+<td>指明基本首部之后的有效载荷长度</td>
+</tr>
+<tr>
+<td>下一个首部</td>
+<td align="right">8 bit</td>
+<td>指明后面是扩展首部还是上层协议数据</td>
+</tr>
+<tr>
+<td>跳数限制</td>
+<td align="right">8 bit</td>
+<td>类似 IPv4 的 TTL，每经过一个路由器减 1</td>
+</tr>
+<tr>
+<td>源地址</td>
+<td align="right">128 bit</td>
+<td>发送端 IPv6 地址</td>
+</tr>
+<tr>
+<td>目的地址</td>
+<td align="right">128 bit</td>
+<td>接收端 IPv6 地址</td>
+</tr>
+</tbody></table>
+<p>IPv6 取消首部检验和的目的之一是减少路由器逐跳处理开销。IPv4 路由器每次修改 TTL 后都要重新计算首部检验和；IPv6 路由器转发时不再做这项工作。</p>
+<h1 id="扩展首部"><a href="#扩展首部" class="headerlink" title="扩展首部"></a>扩展首部</h1><p>IPv6 把可选功能从基本首部中移出，放到扩展首部中。基本首部的“下一个首部”字段指向第一个扩展首部；每个扩展首部也有自己的“下一个首部”字段，直到最后指向 TCP、UDP、ICMPv6 等上层协议。</p>
+<p>常见扩展首部包括：</p>
+<table>
+<thead>
+<tr>
+<th>扩展首部</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>逐跳选项</td>
+<td>需要路径上每个路由器检查的选项</td>
+</tr>
+<tr>
+<td>路由选择</td>
+<td>指定数据报经过的部分路径</td>
+</tr>
+<tr>
+<td>分片</td>
+<td>承载分片相关信息</td>
+</tr>
+<tr>
+<td>鉴别</td>
+<td>提供认证相关功能</td>
+</tr>
+<tr>
+<td>封装安全有效载荷</td>
+<td>提供加密和完整性保护</td>
+</tr>
+<tr>
+<td>目的站选项</td>
+<td>只需目的站检查的选项</td>
+</tr>
+</tbody></table>
+<p>分片字段不再出现在基本首部中。IPv6 中通常由源主机执行分片，路由器不负责像 IPv4 那样在转发途中分片。</p>
+<h1 id="地址表示"><a href="#地址表示" class="headerlink" title="地址表示"></a>地址表示</h1><p>IPv6 地址用冒号十六进制记法表示。128 bit 地址分成 8 组，每组 16 bit，用 4 个十六进制数表示。</p>
+<p><img src="/assets/ipv6-address-compression.svg" alt="900"></p>
+<p>书写时有两条常用压缩规则：</p>
+<ul>
+<li>每一组中的前导 0 可以省略。</li>
+<li>连续的一段全 0 组可以用 <code>::</code> 压缩，但一个地址中 <code>::</code> 只能出现一次。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2001:0db8:0000:0000:0000:ff00:0042:8329</span><br><span class="line">2001:db8:0:0:0:ff00:42:8329</span><br><span class="line">2001:db8::ff00:42:8329</span><br></pre></td></tr></table></figure>
+
+<p>IPv6 仍可使用类似 CIDR 的前缀长度写法，例如 <code>2001:db8:1234::/48</code>。</p>
+<h1 id="地址类型"><a href="#地址类型" class="headerlink" title="地址类型"></a>地址类型</h1><p>IPv6 数据报的目的地址有三种基本类型：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单播</td>
+<td>发给一个接口</td>
+</tr>
+<tr>
+<td>多播</td>
+<td>发给一组接口中的每一个</td>
+</tr>
+<tr>
+<td>任播</td>
+<td>发给一组接口中按路由意义最近的一个</td>
+</tr>
+</tbody></table>
+<p>IPv6 不再使用广播地址。需要“一对多”发送时使用多播。</p>
+<p>常见 IPv6 地址类型：</p>
+<table>
+<thead>
+<tr>
+<th>地址</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>::</code></td>
+<td>未指明地址，只能在特定场景作为源地址使用</td>
+</tr>
+<tr>
+<td><code>::1</code></td>
+<td>环回地址</td>
+</tr>
+<tr>
+<td><code>FF00::/8</code></td>
+<td>多播地址</td>
+</tr>
+<tr>
+<td><code>FE80::/10</code></td>
+<td>本地链路单播地址，只在同一链路内有效</td>
+</tr>
+<tr>
+<td>其他全球单播地址</td>
+<td>可在全球范围路由的单播地址</td>
+</tr>
+</tbody></table>
+<p>IPv6 地址分配给接口。一个主机或路由器可以有多个接口，因此可以有多个 IPv6 地址。</p>
+<h1 id="全球单播地址"><a href="#全球单播地址" class="headerlink" title="全球单播地址"></a>全球单播地址</h1><p>IPv6 全球单播地址采用层次结构，便于路由聚合和查找。</p>
+<p><img src="/assets/ipv6-global-unicast.svg" alt="900"></p>
+<p>三级结构通常可以理解为：</p>
+<ul>
+<li>全球路由选择前缀：由上级机构分配，用于全球路由。</li>
+<li>子网标识符：机构内部划分子网。</li>
+<li>接口标识符：标识具体网络接口，常为 64 bit。</li>
+</ul>
+<h1 id="ICMPv6"><a href="#ICMPv6" class="headerlink" title="ICMPv6"></a>ICMPv6</h1><p>ICMPv6 是 IPv6 的重要配套协议。它不仅承担 IPv4 中 ICMP 的差错报告和诊断功能，还合并了 ARP 和 IGMP 的部分功能。</p>
+<p>ICMPv6 可用于：</p>
+<ul>
+<li>差错报告。</li>
+<li>回送请求和回答。</li>
+<li>邻站发现。</li>
+<li>多播听众发现。</li>
+</ul>
+<p>IPv6 不使用 ARP。邻站询问和邻站通告用于替代 IPv4 中 ARP 的地址解析功能。多播听众发现用于替代 IGMP 的多播组成员管理功能。</p>
+<h1 id="IPv4-到-IPv6-过渡"><a href="#IPv4-到-IPv6-过渡" class="headerlink" title="IPv4 到 IPv6 过渡"></a>IPv4 到 IPv6 过渡</h1><p>因特网不能一次性从 IPv4 切换到 IPv6，只能逐步过渡。常见策略是双协议栈和隧道技术。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||570)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||570)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/ipv6-transition-slides.html" style="width:100%;height:570px;border:0" loading="lazy"></iframe>
+</div>
+
+<p><strong>双协议栈</strong>指主机或路由器同时支持 IPv4 和 IPv6。与 IPv4 主机通信时使用 IPv4 地址；与 IPv6 主机通信时使用 IPv6 地址。双协议栈主机可以根据 DNS 返回的地址类型选择使用哪套协议。</p>
+<p><strong>隧道技术</strong>用于让 IPv6 数据报穿过 IPv4 网络。隧道入口把整个 IPv6 数据报封装到 IPv4 数据报的数据部分中；IPv4 网络只负责转发外层 IPv4 数据报；隧道出口再取出原 IPv6 数据报继续转发。为了标明 IPv4 数据部分承载的是 IPv6 数据报，IPv4 首部协议字段可设置为 41。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/08/IPv6/">https://eliano64.github.io/2026/07/08/IPv6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/08/IP-Multicast/" title="IP Multicast"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">IP Multicast</div></div><div class="info-2"><div class="info-item-1">IP 多播多播是一对多通信。发送者只发送一份数据，网络在需要分叉的地方复制分组，把数据送给多播组成员。  与单播相比，多播能减少源主机发送副本数量，也能减少链路上的重复流量。典型场景是视频直播、会议分发、组通信等。 多播组和多播地址IPv4 多播地址使用 D 类地址，即 224.0.0.0 到 239.255.255.255。多播地址只能作为目的地址，不能作为源地址。 一个 IP 多播地址标识一个多播组。使用同一个 IP 多播地址接收数据报的主机构成一个多播组。 多播组有几个特点：  主机可以动态加入或离开多播组。 一台主机可以加入多个多播组。 多播组成员数量和位置可以变化。 发送者不一定是多播组成员。  IP 多播可以发生在局域网内，也可以跨越因特网。跨网络多播需要多播路由选择；到达最后一个局域网后，通常还要依赖局域网硬件多播交付给组成员。 多播 MAC 映射以太网支持多播 MAC 地址。IPv4 多播数据报在以太网上发送时，需要把 IP 多播地址映射成以太网多播 MAC 地址。  映射规则的关键是：  以太网多播 MAC 地址前缀为 01-00-5E。 MAC 地址后 23...</div></div></div></a><a class="pagination-related" href="/2026/07/08/Mobile-IP/" title="Mobile IP"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Mobile IP</div></div><div class="info-2"><div class="info-item-1">移动 IP普通 IP 地址同时包含两个含义：主机接口标识和所在网络位置。路由器根据地址中的网络前缀转发分组。如果主机移动到另一个网络但仍使用原地址，分组仍会被路由到原网络；如果直接换成新地址，原有通信连接又会被破坏。 移动 IP 的目标是：移动主机跨网络移动时，仍能保持原来的永久 IP 地址，并尽量不要求固定主机和普通路由器修改协议。 移动性的几种情况移动性对网络层的影响不同：    情况 是否需要移动 IP    只在同一 Wi-Fi 覆盖区内移动，网络层地址不变 不需要   换地点重新接入，地址改变，但不要求保持原连接 不需要   跨网络移动，仍要求保持原地址和通信连续性 需要移动 IP 这类机制   移动 IP...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#IPv6"><span class="toc-text">IPv6</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E5%8F%98%E5%8C%96"><span class="toc-text">主要变化</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E9%A6%96%E9%83%A8"><span class="toc-text">基本首部</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E9%A6%96%E9%83%A8"><span class="toc-text">扩展首部</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E8%A1%A8%E7%A4%BA"><span class="toc-text">地址表示</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%B1%BB%E5%9E%8B"><span class="toc-text">地址类型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%A8%E7%90%83%E5%8D%95%E6%92%AD%E5%9C%B0%E5%9D%80"><span class="toc-text">全球单播地址</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ICMPv6"><span class="toc-text">ICMPv6</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#IPv4-%E5%88%B0-IPv6-%E8%BF%87%E6%B8%A1"><span class="toc-text">IPv4 到 IPv6 过渡</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

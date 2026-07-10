@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buddy System Allocation</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --text: #111827;
+    --muted: #4b5563;
+    --line: #cbd5e1;
+    --accent: #2563eb;
+    --free: #dcfce7;
+    --used: #e0e7ff;
+    --split: #fef3c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827;
+      --panel: #1f2937;
+      --text: #e5e7eb;
+      --muted: #cbd5e1;
+      --line: #475569;
+      --accent: #93c5fd;
+      --free: #14532d;
+      --used: #1e3a8a;
+      --split: #713f12;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 20px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+  h1 { margin: 0; font-size: 22px; }
+  .controls { display: flex; gap: 8px; }
+  button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .mem { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; height: 70px; display: flex; margin: 14px 0; }
+  .block { display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--line); font-weight: 700; min-width: 44px; }
+  .block:last-child { border-right: 0; }
+  .free { background: var(--free); }
+  .used { background: var(--used); }
+  .split { background: var(--split); outline: 3px solid var(--accent); outline-offset: -3px; }
+  .title { font-weight: 750; font-size: 18px; }
+  .muted { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 6px; text-align: left; }
+  th { color: var(--muted); font-weight: 650; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>伙伴系统：分裂与合并</h1>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+      <button id="reset">重置</button>
+    </div>
+  </header>
+  <section class="panel">
+    <div id="title" class="title"></div>
+    <p id="explain" class="muted"></p>
+    <div id="mem" class="mem"></div>
+    <table>
+      <thead><tr><th>操作</th><th>规则</th></tr></thead>
+      <tbody>
+        <tr><td>申请</td><td>把请求向上取整到 $2^k$ 大小；若没有对应大小空闲块，就不断二分更大的块</td></tr>
+        <tr><td>释放</td><td>若相邻伙伴块大小相同且也空闲，则合并成更大的块；合并后继续尝试向上合并</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+<script>
+const total = 64;
+const steps = [
+  {
+    title: "初始：一个 64KB 空闲块",
+    explain: "伙伴系统把空闲块按 2 的幂大小管理。",
+    blocks: [{ size: 64, label: "64K 空闲", cls: "free" }]
+  },
+  {
+    title: "申请 10KB：向上取整为 16KB",
+    explain: "没有 16KB 块，于是 64KB 分成两个 32KB，再把其中一个 32KB 分成两个 16KB。",
+    blocks: [
+      { size: 16, label: "16K 分配", cls: "used" },
+      { size: 16, label: "16K 空闲", cls: "free" },
+      { size: 32, label: "32K 空闲", cls: "free" }
+    ]
+  },
+  {
+    title: "再申请 20KB：向上取整为 32KB",
+    explain: "直接使用现有 32KB 空闲块。",
+    blocks: [
+      { size: 16, label: "16K 分配", cls: "used" },
+      { size: 16, label: "16K 空闲", cls: "free" },
+      { size: 32, label: "32K 分配", cls: "used" }
+    ]
+  },
+  {
+    title: "释放 16KB 块：先和伙伴合并",
+    explain: "释放左侧 16KB 后，它的伙伴 16KB 也空闲，二者合并为 32KB。",
+    blocks: [
+      { size: 32, label: "32K 空闲", cls: "split" },
+      { size: 32, label: "32K 分配", cls: "used" }
+    ]
+  },
+  {
+    title: "释放另一个 32KB：继续合并",
+    explain: "两个 32KB 伙伴都空闲，可合并回一个 64KB 空闲块。",
+    blocks: [{ size: 64, label: "64K 空闲", cls: "free" }]
+  }
+];
+let step = 0;
+
+function render() {
+  const s = steps[step];
+  document.getElementById("title").textContent = `${step + 1}. ${s.title}`;
+  document.getElementById("explain").textContent = s.explain;
+  document.getElementById("mem").innerHTML = s.blocks.map(b =>
+    `<div class="block ${b.cls}" style="width:${b.size / total * 100}%">${b.label}</div>`).join("");
+}
+document.getElementById("prev").onclick = () => { step = Math.max(0, step - 1); render(); };
+document.getElementById("next").onclick = () => { step = Math.min(steps.length - 1, step + 1); render(); };
+document.getElementById("reset").onclick = () => { step = 0; render(); };
+render();
+</script>
+</body>
+</html>

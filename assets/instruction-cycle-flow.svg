@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="620" viewBox="0 0 1040 620" role="img" aria-labelledby="title desc">
+  <title id="title">Instruction cycle flow</title>
+  <desc id="desc">Instruction execution flow: fetch, optional indirect addressing, execute, optional interrupt handling.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --ink: #172033;
+      --muted: #5d6980;
+      --line: #526174;
+      --node: #e8f1ff;
+      --decision: #fff2d8;
+      --done: #eef7ee;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1420;
+        --ink: #e7edf7;
+        --muted: #aab6c8;
+        --line: #91a0b5;
+        --node: #17243a;
+        --decision: #302417;
+        --done: #18291d;
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    text { fill: var(--ink); }
+    .title { font-size: 30px; font-weight: 700; }
+    .label { font-size: 22px; font-weight: 700; }
+    .note { font-size: 16px; fill: var(--muted); }
+    .node { fill: var(--node); stroke: var(--line); stroke-width: 2.2; rx: 14; }
+    .done { fill: var(--done); stroke: var(--line); stroke-width: 2.2; rx: 14; }
+    .diamond { fill: var(--decision); stroke: var(--line); stroke-width: 2.2; }
+    .arrow { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+    .thin { stroke-width: 2; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+  <text x="520" y="46" text-anchor="middle" class="title">一条指令的工作周期流程</text>
+
+  <rect x="392" y="82" width="256" height="76" class="node"/>
+  <text x="520" y="114" text-anchor="middle" class="label">取指周期 FE</text>
+  <text x="520" y="140" text-anchor="middle" class="note">从 PC 指向的主存单元取出指令</text>
+
+  <path d="M520 158 V200" class="arrow"/>
+  <path d="M520 200 L650 272 L520 344 L390 272 Z" class="diamond"/>
+  <text x="520" y="266" text-anchor="middle" class="label">需要间接寻址？</text>
+  <text x="520" y="292" text-anchor="middle" class="note">地址码还不是有效地址</text>
+
+  <path d="M650 272 H778 V328" class="arrow"/>
+  <text x="718" y="258" text-anchor="middle" class="note">是</text>
+  <rect x="710" y="328" width="210" height="76" class="node"/>
+  <text x="815" y="360" text-anchor="middle" class="label">间址周期 IND</text>
+  <text x="815" y="386" text-anchor="middle" class="note">访存取得有效地址</text>
+  <path d="M710 366 H650" class="arrow"/>
+
+  <path d="M520 344 V394" class="arrow"/>
+  <text x="486" y="370" text-anchor="middle" class="note">否</text>
+  <rect x="392" y="394" width="256" height="76" class="node"/>
+  <text x="520" y="426" text-anchor="middle" class="label">执行周期 EX</text>
+  <text x="520" y="452" text-anchor="middle" class="note">由指令功能决定具体数据流</text>
+
+  <path d="M520 470 V512" class="arrow"/>
+  <path d="M520 512 L650 570 L520 628 L390 570 Z" transform="translate(0,-30)" class="diamond"/>
+  <text x="520" y="532" text-anchor="middle" class="label">有中断请求且允许响应？</text>
+  <text x="520" y="557" text-anchor="middle" class="note">通常在一条指令结束后判断</text>
+
+  <path d="M650 540 H778 V512" class="arrow thin"/>
+  <text x="718" y="526" text-anchor="middle" class="note">是</text>
+  <rect x="710" y="436" width="210" height="76" class="node"/>
+  <text x="815" y="468" text-anchor="middle" class="label">中断周期 INT</text>
+  <text x="815" y="494" text-anchor="middle" class="note">保存断点并转入服务程序</text>
+
+  <path d="M520 598 V604 H200 V120 H392" class="arrow thin"/>
+  <text x="464" y="592" text-anchor="middle" class="note">否，进入下一条指令</text>
+  <path d="M710 474 H198 V120 H392" class="arrow thin"/>
+</svg>

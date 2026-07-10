@@ -1,0 +1,22 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BST Search</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:980px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.explain{font-size:18px;line-height:1.65}.code{font:14px/1.45 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap}svg{width:100%;height:auto}.node{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.line{stroke:#64748b;stroke-width:2}.hit{fill:#dcfce7;stroke:var(--green);stroke-width:4}.cur{stroke:var(--blue);stroke-width:5}.miss{stroke:var(--red);stroke-width:4}.t{fill:var(--text);font-weight:700;font-size:16px;text-anchor:middle}.small{fill:var(--muted);font-size:13px;text-anchor:middle}@media(prefers-color-scheme:dark){.node{fill:#172554;stroke:#38bdf8}.hit{fill:#12351f}.line{stroke:#94a3b8}}</style></head><body><div class="wrap"><div class="top"><div><h1>BST 查找：沿一条路径向下</h1><div class="hint">目标 key = 30；每次比较后只进入一棵子树。</div></div><div><button id="prev">上一步</button> <button id="next">下一步</button></div></div><div class="card"><div class="stage"><svg viewBox="0 0 520 380" id="tree"></svg><div><div class="explain" id="explain"></div><pre class="code">BSTNode *bst_search(BSTNode *root, int key) {
+    while (root != NULL) {
+        // 本轮比较 root->key，查找长度加 1。
+        if (key == root->key) return root;
+
+        // 小于走左子树，大于走右子树。
+        if (key < root->key) root = root->left;
+        else root = root->right;
+    }
+
+    // 走到空指针，查找失败。
+    return NULL;
+}</pre></div></div></div></div><script>
+const nodes={19:[260,45],13:[150,135],50:[370,135],11:[80,225],26:[220,225],66:[440,225],21:[170,315],30:[270,315],60:[390,315],70:[490,315]};
+const edges=[[19,13],[19,50],[13,11],[13,26],[50,66],[26,21],[26,30],[66,60],[66,70]];
+const steps=[{cur:19,t:"比较 30 与根结点 19：30 > 19，只可能在右子树。左子树整棵排除。"},{cur:50,t:"比较 30 与 50：30 < 50，只可能在 50 的左子树。"},{cur:26,t:"比较 30 与 26：30 > 26，只可能在 26 的右子树。"},{cur:30,hit:true,t:"比较 30 与 30，相等，查找成功。查找长度为 4。"}];let k=0;
+function draw(){const s=steps[k],svg=document.getElementById('tree');svg.innerHTML='';for(const [a,b]of edges){let [x1,y1]=nodes[a],[x2,y2]=nodes[b];svg.innerHTML+=`<line class="line" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;}for(const [v,p]of Object.entries(nodes)){let cls='node';if(+v===s.cur)cls+=s.hit?' hit':' cur';svg.innerHTML+=`<circle class="${cls}" cx="${p[0]}" cy="${p[1]}" r="26"/><text class="t" x="${p[0]}" y="${p[1]+6}">${v}</text>`;}document.getElementById('explain').textContent=s.t}
+prev.onclick=()=>{k=Math.max(0,k-1);draw()};next.onclick=()=>{k=Math.min(steps.length-1,k+1);draw()};draw();
+</script></body></html>

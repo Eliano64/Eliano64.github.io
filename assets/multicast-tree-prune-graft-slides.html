@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Multicast Tree Prune Graft</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--green:#16a34a;--blue:#2563eb;--red:#dc2626;--orange:#d97706;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--green:#4ade80;--blue:#60a5fa;--red:#f87171;--orange:#fbbf24;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+.wrap{max-width:980px;margin:auto;padding:22px}
+.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}
+.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:10px;margin-bottom:10px;cursor:pointer}
+.step b{display:block;margin-bottom:5px}.step span{font-size:14px;color:var(--muted);line-height:1.45}.step.active{outline:2px solid var(--blue)}
+.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:12px}
+.note{color:var(--muted);line-height:1.6;margin-top:6px}
+.controls{text-align:center;margin-top:14px}
+button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">多播转发树：从泛洪到剪枝、嫁接</div>
+  <div class="layout">
+    <div id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 680 360" role="img" aria-label="多播转发树剪枝和嫁接过程">
+        <defs>
+          <marker id="arrG" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--green)"/></marker>
+          <marker id="arrR" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--red)"/></marker>
+          <marker id="arrB" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker>
+        </defs>
+        <g id="links" fill="none" stroke-linecap="round" stroke-width="4">
+          <path id="l01" d="M340 78 L220 155" stroke="var(--green)"/>
+          <path id="l02" d="M340 78 L460 155" stroke="var(--green)"/>
+          <path id="l13" d="M220 155 L140 255" stroke="var(--green)"/>
+          <path id="l14" d="M220 155 L300 255" stroke="var(--green)"/>
+          <path id="l25" d="M460 155 L380 255" stroke="var(--green)"/>
+          <path id="l26" d="M460 155 L540 255" stroke="var(--green)"/>
+        </g>
+        <g id="nodes" font-size="14" text-anchor="middle">
+          <circle cx="340" cy="62" r="28" fill="var(--panel)" stroke="var(--blue)" stroke-width="2"/><text x="340" y="67" fill="var(--text)">源 S</text>
+          <circle cx="220" cy="155" r="25" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="220" y="160" fill="var(--text)">R1</text>
+          <circle cx="460" cy="155" r="25" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text x="460" y="160" fill="var(--text)">R2</text>
+          <circle id="n3" cx="140" cy="255" r="25" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/><text x="140" y="260" fill="var(--text)">组员</text>
+          <circle id="n4" cx="300" cy="255" r="25" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text id="t4" x="300" y="260" fill="var(--text)">无成员</text>
+          <circle id="n5" cx="380" cy="255" r="25" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/><text x="380" y="260" fill="var(--text)">组员</text>
+          <circle id="n6" cx="540" cy="255" r="25" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><text id="t6" x="540" y="260" fill="var(--text)">无成员</text>
+        </g>
+        <path id="signal" d="" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="7 6" marker-end="url(#arrR)"/>
+        <text id="caption" x="340" y="330" text-anchor="middle" fill="var(--text)" font-size="18"></text>
+      </svg>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+  ["先形成转发树","密集场景常先按反向路径广播形成到各分支的转发结构。","所有链路先参与转发，保证分组能到达可能有成员的网络。"],
+  ["剪掉无成员分支","叶节点路由器若没有本组成员，也没有下游成员，就向上游发送剪枝。","剪枝后，上游不再把该多播组的数据发向这条分支。"],
+  ["成员出现后嫁接","被剪掉的分支后来出现成员，就向上游发送嫁接。","嫁接让该分支重新接入多播转发树。"],
+  ["共享树思路","稀疏场景可让成员路由器朝核心路由器发送加入，形成共享树。","共享树不从全网泛洪开始，而是按成员加入关系逐步建立。"]
+];
+let i=0;
+const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{
+  const e=document.createElement("div");
+  e.className="step";
+  e.innerHTML=`<b>${idx+1}. ${d[0]}</b><span>${d[1]}</span>`;
+  e.onclick=()=>{i=idx;render()};
+  steps.appendChild(e);
+});
+function link(id,color,dash=false){const e=document.getElementById(id);e.setAttribute("stroke",color);e.setAttribute("stroke-dasharray",dash?"8 7":"");}
+function render(){
+  [...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));
+  caption.textContent=data[i][0];
+  note.textContent=data[i][2];
+  ["l01","l02","l13","l14","l25","l26"].forEach(id=>link(id,"var(--green)",false));
+  signal.setAttribute("d","");
+  signal.setAttribute("stroke","var(--red)");
+  signal.setAttribute("marker-end","url(#arrR)");
+  n4.setAttribute("stroke","var(--line)");n6.setAttribute("stroke","var(--line)");
+  t4.textContent="无成员";t6.textContent="无成员";
+  if(i===1){
+    link("l14","var(--red)",true);link("l26","var(--red)",true);
+    signal.setAttribute("d","M300 230 L245 170 M540 230 L485 170");
+  }else if(i===2){
+    link("l14","var(--green)",false);link("l26","var(--red)",true);
+    n4.setAttribute("stroke","var(--green)");t4.textContent="新成员";
+    signal.setAttribute("stroke","var(--blue)");
+    signal.setAttribute("marker-end","url(#arrB)");
+    signal.setAttribute("d","M300 230 L245 170");
+  }else if(i===3){
+    ["l13","l14","l25","l26"].forEach(id=>link(id,"var(--line)",true));
+    link("l01","var(--blue)",false);link("l02","var(--blue)",false);
+    signal.setAttribute("stroke","var(--blue)");
+    signal.setAttribute("marker-end","url(#arrB)");
+    signal.setAttribute("d","M140 230 L205 170 M380 230 L445 170");
+  }
+}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};
+next.onclick=()=>{i=(i+1)%data.length;render()};
+render();
+</script>
+</body>
+</html>

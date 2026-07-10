@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430" role="img" aria-labelledby="title desc">
+  <title id="title">Multi Level Page Table</title>
+  <desc id="desc">A 32-bit logical address is split into page directory number, page table index, and offset.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--panel:#f8fafc;--panel2:#eff6ff;--text:#111827;--muted:#4b5563;--line:#64748b;--accent:#2563eb}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#1e293b;--panel2:#172554;--text:#e5e7eb;--muted:#cbd5e1;--line:#94a3b8;--accent:#93c5fd}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:1.5;rx:8}.box2{fill:var(--panel2);stroke:var(--accent);stroke-width:1.7;rx:8}.cell{fill:var(--panel);stroke:var(--line);stroke-width:1}.hit{fill:var(--panel2);stroke:var(--accent);stroke-width:2}
+    .title{fill:var(--text);font:700 19px "Segoe UI",Arial,sans-serif}.text{fill:var(--text);font:15px "Segoe UI",Arial,sans-serif}.small{fill:var(--muted);font:13px "Segoe UI",Arial,sans-serif}.arrow{stroke:var(--line);stroke-width:2;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="980" height="430"/>
+  <text class="title" x="40" y="38">两级页表地址转换</text>
+  <text class="small" x="40" y="62">示例：32 位逻辑地址，页面 4KB，页表项 4B，因此每级页表一页可放 1024 项。</text>
+
+  <rect class="box2" x="56" y="96" width="420" height="82"/>
+  <text class="text" x="76" y="123">逻辑地址结构</text>
+  <rect class="cell" x="78" y="140" width="120" height="26"/><text class="small" x="103" y="158">一级页号 10位</text>
+  <rect class="cell" x="198" y="140" width="120" height="26"/><text class="small" x="222" y="158">二级页号 10位</text>
+  <rect class="cell" x="318" y="140" width="130" height="26"/><text class="small" x="348" y="158">页内偏移 12位</text>
+
+  <rect class="box" x="82" y="242" width="190" height="120"/>
+  <text class="text" x="132" y="270">页目录表</text>
+  <rect class="cell" x="118" y="288" width="45" height="26"/><text class="small" x="135" y="306">i</text>
+  <rect class="hit" x="163" y="288" width="74" height="26"/><text class="small" x="177" y="306">二级页表地址</text>
+  <text class="small" x="112" y="338">用一级页号索引</text>
+
+  <path class="arrow" d="M138 178v62"/>
+  <path class="arrow" d="M272 302h100"/>
+
+  <rect class="box" x="372" y="242" width="210" height="120"/>
+  <text class="text" x="438" y="270">二级页表</text>
+  <rect class="cell" x="410" y="288" width="45" height="26"/><text class="small" x="426" y="306">j</text>
+  <rect class="hit" x="455" y="288" width="88" height="26"/><text class="small" x="478" y="306">页框号 b</text>
+  <text class="small" x="400" y="338">用二级页号索引</text>
+
+  <path class="arrow" d="M258 178v34h220v30"/>
+  <path class="arrow" d="M582 302h104"/>
+
+  <rect class="box2" x="686" y="252" width="238" height="78"/>
+  <text class="text" x="706" y="280">物理地址</text>
+  <rect class="cell" x="708" y="294" width="92" height="24"/><text class="small" x="730" y="311">页框号 b</text>
+  <rect class="cell" x="800" y="294" width="102" height="24"/><text class="small" x="824" y="311">页内偏移</text>
+
+  <path class="arrow" d="M383 178v214h416v-62"/>
+  <text class="small" x="454" y="396">多级页表减少连续存放整个页表的要求，但未命中 TLB 时访存次数增加。</text>
+</svg>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IPv4 分片过程</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--fg:#0f172a;--muted:#475569;--line:#64748b;--a:#dbeafe;--b:#fed7aa;--c:#dcfce7;--border:#cbd5e1;--accent:#0369a1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--fg:#e5e7eb;--muted:#cbd5e1;--line:#94a3b8;--a:#172554;--b:#431407;--c:#052e16;--border:#334155;--accent:#67e8f9}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+.wrap{max-width:1020px;margin:0 auto;padding:28px 32px}.title{text-align:center;font-size:26px;font-weight:700;margin-bottom:8px}.sub{text-align:center;color:var(--muted);margin-bottom:22px}
+.stage{display:grid;grid-template-columns:270px 1fr;gap:22px;align-items:start}.steps{display:grid;gap:10px}.step{border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--muted)}.step.active{border-color:var(--accent);color:var(--fg);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 28%,transparent)}
+.canvas{border:1px solid var(--border);border-radius:10px;padding:20px;min-height:390px}.bar{height:54px;border:2px solid var(--line);border-radius:8px;display:flex;overflow:hidden;margin:18px 0}.hdr{width:86px;background:var(--a);display:grid;place-items:center;border-right:2px solid var(--line);text-align:center}.data{background:var(--c);display:grid;place-items:center;flex:1}.fragTable{width:100%;border-collapse:collapse;margin-top:10px}.fragTable th,.fragTable td{border:1px solid var(--border);padding:8px 10px;text-align:center}.fragTable th{background:var(--a)}.fragTable td:nth-child(2){background:var(--b)}.meta{font-size:15px;color:var(--muted);margin-top:4px}.formula{color:var(--accent);font-weight:700;margin-top:12px}.controls{text-align:center;margin-top:18px}button{background:transparent;color:var(--fg);border:1px solid var(--border);border-radius:8px;padding:8px 16px;margin:0 6px;font:inherit}button:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">IPv4 分片过程</div>
+  <div class="sub">例：原数据报载荷 4000 B，首部 20 B，下一段链路 MTU = 800 B</div>
+  <div class="stage">
+    <div class="steps" id="steps"></div>
+    <div class="canvas"><div id="view"></div></div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const steps=[
+{t:"1. 原始数据报",html:`<div class="bar"><div class="hdr">首部<br>20B</div><div class="data">载荷 4000B</div></div><div class="meta">原始总长度 = 20 + 4000 = 4020B。</div>`},
+{t:"2. MTU 限制",html:`<div class="formula">每个分片总长度不能超过 MTU 800B。</div><div class="formula">若直接相减：800 - 20 = 780B。</div><div class="meta">但片偏移以 8B 为单位。除最后一片外，分片载荷必须是 8B 的整数倍；780 不能被 8 整除。</div>`},
+{t:"3. 向下取整",html:`<div class="formula">780 向下取到 8B 的整数倍：776B。</div><div class="meta">因此前面每个满载分片最多放 776B 数据，而不是 780B。</div><div class="bar"><div class="hdr">首部<br>20B</div><div class="data">载荷 776B</div></div><div class="meta">分片总长度 = 796B，不超过 MTU 800B。</div>`},
+{t:"4. 生成分片",html:`<table class="fragTable"><tr><th>分片</th><th>载荷长度</th><th>片偏移</th><th>MF</th><th>总长度</th></tr>${[0,776,1552,2328,3104,3880].map((off,idx)=>{let len=idx<5?776:120;let mf=idx<5?1:0;return `<tr><td>${idx+1}</td><td>${len}B</td><td>${off}/8=${off/8}</td><td>${mf}</td><td>${len+20}B</td></tr>`}).join("")}</table><div class="meta">前 5 片每片总长度 796B；最后一片总长度 140B。所有分片总长度都不超过 MTU 800B。</div>`},
+{t:"5. 发送与重组",html:`<div class="formula">分片独立转发，可能再次分片。</div><div class="meta">中间路由器不重组；只有目的主机按源地址、目的地址、协议、标识、片偏移和 MF 重组。</div><div class="meta">若 DF=1 且下一链路 MTU 不足，路由器不能分片，只能丢弃并返回 ICMP 差错。</div>`}
+];
+let i=0;const stepsEl=document.getElementById("steps"),view=document.getElementById("view");
+function render(){stepsEl.innerHTML=steps.map((s,k)=>`<div class="step ${k===i?'active':''}"><b>${s.t}</b></div>`).join("");view.innerHTML=steps[i].html}
+document.getElementById("prev").onclick=()=>{i=Math.max(0,i-1);render()};document.getElementById("next").onclick=()=>{i=Math.min(steps.length-1,i+1);render()};render();
+</script>
+</body>
+</html>

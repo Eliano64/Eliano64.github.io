@@ -1,0 +1,707 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>x86 Assembly Basics | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="从高级语言到机器码C&#x2F;C++ 程序到可执行文件通常经历预处理、编译、汇编、链接几个阶段。其中与本章最相关的是：   高级语言：面向人，描述算法逻辑，例如 y &#x3D; a * b + c。 汇编语言：用助记符描述机器指令，例如 mov eax, ebx。 机器语言：CPU 真正执行的二进制编码。  汇编语言和机器语言大体一一对应。读汇编时重点看三件事：  指令要做什么操作。 操作数来自哪里。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="x86 Assembly Basics">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/02/x86-Assembly-Basics/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="从高级语言到机器码C&#x2F;C++ 程序到可执行文件通常经历预处理、编译、汇编、链接几个阶段。其中与本章最相关的是：   高级语言：面向人，描述算法逻辑，例如 y &#x3D; a * b + c。 汇编语言：用助记符描述机器指令，例如 mov eax, ebx。 机器语言：CPU 真正执行的二进制编码。  汇编语言和机器语言大体一一对应。读汇编时重点看三件事：  指令要做什么操作。 操作数来自哪里。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-02T03:40:41.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.076Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="InstructionSystem">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "x86 Assembly Basics",
+  "url": "https://eliano64.github.io/2026/07/02/x86-Assembly-Basics/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-02T03:40:41.000Z",
+  "dateModified": "2026-07-10T07:16:51.076Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/02/x86-Assembly-Basics/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'x86 Assembly Basics',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">x86 Assembly Basics</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">x86 Assembly Basics</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-02T03:40:41.000Z" title="发表于 2026-07-02 11:40:41">2026-07-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.076Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.9k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="从高级语言到机器码"><a href="#从高级语言到机器码" class="headerlink" title="从高级语言到机器码"></a>从高级语言到机器码</h1><p>C&#x2F;C++ 程序到可执行文件通常经历预处理、编译、汇编、链接几个阶段。其中与本章最相关的是：</p>
+<p><img src="/assets/x86-code-translation-levels.svg" alt="C 到机器码的层次"></p>
+<ul>
+<li><strong>高级语言</strong>：面向人，描述算法逻辑，例如 <code>y = a * b + c</code>。</li>
+<li><strong>汇编语言</strong>：用助记符描述机器指令，例如 <code>mov eax, ebx</code>。</li>
+<li><strong>机器语言</strong>：CPU 真正执行的二进制编码。</li>
+</ul>
+<p>汇编语言和机器语言大体一一对应。读汇编时重点看三件事：</p>
+<ol>
+<li>指令要做什么操作。</li>
+<li>操作数来自哪里。</li>
+<li>结果写回哪里，是否改变程序执行流。</li>
+</ol>
+<h1 id="基本格式"><a href="#基本格式" class="headerlink" title="基本格式"></a>基本格式</h1><p>同一条 x86 指令可以有不同汇编格式：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>Intel 格式</th>
+<th>AT&amp;T 格式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>操作数顺序</td>
+<td><code>op dst, src</code></td>
+<td><code>op src, dst</code></td>
+</tr>
+<tr>
+<td>寄存器</td>
+<td><code>eax</code></td>
+<td><code>%eax</code></td>
+</tr>
+<tr>
+<td>立即数</td>
+<td><code>5</code></td>
+<td><code>$5</code></td>
+</tr>
+<tr>
+<td>主存地址</td>
+<td><code>[ebx + 8]</code></td>
+<td><code>8(%ebx)</code></td>
+</tr>
+<tr>
+<td>读写长度</td>
+<td><code>byte ptr</code>、<code>word ptr</code>、<code>dword ptr</code></td>
+<td>指令后缀 <code>b</code>、<code>w</code>、<code>l</code></td>
+</tr>
+</tbody></table>
+<p>例如同样是把 <code>ebx + ecx * 4 + 8</code> 所指地址处的 32 位数据读入 <code>eax</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">; Intel</span><br><span class="line">mov eax, dword ptr [ebx + ecx * 4 + 8]</span><br><span class="line"></span><br><span class="line">; AT&amp;T</span><br><span class="line">movl 8(%ebx, %ecx, 4), %eax</span><br></pre></td></tr></table></figure>
+
+<p>读材料或题目时先判断格式，再判断源和目的，避免把数据流方向看反。</p>
+<p>笔记统一为 Intel 格式。</p>
+<h1 id="操作数位置"><a href="#操作数位置" class="headerlink" title="操作数位置"></a>操作数位置</h1><p>x86 指令中的操作数常来自三类位置：寄存器、主存、立即数。</p>
+<p><img src="/assets/x86-operand-forms.svg" alt="x86 操作数来源"></p>
+<h2 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h2><p>常见 32 位寄存器：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>寄存器</th>
+<th>常见用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通用寄存器</td>
+<td><code>eax</code>、<code>ebx</code>、<code>ecx</code>、<code>edx</code></td>
+<td>算术逻辑运算、临时数据</td>
+</tr>
+<tr>
+<td>变址寄存器</td>
+<td><code>esi</code>、<code>edi</code></td>
+<td>字符串、数组、线性表处理</td>
+</tr>
+<tr>
+<td>栈相关寄存器</td>
+<td><code>esp</code>、<code>ebp</code></td>
+<td>函数调用栈、栈帧定位</td>
+</tr>
+<tr>
+<td>指令指针</td>
+<td><code>eip</code></td>
+<td>指向下一条将执行的指令</td>
+</tr>
+</tbody></table>
+<p>同一组通用寄存器还可以按更短位宽访问。例如：</p>
+<table>
+<thead>
+<tr>
+<th>32 位</th>
+<th>16 位</th>
+<th>高 8 位</th>
+<th>低 8 位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>eax</code></td>
+<td><code>ax</code></td>
+<td><code>ah</code></td>
+<td><code>al</code></td>
+</tr>
+<tr>
+<td><code>ebx</code></td>
+<td><code>bx</code></td>
+<td><code>bh</code></td>
+<td><code>bl</code></td>
+</tr>
+<tr>
+<td><code>ecx</code></td>
+<td><code>cx</code></td>
+<td><code>ch</code></td>
+<td><code>cl</code></td>
+</tr>
+<tr>
+<td><code>edx</code></td>
+<td><code>dx</code></td>
+<td><code>dh</code></td>
+<td><code>dl</code></td>
+</tr>
+</tbody></table>
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov eax, ebx</span><br><span class="line">mov ax, bx</span><br><span class="line">mov ah, bl</span><br></pre></td></tr></table></figure>
+
+<p>这三条指令的读写宽度不同。</p>
+<h2 id="主存操作数"><a href="#主存操作数" class="headerlink" title="主存操作数"></a>主存操作数</h2><p>Intel 格式用中括号表示主存地址：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov eax, dword ptr [af996h]</span><br><span class="line">mov byte ptr [af996h], 5</span><br><span class="line">mov eax, dword ptr [ebx + 8]</span><br></pre></td></tr></table></figure>
+
+<p>含义：</p>
+<ul>
+<li><code>dword ptr [af996h]</code>：访问地址 <code>af996h</code> 处的 32 位数据。</li>
+<li><code>byte ptr [af996h]</code>：访问地址 <code>af996h</code> 处的 8 位数据。</li>
+<li><code>[ebx + 8]</code>：先计算地址 <code>ebx + 8</code>，再访问该地址处的数据。</li>
+</ul>
+<p>常见读写长度：</p>
+<table>
+<thead>
+<tr>
+<th>写法</th>
+<th align="right">位数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>byte ptr</code></td>
+<td align="right"><code>8</code></td>
+<td>字节</td>
+</tr>
+<tr>
+<td><code>word ptr</code></td>
+<td align="right"><code>16</code></td>
+<td>字</td>
+</tr>
+<tr>
+<td><code>dword ptr</code></td>
+<td align="right"><code>32</code></td>
+<td>双字</td>
+</tr>
+</tbody></table>
+<h2 id="立即数"><a href="#立即数" class="headerlink" title="立即数"></a>立即数</h2><p>立即数就是直接写在指令中的常量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mov eax, 5</span><br><span class="line">add eax, 10</span><br></pre></td></tr></table></figure>
+
+<p>立即数可以写成十进制，也可以写成十六进制。部分 Intel 风格材料用 <code>h</code> 后缀表示十六进制，例如 <code>af996h</code>。</p>
+<h1 id="常见数据处理指令"><a href="#常见数据处理指令" class="headerlink" title="常见数据处理指令"></a>常见数据处理指令</h1><p>多数双操作数算术逻辑指令都遵循：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">op d, s</span><br></pre></td></tr></table></figure>
+
+<p>即用 <code>d</code> 和 <code>s</code> 计算，结果写回 <code>d</code>。目的操作数不能是立即数。</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>指令</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>加法</td>
+<td><code>add d, s</code></td>
+<td><code>d = d + s</code></td>
+</tr>
+<tr>
+<td>减法</td>
+<td><code>sub d, s</code></td>
+<td><code>d = d - s</code></td>
+</tr>
+<tr>
+<td>取负</td>
+<td><code>neg d</code></td>
+<td><code>d = -d</code></td>
+</tr>
+<tr>
+<td>自增</td>
+<td><code>inc d</code></td>
+<td><code>d = d + 1</code></td>
+</tr>
+<tr>
+<td>自减</td>
+<td><code>dec d</code></td>
+<td><code>d = d - 1</code></td>
+</tr>
+<tr>
+<td>与</td>
+<td><code>and d, s</code></td>
+<td><code>d = d &amp; s</code></td>
+</tr>
+<tr>
+<td>或</td>
+<td><code>or d, s</code></td>
+<td><code>d = d | s</code></td>
+</tr>
+<tr>
+<td>异或</td>
+<td><code>xor d, s</code></td>
+<td><code>d = d ^ s</code></td>
+</tr>
+<tr>
+<td>非</td>
+<td><code>not d</code></td>
+<td><code>d = ~d</code></td>
+</tr>
+<tr>
+<td>逻辑左移</td>
+<td><code>shl d, s</code></td>
+<td><code>d</code> 左移 <code>s</code> 位</td>
+</tr>
+<tr>
+<td>逻辑右移</td>
+<td><code>shr d, s</code></td>
+<td><code>d</code> 逻辑右移 <code>s</code> 位</td>
+</tr>
+</tbody></table>
+<p>乘除法在 x86 中有更强的隐含寄存器约定：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>mul s</code></td>
+<td>无符号乘法，常隐含使用 <code>eax</code>，乘积可能放入 <code>edx:eax</code></td>
+</tr>
+<tr>
+<td><code>imul ...</code></td>
+<td>有符号乘法，形式较多</td>
+</tr>
+<tr>
+<td><code>div s</code></td>
+<td>无符号除法，常把 <code>edx:eax</code> 作为被除数，商入 <code>eax</code>，余数入 <code>edx</code></td>
+</tr>
+<tr>
+<td><code>idiv s</code></td>
+<td>有符号除法，寄存器约定类似</td>
+</tr>
+</tbody></table>
+<p>乘除法比普通 <code>add/sub</code> 更依赖隐含寄存器，具体要求具体分析。</p>
+<h1 id="比较、标志位与条件转移"><a href="#比较、标志位与条件转移" class="headerlink" title="比较、标志位与条件转移"></a>比较、标志位与条件转移</h1><p>选择结构和循环结构的机器级表示通常依赖：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmp a, b</span><br><span class="line">jxxx label</span><br></pre></td></tr></table></figure>
+
+<p><code>cmp a, b</code> 本质上做一次 <code>a - b</code>，但不保存差值，只把运算结果的状态写入标志寄存器。随后条件转移指令根据这些标志位决定是否跳转。</p>
+<p><img src="/assets/x86-cmp-branch-flow.svg" alt="cmp 与条件转移"></p>
+<p>常见标志位：</p>
+<table>
+<thead>
+<tr>
+<th>标志位</th>
+<th>名称</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ZF</code></td>
+<td>Zero Flag</td>
+<td>结果为 0 时置 1</td>
+</tr>
+<tr>
+<td><code>SF</code></td>
+<td>Sign Flag</td>
+<td>结果为负时置 1</td>
+</tr>
+<tr>
+<td><code>CF</code></td>
+<td>Carry Flag</td>
+<td>无符号运算产生进位或借位时置 1</td>
+</tr>
+<tr>
+<td><code>OF</code></td>
+<td>Overflow Flag</td>
+<td>有符号运算溢出时置 1</td>
+</tr>
+</tbody></table>
+<p>常见条件转移：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>典型含义</th>
+<th>主要判断的标志位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>je</code> &#x2F; <code>jz</code></td>
+<td>相等或结果为 0 时跳转</td>
+<td><code>ZF=1</code></td>
+</tr>
+<tr>
+<td><code>jne</code> &#x2F; <code>jnz</code></td>
+<td>不相等或结果不为 0 时跳转</td>
+<td><code>ZF=0</code></td>
+</tr>
+<tr>
+<td><code>jg</code></td>
+<td>有符号大于时跳转</td>
+<td><code>ZF=0</code> 且 <code>SF=OF</code></td>
+</tr>
+<tr>
+<td><code>jge</code></td>
+<td>有符号大于等于时跳转</td>
+<td><code>SF=OF</code></td>
+</tr>
+<tr>
+<td><code>jl</code></td>
+<td>有符号小于时跳转</td>
+<td><code>SF!=OF</code></td>
+</tr>
+<tr>
+<td><code>jle</code></td>
+<td>有符号小于等于时跳转</td>
+<td><code>ZF=1</code> 或 <code>SF!=OF</code></td>
+</tr>
+<tr>
+<td><code>ja</code></td>
+<td>无符号大于时跳转</td>
+<td><code>CF=0</code> 且 <code>ZF=0</code></td>
+</tr>
+<tr>
+<td><code>jb</code></td>
+<td>无符号小于时跳转</td>
+<td><code>CF=1</code></td>
+</tr>
+</tbody></table>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">Warning</span></div>
+<div class="callout-content"><p>有符号比较和无符号比较使用的条件转移不同。要先确认比较对象按有符号数还是无符号数解释。</p>
+</div>
+</div>
+# 分支结构
+
+<p>无条件转移指令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jmp label</span><br></pre></td></tr></table></figure>
+
+<p>表示直接把指令指针改为 <code>label</code> 对应的位置，类似高级语言中的无条件跳转。</p>
+<p>条件分支常见结构：</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/x86-branch-structure-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">			   ; if (a &gt; b) &#123;</span><br><span class="line">cmp a, b       </span><br><span class="line">jle ELSE       </span><br><span class="line">			   ;   if 部分</span><br><span class="line">jmp END        ; if 部分执行完，跳过 else</span><br><span class="line"></span><br><span class="line">ELSE:          </span><br><span class="line">               ; &#125; else &#123;</span><br><span class="line">               ;   else 部分</span><br><span class="line">               </span><br><span class="line">END:</span><br><span class="line">                ; 分支结束</span><br></pre></td></tr></table></figure>
+
+
+<ol>
+<li><code>cmp</code> 生成标志位。</li>
+<li>条件转移决定是否进入 <code>else</code>。</li>
+<li><code>if</code> 部分执行完后，通常用 <code>jmp</code> 跳过 <code>else</code>。</li>
+<li>两条路径最终在 <code>END</code> 汇合。</li>
+</ol>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">选择结构的机器级代码只要求控制流等价，不要求代码块的物理顺序和 C 源码一致。</span></div>
+<div class="callout-content"><p><code>if (comp_A) then statement_B; else statement_C</code> 对应的汇编一定需要先计算 <code>comp_A</code>，也一定需要条件转移；<strong>但 <code>statement_B</code> 的代码不一定排在 <code>statement_C</code> 前面。</strong></p>
+<p>也可以把 <code>else</code> 部分放在顺序执行位置，把 <code>if</code> 部分放在后面：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">			   ; if (a &gt; b) &#123;</span><br><span class="line">cmp a, b</span><br><span class="line">jg IF_PART     ; 若 a &gt; b，跳到 if 部分</span><br><span class="line">               ;   else 部分</span><br><span class="line">jmp END</span><br><span class="line"></span><br><span class="line">IF_PART:</span><br><span class="line">               ;   if 部分</span><br><span class="line">END:</span><br><span class="line">               ; 分支结束</span><br></pre></td></tr></table></figure></p>
+<p>因此，判断选择结构的机器级代码时，要看跳转目标和控制流。</p>
+</div>
+</div>
+
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">若想要汇编代码块物理顺序与 C 源码一致，条件跳转可写为 C 条件的反条件，用来跳过 `if` 部分进入 `ELSE` 分支。</span></div>
+<div class="callout-content"><p>例如 <code>if (a &gt; b)</code> 可写成 <code>jle ELSE</code>；若源码是 <code>if (a &lt;= b)</code>，可写成 <code>jg ELSE</code>。</p>
+</div>
+</div>
+
+
+<h1 id="循环结构"><a href="#循环结构" class="headerlink" title="循环结构"></a>循环结构</h1><p>用条件转移实现循环时，通常有四个部分：</p>
+<ol>
+<li>循环前初始化。</li>
+<li>判断是否直接跳过循环。</li>
+<li>循环主体。</li>
+<li>判断是否继续循环。</li>
+</ol>
+<p>典型形式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">				; for (int ecx = 0; ecx &lt; 10; ecx++) &#123;</span><br><span class="line">mov ecx, 0      ; 初始化</span><br><span class="line">LOOP_TOP:</span><br><span class="line">	cmp ecx, 10     ; 判断是否还能进入本轮循环</span><br><span class="line">	jge LOOP_END    ; 若 ecx &gt;= 10，跳出循环</span><br><span class="line">				;   循环主体</span><br><span class="line">	inc ecx         ; ecx++</span><br><span class="line">	jmp LOOP_TOP    ; 回到循环判断</span><br><span class="line">LOOP_END:</span><br><span class="line">				; &#125;</span><br></pre></td></tr></table></figure>
+
+
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||640)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||640)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/x86-loop-structure-slides.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
+</div>
+
+
+<p>这类循环中，<code>cmp ecx, 10</code> 的<strong>执行次数通常比循环主体多一次</strong>。以上例为例，循环主体在 <code>ecx=0..9</code> 时执行 <code>10</code> 次；当 <code>ecx=10</code> 时，还要再执行一次 <code>cmp</code>，发现条件不满足后跳出，所以循环入口处的判断共执行 <code>11</code> 次。</p>
+<h2 id="loop-指令"><a href="#loop-指令" class="headerlink" title="loop 指令"></a>loop 指令</h2><p>x86 也提供 <code>loop</code> 类指令，通常隐含使用 <code>ecx</code> 作为计数器：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LOOP_TOP:</span><br><span class="line">    ; 循环主体</span><br><span class="line">    loop LOOP_TOP</span><br></pre></td></tr></table></figure>
+
+<p><code>loop label</code> 的典型效果可理解为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ecx = ecx - 1</span><br><span class="line">if (ecx != 0) goto label</span><br></pre></td></tr></table></figure>
+
+<p>因此，<code>loop label</code> 大致等价于：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dec ecx</span><br><span class="line">cmp ecx, 0</span><br><span class="line">jne label</span><br></pre></td></tr></table></figure>
+
+<p>常见变体还有 <code>loopz</code>、<code>loopnz</code>：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>继续循环条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>loop</code></td>
+<td><code>ecx != 0</code></td>
+</tr>
+<tr>
+<td><code>loopz</code> &#x2F; <code>loope</code></td>
+<td><code>ecx != 0</code> 且 <code>ZF = 1</code></td>
+</tr>
+<tr>
+<td><code>loopnz</code> &#x2F; <code>loopne</code></td>
+<td><code>ecx != 0</code> 且 <code>ZF = 0</code></td>
+</tr>
+</tbody></table>
+<p><code>loop</code> 指令能让计数循环更紧凑，但用普通条件转移也能表达同样的控制流。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/02/x86-Assembly-Basics/">https://eliano64.github.io/2026/07/02/x86-Assembly-Basics/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/02/Instruction-System-Basics/" title="Instruction System Basics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Instruction System Basics</div></div><div class="info-2"><div class="info-item-1">指令是计算机执行某种操作的命令，是计算机运行的最小功能单位。一台机器能够识别并执行的全部机器指令构成它的指令系统，也称为指令集ISA。 指令系统处在软件和硬件之间：高级语言程序最终必须被翻译成机器指令；硬件则按指令中的字段完成取数、运算、访存、转移和控制等动作。不同体系结构的机器指令格式和指令含义不同，因此一台机器通常只能直接执行自己指令系统中的指令。 指令格式一条机器指令是一组有意义的二进制代码，通常由操作码字段和地址码字段组成。   操作码（Operation Code, OP）：指出指令要做什么操作，例如加法、传送、转移、停机。 地址码：指出操作对象在哪里，可能表示操作数地址、结果地址、寄存器编号、立即数或下一条指令地址。  地址码的数量并不固定。根据显式地址码个数，指令可以分为零地址、一地址、二地址、三地址和四地址指令。     类型 常见格式 典型含义 执行阶段访存次数    零地址指令 OP 不需要操作数；或在堆栈机中隐含使用栈顶、次栈顶 通常为 0   一地址指令 OP A1 OP(A1) -&gt; A1，或 (ACC) OP (A1) -&gt;...</div></div></div></a><a class="pagination-related" href="/2026/07/02/CISC-And-RISC/" title="CISC And RISC"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">CISC And RISC</div></div><div class="info-2"><div class="info-item-1">CISC 和 RISC 讨论的是指令系统的设计思想：复杂功能应该由一条复杂机器指令完成，还是由多条简单机器指令组合完成。  基本思想CISC 是 Complex Instruction Set Computer，复杂指令集计算机。 它的设计倾向是：提供功能强、语义复杂的机器指令，让一条指令尽可能完成一个复杂功能。例如，一条指令可能同时完成访存、运算、写回。 RISC 是 Reduced Instruction Set Computer，精简指令集计算机。 它的设计倾向是：每条指令只完成简单、规整的基本动作，复杂功能由多条简单指令组合完成。例如，先用 Load 指令把数据从主存读入寄存器，再用寄存器之间的运算指令处理，最后用 Store 指令写回主存。 关键差异   对比项 CISC RISC    指令系统 指令多，功能复杂 指令少，功能规整   指令字长 往往不固定 往往定长   寻址方式 较多、较复杂 较少、较简单   访存方式 很多指令都可能访存 通常只有 Load&#x2F;Store...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8E%E9%AB%98%E7%BA%A7%E8%AF%AD%E8%A8%80%E5%88%B0%E6%9C%BA%E5%99%A8%E7%A0%81"><span class="toc-text">从高级语言到机器码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A0%BC%E5%BC%8F"><span class="toc-text">基本格式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E6%95%B0%E4%BD%8D%E7%BD%AE"><span class="toc-text">操作数位置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">寄存器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E5%AD%98%E6%93%8D%E4%BD%9C%E6%95%B0"><span class="toc-text">主存操作数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AB%8B%E5%8D%B3%E6%95%B0"><span class="toc-text">立即数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%8C%87%E4%BB%A4"><span class="toc-text">常见数据处理指令</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AF%94%E8%BE%83%E3%80%81%E6%A0%87%E5%BF%97%E4%BD%8D%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%BD%AC%E7%A7%BB"><span class="toc-text">比较、标志位与条件转移</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E7%BB%93%E6%9E%84"><span class="toc-text">循环结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#loop-%E6%8C%87%E4%BB%A4"><span class="toc-text">loop 指令</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

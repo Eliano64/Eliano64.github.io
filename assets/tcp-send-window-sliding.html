@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TCP 发送窗口滑动过程</title>
+  <style>
+:root {
+  --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
+  --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
+  --green: #059669; --blue: #2563eb; --amber: #d97706; --red: #dc2626;
+  --block-bg: #e5e7eb; --block-tx: #6b7280; --bar-bg: #f1f5f9; --bar-border: #d1d5db;
+  --ic1-bg: #eff6ff; --ic2-bg: #fff7ed; --ic3-bg: #fef2f2;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+header, footer { padding: 18px 28px; background: var(--panel); border-bottom: 1px solid var(--border); }
+footer { border-top: 1px solid var(--border); border-bottom: 0; display: flex; justify-content: space-between; align-items: center; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 22px; margin: 0 0 14px; }
+p { font-size: 17px; line-height: 1.6; }
+.slide { display: none; padding: 28px; gap: 28px; grid-template-columns: 1fr 1fr; align-items: start; }
+.slide.active { display: grid; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+pre { margin: 0; background: var(--code); color: var(--codeText); border-radius: 8px; padding: 16px; overflow: auto; font-size: 15px; line-height: 1.55; }
+code { font-family: Consolas, monospace; }
+button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink); border-radius: 6px; padding: 9px 14px; font-size: 15px; cursor: pointer; }
+.count { color: var(--muted); }
+
+.win-bar { position: relative; height: 52px; margin: 18px 0; background: var(--bar-bg); border-radius: 6px; border: 1px solid var(--bar-border); overflow: hidden; display: flex; }
+.win-seg { height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; }
+.win-seg.ackd { background: var(--green); }
+.win-seg.sent { background: var(--blue); }
+.win-seg.ready { background: var(--amber); }
+.win-seg.block { background: var(--block-bg); color: var(--block-tx); }
+.marker { position: absolute; top: -14px; font-size: 11px; font-weight: 700; }
+.marker::before { content: "▾"; font-size: 16px; display: block; text-align: center; }
+.marker.combined { top: -18px; padding: 1px 5px; border-radius: 4px; background: var(--panel); border: 1px solid var(--border); }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 14px; }
+.info-card { padding: 14px; border-radius: 8px; text-align: center; }
+.info-card.ic1 { background: var(--ic1-bg); border: 2px solid var(--blue); }
+.info-card.ic2 { background: var(--ic2-bg); border: 2px solid var(--amber); }
+.info-card.ic3 { background: var(--ic3-bg); border: 2px solid var(--red); }
+.info-card .val { font-size: 28px; font-weight: 800; }
+.info-card .lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+table { border-collapse: collapse; width: 100%; }
+td { padding: 12px; border: 1px solid var(--border); }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
+    --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
+    --green: #047857; --blue: #1d4ed8; --amber: #b45309; --red: #b91c1c;
+    --block-bg: #1e293b; --block-tx: #64748b; --bar-bg: #1e293b; --bar-border: #374151;
+    --ic1-bg: #0f1d33; --ic2-bg: #2a1f06; --ic3-bg: #2e0a0a;
+  }
+  button { border-color: #52616b; }
+}
+@media (max-width: 760px) { .slide { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>TCP 发送窗口滑动 — P₁ · P₂ · P₃</h1></header>
+
+  <section class="slide active">
+    <div class="panel">
+      <h2>1. 收到 ACK=31, win=20 → 构造发送窗口</h2>
+      <p>接收方通告 <code>ack=31, rwnd=20</code>。发送方据此构造 <code>swnd=20</code>（暂不考虑 <code>cwnd</code>）。</p>
+      <div class="win-bar">
+        <div class="win-seg ackd" style="width:26%;">已确认 0–30</div>
+        <div class="win-seg sent" style="width:0%; min-width:1px;"></div>
+        <div class="win-seg ready" style="width:40%;">允许发送 31–50</div>
+        <div class="win-seg block" style="width:34%;">不允许 51+</div>
+        <div class="marker combined" style="left:24%;color:var(--blue);">P₁=P₂=31</div>
+        <div class="marker" style="left:66%;color:var(--red);">P₃=51</div>
+      </div>
+      <div class="info-grid">
+        <div class="info-card ic1"><div class="val">20</div><div class="lbl">swnd = P₃−P₁ = 51−31</div></div>
+        <div class="info-card ic2"><div class="val">0</div><div class="lbl">已发未确认 = P₂−P₁</div></div>
+        <div class="info-card ic3"><div class="val">20</div><div class="lbl">可用窗口 = P₃−P₂</div></div>
+      </div>
+    </div>
+    <pre><code>/* 发送方收到 ACK=31, win=20 后 */
+P1 = 31;  // 窗口后沿
+P2 = 31;  // 尚未发送任何数据
+P3 = 51;  // 窗口前沿 = 31+20
+
+send_window  = P3 - P1 = 20;
+inflight     = P2 - P1 = 0;
+usable       = P3 - P2 = 20;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>2. 发送了 31–41（11 字节）</h2>
+      <p>发送方把 31–41 号字节封装在几个 TCP 报文段中发出。这些数据进入"已发送未确认"区。</p>
+      <div class="win-bar">
+        <div class="win-seg ackd" style="width:26%;">已确认 0–30</div>
+        <div class="win-seg sent" style="width:22%;">已发未确认 31–41</div>
+        <div class="win-seg ready" style="width:18%;">可发 42–50</div>
+        <div class="win-seg block" style="width:34%;">不允许 51+</div>
+        <div class="marker" style="left:26%;color:var(--blue);">P₁=31</div>
+        <div class="marker" style="left:48%;color:var(--amber);">P₂=42</div>
+        <div class="marker" style="left:66%;color:var(--red);">P₃=51</div>
+      </div>
+      <div class="info-grid">
+        <div class="info-card ic1"><div class="val">20</div><div class="lbl">swnd 不变</div></div>
+        <div class="info-card ic2"><div class="val">11</div><div class="lbl">已发未确认 = 42−31</div></div>
+        <div class="info-card ic3"><div class="val">9</div><div class="lbl">可用窗口 = 51−42</div></div>
+      </div>
+    </div>
+    <pre><code>/* 发送 31–41 后 */
+P1 = 31;  // 后沿不动 —— 未收到新 ACK
+P2 = 42;  // 已发送到 41，下一位是 42
+P3 = 51;  // 前沿不动
+
+/* 关键规则 */
+// 后沿 P1：只在收到确认时前移
+// 后沿 P1：绝不后移（已确认不可撤销）
+// 前沿 P3：可能前移、不动、或（不推荐）后缩</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>3. 收到 ACK=34 → 窗口向前滑动 3 字节</h2>
+      <p>确认号 <code>34</code> 表示 31–33 已按序到达。后沿 P₁ 前移到 34，`31–33` 可从发送缓存删除。前沿 P₃ 前移到 54。</p>
+      <div class="win-bar">
+        <div class="win-seg ackd" style="width:32%;">已确认 0–33</div>
+        <div class="win-seg sent" style="width:16%;">已发未确认 34–41</div>
+        <div class="win-seg ready" style="width:18%;">可发 42–50</div>
+        <div class="win-seg block" style="width:34%;">不允许 54+</div>
+        <div class="marker" style="left:32%;color:var(--blue);">P₁=34</div>
+        <div class="marker" style="left:48%;color:var(--amber);">P₂=42</div>
+        <div class="marker" style="left:66%;color:var(--red);">P₃=54</div>
+      </div>
+      <div class="info-grid">
+        <div class="info-card ic1"><div class="val">20</div><div class="lbl">swnd 不变</div></div>
+        <div class="info-card ic2"><div class="val">8</div><div class="lbl">已发未确认 = 42−34</div></div>
+        <div class="info-card ic3"><div class="val">12</div><div class="lbl">可用窗口 = 54−42</div></div>
+      </div>
+    </div>
+    <pre><code>/* 收到 ACK=34 后 */
+P1 = 34;  // 后沿前移：31-33 已确认
+P2 = 42;  // P2 不动：尚未发送新数据
+P3 = 54;  // 前沿前移：P1+swnd = 34+20
+
+/* 已确认的 31-33 可从缓存删除 */
+// 小于 P1 的数据 = 已确认 = 可删除</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>4. 三个指针的核心规则总结</h2>
+      <table>
+        <tr style="background:var(--ic1-bg);"><td style="font-weight:700;width:20%;color:#1e40af;">P₁ 后沿</td><td>只有两种可能：<strong>不动</strong>（无新确认）或<strong>前移</strong>（收到新累积确认）。<br><span style="color:var(--red);font-weight:700;">绝不后移</span>——已确认的字节不可撤销，数据可从发送缓存删除。</td></tr>
+        <tr style="background:var(--ic2-bg);"><td style="font-weight:700;color:#92400e;">P₂ 可用起点</td><td>指向<strong>下一个允许发送但尚未发送</strong>的字节。发送数据时 P₂ 前移；收到 ACK 时 P₂ 不动。</td></tr>
+        <tr style="background:var(--ic3-bg);"><td style="font-weight:700;color:#991b1b;">P₃ 前沿</td><td>三种可能：<strong>前移</strong>（常态·确认扩大窗口）、<strong>不动</strong>（无变化或变化抵消）、<strong>后缩</strong>（接收方缩小窗口——TCP 强烈不推荐）。</td></tr>
+      </table>
+    </div>
+    <pre><code>/* 三个指针的精确含义（用于编程实现） */
+/* < P1 : 已确认可删除 */
+/* P1 ~ P2 : 已发送未确认（inflight） */
+/* P2 ~ P3 : 允许发送但未发送（usable） */
+/* > P3 : 不允许发送 */
+
+swnd    = P3 - P1;  // 发送窗口总大小
+inflight = P2 - P1;  // 已发未确认
+usable   = P3 - P2;  // 可用窗口/有效窗口</code></pre>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let index = 0;
+const count = document.getElementById("count");
+function show(nextIndex) {
+  index = (nextIndex + slides.length) % slides.length;
+  slides.forEach((s, i) => s.classList.toggle("active", i === index));
+  count.textContent = `${index + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => show(index - 1);
+document.getElementById("next").onclick = () => show(index + 1);
+addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") show(index + 1);
+  if (e.key === "ArrowLeft")  show(index - 1);
+});
+show(0);
+</script>
+</body>
+</html>

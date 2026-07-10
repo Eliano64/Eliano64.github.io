@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Directed Adjacency List</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--ink:#0f172a;--muted:#475569;--line:#cbd5e1;--accent:#16a34a;--hot:#dc2626;--soft:#dcfce7}
+  @media(prefers-color-scheme:dark){:root{--bg:#0b1220;--panel:#111827;--ink:#f8fafc;--muted:#cbd5e1;--line:#334155;--accent:#22c55e;--hot:#fb7185;--soft:#14532d}}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif}
+  .deck{min-height:720px;padding:24px;display:grid;grid-template-rows:auto 1fr auto;gap:14px}
+  header,footer{display:flex;align-items:center;justify-content:space-between;gap:16px}h1{font-size:24px;margin:0}.hint{color:var(--muted);font-size:14px}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:center}
+  svg{width:100%;height:auto}.node{fill:var(--panel);stroke:var(--accent);stroke-width:4}.arrow{stroke:var(--muted);stroke-width:4;fill:none;stroke-linecap:round;marker-end:url(#arr)}.arrow.hot{stroke:var(--hot)}
+  .label{fill:var(--ink);font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:middle}.row{display:flex;align-items:center;gap:8px;min-height:42px}.head{width:76px;border:1px solid var(--accent);background:var(--soft);border-radius:7px;padding:8px 10px;font-weight:700;text-align:center}.cell{min-width:44px;border:1px solid var(--line);border-radius:7px;padding:8px 12px;text-align:center;background:var(--panel);font-weight:700}.cell.hot{border-color:var(--hot);box-shadow:0 0 0 2px color-mix(in srgb,var(--hot) 35%,transparent)}.ptr,.null{color:var(--muted);font-weight:700}.note{font-size:18px;line-height:1.65}.note strong{color:var(--hot)}button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 14px;font-size:15px;cursor:pointer}button:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="deck">
+  <header><h1>有向图邻接表：出边容易，入边要反查</h1><div class="hint">点击卡片或使用按钮翻页</div></header>
+  <main class="stage" id="stage"></main>
+  <footer><button id="prev" type="button">上一页</button><div class="hint" id="count"></div><button id="next" type="button">下一页</button></footer>
+</div>
+<script>
+const vertices=["A","B","C","D"];
+const arcs=[["A","B"],["A","C"],["C","D"],["D","B"]];
+const slides=[
+  {hot:null,note:"有向图的邻接表通常保存每个顶点发出的弧。第 i 个链表中的结点，就是从顶点 i 出发能直接到达的顶点。"},
+  {hot:["A","B"],note:"弧 A→B 只进入 A 的链表，不能同时放入 B 的链表。方向信息由“所在链表是起点、结点编号是终点”共同表达。"},
+  {hot:["A","C"],note:"A 的链表出现 B、C，所以 A 的出度可以直接数 A 链表中的结点个数。"},
+  {hot:["D","B"],note:"要求 B 的入度或找所有进入 B 的弧时，必须扫描所有链表，看哪些链表中出现 B。"},
+  {hot:null,note:"有向图邻接表的弧结点数量是 <strong>|E|</strong>，整体空间复杂度为 <strong>O(|V|+|E|)</strong>。"}
+];
+let index=0;
+function isShown(a,b){
+  const target=arcs.findIndex(e=>e[0]===a&&e[1]===b);
+  if(index===0) return true;
+  return target>=0 && target<=Math.min(index,3);
+}
+function isHot(a,b){const h=slides[index].hot;return h&&h[0]===a&&h[1]===b;}
+function graph(){
+  const p={A:[80,120],B:[220,75],C:[145,250],D:[285,210]};
+  const lines=arcs.map(e=>`<path class="arrow ${isHot(e[0],e[1])?"hot":""}" d="M${p[e[0]][0]} ${p[e[0]][1]} L${p[e[1]][0]} ${p[e[1]][1]}"/>`).join("");
+  const nodes=vertices.map(v=>`<circle class="node" cx="${p[v][0]}" cy="${p[v][1]}" r="27"/><text class="label" x="${p[v][0]}" y="${p[v][1]+1}">${v}</text>`).join("");
+  return `<svg viewBox="0 0 340 330"><defs><marker id="arr" markerWidth="12" markerHeight="12" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="currentColor"/></marker></defs>${lines}${nodes}</svg>`;
+}
+function list(){
+  const adj=Object.fromEntries(vertices.map(v=>[v,[]]));
+  arcs.forEach((e,i)=>{if(index===0||i<=Math.min(index,3)) adj[e[0]].push(e[1]);});
+  return vertices.map(v=>`<div class="row"><span class="head">${v}</span>${adj[v].map(x=>`<span class="ptr">→</span><span class="cell ${isHot(v,x)?"hot":""}">${x}</span>`).join("")}<span class="ptr">→</span><span class="null">^</span></div>`).join("");
+}
+function render(){document.getElementById("stage").innerHTML=`<div>${graph()}</div><div>${list()}<p class="note">${slides[index].note}</p></div>`;document.getElementById("count").textContent=`${index+1} / ${slides.length}`;}
+document.getElementById("prev").onclick=e=>{e.stopPropagation();index=(index-1+slides.length)%slides.length;render();};
+document.getElementById("next").onclick=e=>{e.stopPropagation();index=(index+1)%slides.length;render();};
+document.body.onclick=()=>{index=(index+1)%slides.length;render();};
+render();
+</script>
+</body>
+</html>

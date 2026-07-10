@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>x86 Loop Structure</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #111827;
+      --panel: #f8fafc;
+      --code: #eef2ff;
+      --active: #fef3c7;
+      --done: #dcfce7;
+      --exit: #fee2e2;
+      --accent: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #e5e7eb;
+        --panel: #1f2937;
+        --code: #1e3a8a;
+        --active: #713f12;
+        --done: #14532d;
+        --exit: #7f1d1d;
+        --accent: #60a5fa;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", Arial, sans-serif; }
+    .wrap { padding: 22px 28px; }
+    h1 { margin: 0 0 6px; font-size: 24px; }
+    .hint { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+    .grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 18px; }
+    .panel { border: 1.5px solid var(--line); border-radius: 8px; background: var(--panel); padding: 16px; min-height: 450px; }
+    .code-line {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 7px;
+      margin: 6px 0;
+      background: var(--code);
+      border: 1px solid transparent;
+      font-family: Consolas, "Cascadia Code", monospace;
+      font-size: 15px;
+    }
+    .active { background: var(--active); border-color: var(--line); }
+    .done { background: var(--done); }
+    .exit { background: var(--exit); }
+    .num { color: var(--muted); text-align: right; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .stat { border: 1.3px solid var(--line); border-radius: 8px; background: var(--bg); padding: 12px; }
+    .label { color: var(--muted); font-size: 13px; margin-bottom: 5px; }
+    .value { font-size: 22px; font-weight: 700; }
+    .timeline { display: grid; grid-template-columns: repeat(11, 1fr); gap: 5px; margin-top: 18px; }
+    .tick { border: 1px solid var(--line); border-radius: 6px; min-height: 44px; padding: 5px 2px; text-align: center; color: var(--muted); font-size: 12px; }
+    .tick.on { background: var(--active); color: var(--text); font-weight: 700; }
+    .tick.body { background: var(--done); color: var(--text); }
+    .tick.exit { background: var(--exit); color: var(--text); }
+    .controls { display: flex; gap: 10px; margin-top: 16px; }
+    button { border: 1.5px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--text); padding: 8px 13px; font-size: 14px; cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    .note { margin-top: 14px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .timeline { grid-template-columns: repeat(6, 1fr); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>循环的机器级执行过程</h1>
+    <p class="hint">示例对应 C 代码：for (int ecx = 0; ecx &lt; 10; ecx++)。重点观察 `cmp` 为什么执行 11 次。</p>
+    <div class="grid">
+      <div class="panel">
+        <div id="code"></div>
+        <div class="controls">
+          <button id="prev">上一步</button>
+          <button id="next">下一步</button>
+          <button id="reset">重置</button>
+        </div>
+        <p class="note">每轮先判断再执行循环体；最后一次判断发现 `ecx = 10`，循环体不再执行。</p>
+      </div>
+      <div class="panel">
+        <div class="stats">
+          <div class="stat"><div class="label">ecx</div><div class="value" id="ecx"></div></div>
+          <div class="stat"><div class="label">当前阶段</div><div class="value" id="phase"></div></div>
+          <div class="stat"><div class="label">cmp 次数</div><div class="value" id="cmpCount"></div></div>
+          <div class="stat"><div class="label">循环体次数</div><div class="value" id="bodyCount"></div></div>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const lines = [
+      "mov ecx, 0      ; 初始化",
+      "LOOP_TOP:",
+      "cmp ecx, 10     ; 入口判断",
+      "jge LOOP_END    ; ecx >= 10 则跳出",
+      "; 循环主体",
+      "inc ecx         ; ecx++",
+      "jmp LOOP_TOP    ; 回到判断",
+      "LOOP_END:"
+    ];
+    const steps = [];
+    steps.push({ line: 0, ecx: 0, phase: "初始化", cmp: 0, body: 0 });
+    for (let i = 0; i <= 10; i++) {
+      steps.push({ line: 2, ecx: i, phase: "入口判断", cmp: i + 1, body: i });
+      steps.push({ line: 3, ecx: i, phase: i >= 10 ? "跳出" : "继续", cmp: i + 1, body: i });
+      if (i < 10) {
+        steps.push({ line: 4, ecx: i, phase: "循环主体", cmp: i + 1, body: i + 1 });
+        steps.push({ line: 5, ecx: i + 1, phase: "自增", cmp: i + 1, body: i + 1 });
+        steps.push({ line: 6, ecx: i + 1, phase: "回到判断", cmp: i + 1, body: i + 1 });
+      } else {
+        steps.push({ line: 7, ecx: i, phase: "结束", cmp: i + 1, body: i });
+      }
+    }
+    let pos = 0;
+    const code = document.getElementById("code");
+    const ecx = document.getElementById("ecx");
+    const phase = document.getElementById("phase");
+    const cmpCount = document.getElementById("cmpCount");
+    const bodyCount = document.getElementById("bodyCount");
+    const timeline = document.getElementById("timeline");
+    function render() {
+      const s = steps[pos];
+      code.innerHTML = lines.map((line, i) => {
+        let cls = "code-line";
+        if (i === s.line) cls += " active";
+        else if (i < s.line && s.phase !== "结束") cls += " done";
+        if (s.phase === "跳出" && i === 3) cls += " exit";
+        return `<div class="${cls}"><span class="num">${i + 1}</span><span>${line}</span></div>`;
+      }).join("");
+      ecx.textContent = s.ecx;
+      phase.textContent = s.phase;
+      cmpCount.textContent = s.cmp;
+      bodyCount.textContent = s.body;
+      timeline.innerHTML = Array.from({ length: 11 }, (_, i) => {
+        let cls = "tick";
+        if (s.cmp > i) cls += i < 10 ? " body" : " exit";
+        if (s.ecx === i && (s.phase === "入口判断" || s.phase === "跳出")) cls += " on";
+        const label = i < 10 ? `ecx=${i}` : "ecx=10";
+        const sub = i < 10 ? "判断后进循环体" : "只判断，不进循环体";
+        return `<div class="${cls}">${label}<br>${sub}</div>`;
+      }).join("");
+    }
+    document.getElementById("next").onclick = () => { pos = Math.min(pos + 1, steps.length - 1); render(); };
+    document.getElementById("prev").onclick = () => { pos = Math.max(pos - 1, 0); render(); };
+    document.getElementById("reset").onclick = () => { pos = 0; render(); };
+    render();
+  </script>
+</body>
+</html>

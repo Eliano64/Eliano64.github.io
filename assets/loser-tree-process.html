@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Loser Tree Process</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#ffffff;
+  --ink:#142033;
+  --muted:#607087;
+  --line:#cbd5e1;
+  --card:#f8fafc;
+  --node:#ffffff;
+  --accent:#2563eb;
+  --winner:#16a34a;
+  --loser:#dc2626;
+  --leaf:#0f766e;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0b1020;
+    --ink:#e5edf7;
+    --muted:#9aa9bd;
+    --line:#46566d;
+    --card:#111827;
+    --node:#0f172a;
+    --accent:#60a5fa;
+    --winner:#4ade80;
+    --loser:#f87171;
+    --leaf:#5eead4;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:20px}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:center}
+.title{font-size:24px;font-weight:760}
+.sub{margin-top:4px;color:var(--muted);font-size:14px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:8px 12px;cursor:pointer}
+.grid{display:grid;grid-template-columns:1.25fr .9fr;gap:16px;margin-top:16px}
+.panel{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px}
+svg{width:100%;min-height:520px;display:block}
+.edge{stroke:var(--line);stroke-width:2;stroke-linecap:round}
+.node{fill:var(--node);stroke:var(--line);stroke-width:2.4}
+.winner{stroke:var(--winner);stroke-width:3.4}
+.loser{stroke:var(--loser);stroke-width:3}
+.leaf{stroke:var(--leaf);stroke-width:2.6}
+.active{filter:drop-shadow(0 0 7px color-mix(in srgb,var(--accent),transparent 25%))}
+.label{fill:var(--ink);font:700 13px ui-monospace,Menlo,Consolas,monospace;text-anchor:middle}
+.txt{fill:var(--ink);font:760 18px ui-monospace,Menlo,Consolas,monospace;text-anchor:middle;dominant-baseline:middle}
+.small{fill:var(--muted);font:13px system-ui,-apple-system,"Segoe UI",sans-serif;text-anchor:middle}
+.runs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.run{border:1px solid var(--line);border-radius:7px;padding:8px;background:var(--bg);font:700 13px ui-monospace,Menlo,Consolas,monospace;min-height:82px}
+.run.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.run .name{color:var(--ink);margin-bottom:5px}
+.run .seq{color:var(--muted);line-height:1.5}
+.explain{line-height:1.75;color:var(--muted);font-size:15px}
+.formula{margin-top:12px;border-left:3px solid var(--accent);padding:9px 11px;background:color-mix(in srgb,var(--accent),transparent 90%);font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:var(--ink)}
+.step{margin-top:10px;color:var(--muted);font-size:13px}
+@media(max-width:880px){.grid,.top{display:block}.btns{margin-top:10px}.runs{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">败者树：内部结点保存败者段号</div>
+      <div class="sub">5 路归并；叶结点是各归并段当前首记录</div>
+    </div>
+    <div class="btns">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+    </div>
+  </div>
+
+  <section class="grid">
+    <div class="panel">
+      <svg viewBox="0 0 700 540" aria-label="败者树演示">
+        <g id="tree"></g>
+      </svg>
+      <div class="runs" id="runs"></div>
+    </div>
+    <div class="panel">
+      <div class="explain" id="text"></div>
+      <div class="formula" id="formula"></div>
+      <div class="step" id="step"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const runs = [
+  {name:'b0', seq:[10,15,16]},
+  {name:'b1', seq:[9,18,20]},
+  {name:'b2', seq:[20,22,40]},
+  {name:'b3', seq:[6,15,25]},
+  {name:'b4', seq:[12,37,48]}
+];
+
+const pos = {
+  ls0:[350,44],
+  ls1:[350,118],
+  ls2:[250,206],
+  ls3:[500,206],
+  ls4:[150,302],
+  b0:[350,302],
+  b1:[460,302],
+  b2:[590,302],
+  b3:[80,410],
+  b4:[220,410]
+};
+
+const edges = [
+  ['ls0','ls1'],
+  ['ls1','ls2'], ['ls1','ls3'],
+  ['ls2','ls4'], ['ls2','b0'],
+  ['ls3','b1'], ['ls3','b2'],
+  ['ls4','b3'], ['ls4','b4']
+];
+
+const nodeNames = ['ls0','ls1','ls2','ls3','ls4','b0','b1','b2','b3','b4'];
+
+const steps = [
+  {
+    current:[10,9,20,6,12],
+    tree:{ls0:'?',ls1:'?',ls2:'?',ls3:'?',ls4:'?'},
+    active:['b0','b1','b2','b3','b4'],
+    run:[],
+    text:'5 个归并段的当前首记录放在叶结点。败者树最终只记录段号：叶结点看关键字，内部结点看哪一段在本场比较中失败。',
+    formula:'b0=10, b1=9, b2=20, b3=6, b4=12'
+  },
+  {
+    current:[10,9,20,6,12],
+    tree:{ls0:'?',ls1:'?',ls2:'?',ls3:'?',ls4:'4'},
+    active:['b3','b4','ls4'],
+    run:[3,4],
+    text:'先比较 b3 和 b4。6 < 12，所以 b3 胜出继续向上；ls[4] 保存败者段号 4。',
+    formula:'compare(b3=6, b4=12) -> winner=b3, ls[4]=4'
+  },
+  {
+    current:[10,9,20,6,12],
+    tree:{ls0:'?',ls1:'?',ls2:'0',ls3:'?',ls4:'4'},
+    active:['ls4','b0','ls2'],
+    run:[0,3,4],
+    text:'b3 的胜者 6 与 b0 的 10 比较。b3 继续胜出；ls[2] 保存败者段号 0。',
+    formula:'compare(b3=6, b0=10) -> winner=b3, ls[2]=0'
+  },
+  {
+    current:[10,9,20,6,12],
+    tree:{ls0:'?',ls1:'?',ls2:'0',ls3:'2',ls4:'4'},
+    active:['b1','b2','ls3'],
+    run:[1,2],
+    text:'右侧比较 b1 和 b2。9 < 20，所以 b1 胜出；ls[3] 保存败者段号 2。',
+    formula:'compare(b1=9, b2=20) -> winner=b1, ls[3]=2'
+  },
+  {
+    current:[10,9,20,6,12],
+    tree:{ls0:'3',ls1:'1',ls2:'0',ls3:'2',ls4:'4'},
+    active:['ls2','ls3','ls1','ls0'],
+    run:[1,3],
+    text:'左右两边的胜者 b3=6 与 b1=9 比较。b3 成为全局冠军，因此 ls[0] 保存冠军段号 3；ls[1] 保存败者段号 1。',
+    formula:'root ls[0]=3；其他内部结点保存败者：ls[1]=1, ls[2]=0, ls[3]=2, ls[4]=4'
+  },
+  {
+    current:[10,9,20,15,12],
+    tree:{ls0:'?',ls1:'1',ls2:'0',ls3:'2',ls4:'4'},
+    active:['b3'],
+    run:[3],
+    text:'输出冠军段 b3 的 6 后，从 b3 取下一个首记录 15。只需要沿 b3 到根的路径重新比赛。',
+    formula:'output 6; b3: 6 -> 15'
+  },
+  {
+    current:[10,9,20,15,12],
+    tree:{ls0:'?',ls1:'1',ls2:'0',ls3:'2',ls4:'3'},
+    active:['b3','b4','ls4'],
+    run:[3,4],
+    text:'在 ls[4] 处重新比较 b3=15 与原来保存的败者 b4=12。b4 胜出继续向上；ls[4] 改存败者段号 3。',
+    formula:'compare(b3=15, b4=12) -> winner=b4, ls[4]=3'
+  },
+  {
+    current:[10,9,20,15,12],
+    tree:{ls0:'?',ls1:'1',ls2:'4',ls3:'2',ls4:'3'},
+    active:['ls4','b0','ls2'],
+    run:[0,4],
+    text:'b4=12 与 ls[2] 原来保存的败者 b0=10 比较。b0 胜出继续向上；ls[2] 改存败者段号 4。',
+    formula:'compare(b4=12, b0=10) -> winner=b0, ls[2]=4'
+  },
+  {
+    current:[10,9,20,15,12],
+    tree:{ls0:'1',ls1:'0',ls2:'4',ls3:'2',ls4:'3'},
+    active:['ls2','ls3','ls1','ls0'],
+    run:[0,1],
+    text:'b0=10 与 ls[1] 原来保存的败者 b1=9 比较。b1 成为新的全局冠军，根 ls[0] 保存冠军段号 1；ls[1] 改存败者段号 0。',
+    formula:'root ls[0]=1；下一次输出来自 b1'
+  }
+];
+
+let cur = 0;
+
+function esc(value){
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function nodeLabel(id, s){
+  if (id.startsWith('b')) {
+    const index = Number(id.slice(1));
+    return s.current[index];
+  }
+  return s.tree[id] ?? '?';
+}
+
+function nodeClass(id, s){
+  const classes = ['node'];
+  if (id === 'ls0') classes.push('winner');
+  else if (id.startsWith('ls')) classes.push('loser');
+  else classes.push('leaf');
+  if (s.active.includes(id)) classes.push('active');
+  return classes.join(' ');
+}
+
+function drawNode(g, id, s){
+  const [x,y] = pos[id];
+  const label = nodeLabel(id, s);
+  const caption = id.startsWith('b') ? id : id.replace('ls','ls[') + ']';
+  const r = id === 'ls0' ? 28 : 26;
+  g.insertAdjacentHTML('beforeend', `
+    <text class="label" x="${x}" y="${y - r - 13}">${esc(caption)}</text>
+    <circle class="${nodeClass(id, s)}" cx="${x}" cy="${y}" r="${r}"></circle>
+    <text class="txt" x="${x}" y="${y + 1}">${esc(label)}</text>
+  `);
+}
+
+function render(){
+  const s = steps[cur];
+  const g = document.getElementById('tree');
+  g.innerHTML = '';
+  for (const [u,v] of edges) {
+    g.insertAdjacentHTML('beforeend', `<line class="edge" x1="${pos[u][0]}" y1="${pos[u][1]}" x2="${pos[v][0]}" y2="${pos[v][1]}"></line>`);
+  }
+  for (const id of nodeNames) drawNode(g, id, s);
+  document.getElementById('runs').innerHTML = runs.map((r, i) => {
+    const seq = r.seq.map((value, j) => {
+      const current = value === s.current[i] && (j === 0 || r.seq[j - 1] < s.current[i]);
+      return current ? `<strong>${value}</strong>` : `${value}`;
+    }).join('<br>');
+    return `<div class="run ${s.run.includes(i) ? 'on' : ''}"><div class="name">${r.name}</div><div class="seq">${seq}</div></div>`;
+  }).join('');
+  document.getElementById('text').textContent = s.text;
+  document.getElementById('formula').textContent = s.formula;
+  document.getElementById('step').textContent = `${cur + 1} / ${steps.length}`;
+}
+
+document.getElementById('prev').onclick = () => { cur = (cur + steps.length - 1) % steps.length; render(); };
+document.getElementById('next').onclick = () => { cur = (cur + 1) % steps.length; render(); };
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>DAG And AOV Network | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="DAG And AOV Network DAG 是没有有向环的有向图。 AOV 网用 DAG 表示活动之间的先后依赖。   DAGDAG 是 Directed Acyclic Graph，即有向无环图。 定义：若一个有向图中不存在有向环，则称为有向无环图。 这里的“无环”指的是：不存在一条沿弧方向出发，最后又回到出发顶点的路径。 例如： 12V0 -&gt; V1 -&gt; V3V0 -&gt;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DAG And AOV Network">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/28/DAG-and-AOV-network/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="DAG And AOV Network DAG 是没有有向环的有向图。 AOV 网用 DAG 表示活动之间的先后依赖。   DAGDAG 是 Directed Acyclic Graph，即有向无环图。 定义：若一个有向图中不存在有向环，则称为有向无环图。 这里的“无环”指的是：不存在一条沿弧方向出发，最后又回到出发顶点的路径。 例如： 12V0 -&gt; V1 -&gt; V3V0 -&gt;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T14:12:45.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.012Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Graph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "DAG And AOV Network",
+  "url": "https://eliano64.github.io/2026/06/28/DAG-and-AOV-network/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T14:12:45.000Z",
+  "dateModified": "2026-07-10T07:16:51.012Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/28/DAG-and-AOV-network/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'DAG And AOV Network',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">DAG And AOV Network</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">DAG And AOV Network</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T14:12:45.000Z" title="发表于 2026-06-28 22:12:45">2026-06-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.012Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="DAG-And-AOV-Network"><a href="#DAG-And-AOV-Network" class="headerlink" title="DAG And AOV Network"></a>DAG And AOV Network</h1><ul>
+<li>DAG 是<strong>没有有向环</strong>的有向图。</li>
+<li>AOV 网用 DAG 表示活动之间的先后依赖。</li>
+</ul>
+<p><img src="/assets/dag-aov-overview.svg" alt="1000"></p>
+<h2 id="DAG"><a href="#DAG" class="headerlink" title="DAG"></a>DAG</h2><p>DAG 是 Directed Acyclic Graph，即<strong>有向无环图</strong>。</p>
+<p>定义：若一个有向图中不存在有向环，则称为有向无环图。</p>
+<p>这里的“无环”指的是：不存在一条沿弧方向出发，最后又回到出发顶点的路径。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">V0 -&gt; V1 -&gt; V3</span><br><span class="line">V0 -&gt; V2 -&gt; V3</span><br></pre></td></tr></table></figure>
+
+<p>这是 DAG，因为所有边都大致从前往后指向，不可能沿方向回到原顶点。</p>
+<p>而：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">V1 -&gt; V2 -&gt; V3 -&gt; V1</span><br></pre></td></tr></table></figure>
+
+<p>不是 DAG，因为存在有向环。</p>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">与拓扑排序的关系</span></div>
+<div class="callout-content"><p>一个有向图存在拓扑序列，当且仅当它是 DAG。若拓扑排序过程中图还没空，但已经找不到入度为 0 的顶点，则说明剩余部分存在有向环。</p>
+</div>
+</div>
+## DAG 描述表达式
+
+<p>表达式树会把每次出现的操作数或子表达式都画出来；DAG 描述表达式时，会把相同的操作数和相同的子表达式合并成同一个结点。</p>
+<p>核心规则：</p>
+<ul>
+<li>相同操作数只保留一个结点。</li>
+<li>相同运算符且左右孩子也相同的子表达式，只保留一个运算结点。</li>
+<li>非叶结点是运算符，叶结点是运算数。</li>
+<li>手算时通常先按表达式结构分层，再根据运算关系连线。</li>
+</ul>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||1060)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||1060)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/dag-expression-construction.html" style="width:100%;height:1060px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="手算分层法"><a href="#手算分层法" class="headerlink" title="手算分层法"></a>手算分层法</h3><p>考虑表达式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">((a+b)*(b*(c+d))+(c+d)*e)*((c+d)*e)</span><br></pre></td></tr></table></figure>
+
+<p>先把它按结构拆成必要的子表达式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">a+b</span><br><span class="line">c+d</span><br><span class="line">b*(c+d)</span><br><span class="line">(c+d)*e</span><br><span class="line">(a+b)*(b*(c+d))</span><br><span class="line">(a+b)*(b*(c+d))+(c+d)*e</span><br><span class="line">整个表达式</span><br></pre></td></tr></table></figure>
+
+<p>然后分层：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">L0: a, b, c, d, e</span><br><span class="line"></span><br><span class="line">L1: +        + </span><br><span class="line">    a+b      c+d</span><br><span class="line"></span><br><span class="line">L2: *        *</span><br><span class="line">    b*(c+d)  (c+d)*e</span><br><span class="line"></span><br><span class="line">L3: *</span><br><span class="line">    (a+b)*(b*(c+d))</span><br><span class="line"></span><br><span class="line">L4: +</span><br><span class="line">    (a+b)*(b*(c+d))+(c+d)*e</span><br><span class="line"></span><br><span class="line">L5: *</span><br><span class="line">    整个表达式</span><br></pre></td></tr></table></figure>
+
+<p>层级规则是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">level(operand) = 0</span><br><span class="line">level(op(left, right)) = max(level(left), level(right)) + 1</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，一个运算符结点必须等它的两个操作对象都已经在下层出现后，才能放到上一层。</p>
+<p>因此：</p>
+<ul>
+<li><code>c+d</code> 的 <code>+</code> 在 L1。</li>
+<li><code>b*(c+d)</code> 的 <code>*</code> 在 L2。</li>
+<li><code>(a+b)*(b*(c+d))</code> 的 <code>*</code> 在 L3，因为它依赖 L2 的 <code>b*(c+d)</code>。</li>
+<li><code>(c+d)*e</code> 只建立一次，最终乘法右侧直接复用它。</li>
+</ul>
+<h3 id="构造表达式-DAG-的方法"><a href="#构造表达式-DAG-的方法" class="headerlink" title="构造表达式 DAG 的方法"></a>构造表达式 DAG 的方法</h3><p>按手算步骤构造：</p>
+<ol>
+<li>对原表达式分层，明确每个运算符依赖哪些更低层结点。</li>
+<li>在最底层写出所有不同运算数，运算数不重复。</li>
+<li>从低层到高层列出运算符结点；优先级越高、越接近运算数的运算通常越靠下。</li>
+<li>若某个运算符及其左右孩子已经出现过，则复用已有结点。</li>
+<li>按运算关系连线。最终根结点对应整个表达式。</li>
+</ol>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">注意左右孩子顺序</span></div>
+<div class="callout-content"><p>对 <code>-</code>、<code>/</code> 这类不满足交换律的运算，左右孩子不能交换。例如 <code>x / (x + y)</code> 和 <code>(x + y) / x</code> 不是同一个子表达式。</p>
+</div>
+</div>
+
+<h2 id="AOV-网"><a href="#AOV-网" class="headerlink" title="AOV 网"></a>AOV 网</h2><p>AOV 网是 Activity On Vertex Network，即<strong>用顶点表示活动的网</strong>。</p>
+<p>在 AOV 网中：</p>
+<ul>
+<li>顶点表示活动。</li>
+<li>有向边 <code>&lt;Vi, Vj&gt;</code> 表示活动 <code>Vi</code> 必须先于活动 <code>Vj</code> 进行。</li>
+<li>顶点之间的路径表示间接先后关系。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">准备厨具 -&gt; 下锅炒</span><br><span class="line">打鸡蛋 -&gt; 下锅炒</span><br><span class="line">洗番茄 -&gt; 切番茄 -&gt; 下锅炒</span><br><span class="line">下锅炒 -&gt; 吃</span><br></pre></td></tr></table></figure>
+
+<p>表示“下锅炒”必须等准备厨具、打鸡蛋、切番茄等活动完成后才能进行。</p>
+<h2 id="AOV-网为什么必须无环"><a href="#AOV-网为什么必须无环" class="headerlink" title="AOV 网为什么必须无环"></a>AOV 网为什么必须无环</h2><p>如果 AOV 网中出现有向环，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A -&gt; B -&gt; C -&gt; A</span><br></pre></td></tr></table></figure>
+
+<p>就表示：</p>
+<ul>
+<li><code>A</code> 必须先于 <code>B</code>。</li>
+<li><code>B</code> 必须先于 <code>C</code>。</li>
+<li><code>C</code> 又必须先于 <code>A</code>。</li>
+</ul>
+<p>这三个要求互相矛盾，任何活动都无法作为第一个活动开始。因此有环图不能表示合法的 AOV 网，也不存在拓扑序列。</p>
+<h2 id="AOV-与-AOE-的区别"><a href="#AOV-与-AOE-的区别" class="headerlink" title="AOV 与 AOE 的区别"></a>AOV 与 AOE 的区别</h2><table>
+<thead>
+<tr>
+<th>网络</th>
+<th>顶点表示</th>
+<th>边表示</th>
+<th>权值位置</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AOV 网</td>
+<td>活动</td>
+<td>活动之间的先后约束</td>
+<td>通常不强调权值</td>
+<td>拓扑排序</td>
+</tr>
+<tr>
+<td>AOE 网</td>
+<td>事件</td>
+<td>活动</td>
+<td>边上权值表示活动耗时</td>
+<td>关键路径</td>
+</tr>
+</tbody></table>
+<p>AOV 是拓扑排序的直接模型；AOE 是关键路径的模型。AOE 的计算要依赖拓扑序列和逆拓扑序列，因此应先掌握 <a href="topological-sorting.md">拓扑排序</a>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/28/DAG-and-AOV-network/">https://eliano64.github.io/2026/06/28/DAG-and-AOV-network/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/28/topological-sorting/" title="Topological Sorting"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Topological Sorting</div></div><div class="info-2"><div class="info-item-1">Topological Sorting拓扑排序解决的是 AOV 网中的“先后顺序”问题。 AOV 网用顶点表示活动，用有向边 &lt;u, v&gt; 表示活动 u 必须先于活动 v 进行。因为活动依赖不能循环，所以 AOV 网必须是 DAG，也就是有向无环图。  和 DFS 判环的关系 拓扑排序本身可以判断有向图是否有环。DFS 也可以通过 VISITING 状态判断有向环，见 DFS 判有向图环。   ## 拓扑序列的定义  一个有向图的顶点序列若满足：  每个顶点出现且只出现一次。 若图中存在从顶点 A 到顶点 B 的路径，则 A 必须排在 B 前面。  则称该序列为这个图的一个拓扑序列。 等价地说：如果序列中 A 在 B 前面，那么图中不能存在从 B 到 A 的路径。 拓扑序列通常不唯一。例如两个活动互不依赖时，它们谁先谁后都可以。 Kahn 算法：不断删除入度为 0 的顶点Kahn 算法是考研中最常见的拓扑排序实现。时间复杂度与遍历图一样。 核心规则：  从 AOV 网中选择一个没有前驱的顶点，也就是入度为 0...</div></div></div></a><a class="pagination-related" href="/2026/06/28/AOE-network-and-critical-path/" title="AOE Network And Critical Path"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">AOE Network And Critical Path</div></div><div class="info-2"><div class="info-item-1">AOE Network And Critical PathAOE 网用于分析工程项目中“活动耗时”与“工程最短完成时间”。它和 AOV 都依赖有向无环结构，但含义不同：  AOV 网：顶点表示活动，边表示活动先后约束，主要用于 拓扑排序。 AOE 网：顶点表示事件，边表示活动，边权表示活动耗时，主要用于求关键路径。  AOE 网在带权有向图中：  顶点表示事件。 有向边表示活动。 边上的权值表示完成该活动的开销，常见含义是活动所需时间。  这样的网络称为 AOE 网，即 Activity On Edge Network。 AOE 网有两个基本性质：  只有某顶点所代表的事件发生后，从该顶点出发的活动才能开始。 只有进入某顶点的各活动都已经结束时，该顶点所代表的事件才能发生。  AOE 网中通常只有一个入度为 0 的顶点，称为源点或开始顶点；只有一个出度为 0 的顶点，称为汇点或结束顶点。 关键路径从源点到汇点的有向路径可能有多条。所有路径中，路径长度最大的路径称为关键路径，关键路径上的活动称为关键活动。 这里的路径长度是路径上活动耗时之和。  为什么是最长路径 AOE...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#DAG-And-AOV-Network"><span class="toc-text">DAG And AOV Network</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DAG"><span class="toc-text">DAG</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%8B%E7%AE%97%E5%88%86%E5%B1%82%E6%B3%95"><span class="toc-text">手算分层法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E8%A1%A8%E8%BE%BE%E5%BC%8F-DAG-%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-text">构造表达式 DAG 的方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AOV-%E7%BD%91"><span class="toc-text">AOV 网</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AOV-%E7%BD%91%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB%E6%97%A0%E7%8E%AF"><span class="toc-text">AOV 网为什么必须无环</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AOV-%E4%B8%8E-AOE-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">AOV 与 AOE 的区别</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

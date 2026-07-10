@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radix Sort LSD</title>
+<style>
+:root{--bg:#fff;--ink:#172033;--muted:#667085;--line:#cbd5e1;--cell:#f8fafc;--bucket:#eef2ff;--active:#fee2e2;--done:#dcfce7;--accent:#2563eb;--code:#0f766e}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#a3aab8;--line:#475569;--cell:#111827;--bucket:#1e1b4b;--active:#7f1d1d;--done:#064e3b;--accent:#60a5fa;--code:#5eead4}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.title{font-size:24px;font-weight:760}
+.sub{margin-top:4px;color:var(--muted);font-size:14px}
+.controls{display:flex;gap:8px}
+button{border:1px solid var(--line);background:var(--cell);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.stage{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:18px}
+.label{color:var(--muted);font-size:13px;margin:8px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:48px}
+.num{width:60px;height:42px;border:1.5px solid var(--line);border-radius:8px;background:var(--cell);display:flex;align-items:center;justify-content:center;font:700 17px ui-monospace,Menlo,monospace}
+.num.done{background:var(--done)}
+.num.active{background:var(--active);border-color:#ef4444}
+.buckets{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-top:14px}
+.bucket{min-height:112px;border:1.5px solid var(--line);border-radius:8px;background:var(--bucket);padding:8px 6px}
+.bhead{font:700 13px ui-monospace,Menlo,monospace;color:var(--accent);text-align:center;margin-bottom:6px}
+.stack{display:flex;flex-direction:column;gap:5px;align-items:center}
+.item{width:50px;height:28px;border:1px solid var(--line);border-radius:6px;background:var(--cell);display:flex;align-items:center;justify-content:center;font:700 13px ui-monospace,Menlo,monospace}
+.explain{margin-top:18px;line-height:1.72}
+.code{margin-top:10px;color:var(--code);font-family:ui-monospace,Menlo,monospace}
+.step{margin-top:8px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">LSD 基数排序：从最低位到最高位</div>
+      <div class="sub">示例按三位十进制数递减排序</div>
+    </div>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="label">当前序列</div>
+    <div class="row" id="seq"></div>
+    <div class="label">队列 Q9 到 Q0；递减排序按 9, 8, ..., 0 收集</div>
+    <div class="buckets" id="buckets"></div>
+    <div class="explain" id="explain"></div>
+    <div class="code" id="code"></div>
+    <div class="step" id="step"></div>
+  </div>
+</div>
+<script>
+const order=[9,8,7,6,5,4,3,2,1,0];
+const steps=[
+ {seq:['520','211','438','888','007','111','985','666','996','233','168'],digit:'个位',b:null,out:null,t:'初始序列。先按最低位，也就是个位，进行分配。',c:'处理顺序：个位 -> 十位 -> 百位'},
+ {seq:['520','211','438','888','007','111','985','666','996','233','168'],digit:'个位',b:{0:['520'],1:['211','111'],3:['233'],5:['985'],6:['666','996'],7:['007'],8:['438','888','168']},out:null,t:'第 1 趟分配：按个位数字入队，相同个位的元素按原扫描顺序进入同一队列尾部。',c:'例如 438, 888, 168 都进入 Q8，队内顺序保持为 438 -> 888 -> 168。'},
+ {seq:['438','888','168','007','666','996','985','233','211','111','520'],digit:'个位',b:null,out:['438','888','168','007','666','996','985','233','211','111','520'],t:'第 1 趟收集：按 Q9 到 Q0 依次出队，得到按个位递减的序列。',c:'只建立了个位顺序，还不能认为整体有序。'},
+ {seq:['438','888','168','007','666','996','985','233','211','111','520'],digit:'十位',b:{9:['996'],8:['888','985'],6:['168','666'],3:['438','233'],2:['520'],1:['211','111'],0:['007']},out:null,t:'第 2 趟分配：按十位入队。相同十位内部仍保留上一趟已经形成的个位递减顺序。',c:'这就是稳定分配的作用：低位顺序不会被高位处理破坏。'},
+ {seq:['996','888','985','168','666','438','233','520','211','111','007'],digit:'十位',b:null,out:['996','888','985','168','666','438','233','520','211','111','007'],t:'第 2 趟收集：得到按十位递减的序列；十位相同者按个位递减。',c:'十位是更高权重，个位是保留下来的较低权重。'},
+ {seq:['996','888','985','168','666','438','233','520','211','111','007'],digit:'百位',b:{9:['996','985'],8:['888'],6:['666'],5:['520'],4:['438'],2:['233','211'],1:['168','111'],0:['007']},out:null,t:'第 3 趟分配：按百位入队。相同百位内部保持前两趟已经形成的十位、个位顺序。',c:'最高位处理完后，三位关键字全部参与了排序。'},
+ {seq:['996','985','888','666','520','438','233','211','168','111','007'],digit:'百位',b:null,out:['996','985','888','666','520','438','233','211','168','111','007'],t:'第 3 趟收集：得到递减有序序列。',c:'996, 985, 888, 666, 520, 438, 233, 211, 168, 111, 007'}
+];
+let cur=0;
+function renderSeq(s){
+ const root=document.getElementById('seq');
+ root.innerHTML='';
+ s.seq.forEach((x,i)=>{
+  const el=document.createElement('div');
+  el.className='num'+(s.out&&s.out.includes(x)?' done':'');
+  el.textContent=x;
+  root.appendChild(el);
+ });
+}
+function renderBuckets(s){
+ const root=document.getElementById('buckets');
+ root.innerHTML='';
+ order.forEach(d=>{
+  const box=document.createElement('div');
+  box.className='bucket';
+  const h=document.createElement('div');
+  h.className='bhead';
+  h.textContent='Q'+d;
+  box.appendChild(h);
+  const stack=document.createElement('div');
+  stack.className='stack';
+  const values=s.b&&s.b[d]?s.b[d]:[];
+  values.forEach(v=>{
+   const item=document.createElement('div');
+   item.className='item';
+   item.textContent=v;
+   stack.appendChild(item);
+  });
+  box.appendChild(stack);
+  root.appendChild(box);
+ });
+}
+function render(){
+ const s=steps[cur];
+ renderSeq(s);
+ renderBuckets(s);
+ document.getElementById('explain').innerHTML='<b>'+s.t+'</b>';
+ document.getElementById('code').textContent=s.c;
+ document.getElementById('step').textContent=(cur+1)+' / '+steps.length+'，当前关键字位：'+s.digit;
+}
+document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

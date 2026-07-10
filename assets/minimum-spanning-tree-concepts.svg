@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="560" viewBox="0 0 1040 560" role="img" aria-labelledby="title desc">
+  <title id="title">Minimum spanning tree concepts</title>
+  <desc id="desc">A weighted connected undirected graph can have multiple spanning trees. The minimum spanning tree is the one with minimum total edge weight.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f6f8fb;
+      --text: #172033;
+      --muted: #596578;
+      --edge: #9aa4b2;
+      --tree: #16a34a;
+      --bad: #dc2626;
+      --node: #ffffff;
+      --blue: #2563eb;
+      --orange: #f59e0b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0f14;
+        --panel: #121923;
+        --text: #e7edf6;
+        --muted: #a5b1c2;
+        --edge: #687386;
+        --tree: #4ade80;
+        --bad: #f87171;
+        --node: #151e2b;
+        --blue: #7aa2ff;
+        --orange: #fbbf24;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: color-mix(in srgb, var(--muted), transparent 55%); rx: 12; }
+    .title { fill: var(--text); font: 700 28px "Segoe UI", Arial, sans-serif; }
+    .label { fill: var(--text); font: 700 18px "Segoe UI", Arial, sans-serif; }
+    .small { fill: var(--muted); font: 14px "Segoe UI", Arial, sans-serif; }
+    .edge { stroke: var(--edge); stroke-width: 3; fill: none; }
+    .pick { stroke: var(--tree); stroke-width: 6; fill: none; }
+    .costly { stroke: var(--bad); stroke-width: 6; fill: none; }
+    .node { fill: var(--node); stroke: var(--blue); stroke-width: 3; }
+    .node-text { fill: var(--text); font: 700 17px "Segoe UI", Arial, sans-serif; text-anchor: middle; dominant-baseline: central; }
+    .weight-bg { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+    .w { fill: var(--text); font: 700 14px "Consolas", monospace; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: var(--bg); stroke-width: 7; stroke-linejoin: round; }
+    .chip { fill: color-mix(in srgb, var(--tree), transparent 86%); stroke: var(--tree); rx: 8; }
+    .chip-bad { fill: color-mix(in srgb, var(--bad), transparent 86%); stroke: var(--bad); rx: 8; }
+    .chip-text { fill: var(--text); font: 700 15px "Segoe UI", Arial, sans-serif; text-anchor: middle; dominant-baseline: central; }
+  </style>
+
+  <rect class="bg" width="1040" height="560"/>
+  <text x="36" y="48" class="title">最小生成树：在所有生成树中选总代价最小者</text>
+  <text x="38" y="78" class="small">对象是带权无向连通图；目标是覆盖全部顶点、保持连通、边数为 n-1，并让边权之和最小。</text>
+
+  <rect x="32" y="112" width="300" height="380" class="panel"/>
+  <rect x="370" y="112" width="300" height="380" class="panel"/>
+  <rect x="708" y="112" width="300" height="380" class="panel"/>
+
+  <text x="62" y="150" class="label">原带权图</text>
+  <path class="edge" d="M112 210 L202 172"/>
+  <path class="edge" d="M202 172 L282 220"/>
+  <path class="edge" d="M112 210 L166 310"/>
+  <path class="edge" d="M166 310 L282 220"/>
+  <path class="edge" d="M202 172 L166 310"/>
+  <path class="edge" d="M282 220 L250 340"/>
+  <path class="edge" d="M166 310 L250 340"/>
+  <circle class="node" cx="112" cy="210" r="22"/><text class="node-text" x="112" y="210">A</text>
+  <circle class="node" cx="202" cy="172" r="22"/><text class="node-text" x="202" y="172">B</text>
+  <circle class="node" cx="282" cy="220" r="22"/><text class="node-text" x="282" y="220">C</text>
+  <circle class="node" cx="166" cy="310" r="22"/><text class="node-text" x="166" y="310">D</text>
+  <circle class="node" cx="250" cy="340" r="22"/><text class="node-text" x="250" y="340">E</text>
+  <circle class="weight-bg" cx="157" cy="187" r="11"/><text class="w" x="157" y="187">2</text>
+  <circle class="weight-bg" cx="242" cy="192" r="11"/><text class="w" x="242" y="192">3</text>
+  <circle class="weight-bg" cx="132" cy="260" r="11"/><text class="w" x="132" y="260">4</text>
+  <circle class="weight-bg" cx="224" cy="266" r="11"/><text class="w" x="224" y="266">1</text>
+  <circle class="weight-bg" cx="184" cy="238" r="11"/><text class="w" x="184" y="238">6</text>
+  <circle class="weight-bg" cx="275" cy="284" r="11"/><text class="w" x="275" y="284">5</text>
+  <circle class="weight-bg" cx="208" cy="332" r="11"/><text class="w" x="208" y="332">2</text>
+  <text x="62" y="430" class="small">可选边很多，生成树必须只选 n-1 条边。</text>
+
+  <text x="400" y="150" class="label">一棵生成树</text>
+  <path class="pick" d="M450 210 L540 172"/>
+  <path class="costly" d="M540 172 L504 310"/>
+  <path class="pick" d="M504 310 L620 220"/>
+  <path class="costly" d="M620 220 L588 340"/>
+  <circle class="node" cx="450" cy="210" r="22"/><text class="node-text" x="450" y="210">A</text>
+  <circle class="node" cx="540" cy="172" r="22"/><text class="node-text" x="540" y="172">B</text>
+  <circle class="node" cx="620" cy="220" r="22"/><text class="node-text" x="620" y="220">C</text>
+  <circle class="node" cx="504" cy="310" r="22"/><text class="node-text" x="504" y="310">D</text>
+  <circle class="node" cx="588" cy="340" r="22"/><text class="node-text" x="588" y="340">E</text>
+  <circle class="weight-bg" cx="495" cy="187" r="11"/><text class="w" x="495" y="187">2</text>
+  <circle class="weight-bg" cx="522" cy="238" r="11"/><text class="w" x="522" y="238">6</text>
+  <circle class="weight-bg" cx="562" cy="266" r="11"/><text class="w" x="562" y="266">1</text>
+  <circle class="weight-bg" cx="613" cy="284" r="11"/><text class="w" x="613" y="284">5</text>
+  <rect class="chip-bad" x="448" y="402" width="174" height="40"/><text class="chip-text" x="535" y="422">总代价 14</text>
+  <text x="400" y="466" class="small">连通、无环、覆盖全部顶点，但不一定最小。</text>
+
+  <text x="738" y="150" class="label">最小生成树</text>
+  <path class="pick" d="M788 210 L878 172"/>
+  <path class="pick" d="M878 172 L958 220"/>
+  <path class="pick" d="M842 310 L958 220"/>
+  <path class="pick" d="M842 310 L926 340"/>
+  <circle class="node" cx="788" cy="210" r="22"/><text class="node-text" x="788" y="210">A</text>
+  <circle class="node" cx="878" cy="172" r="22"/><text class="node-text" x="878" y="172">B</text>
+  <circle class="node" cx="958" cy="220" r="22"/><text class="node-text" x="958" y="220">C</text>
+  <circle class="node" cx="842" cy="310" r="22"/><text class="node-text" x="842" y="310">D</text>
+  <circle class="node" cx="926" cy="340" r="22"/><text class="node-text" x="926" y="340">E</text>
+  <circle class="weight-bg" cx="833" cy="187" r="11"/><text class="w" x="833" y="187">2</text>
+  <circle class="weight-bg" cx="918" cy="192" r="11"/><text class="w" x="918" y="192">3</text>
+  <circle class="weight-bg" cx="900" cy="266" r="11"/><text class="w" x="900" y="266">1</text>
+  <circle class="weight-bg" cx="884" cy="332" r="11"/><text class="w" x="884" y="332">2</text>
+  <rect class="chip" x="784" y="402" width="174" height="40"/><text class="chip-text" x="871" y="422">总代价 8</text>
+  <text x="738" y="466" class="small">所有生成树中，边权和最小。</text>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+  <title id="title">Register Roles In Instruction Execution</title>
+  <desc id="desc">Static diagram explaining roles of PC, IR, MAR, MDR, CU, ALU, ACC, MQ, and X.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    .bg { fill: #f7f7f4; }
+    .panel { fill: #fff; stroke: #ccd4dc; stroke-width: 2; }
+    .title { fill: #1f252b; font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .h { fill: #1f252b; font: 700 19px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .t { fill: #46505a; font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: #5f6873; font: 13px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .node { fill: #eef6fc; stroke: #2f6f9f; stroke-width: 2; rx: 8; }
+    .cu { fill: #fff0ee; stroke: #a1473e; }
+    .alu { fill: #fff5e8; stroke: #a86620; }
+    .mem { fill: #f1f8ef; stroke: #4b7f52; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #151719; }
+      .panel { fill: #202428; stroke: #3a4149; }
+      .title, .h { fill: #edf0f2; }
+      .t { fill: #c6ccd3; }
+      .small { fill: #aab2bc; }
+      .node { fill: #1f3443; stroke: #7db7e8; }
+      .cu { fill: #3a2423; stroke: #dd8c84; }
+      .alu { fill: #3b2d1c; stroke: #f0b86d; }
+      .mem { fill: #213522; stroke: #95c88f; }
+    }
+  </style>
+  <rect class="bg" width="1120" height="620"/>
+  <text class="title" x="48" y="58">执行指令时的关键部件职责</text>
+  <text class="t" x="48" y="88">这张图只回答“谁负责什么”，不把所有箭头混在一起。</text>
+
+  <rect class="panel" x="48" y="124" width="1024" height="420" rx="8"/>
+  <rect class="node" x="88" y="184" width="210" height="86"/>
+  <text class="h" x="174" y="218">PC</text>
+  <text class="small" x="116" y="244">保存下一条指令地址</text>
+
+  <rect class="node" x="328" y="184" width="210" height="86"/>
+  <text class="h" x="414" y="218">IR</text>
+  <text class="small" x="370" y="244">保存当前指令</text>
+
+  <rect class="cu node" x="568" y="184" width="210" height="86"/>
+  <text class="h" x="654" y="218">CU</text>
+  <text class="small" x="608" y="244">译码并发控制信号</text>
+
+  <rect class="mem node" x="808" y="184" width="210" height="86"/>
+  <text class="h" x="892" y="218">主存</text>
+  <text class="small" x="852" y="244">按地址保存指令与数据</text>
+
+  <rect class="node" x="88" y="328" width="210" height="86"/>
+  <text class="h" x="166" y="362">MAR</text>
+  <text class="small" x="125" y="388">保存要访问的主存地址</text>
+
+  <rect class="node" x="328" y="328" width="210" height="86"/>
+  <text class="h" x="407" y="362">MDR</text>
+  <text class="small" x="356" y="388">暂存读出或写入的数据</text>
+
+  <rect class="alu node" x="568" y="328" width="210" height="86"/>
+  <text class="h" x="654" y="362">ALU</text>
+  <text class="small" x="603" y="388">执行算术与逻辑运算</text>
+
+  <rect class="alu node" x="808" y="328" width="210" height="86"/>
+  <text class="h" x="842" y="362">ACC / MQ / X</text>
+  <text class="small" x="846" y="388">暂存操作数与运算结果</text>
+
+  <text class="t" x="88" y="486">记忆顺序：PC 指路，MAR 访存，MDR 中转，IR 保存当前指令，CU 指挥，ALU 与寄存器完成运算。</text>
+</svg>

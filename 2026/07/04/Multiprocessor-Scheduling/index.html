@@ -1,0 +1,442 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Multiprocessor Scheduling | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="多处理机调度单处理机调度只需要回答一个问题：让哪个就绪进程上 CPU。 多处理机调度还要多回答一个问题：让它上哪个 CPU。因此，同一个进程调度算法放到多 CPU 环境下，还要考虑队列组织、负载均衡和处理机亲和性。    场景 调度决策    单处理机 从就绪队列中选出一个进程，让它运行   多处理机 先选进程，再决定放到哪个 CPU 上运行   两个目标多处理机调度常见的两个目标。    目标">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Multiprocessor Scheduling">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/04/Multiprocessor-Scheduling/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="多处理机调度单处理机调度只需要回答一个问题：让哪个就绪进程上 CPU。 多处理机调度还要多回答一个问题：让它上哪个 CPU。因此，同一个进程调度算法放到多 CPU 环境下，还要考虑队列组织、负载均衡和处理机亲和性。    场景 调度决策    单处理机 从就绪队列中选出一个进程，让它运行   多处理机 先选进程，再决定放到哪个 CPU 上运行   两个目标多处理机调度常见的两个目标。    目标">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-04T13:12:51.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="OperatingSystem">
+<meta property="article:tag" content="ProcessAndThread">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Multiprocessor Scheduling",
+  "url": "https://eliano64.github.io/2026/07/04/Multiprocessor-Scheduling/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-04T13:12:51.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/04/Multiprocessor-Scheduling/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Multiprocessor Scheduling',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Multiprocessor Scheduling</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Multiprocessor Scheduling</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-04T13:12:51.000Z" title="发表于 2026-07-04 21:12:51">2026-07-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="多处理机调度"><a href="#多处理机调度" class="headerlink" title="多处理机调度"></a>多处理机调度</h1><p>单处理机调度只需要回答一个问题：<strong>让哪个就绪进程上 CPU</strong>。</p>
+<p>多处理机调度还要多回答一个问题：<strong>让它上哪个 CPU</strong>。因此，同一个进程调度算法放到多 CPU 环境下，还要考虑队列组织、负载均衡和处理机亲和性。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>调度决策</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单处理机</td>
+<td>从就绪队列中选出一个进程，让它运行</td>
+</tr>
+<tr>
+<td>多处理机</td>
+<td>先选进程，再决定放到哪个 CPU 上运行</td>
+</tr>
+</tbody></table>
+<h1 id="两个目标"><a href="#两个目标" class="headerlink" title="两个目标"></a>两个目标</h1><p>多处理机调度常见的两个目标。</p>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>含义</th>
+<th>好处</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>负载均衡</td>
+<td>尽量让各 CPU 同等忙碌</td>
+<td>避免某些 CPU 空闲、某些 CPU 排队过长</td>
+<td>进程可能被迁移到别的 CPU</td>
+</tr>
+<tr>
+<td>处理机亲和性</td>
+<td>尽量让同一进程继续在同一 CPU 上运行</td>
+<td>更容易复用该 CPU Cache 中的数据</td>
+<td>可能造成某些 CPU 忙、某些 CPU 闲</td>
+</tr>
+</tbody></table>
+<p>处理机亲和性来自缓存局部性。进程上次在某个 CPU 上运行时，它访问过的数据和指令可能还留在该 CPU 的 Cache 中；如果下次仍在这个 CPU 上运行，Cache 命中率更可能较高。若频繁换 CPU，原来的缓存优势就会被削弱。</p>
+<p><img src="/assets/processor-affinity-load-balancing.svg" alt="900"></p>
+<p>亲和性有两种常见形式：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>软亲和</td>
+<td>调度程序尽量让进程回到原来的 CPU，但不绝对保证</td>
+</tr>
+<tr>
+<td>硬亲和</td>
+<td>进程通过系统调用等方式绑定到指定 CPU 或 CPU 集合</td>
+</tr>
+</tbody></table>
+<h1 id="公共就绪队列"><a href="#公共就绪队列" class="headerlink" title="公共就绪队列"></a>公共就绪队列</h1><p>公共就绪队列让所有 CPU 共享同一个内核就绪队列。某个 CPU 空闲时，就运行调度程序，从公共队列中选出一个进程运行。</p>
+<p><img src="/assets/multiprocessor-ready-queues.svg" alt="900"></p>
+<table>
+<thead>
+<tr>
+<th>角度</th>
+<th>公共就绪队列</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>队列组织</td>
+<td>所有 CPU 共享一个就绪队列</td>
+</tr>
+<tr>
+<td>调度方式</td>
+<td>每个 CPU 空闲时都从公共队列取进程</td>
+</tr>
+<tr>
+<td>负载均衡</td>
+<td>较容易天然实现</td>
+</tr>
+<tr>
+<td>处理机亲和性</td>
+<td>较差，进程可能每次被不同 CPU 取走</td>
+</tr>
+<tr>
+<td>同步开销</td>
+<td>访问公共队列需要互斥控制</td>
+</tr>
+</tbody></table>
+<p>公共队列的直觉是“谁空闲谁来取活”。这样不容易出现某个 CPU 队列很长、另一个 CPU 没活干的情况。但多个 CPU 同时访问一个队列，需要锁或其他同步机制；并且进程不固定在哪个 CPU 上运行，Cache 亲和性较差。</p>
+<h1 id="私有就绪队列"><a href="#私有就绪队列" class="headerlink" title="私有就绪队列"></a>私有就绪队列</h1><p>私有就绪队列让每个 CPU 都有自己的就绪队列。CPU 空闲时，只从自己的队列里选进程运行。</p>
+<table>
+<thead>
+<tr>
+<th>角度</th>
+<th>私有就绪队列</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>队列组织</td>
+<td>每个 CPU 一个就绪队列</td>
+</tr>
+<tr>
+<td>调度方式</td>
+<td>CPU 通常只从自己的队列中选择进程</td>
+</tr>
+<tr>
+<td>负载均衡</td>
+<td>需要额外迁移机制</td>
+</tr>
+<tr>
+<td>处理机亲和性</td>
+<td>较好，进程更容易反复在同一 CPU 上运行</td>
+</tr>
+<tr>
+<td>同步开销</td>
+<td>队列竞争较少</td>
+</tr>
+</tbody></table>
+<p>私有队列的直觉是“每个 CPU 管自己的活”。它天然有利于处理机亲和性，也减少多个 CPU 争抢同一个队列的同步开销。但如果队列长短差别很大，就需要迁移进程来做负载均衡。</p>
+<p>常见迁移策略有两类：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>推迁移 Push</td>
+<td>系统中的负载均衡程序周期性检查各 CPU 负载，把任务从忙 CPU 推到空闲 CPU</td>
+</tr>
+<tr>
+<td>拉迁移 Pull</td>
+<td>空闲或低负载 CPU 主动检查其他 CPU 队列，从高负载 CPU 拉任务到自己队列</td>
+</tr>
+</tbody></table>
+<p>推迁移像集中式的负载均衡器；拉迁移像空闲 CPU 主动找活。实际系统可以同时使用两者。</p>
+<h1 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h1><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>公共就绪队列</th>
+<th>私有就绪队列</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>结构</td>
+<td>一个共享队列</td>
+<td>每个 CPU 一个队列</td>
+</tr>
+<tr>
+<td>负载均衡</td>
+<td>容易</td>
+<td>需要推迁移或拉迁移</td>
+</tr>
+<tr>
+<td>处理机亲和性</td>
+<td>较差</td>
+<td>较好</td>
+</tr>
+<tr>
+<td>队列同步</td>
+<td>竞争较多</td>
+<td>竞争较少</td>
+</tr>
+<tr>
+<td>典型问题</td>
+<td>共享队列锁竞争、Cache 亲和性差</td>
+<td>队列不均衡、任务迁移策略复杂</td>
+</tr>
+</tbody></table>
+<p><strong>公共队列偏向负载均衡，私有队列偏向处理机亲和性</strong>。多处理机调度的许多设计，都是在这两个目标之间折中。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/04/Multiprocessor-Scheduling/">https://eliano64.github.io/2026/07/04/Multiprocessor-Scheduling/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/04/Interactive-Scheduling-Algorithms/" title="Interactive Scheduling Algorithms"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Interactive Scheduling Algorithms</div></div><div class="info-2"><div class="info-item-1">交互式调度算法交互式系统要让用户的操作尽快得到反应，因此更关心算法的响应时间、公平性和任务紧急程度。    算法 主要依据 抢占性 适合解决的问题    RR 到达就绪队列的顺序、时间片 抢占 让每个进程周期性获得 CPU   优先级调度 优先级 可抢占，也可非抢占 区分任务紧急程度   多级队列调度 进程类型所属队列 取决于队列间策略 按系统进程、交互进程、批处理进程等分类管理   多级反馈队列调度 队列优先级、时间片、运行反馈 抢占 在响应、公平、短进程优先之间折中      算法 是否区分优先级 是否使用时间片 是否允许队列迁移 主要优点 主要风险    RR 否 是 否 公平、响应快 时间片过小会增加切换开销   优先级调度 是 不一定 否 能表达任务紧急程度 低优先级进程可能饥饿   多级队列调度 是，按队列区分 可按队列设置 通常不迁移 不同类型进程分开管理 低优先级队列可能饥饿   多级反馈队列调度 是，按队列动态区分 是 是 综合响应、公平和短进程优先 规则复杂，低级队列仍可能饥饿   RR...</div></div></div></a><a class="pagination-related" href="/2026/07/04/Process-Synchronization-And-Mutual-Exclusion/" title="Process Synchronization And Mutual Exclusion"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Process Synchronization And Mutual Exclusion</div></div><div class="info-2"><div class="info-item-1">进程同步与进程互斥并发进程有异步性：各进程以各自独立、不可预知的速度推进。异步本身不是错误，但如果进程之间存在共享数据、共享设备或先后依赖，操作系统就要提供同步互斥机制。 同步解决先后顺序问题。互斥保证不能同时访问的资源访问不出问题。     概念 关注点 典型问题 制约关系    进程同步 进程之间的执行先后 B 必须等 A 产生数据后才能继续处理 直接制约   进程互斥 同一资源不能同时访问 A 使用打印机时，B 不能同时使用同一打印机 间接制约   同步的关键是“某个动作必须发生在另一个动作之后”。例如进程 A 先对缓冲区数据预处理并写回，进程 B 再读取处理后的数据。若 B 提前读取，就会得到旧数据或未处理数据。 互斥的关键是“同一时刻最多一个进入”。例如打印机、摄像头、某些共享变量、内存缓冲区，都可能在一个时间段内只允许一个进程使用。 临界资源与临界区临界资源是一个时间段内只允许一个进程使用的资源。它可以是物理设备，也可以是共享变量、共享数据结构或缓冲区。 临界区是进程中访问临界资源的那段代码，也称临界段。 一次互斥访问在逻辑上分为四段： 1234567Pi...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E5%A4%84%E7%90%86%E6%9C%BA%E8%B0%83%E5%BA%A6"><span class="toc-text">多处理机调度</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%A4%E4%B8%AA%E7%9B%AE%E6%A0%87"><span class="toc-text">两个目标</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AC%E5%85%B1%E5%B0%B1%E7%BB%AA%E9%98%9F%E5%88%97"><span class="toc-text">公共就绪队列</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%81%E6%9C%89%E5%B0%B1%E7%BB%AA%E9%98%9F%E5%88%97"><span class="toc-text">私有就绪队列</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AF%B9%E6%AF%94"><span class="toc-text">对比</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="430" viewBox="0 0 1080 430" role="img" aria-labelledby="title desc">
+  <title id="title">磁盘读写过程</title>
+  <desc id="desc">展示按柱面号、盘面号、扇区号完成一次磁盘块读写。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--text:#172033;--muted:#536171;--line:#8190a3;--b:#2563eb;--g:#059669;--o:#d97706;--r:#dc2626;--sb:#dbeafe;--sg:#d1fae5;--so:#ffedd5;--sr:#fee2e2}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--text:#e5e7eb;--muted:#aab4c3;--line:#687386;--b:#60a5fa;--g:#34d399;--o:#fbbf24;--r:#f87171;--sb:#172554;--sg:#064e3b;--so:#451a03;--sr:#450a0a}}
+    .bg{fill:var(--bg)}.title{fill:var(--text);font:700 27px "Microsoft YaHei",sans-serif}.h{fill:var(--text);font:700 18px "Microsoft YaHei",sans-serif}.body{fill:var(--muted);font:15px "Microsoft YaHei",sans-serif}.box{rx:12;stroke-width:2}.arrow{stroke:var(--line);stroke-width:2.5;marker-end:url(#a);fill:none}
+  </style>
+  <defs><marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1080" height="430"/>
+  <text class="title" x="54" y="55">一次磁盘块读写的定位过程</text>
+  <g transform="translate(70 140)">
+    <rect class="box" x="0" y="0" width="190" height="128" fill="var(--sb)" stroke="var(--b)"/>
+    <text class="h" x="95" y="40" text-anchor="middle">1. 柱面号</text><text class="body" x="95" y="76" text-anchor="middle">移动磁臂</text><text class="body" x="95" y="102" text-anchor="middle">定位目标磁道</text>
+    <path class="arrow" d="M190 64 H260"/>
+    <rect class="box" x="260" y="0" width="190" height="128" fill="var(--sg)" stroke="var(--g)"/>
+    <text class="h" x="355" y="40" text-anchor="middle">2. 盘面号</text><text class="body" x="355" y="76" text-anchor="middle">选择磁头</text><text class="body" x="355" y="102" text-anchor="middle">激活对应盘面</text>
+    <path class="arrow" d="M450 64 H520"/>
+    <rect class="box" x="520" y="0" width="190" height="128" fill="var(--so)" stroke="var(--o)"/>
+    <text class="h" x="615" y="40" text-anchor="middle">3. 扇区号</text><text class="body" x="615" y="76" text-anchor="middle">等待旋转</text><text class="body" x="615" y="102" text-anchor="middle">扇区到达磁头下</text>
+    <path class="arrow" d="M710 64 H780"/>
+    <rect class="box" x="780" y="0" width="190" height="128" fill="var(--sr)" stroke="var(--r)"/>
+    <text class="h" x="875" y="40" text-anchor="middle">4. 数据传输</text><text class="body" x="875" y="76" text-anchor="middle">读出或写入</text><text class="body" x="875" y="102" text-anchor="middle">一个扇区/块</text>
+  </g>
+  <text class="body" x="540" y="340" text-anchor="middle">寻道时间来自第 1 步，旋转延迟来自第 3 步，传输时间来自第 4 步。</text>
+</svg>

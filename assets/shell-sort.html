@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shell Sort</title>
+<style>
+:root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626;--purple:#7c3aed}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171;--purple:#c084fc}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{padding:22px;max-width:1160px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.title{font-weight:800;font-size:22px}.btns{display:flex;gap:8px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:8px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px}.array{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:12px 0 18px}.cell{min-width:54px;border:2px solid var(--line);background:var(--bg);border-radius:10px;text-align:center;padding:9px 2px}.v{font-size:19px;font-weight:800}.i{font-size:11px;color:var(--muted);margin-top:3px}.g0{border-color:var(--blue)}.g1{border-color:var(--green)}.g2{border-color:var(--orange)}.g3{border-color:var(--purple)}.changed{box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}.note{font-size:16px;line-height:1.75}.code{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-family:Consolas,monospace;font-size:13px;line-height:1.45}.progress{color:var(--muted);font-size:14px}.legend{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:13px}.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.array{grid-template-columns:repeat(4,1fr)}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="title">希尔排序：按增量分组做直接插入</div><div id="progress" class="progress"></div></div>
+    <div class="btns"><button id="prev" class="btn">上一步</button><button id="next" class="btn">下一步</button></div>
+  </div>
+  <div class="grid">
+    <div class="panel">
+      <div id="gap" class="note"></div>
+      <div class="array" id="array"></div>
+      <div class="legend"><span><span class="dot" style="background:var(--blue)"></span>组 1</span><span><span class="dot" style="background:var(--green)"></span>组 2</span><span><span class="dot" style="background:var(--orange)"></span>组 3</span><span><span class="dot" style="background:var(--purple)"></span>组 4</span></div>
+    </div>
+    <div class="panel">
+      <div class="note" id="note"></div>
+      <div class="code" id="code"></div>
+    </div>
+  </div>
+</div>
+<script>
+const steps=[
+{a:[49,38,65,97,76,13,27,49],d:4,n:"第一趟 d=4，形成 4 个子表：下标相差 4 的元素属于同一组。",c:"gap = n / 2;"},
+{a:[49,13,27,49,76,38,65,97],d:4,ch:[1,2,3,5,6,7],n:"分别对每个 d=4 子表做直接插入。得到的结果不是全局有序，但每个隔 4 的子表已有序。",c:"for (int i = gap; i < n; i++)\n    insert A[i] into A[i-gap], A[i-2*gap], ...;"},
+{a:[49,13,27,49,76,38,65,97],d:2,n:"第二趟 d=2，形成两个子表：偶数下标一组，奇数下标一组。",c:"gap = gap / 2;"},
+{a:[27,13,49,38,65,49,76,97],d:2,ch:[0,3,4,5,6],n:"每个 d=2 子表再做直接插入。此时整个表已经接近有序。",c:"// group 0: 49,27,76,65 -> 27,49,65,76\n// group 1: 13,49,38,97 -> 13,38,49,97"},
+{a:[27,13,49,38,65,49,76,97],d:1,n:"最后 d=1，整个表就是一个子表，对全表做一次直接插入排序。",c:"gap = 1;"},
+{a:[13,27,38,49,49,65,76,97],d:1,ch:[0,1,2,3,4,5],n:"最终有序。希尔排序的关键是先让表部分有序，再用较低代价逼近全局有序。",c:"// gap becomes 0, sorting stops"},
+{a:[65,49,49],d:2,ch:[0,1,2],n:"不稳定性的典型来源：相等关键字可能处在不同子表中，前面的 49 可能被后面的 49 跨组越过。",c:"// Equal keys can cross groups,\n// so Shell sort is not stable."}
+];
+let k=0;
+function cls(i,d){if(d===1)return 'g0';return 'g'+(i%d);}
+function render(){
+ const s=steps[k], arr=document.getElementById('array');arr.innerHTML='';
+ arr.style.gridTemplateColumns=`repeat(${s.a.length},1fr)`;
+ s.a.forEach((v,i)=>{const d=document.createElement('div');d.className=`cell ${cls(i,s.d)}`;if(s.ch?.includes(i))d.classList.add('changed');d.innerHTML=`<div class="v">${v}</div><div class="i">${i}</div>`;arr.appendChild(d)});
+ document.getElementById('gap').textContent=`当前增量 d = ${s.d}`;
+ document.getElementById('note').textContent=s.n;
+ document.getElementById('code').textContent=s.c;
+ document.getElementById('progress').textContent=`${k+1} / ${steps.length}`;
+}
+document.getElementById('prev').onclick=()=>{k=(k-1+steps.length)%steps.length;render()};
+document.getElementById('next').onclick=()=>{k=(k+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

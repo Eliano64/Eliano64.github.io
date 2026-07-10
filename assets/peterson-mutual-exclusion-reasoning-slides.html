@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peterson Mutual Exclusion Reasoning</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #cbd5e1;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --ok: #16a34a;
+      --wait: #f59e0b;
+      --shadow: rgba(15, 23, 42, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --line: #374151;
+        --accent: #5eead4;
+        --accent-soft: #134e4a;
+        --ok: #34d399;
+        --wait: #fbbf24;
+        --shadow: rgba(0, 0, 0, .35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .deck {
+      width: min(1160px, 100vw);
+      margin: 0 auto;
+      padding: 22px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
+    .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 7px 12px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+    button:hover { border-color: var(--accent); }
+    .counter { color: var(--muted); min-width: 56px; text-align: center; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr .95fr; gap: 16px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 440px;
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+    .panel h2 { margin: 0 0 10px; font-size: 17px; }
+    .code {
+      display: grid;
+      gap: 8px;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 15px;
+    }
+    .line {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 7px 9px;
+      white-space: nowrap;
+    }
+    .line.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: inset 4px 0 0 var(--accent);
+    }
+    .state { display: grid; gap: 12px; margin-top: 8px; }
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .value {
+      display: block;
+      margin-top: 6px;
+      font: 700 23px/1.1 Consolas, monospace;
+      color: var(--accent);
+    }
+    .decision {
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 108px;
+      display: grid;
+      align-content: center;
+      gap: 8px;
+    }
+    .run { color: var(--ok); font-weight: 700; }
+    .wait { color: var(--wait); font-weight: 700; }
+    .desc { margin: 14px 0 0; color: var(--text); }
+    .muted { color: var(--muted); }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .panel { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <header>
+      <h1>Peterson 算法：最后一次谦让决定等待者</h1>
+      <div class="controls">
+        <button id="prev">上一步</button>
+        <span class="counter" id="counter"></span>
+        <button id="next">下一步</button>
+        <button id="reset">重置</button>
+      </div>
+    </header>
+    <section class="grid">
+      <div class="panel">
+        <h2>P0</h2>
+        <div class="code">
+          <div class="line" data-line="p0-1">flag[0] = true;</div>
+          <div class="line" data-line="p0-2">turn = 1;</div>
+          <div class="line" data-line="p0-3">while (flag[1] &amp;&amp; turn == 1);</div>
+          <div class="line" data-line="p0-4">critical section;</div>
+          <div class="line" data-line="p0-5">flag[0] = false;</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>P1</h2>
+        <div class="code">
+          <div class="line" data-line="p1-1">flag[1] = true;</div>
+          <div class="line" data-line="p1-2">turn = 0;</div>
+          <div class="line" data-line="p1-3">while (flag[0] &amp;&amp; turn == 0);</div>
+          <div class="line" data-line="p1-4">critical section;</div>
+          <div class="line" data-line="p1-5">flag[1] = false;</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>共享状态与判断</h2>
+        <div class="state">
+          <div class="item">flag[0]<span class="value" id="f0">false</span></div>
+          <div class="item">flag[1]<span class="value" id="f1">false</span></div>
+          <div class="item">turn<span class="value" id="turn">-</span></div>
+          <div class="decision">
+            <div id="d0">P0：未判断</div>
+            <div id="d1">P1：未判断</div>
+          </div>
+        </div>
+        <p class="desc" id="desc"></p>
+        <p class="muted">同时竞争时，两个 while 条件不可能同时为真，因为 turn 只有一个值。</p>
+      </div>
+    </section>
+  </main>
+  <script>
+    const steps = [
+      { line: "", f0: false, f1: false, turn: "-", d0: "未判断", d1: "未判断", desc: "初始状态：两个进程都没有表达进入意愿。" },
+      { line: "p0-1", f0: true, f1: false, turn: "-", d0: "未判断", d1: "未判断", desc: "P0 表达意愿：我想进入临界区。" },
+      { line: "p1-1", f0: true, f1: true, turn: "-", d0: "未判断", d1: "未判断", desc: "P1 也表达意愿：双方现在都想进入。" },
+      { line: "p0-2", f0: true, f1: true, turn: "1", d0: "愿意让 P1 先进入", d1: "未判断", desc: "P0 写 turn = 1，表示如果双方竞争，自己愿意让 P1 先进入。" },
+      { line: "p1-2", f0: true, f1: true, turn: "0", d0: "上一句谦让被覆盖", d1: "愿意让 P0 先进入", desc: "P1 后写 turn = 0。共享变量 turn 只保留最后一次谦让。" },
+      { line: "p0-3", f0: true, f1: true, turn: "0", d0: "flag[1] 为 true，但 turn != 1，可以进入", d1: "未判断", desc: "P0 的等待条件是 flag[1] && turn == 1。此时 turn 为 0，所以 P0 不等待。" },
+      { line: "p1-3", f0: true, f1: true, turn: "0", d0: "进入临界区", d1: "flag[0] 为 true 且 turn == 0，等待", desc: "P1 的等待条件成立，只能等待 P0 退出。两个进程不会同时进入。" },
+      { line: "p0-5", f0: false, f1: true, turn: "0", d0: "退出并清除 flag[0]", d1: "等待条件变假，可以进入", desc: "P0 退出时清除 flag[0]，P1 的等待条件变假，随后可以进入临界区。" }
+    ];
+    let index = 0;
+    const els = {
+      f0: document.getElementById("f0"),
+      f1: document.getElementById("f1"),
+      turn: document.getElementById("turn"),
+      d0: document.getElementById("d0"),
+      d1: document.getElementById("d1"),
+      desc: document.getElementById("desc"),
+      counter: document.getElementById("counter")
+    };
+    function mark(text) {
+      const cls = text.includes("等待") ? "wait" : text.includes("进入") ? "run" : "";
+      return cls ? `<span class="${cls}">${text}</span>` : text;
+    }
+    function render() {
+      const step = steps[index];
+      document.querySelectorAll(".line").forEach(el => {
+        el.classList.toggle("active", el.dataset.line === step.line);
+      });
+      els.f0.textContent = String(step.f0);
+      els.f1.textContent = String(step.f1);
+      els.turn.textContent = step.turn;
+      els.d0.innerHTML = `P0：${mark(step.d0)}`;
+      els.d1.innerHTML = `P1：${mark(step.d1)}`;
+      els.desc.textContent = step.desc;
+      els.counter.textContent = `${index + 1}/${steps.length}`;
+    }
+    document.getElementById("prev").onclick = () => { index = Math.max(0, index - 1); render(); };
+    document.getElementById("next").onclick = () => { index = Math.min(steps.length - 1, index + 1); render(); };
+    document.getElementById("reset").onclick = () => { index = 0; render(); };
+    render();
+  </script>
+</body>
+</html>

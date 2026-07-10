@@ -1,0 +1,472 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Routing Algorithms | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="路由选择网络层的核心工作可以分成两件事：  分组转发：路由器收到一个分组后，按分组首部和转发表，把它从合适的接口送出去。 路由选择：路由器通过算法或协议决定到各目的网络应走哪条路径，并据此形成路由表。  路由选择生成的是路由表，它关心目的网络、下一跳和路径代价；转发表通常由路由表派生而来，结构更适合高速查找。讨论算法时常把二者都称为路由表，但真正转发时用的是面向查找优化的转发表。 静态路由和动态路">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Routing Algorithms">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/08/Routing-Algorithms/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="路由选择网络层的核心工作可以分成两件事：  分组转发：路由器收到一个分组后，按分组首部和转发表，把它从合适的接口送出去。 路由选择：路由器通过算法或协议决定到各目的网络应走哪条路径，并据此形成路由表。  路由选择生成的是路由表，它关心目的网络、下一跳和路径代价；转发表通常由路由表派生而来，结构更适合高速查找。讨论算法时常把二者都称为路由表，但真正转发时用的是面向查找优化的转发表。 静态路由和动态路">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-08T06:34:28.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.038Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="NetworkLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Routing Algorithms",
+  "url": "https://eliano64.github.io/2026/07/08/Routing-Algorithms/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-08T06:34:28.000Z",
+  "dateModified": "2026-07-10T07:16:51.038Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/08/Routing-Algorithms/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Routing Algorithms',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Routing Algorithms</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Routing Algorithms</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-08T06:34:28.000Z" title="发表于 2026-07-08 14:34:28">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.038Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="路由选择"><a href="#路由选择" class="headerlink" title="路由选择"></a>路由选择</h1><p>网络层的核心工作可以分成两件事：</p>
+<ul>
+<li><strong>分组转发</strong>：路由器收到一个分组后，按分组首部和转发表，把它从合适的接口送出去。</li>
+<li><strong>路由选择</strong>：路由器通过算法或协议决定到各目的网络应走哪条路径，并据此形成路由表。</li>
+</ul>
+<p>路由选择生成的是<strong>路由表</strong>，它关心目的网络、下一跳和路径代价；转发表通常由路由表派生而来，结构更适合高速查找。讨论算法时常把二者都称为路由表，但真正转发时用的是面向查找优化的转发表。</p>
+<h1 id="静态路由和动态路由"><a href="#静态路由和动态路由" class="headerlink" title="静态路由和动态路由"></a>静态路由和动态路由</h1><p>路由选择按配置方式可分为静态路由和动态路由。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>做法</th>
+<th>优点</th>
+<th>局限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>静态路由</td>
+<td>人工配置网络路由、默认路由、特定主机路由等条目</td>
+<td>简单，开销小，可控性强</td>
+<td>拓扑变化后不能自动适应</td>
+</tr>
+<tr>
+<td>动态路由</td>
+<td>路由器通过路由选择协议自动交换和更新路由信息</td>
+<td>能适应网络变化，适合大规模网络</td>
+<td>协议复杂，有通信和计算开销</td>
+</tr>
+</tbody></table>
+<p>小型、稳定、边界清晰的网络常用静态路由。大规模网络会使用动态路由，因为拓扑、链路状态和策略都可能变化，靠人工维护不现实。</p>
+<h1 id="因特网为什么要分层路由"><a href="#因特网为什么要分层路由" class="headerlink" title="因特网为什么要分层路由"></a>因特网为什么要分层路由</h1><p>因特网规模太大，不可能让每台路由器都知道整个因特网的完整拓扑。实际做法是把因特网划分为许多<strong>自治系统</strong> AS。一个 AS 通常由同一管理机构控制，例如一个 ISP 或大型机构网络。</p>
+<p><img src="/assets/hierarchical-routing-as.svg" alt="900"></p>
+<p>分层路由把问题拆成两层：</p>
+<ul>
+<li><strong>域内路由选择</strong>：在一个 AS 内部选择路径，使用内部网关协议 IGP。</li>
+<li><strong>域间路由选择</strong>：在不同 AS 之间选择可达路径，使用外部网关协议 EGP，典型协议是 BGP。</li>
+</ul>
+<p>IGP 和 EGP 是协议类别，不是某个具体协议。RIP、OSPF 属于 IGP；BGP 属于 EGP。早期文档使用“网关”一词，现代语境中可理解为路由器。</p>
+<p>因特网路由选择的基本特点是：</p>
+<ul>
+<li><strong>自适应</strong>：能随网络状态变化而更新路由。</li>
+<li><strong>分布式</strong>：没有一个中心路由器掌握并计算全网所有路径。</li>
+<li><strong>分层次</strong>：AS 内部和 AS 之间使用不同类别的路由协议。</li>
+</ul>
+<h1 id="距离-向量算法"><a href="#距离-向量算法" class="headerlink" title="距离-向量算法"></a>距离-向量算法</h1><p>距离-向量算法的基本思想是：每个路由器维护一张到各目的网络的距离表，并周期性地把自己的距离向量发给相邻路由器。</p>
+<p>这类算法关心的是“从我这里到某个目的网络还要多远、下一跳是谁”。它不要求路由器掌握完整拓扑，只要求路由器不断接收邻居的距离表，再把邻居给出的距离换算成本路由器自己的候选路由。<a href="/2026/07/08/Routing-Protocols/#rip" class="wikilink">RIP</a> 就是典型的距离-向量协议：RIP 用跳数作为距离，和相邻路由器周期性交换路由信息。</p>
+<p>距离-向量表至少要能表达三类信息：</p>
+<table>
+<thead>
+<tr>
+<th>信息</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目的网络</td>
+<td>这条路由要到哪个网络</td>
+</tr>
+<tr>
+<td>距离</td>
+<td>从本路由器到目的网络的代价</td>
+</tr>
+<tr>
+<td>下一跳</td>
+<td>分组下一步应交给哪个相邻路由器</td>
+</tr>
+</tbody></table>
+<p>例如，某路由器的条目写成“到网络 <code>N2</code>，距离为 5，下一跳为 C”，含义不是“目的主机是 C”，而是“要到 <code>N2</code>，先把分组交给相邻路由器 C”。</p>
+<p>一个路由器从邻居收到距离向量后，用下面的规则计算候选路径：</p>
+<h1 id="text-经邻居到目的网络的距离"><a href="#text-经邻居到目的网络的距离" class="headerlink" title="$$\text{经邻居到目的网络的距离}"></a>$$<br>\text{经邻居到目的网络的距离}</h1><p>\text{到该邻居的代价}<br>+<br>\text{邻居宣告的距离}<br>$$</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||590)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||590)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/distance-vector-update-slides.html" style="width:100%;height:590px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>距离-向量算法只依赖邻居给出的信息。路由器不需要知道完整拓扑，只要不断和邻居交换信息，就能逐步得到到各目的网络的较短路径。</p>
+<p>这个“逐步”很关键。刚启动时，路由器通常只知道直连网络；经过多轮邻居交换后，到更远网络的路由才会逐渐传播开来。若网络拓扑发生变化，变化也要通过相邻路由器一跳一跳扩散。</p>
+<p>更新路由表时常见几种情况：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目的网络原来不存在</td>
+<td>添加新路由条目</td>
+</tr>
+<tr>
+<td>新路径下一跳与旧路径相同</td>
+<td>无论距离变大还是变小，都更新，因为这是同一路径的最新消息</td>
+</tr>
+<tr>
+<td>新路径下一跳不同且距离更短</td>
+<td>改用新下一跳</td>
+</tr>
+<tr>
+<td>新路径下一跳不同但距离不更短</td>
+<td>保持原条目</td>
+</tr>
+</tbody></table>
+<p>距离-向量算法的优点是简单、开销较小；问题是每台路由器只知道邻居宣告的距离，不知道完整路径，因此难以及时判断某条路径是否已经形成环路。</p>
+<h2 id="好消息传得快，坏消息传得慢"><a href="#好消息传得快，坏消息传得慢" class="headerlink" title="好消息传得快，坏消息传得慢"></a>好消息传得快，坏消息传得慢</h2><p>距离-向量算法中，“好消息”传播通常很快：如果某路由器发现到某网络的更短路径，邻居很快就能根据更小的距离更新。</p>
+<p>“坏消息”传播可能很慢。若某网络不可达，邻居可能仍拿旧信息反向告诉故障路由器，双方相互误导，距离逐步增加，形成<strong>距离无穷计数</strong>。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/rip-count-to-infinity-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>缓解方法包括：</p>
+<ul>
+<li>设置最大距离，达到该距离就视为不可达。</li>
+<li>路由表发生变化时立即触发更新，而不只等待周期性更新。</li>
+<li>水平分割：从某接口学到的路由信息，不再从同一接口反向发回去。</li>
+</ul>
+<p>这些方法只能减轻问题，不能从根本上消除。根本原因是距离-向量算法缺少完整路径信息。</p>
+<h1 id="链路状态算法"><a href="#链路状态算法" class="headerlink" title="链路状态算法"></a>链路状态算法</h1><p>链路状态算法的基本思想与距离-向量算法不同：每台路由器不仅和邻居交换距离，而是把自己的链路状态信息扩散出去，使同一区域内的路由器都能形成一致的拓扑数据库。</p>
+<p>这类算法关心的是“网络拓扑长什么样”。路由器先描述自己周围的链路，再把这些链路状态通告扩散给同一区域内的其他路由器。每台路由器拿到足够的链路状态后，都能构造出同一份拓扑视图，再从自己的位置出发计算最短路径。<a href="/2026/07/08/Routing-Protocols/#ospf" class="wikilink">OSPF</a> 就是典型的链路状态协议。</p>
+<p>链路状态里的“状态”通常包含：</p>
+<table>
+<thead>
+<tr>
+<th>信息</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>邻居是谁</td>
+<td>本路由器直接连接到哪些路由器或网络</td>
+</tr>
+<tr>
+<td>链路代价</td>
+<td>经过这条链路的代价，可由带宽、管理配置等因素决定</td>
+</tr>
+<tr>
+<td>通告来源</td>
+<td>哪台路由器发布了这份链路状态</td>
+</tr>
+<tr>
+<td>序号或新旧信息</td>
+<td>帮助路由器判断哪份通告更新</td>
+</tr>
+</tbody></table>
+<p><img src="/assets/link-state-flow.svg" alt="900"></p>
+<p>链路状态算法通常经过这些步骤：</p>
+<ol>
+<li>发现邻居。</li>
+<li>测量到邻居或直连网络的链路代价。</li>
+<li>生成链路状态通告。</li>
+<li>用洪泛法把链路状态通告发送给区域内其他路由器。</li>
+<li>每台路由器形成链路状态数据库 LSDB。</li>
+<li>每台路由器以自己为源点运行最短路径算法，生成路由表。</li>
+</ol>
+<p>链路状态算法的关键是：区域内每台路由器最终拥有相同的 LSDB，但每台路由器以自己为起点计算最短路径树，因此得到的下一跳可以不同。</p>
+<h1 id="两类算法对比"><a href="#两类算法对比" class="headerlink" title="两类算法对比"></a>两类算法对比</h1><p><img src="/assets/distance-vector-vs-link-state.svg" alt="900"></p>
+<table>
+<thead>
+<tr>
+<th>比较点</th>
+<th>距离-向量算法</th>
+<th>链路状态算法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>交换的信息</td>
+<td>到各目的网络的距离向量</td>
+<td>本路由器的链路状态</td>
+</tr>
+<tr>
+<td>信息范围</td>
+<td>主要来自邻居</td>
+<td>区域内路由器形成一致拓扑视图</td>
+</tr>
+<tr>
+<td>典型协议</td>
+<td>RIP</td>
+<td>OSPF</td>
+</tr>
+<tr>
+<td>计算方式</td>
+<td>根据邻居距离加链路代价更新</td>
+<td>建立 LSDB 后运行最短路径算法</td>
+</tr>
+<tr>
+<td>优点</td>
+<td>简单，路由器开销小</td>
+<td>收敛较快，拓扑信息更完整</td>
+</tr>
+<tr>
+<td>问题</td>
+<td>坏消息传播慢，可能形成路由环路</td>
+<td>实现复杂，洪泛和数据库维护有开销</td>
+</tr>
+</tbody></table>
+<p><strong>距离-向量问邻居“你到那里多远”，链路状态让大家先同步“网络长什么样”。</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/08/Routing-Algorithms/">https://eliano64.github.io/2026/07/08/Routing-Algorithms/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/08/Routing-Protocols/" title="Routing Protocols"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Routing Protocols</div></div><div class="info-2"><div class="info-item-1">路由协议路由协议运行在路由器之间，用来交换路由信息、维护路由表。它们服务于网络层的路径选择，但具体报文可能封装在不同下层协议中。例如 RIP 报文使用 UDP，BGP 使用 TCP，但它们的核心功能仍是路由选择。 三种协议对比：    比较点 RIP OSPF BGP    使用范围 AS 内部 AS 内部 AS 之间   协议类别 IGP IGP EGP   基础思想 距离-向量 链路状态 路径向量与策略   主要度量 跳数 链路代价 AS 路径和策略   交换对象 相邻路由器 区域内洪泛链路状态 BGP 对等站   传输封装 UDP 520端口 直接封装在 IP 中 TCP 179端口   适用特点 小规模、简单网络 较大 AS，收敛较快 AS 间可达性和策略控制   RIP 和 OSPF 解决的是一个 AS 内部如何选路；BGP 解决的是 AS 之间如何互相通告可达网络，并根据策略选择可接受的路径。 RIPRIP 是内部网关协议，基于距离-向量思想。RIP 用跳数表示距离：  从一个路由器到直连网络的距离为 1。 每经过一个路由器，距离加 1。 最大有效距离为...</div></div></div></a><a class="pagination-related" href="/2026/07/08/Network-Congestion-Control/" title="Network Congestion Control"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Network Congestion Control</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E9%80%89%E6%8B%A9"><span class="toc-text">路由选择</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%92%8C%E5%8A%A8%E6%80%81%E8%B7%AF%E7%94%B1"><span class="toc-text">静态路由和动态路由</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%A0%E7%89%B9%E7%BD%91%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%88%86%E5%B1%82%E8%B7%AF%E7%94%B1"><span class="toc-text">因特网为什么要分层路由</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B7%9D%E7%A6%BB-%E5%90%91%E9%87%8F%E7%AE%97%E6%B3%95"><span class="toc-text">距离-向量算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#text-%E7%BB%8F%E9%82%BB%E5%B1%85%E5%88%B0%E7%9B%AE%E7%9A%84%E7%BD%91%E7%BB%9C%E7%9A%84%E8%B7%9D%E7%A6%BB"><span class="toc-text">$$\text{经邻居到目的网络的距离}</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A5%BD%E6%B6%88%E6%81%AF%E4%BC%A0%E5%BE%97%E5%BF%AB%EF%BC%8C%E5%9D%8F%E6%B6%88%E6%81%AF%E4%BC%A0%E5%BE%97%E6%85%A2"><span class="toc-text">好消息传得快，坏消息传得慢</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%93%BE%E8%B7%AF%E7%8A%B6%E6%80%81%E7%AE%97%E6%B3%95"><span class="toc-text">链路状态算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%A4%E7%B1%BB%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="toc-text">两类算法对比</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

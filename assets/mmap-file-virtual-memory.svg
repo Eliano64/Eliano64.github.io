@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="690" viewBox="0 0 1160 690" role="img" aria-labelledby="title desc">
+  <title id="title">mmap 文件映射与虚拟地址空间</title>
+  <desc id="desc">展示同一个磁盘文件通过页表映射到两个进程的虚拟地址空间，并在主存中共享同一份物理页。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --ink: #172033;
+      --muted: #5b6678;
+      --line: #40516b;
+      --panel: #f8fafc;
+      --chip: #ffffff;
+      --blue: #2563eb;
+      --green: #15803d;
+      --orange: #c2410c;
+      --purple: #7c3aed;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --ink: #e5e7eb;
+        --muted: #aab6c8;
+        --line: #b6c2d3;
+        --panel: #172033;
+        --chip: #111827;
+        --blue: #60a5fa;
+        --green: #4ade80;
+        --orange: #fb923c;
+        --purple: #a78bfa;
+      }
+    }
+    svg { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    text { fill: var(--ink); font-size: 17px; }
+    .title { font-size: 28px; font-weight: 700; }
+    .small { font-size: 14px; fill: var(--muted); }
+    .tiny { font-size: 12px; fill: var(--muted); }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 8; }
+    .chip { fill: var(--chip); stroke: var(--line); stroke-width: 1.8; rx: 6; }
+    .mapped { fill: color-mix(in srgb, var(--blue), transparent 84%); stroke: var(--blue); stroke-width: 2.4; rx: 6; }
+    .phys { fill: color-mix(in srgb, var(--green), transparent 84%); stroke: var(--green); stroke-width: 2.4; rx: 6; }
+    .file { fill: color-mix(in srgb, var(--orange), transparent 84%); stroke: var(--orange); stroke-width: 2.4; rx: 6; }
+    .arrow { stroke: var(--line); stroke-width: 2.3; fill: none; marker-end: url(#arrow); }
+    .dashed { stroke-dasharray: 8 6; }
+    .blue { stroke: var(--blue); }
+    .green { stroke: var(--green); }
+    .orange { stroke: var(--orange); }
+    .purple { stroke: var(--purple); }
+    .label { font-size: 14px; font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+    </marker>
+  </defs>
+
+  <text x="42" y="48" class="title">mmap：把文件的一段映射到进程虚拟地址空间</text>
+  <text x="44" y="78" class="small">访问映射区时仍然走虚拟存储机制：虚拟页通过页表指向物理页，物理页的数据来源可以是磁盘文件。</text>
+
+  <rect x="50" y="120" width="250" height="430" class="box" />
+  <text x="104" y="155" font-weight="700">进程 A 虚拟地址空间</text>
+  <rect x="85" y="195" width="180" height="52" class="chip" />
+  <text x="124" y="227">代码 / 数据</text>
+  <rect x="85" y="275" width="180" height="88" class="mapped" />
+  <text x="119" y="312" font-weight="700">mmap 区</text>
+  <text x="112" y="340" class="small">文件页 0, 1, 2</text>
+  <rect x="85" y="410" width="180" height="52" class="chip" />
+  <text x="139" y="442">堆 / 栈</text>
+
+  <rect x="455" y="120" width="250" height="430" class="box" />
+  <text x="508" y="155" font-weight="700">进程 B 虚拟地址空间</text>
+  <rect x="490" y="195" width="180" height="52" class="chip" />
+  <text x="529" y="227">代码 / 数据</text>
+  <rect x="490" y="300" width="180" height="88" class="mapped" />
+  <text x="524" y="337" font-weight="700">mmap 区</text>
+  <text x="517" y="365" class="small">同一文件页</text>
+  <rect x="490" y="430" width="180" height="52" class="chip" />
+  <text x="544" y="462">堆 / 栈</text>
+
+  <rect x="805" y="130" width="270" height="190" class="box" />
+  <text x="898" y="166" font-weight="700">物理内存</text>
+  <rect x="842" y="205" width="72" height="56" class="phys" />
+  <text x="861" y="239">页 0</text>
+  <rect x="914" y="205" width="72" height="56" class="phys" />
+  <text x="933" y="239">页 1</text>
+  <rect x="986" y="205" width="72" height="56" class="phys" />
+  <text x="1005" y="239">页 2</text>
+  <text x="842" y="292" class="small">可由两个进程页表共同指向</text>
+
+  <rect x="805" y="410" width="270" height="160" class="box" />
+  <text x="909" y="446" font-weight="700">磁盘文件</text>
+  <rect x="842" y="485" width="72" height="46" class="file" />
+  <text x="862" y="514">块 0</text>
+  <rect x="914" y="485" width="72" height="46" class="file" />
+  <text x="934" y="514">块 1</text>
+  <rect x="986" y="485" width="72" height="46" class="file" />
+  <text x="1006" y="514">块 2</text>
+
+  <path d="M 265 319 C 470 225 650 215 842 232" class="arrow blue" />
+  <text x="375" y="235" class="label">进程 A 页表映射</text>
+  <path d="M 670 344 C 745 286 792 249 842 238" class="arrow purple" />
+  <text x="690" y="285" class="label">进程 B 页表映射</text>
+  <path d="M 940 410 V 320" class="arrow orange dashed" />
+  <text x="955" y="375" class="label">缺页时从文件读入</text>
+  <path d="M 986 320 V 410" class="arrow green dashed" />
+  <text x="1002" y="375" class="label">脏页稍后写回</text>
+
+  <rect x="85" y="590" width="990" height="54" class="chip" />
+  <text x="112" y="623" class="label">关键点：</text>
+  <text x="184" y="623">mmap 建立的是虚拟地址范围与文件内容的映射；物理页可以按需调入，也可以被多个进程共享。</text>
+</svg>

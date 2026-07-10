@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480">
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      text { font-family: Arial, "Microsoft YaHei", sans-serif; }
+      .title { font-size: 16px; font-weight: 700; fill: #1e293b; }
+      .label { font-size: 13px; }
+      .small { font-size: 11px; }
+      .box-req { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.5; }
+      .box-resp { fill: #f0fdf4; stroke: #059669; stroke-width: 1.5; }
+      .code { font-family: Consolas, monospace; font-size: 12px; }
+      .field { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 0.8; }
+      @media (prefers-color-scheme: dark) {
+        .title { fill: #e6edf3; }
+        .box-req { fill: #1e293b; stroke: #3b82f6; }
+        .box-resp { fill: #1a2e1f; stroke: #10b981; }
+        .field { fill: #16212c; stroke: #334155; }
+        text { fill: #e6edf3; }
+      }
+    </style>
+  </defs>
+
+  <text x="450" y="24" text-anchor="middle" class="title">HTTP 请求报文与响应报文格式</text>
+
+  <!-- ===== LEFT: Request Message ===== -->
+  <rect x="20" y="42" width="420" height="20" rx="3" fill="#2563eb"/>
+  <text x="230" y="56" text-anchor="middle" class="small" fill="#fff" font-weight="700">HTTP 请求报文</text>
+
+  <!-- Request line -->
+  <rect x="20" y="70" width="420" height="40" rx="4" class="field"/>
+  <text x="230" y="85" text-anchor="middle" class="label" fill="#1d4ed8" font-weight="700">请求行</text>
+  <text x="230" y="103" text-anchor="middle" class="code" fill="#64748b">GET /index.htm HTTP/1.1  ← 方法 + URL + 版本</text>
+
+  <!-- Header lines -->
+  <rect x="20" y="118" width="420" height="90" rx="4" class="field"/>
+  <text x="230" y="135" text-anchor="middle" class="label" fill="#1d4ed8" font-weight="700">首部行（可多行）</text>
+  <text x="40" y="153" class="code" fill="#334155">Host: www.hnust.edu.cn</text>
+  <text x="40" y="171" class="code" fill="#334155">Connection: close</text>
+  <text x="40" y="189" class="code" fill="#334155">User-Agent: Mozilla/5.0</text>
+  <text x="40" y="205" class="code" fill="#334155">Accept-Language: zh-CN</text>
+
+  <!-- Empty line -->
+  <rect x="20" y="216" width="420" height="24" rx="4" class="field"/>
+  <text x="230" y="233" text-anchor="middle" class="label" fill="#dc2626">空行（CRLF）— 首部结束标志</text>
+
+  <!-- Entity body -->
+  <rect x="20" y="248" width="420" height="30" rx="4" class="field"/>
+  <text x="230" y="268" text-anchor="middle" class="label" fill="#64748b">实体主体（通常不使用）</text>
+
+  <!-- Method table -->
+  <text x="230" y="300" text-anchor="middle" class="label" font-weight="700" fill="#1e293b">常用方法</text>
+  <text x="40" y="320" class="small" fill="#334155"><tspan font-weight="700">GET</tspan> 读取文档 | <tspan font-weight="700">HEAD</tspan> 只读首部 | <tspan font-weight="700">POST</tspan> 提交数据 | <tspan font-weight="700">PUT</tspan> 存储文档</text>
+  <text x="40" y="338" class="small" fill="#334155"><tspan font-weight="700">DELETE</tspan> 删除文档 | <tspan font-weight="700">CONNECT</tspan> 代理 | <tspan font-weight="700">OPTIONS</tspan> 选项 | <tspan font-weight="700">TRACE</tspan> 环回 | <tspan font-weight="700">PATCH</tspan> 局部更新</text>
+
+  <!-- ===== RIGHT: Response Message ===== -->
+  <rect x="460" y="42" width="420" height="20" rx="3" fill="#059669"/>
+  <text x="670" y="56" text-anchor="middle" class="small" fill="#fff" font-weight="700">HTTP 响应报文</text>
+
+  <!-- Status line -->
+  <rect x="460" y="70" width="420" height="40" rx="4" class="field"/>
+  <text x="670" y="85" text-anchor="middle" class="label" fill="#059669" font-weight="700">状态行</text>
+  <text x="670" y="103" text-anchor="middle" class="code" fill="#64748b">HTTP/1.1 200 OK  ← 版本 + 状态码 + 短语</text>
+
+  <!-- Header lines -->
+  <rect x="460" y="118" width="420" height="75" rx="4" class="field"/>
+  <text x="670" y="135" text-anchor="middle" class="label" fill="#059669" font-weight="700">首部行（可多行）</text>
+  <text x="480" y="153" class="code" fill="#334155">Content-Type: text/html</text>
+  <text x="480" y="171" class="code" fill="#334155">Content-Length: 1234</text>
+  <text x="480" y="189" class="code" fill="#334155">Set-Cookie: session_id=abc123</text>
+
+  <!-- Empty line -->
+  <rect x="460" y="216" width="420" height="24" rx="4" class="field"/>
+  <text x="670" y="233" text-anchor="middle" class="label" fill="#dc2626">空行（CRLF）— 首部结束标志</text>
+
+  <!-- Entity body -->
+  <rect x="460" y="248" width="420" height="30" rx="4" class="field"/>
+  <text x="670" y="268" text-anchor="middle" class="label" fill="#64748b">实体主体（返回的文档内容）</text>
+
+  <!-- Status code table -->
+  <text x="670" y="300" text-anchor="middle" class="label" font-weight="700" fill="#1e293b">常见状态码</text>
+  <text x="480" y="318" class="small" fill="#334155"><tspan font-weight="700" fill="#059669">200</tspan> OK | <tspan font-weight="700" fill="#059669">202</tspan> Accepted | <tspan font-weight="700" fill="#d97706">301</tspan> Moved Permanently</text>
+  <text x="480" y="336" class="small" fill="#334155"><tspan font-weight="700" fill="#d97706">304</tspan> Not Modified | <tspan font-weight="700" fill="#dc2626">400</tspan> Bad Request | <tspan font-weight="700" fill="#dc2626">404</tspan> Not Found</text>
+  <text x="480" y="354" class="small" fill="#334155"><tspan font-weight="700" fill="#dc2626">500</tspan> Internal Server Error</text>
+
+  <!-- Bottom: structural similarity -->
+  <rect x="20" y="370" width="860" height="100" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <style>
+    @media (prefers-color-scheme: dark) { rect[fill="#f8fafc"] { fill: #16212c; stroke: #334155; } }
+  </style>
+  <text x="450" y="394" text-anchor="middle" class="label" font-weight="700" fill="#1e293b">请求与响应的结构对比</text>
+  <text x="40" y="416" class="small" fill="#334155">请求 = <tspan font-weight="700" fill="#2563eb">请求行</tspan>（方法 + URL + 版本）+ <tspan font-weight="700">首部行</tspan>（可多行）+ <tspan font-weight="700" fill="#dc2626">空行</tspan> + 实体主体</text>
+  <text x="40" y="437" class="small" fill="#334155">响应 = <tspan font-weight="700" fill="#059669">状态行</tspan>（版本 + 状态码 + 短语）+ <tspan font-weight="700">首部行</tspan>（可多行）+ <tspan font-weight="700" fill="#dc2626">空行</tspan> + 实体主体</text>
+  <text x="450" y="460" text-anchor="middle" class="small" fill="#64748b">核心差异在第一行：请求行包含方法和 URL；状态行包含版本和状态码</text>
+</svg>

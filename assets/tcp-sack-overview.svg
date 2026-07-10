@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img">
+  <title>SACK selective acknowledgement</title>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .t{font-size:22px;font-weight:700;fill:#111827}
+    .sh{font-size:16px;font-weight:700;fill:#111827}
+    .ss{font-size:12px;fill:#4b5563}
+    .sm{font-size:14px;font-weight:700;fill:#111827}
+    .sw{font-size:14px;font-weight:700;fill:#fff}
+    .box{fill:#fff;stroke:#d1d5db;stroke-width:2}
+    .cg{fill:#059669;stroke:#047857;stroke-width:1.5}
+    .cr{fill:#dc2626;stroke:#b91c1c;stroke-width:1.5}
+    .gy{fill:#e5e7eb;stroke:#d1d5db;stroke-width:1.5}
+    .fb{fill:#eff6ff;stroke:#2563eb;stroke-width:2}
+    .ty{fill:#d97706;stroke:#b45309;stroke-width:1.5}
+    @media(prefers-color-scheme:dark){
+      .t,.sh,.sm{fill:#e5e7eb}
+      .ss{fill:#9ca3af}
+      .box{fill:#111827;stroke:#374151}
+      .cg{fill:#047857;stroke:#065f46}
+      .cr{fill:#b91c1c;stroke:#991b1b}
+      .gy{fill:#1f2937;stroke:#374151}
+      .fb{fill:#0f1d33;stroke:#1e40af}
+      .ty{fill:#b45309;stroke:#92400e}
+    }
+  </style>
+
+  <text x="480" y="36" text-anchor="middle" class="t">SACK 选择确认 — 解决累积确认的信息不足</text>
+
+  <!-- Without SACK -->
+  <rect x="40" y="55" width="880" height="36" rx="6" class="cr"/><text x="480" y="79" text-anchor="middle" class="sw">仅有累积确认：发送方不知道哪些块已到达</text>
+
+  <rect x="40" y="100" width="880" height="44" rx="4" class="box"/>
+  <rect x="40" y="100" width="200" height="44" rx="4" class="cg"/><text x="140" y="127" text-anchor="middle" class="sw">块① 已收到 1–500</text>
+  <rect x="240" y="100" width="160" height="44" class="cr"/><text x="320" y="127" text-anchor="middle" class="sw">缺失 501–800</text>
+  <rect x="400" y="100" width="240" height="44" class="cg"/><text x="520" y="127" text-anchor="middle" class="sw">块② 已收到 801–1500</text>
+  <rect x="640" y="100" width="280" height="44" rx="4" class="gy"/><text x="780" y="127" text-anchor="middle" class="sm" fill="#6b7280">未发送 / 在路上</text>
+
+  <text x="480" y="170" text-anchor="middle" class="sh" fill="#dc2626">ACK = 501（只能报告按序收到的最后位置）</text>
+  <text x="480" y="192" text-anchor="middle" class="ss" fill="#dc2626">→ 发送方不知道 801–1500 已收到 · 可能重传 501–1500 全部！</text>
+
+  <!-- With SACK -->
+  <rect x="40" y="220" width="880" height="36" rx="6" class="cg"/><text x="480" y="244" text-anchor="middle" class="sw">启用 SACK：接收方报告不连续字节块的精确边界</text>
+
+  <rect x="40" y="264" width="880" height="44" rx="4" class="box"/>
+  <rect x="40" y="264" width="200" height="44" rx="4" class="cg"/><text x="140" y="291" text-anchor="middle" class="sw">块① 1–500</text>
+  <rect x="240" y="264" width="160" height="44" class="cr"/><text x="320" y="291" text-anchor="middle" class="sw">缺失 501–800</text>
+  <rect x="400" y="264" width="240" height="44" class="cg"/><text x="520" y="291" text-anchor="middle" class="sw">块② 801–1500</text>
+  <rect x="640" y="264" width="280" height="44" rx="4" class="gy"/><text x="780" y="291" text-anchor="middle" class="sm" fill="#6b7280">未发送 / 在路上</text>
+
+  <text x="480" y="340" text-anchor="middle" class="sh" fill="#059669">ACK = 501    SACK = [801, 1500]</text>
+  <text x="480" y="362" text-anchor="middle" class="ss" fill="#059669">→ 发送方只需重传 501–800 · 不会重传已收到的 801–1500</text>
+
+  <!-- SACK format -->
+  <text x="480" y="410" text-anchor="middle" class="t">SACK 选项格式与容量</text>
+
+  <rect x="40" y="430" width="880" height="140" rx="6" class="box"/>
+  <rect x="60" y="455" width="60" height="38" rx="4" class="fb"/><text x="90" y="479" text-anchor="middle" class="sm" fill="#1e40af">Kind</text>
+  <rect x="130" y="455" width="60" height="38" rx="4" class="fb"/><text x="160" y="479" text-anchor="middle" class="sm" fill="#1e40af">Length</text>
+  <rect x="210" y="455" width="300" height="38" rx="4" class="ty"/><text x="360" y="479" text-anchor="middle" class="sw">块 1 左边界 4 B</text>
+  <rect x="520" y="455" width="300" height="38" rx="4" class="ty"/><text x="670" y="479" text-anchor="middle" class="sw">块 1 右边界 4 B</text>
+
+  <text x="480" y="520" text-anchor="middle" class="sm" fill="#6b7280">⋯ 最多 4 个块 = 8 边界 = 32 B → SACK 选项 ≤ 34 B（&lt; 40 B 首部选项上限）</text>
+  <line x1="300" y1="536" x2="660" y2="536" stroke="#d1d5db" stroke-width="1"/>
+  <text x="480" y="555" text-anchor="middle" class="sm" fill="#6b7280">ACK 语义不变 · SACK 仅做补充 · 大多数 TCP 实现仍重传所有未被确认的数据块</text>
+</svg>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timer Interrupt Scheduling</title>
+  <style>
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --blue:#2563eb; --green:#0f766e; --amber:#b45309; --red:#b42318; --chip:#e6eef9;
+      --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --blue:#7aa2ff; --green:#62d4c5; --amber:#f6b85f; --red:#ff8a80; --chip:#263142;
+        --shadow:rgba(0,0,0,.38);
+      }
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:720px; background:var(--bg); color:var(--text);
+      font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;
+      display:flex; flex-direction:column;
+    }
+    header { padding:20px 24px 8px; text-align:center; }
+    h1 { margin:0; font-size:24px; }
+    .sub { margin-top:8px; color:var(--muted); font-size:14px; }
+    main { flex:1; padding:14px 24px 18px; display:grid; grid-template-columns:1fr; gap:14px; }
+    .stage {
+      display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; align-items:stretch;
+    }
+    .card {
+      border:1.5px solid var(--line); border-radius:12px; background:var(--panel);
+      padding:16px; min-height:142px; box-shadow:0 6px 16px var(--shadow);
+    }
+    .card h2 { margin:0 0 12px; font-size:18px; }
+    .card p { margin:8px 0 0; color:var(--muted); line-height:1.55; font-size:15px; }
+    .machine {
+      display:grid; grid-template-columns:1fr 80px 1fr; gap:14px; align-items:center;
+      border:1.5px solid var(--line); border-radius:14px; background:var(--panel);
+      padding:16px; min-height:210px;
+    }
+    .unit { border:1.2px solid var(--line); border-radius:10px; padding:14px; background:var(--chip); min-height:132px; }
+    .unit strong { display:block; font-size:17px; margin-bottom:8px; }
+    .unit span { display:block; color:var(--muted); font-size:14px; line-height:1.5; }
+    .arrow { text-align:center; color:var(--blue); font-weight:700; font-size:32px; }
+    .flow {
+      display:grid; grid-template-columns:repeat(5, 1fr); gap:10px;
+    }
+    .step {
+      border:1.2px solid var(--line); border-radius:10px; padding:12px; background:var(--panel);
+      min-height:88px;
+    }
+    .step strong { display:block; color:var(--blue); font-size:15px; margin-bottom:8px; }
+    .step span { color:var(--muted); font-size:14px; line-height:1.45; }
+    footer {
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      padding:10px 20px 18px;
+    }
+    button {
+      border:1px solid var(--line); background:var(--panel); color:var(--text);
+      border-radius:8px; padding:8px 14px; cursor:pointer; font-size:14px;
+    }
+    .count { color:var(--muted); min-width:64px; text-align:center; font-size:14px; }
+    .accent-blue { color:var(--blue); }
+    .accent-green { color:var(--green); }
+    .accent-amber { color:var(--amber); }
+    .accent-red { color:var(--red); }
+    @media (max-width: 820px) {
+      body { min-height:760px; }
+      main { padding:10px 14px; }
+      .stage, .machine, .flow { grid-template-columns:1fr; }
+      .arrow { transform:rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title"></h1>
+    <div class="sub" id="subtitle"></div>
+  </header>
+  <main>
+    <section class="stage" id="stage"></section>
+    <section class="machine">
+      <div class="unit" id="left"></div>
+      <div class="arrow" id="arrow">→</div>
+      <div class="unit" id="right"></div>
+    </section>
+    <section class="flow" id="flow"></section>
+  </main>
+  <footer>
+    <button id="prev" type="button">上一页</button>
+    <div class="count" id="count"></div>
+    <button id="next" type="button">下一页</button>
+  </footer>
+
+  <script>
+    const slides = [
+      {
+        title: "运行进程占用 CPU",
+        subtitle: "P1 正在运行，P2、P3 在就绪队列等待。",
+        cards: [
+          ["运行态", "P1 拥有 CPU，PC 指向 P1 的下一条指令。"],
+          ["就绪队列", "P2、P3 已经具备运行条件，只差 CPU。"],
+          ["调度条件", "时间片尚未用完，暂不需要调度。"]
+        ],
+        left: ["CPU", "当前现场属于 P1：PC、PSW、通用寄存器。"],
+        right: ["PCB P1", "保存着 P1 的管理信息；运行现场暂在 CPU 中。"],
+        flow: [
+          ["1", "P1 执行指令"],
+          ["2", "时钟周期推进"],
+          ["3", "时间片计数减少"],
+          ["4", "未到调度点"],
+          ["5", "P1 继续运行"]
+        ]
+      },
+      {
+        title: "时钟中断到达",
+        subtitle: "硬件中断让 CPU 转入内核，但中断处理程序本身不是进程切换。",
+        cards: [
+          ["中断", "时钟中断发生，CPU 暂停用户态执行流。"],
+          ["内核入口", "转入中断处理程序，检查时间片等状态。"],
+          ["边界", "处理中断过程中不直接做完整进程切换。"]
+        ],
+        left: ["时钟中断", "提示当前时间片可能已经用完。"],
+        right: ["中断处理程序", "完成计时、更新标志、判断是否需要调度。"],
+        flow: [
+          ["1", "硬件发出中断"],
+          ["2", "CPU 进入内核态"],
+          ["3", "保存必要入口现场"],
+          ["4", "执行中断处理"],
+          ["5", "设置 need_resched"]
+        ]
+      },
+      {
+        title: "进入安全调度点",
+        subtitle: "中断处理结束后，系统在可切换的位置调用调度程序。",
+        cards: [
+          ["不能切换处", "中断处理、内核临界区、原语执行中不能随意切换。"],
+          ["安全点", "内核数据结构处于一致状态，允许调度。"],
+          ["调度器", "从就绪队列选择下一个运行进程。"]
+        ],
+        left: ["调度器 scheduler", "回答：让谁运行？运行多长时间？"],
+        right: ["就绪队列", "按调度策略选择 P2。"],
+        flow: [
+          ["1", "退出中断关键路径"],
+          ["2", "确认允许抢占"],
+          ["3", "调用调度程序"],
+          ["4", "选择 P2"],
+          ["5", "交给分派器"]
+        ]
+      },
+      {
+        title: "分派与进程切换",
+        subtitle: "分派器保存 P1 现场，恢复 P2 现场，CPU 才真正交给 P2。",
+        cards: [
+          ["保存 P1", "把 P1 的 PC、PSW、寄存器等写回 PCB。"],
+          ["恢复 P2", "从 PCB P2 取出上次保存的运行现场。"],
+          ["开始运行", "CPU 的 PC 指向 P2 的下一条指令。"]
+        ],
+        left: ["PCB P1", "保存 P1 离开 CPU 时的现场。"],
+        right: ["CPU", "装入 P2 的现场后，执行流属于 P2。"],
+        flow: [
+          ["1", "P1: 运行态 → 就绪态"],
+          ["2", "保存 P1 现场"],
+          ["3", "恢复 P2 现场"],
+          ["4", "P2: 就绪态 → 运行态"],
+          ["5", "返回用户态继续执行"]
+        ]
+      }
+    ];
+
+    let index = 0;
+    const title = document.getElementById("title");
+    const subtitle = document.getElementById("subtitle");
+    const stage = document.getElementById("stage");
+    const left = document.getElementById("left");
+    const right = document.getElementById("right");
+    const flow = document.getElementById("flow");
+    const count = document.getElementById("count");
+
+    function render() {
+      const s = slides[index];
+      title.textContent = s.title;
+      subtitle.textContent = s.subtitle;
+      stage.innerHTML = s.cards.map(([h, p]) => `<article class="card"><h2>${h}</h2><p>${p}</p></article>`).join("");
+      left.innerHTML = `<strong>${s.left[0]}</strong><span>${s.left[1]}</span>`;
+      right.innerHTML = `<strong>${s.right[0]}</strong><span>${s.right[1]}</span>`;
+      flow.innerHTML = s.flow.map(([h, p]) => `<div class="step"><strong>${h}</strong><span>${p}</span></div>`).join("");
+      count.textContent = `${index + 1} / ${slides.length}`;
+    }
+
+    document.getElementById("prev").addEventListener("click", () => { index = (index + slides.length - 1) % slides.length; render(); });
+    document.getElementById("next").addEventListener("click", () => { index = (index + 1) % slides.length; render(); });
+    render();
+  </script>
+</body>
+</html>

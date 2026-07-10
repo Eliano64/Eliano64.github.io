@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="520" viewBox="0 0 1080 520" role="img" aria-labelledby="title desc">
+  <title id="title">进程同步与进程互斥</title>
+  <desc id="desc">对比同步和互斥：同步强调操作先后顺序，互斥强调同一临界资源一次只能一个进程访问。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --a:#2563eb; --b:#0f766e; --resource:#fff7ed; --wait:#fee2e2; --ok:#dcfce7;
+      --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --a:#7aa2ff; --b:#62d4c5; --resource:#3b3025; --wait:#4a2528; --ok:#1f4036;
+        --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:26px; font-weight:700; }
+    .panel { fill:var(--panel); stroke:var(--line); stroke-width:1.5; rx:16; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .head { fill:var(--text); font-size:21px; font-weight:700; }
+    .text { fill:var(--text); font-size:15px; }
+    .muted { fill:var(--muted); font-size:13px; }
+    .procA { fill:var(--a); stroke:var(--line); stroke-width:1; rx:10; }
+    .procB { fill:var(--b); stroke:var(--line); stroke-width:1; rx:10; }
+    .resource { fill:var(--resource); stroke:var(--line); stroke-width:1.3; rx:12; }
+    .wait { fill:var(--wait); stroke:var(--line); stroke-width:1.3; rx:10; }
+    .ok { fill:var(--ok); stroke:var(--line); stroke-width:1.3; rx:10; }
+    .white { fill:#fff; font-size:14px; font-weight:700; }
+    .arrow { stroke:var(--line); stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+    .dash { stroke:var(--line); stroke-width:2; fill:none; stroke-dasharray:8 7; marker-end:url(#arrow); }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.white{fill:#0f172a}}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="540" y="42" text-anchor="middle">同步与互斥解决的是两类不同约束</text>
+
+  <g transform="translate(46 84)">
+    <rect class="panel" x="0" y="0" width="472" height="390"/>
+    <text class="head" x="236" y="42" text-anchor="middle">进程同步</text>
+    <text class="muted" x="236" y="68" text-anchor="middle">让异步推进的进程按必要顺序配合</text>
+
+    <rect class="procA" x="54" y="116" width="150" height="50"/>
+    <text class="white" x="129" y="147" text-anchor="middle">进程 A</text>
+    <text class="text" x="129" y="190" text-anchor="middle">产生预处理结果</text>
+
+    <rect class="resource" x="174" y="232" width="124" height="58"/>
+    <text class="text" x="236" y="258" text-anchor="middle">缓冲区</text>
+    <text class="muted" x="236" y="279" text-anchor="middle">结果已就绪</text>
+
+    <rect class="procB" x="268" y="116" width="150" height="50"/>
+    <text class="white" x="343" y="147" text-anchor="middle">进程 B</text>
+    <text class="text" x="343" y="190" text-anchor="middle">读取后续处理</text>
+
+    <path class="arrow" d="M129 198 C129 226, 174 226, 201 232"/>
+    <path class="arrow" d="M271 232 C310 226, 343 220, 343 198"/>
+    <path class="dash" d="M204 141 L268 141"/>
+    <text class="text" x="236" y="137" text-anchor="middle">A 先于 B</text>
+    <text class="muted" x="236" y="342" text-anchor="middle">核心问题：某个操作必须等另一个操作完成</text>
+  </g>
+
+  <g transform="translate(562 84)">
+    <rect class="panel" x="0" y="0" width="472" height="390"/>
+    <text class="head" x="236" y="42" text-anchor="middle">进程互斥</text>
+    <text class="muted" x="236" y="68" text-anchor="middle">同一临界资源一次只允许一个进程访问</text>
+
+    <rect class="procA" x="54" y="116" width="130" height="50"/>
+    <text class="white" x="119" y="147" text-anchor="middle">进程 A</text>
+    <rect class="procB" x="288" y="116" width="130" height="50"/>
+    <text class="white" x="353" y="147" text-anchor="middle">进程 B</text>
+
+    <rect class="resource" x="161" y="222" width="150" height="72"/>
+    <text class="text" x="236" y="252" text-anchor="middle">打印机 / 缓冲区</text>
+    <text class="muted" x="236" y="276" text-anchor="middle">临界资源</text>
+
+    <path class="arrow" d="M119 168 C119 204, 169 212, 190 222"/>
+    <path class="dash" d="M353 168 C353 204, 303 212, 282 222"/>
+
+    <rect class="ok" x="54" y="326" width="158" height="42"/>
+    <text class="text" x="133" y="352" text-anchor="middle">A 进入临界区</text>
+    <rect class="wait" x="260" y="326" width="158" height="42"/>
+    <text class="text" x="339" y="352" text-anchor="middle">B 等待</text>
+    <text class="muted" x="236" y="194" text-anchor="middle">不是要求固定先后，而是禁止同时进入</text>
+  </g>
+</svg>

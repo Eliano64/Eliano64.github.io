@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430" role="img" aria-labelledby="title desc">
+  <title id="title">UDP checksum pseudo header</title>
+  <desc id="desc">UDP checksum is calculated over pseudo header, UDP header, and UDP data.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:#172033}
+    .box{fill:#f8fafc;stroke:#334155;stroke-width:2}.pseudo{fill:#fee2e2}.udp{fill:#dbeafe}.data{fill:#dcfce7}.sum{fill:#fef3c7;stroke:#d97706}
+    .label{font-size:22px;font-weight:700}.small{font-size:15px}.mid{font-size:17px;font-weight:700}.code{font-family:Consolas,monospace;font-size:14px}
+    @media(prefers-color-scheme:dark){text{fill:#e5e7eb}.box{fill:#111827;stroke:#94a3b8}.pseudo{fill:#3b0d0d}.udp{fill:#10213f}.data{fill:#0f2b1d}.sum{fill:#3b2506;stroke:#fbbf24}}
+  </style>
+  <text x="490" y="38" text-anchor="middle" class="label">UDP 检验和计算范围</text>
+  <text x="120" y="84" class="mid">临时加入：伪首部 12 B</text>
+  <rect x="120" y="100" width="280" height="46" class="box pseudo"/><text x="260" y="129" text-anchor="middle" class="small">源 IP 地址 32 bit</text>
+  <rect x="400" y="100" width="280" height="46" class="box pseudo"/><text x="540" y="129" text-anchor="middle" class="small">目的 IP 地址 32 bit</text>
+  <rect x="120" y="146" width="90" height="46" class="box pseudo"/><text x="165" y="175" text-anchor="middle" class="code">0</text>
+  <rect x="210" y="146" width="90" height="46" class="box pseudo"/><text x="255" y="175" text-anchor="middle" class="code">17</text>
+  <rect x="300" y="146" width="380" height="46" class="box pseudo"/><text x="490" y="175" text-anchor="middle" class="small">UDP 长度 16 bit</text>
+  <text x="725" y="148" class="small">只参与计算</text>
+  <text x="725" y="170" class="small">不在网络中发送</text>
+
+  <text x="120" y="235" class="mid">真正发送：UDP 用户数据报</text>
+  <rect x="120" y="252" width="140" height="50" class="box udp"/><text x="190" y="282" text-anchor="middle" class="small">源端口</text>
+  <rect x="260" y="252" width="140" height="50" class="box udp"/><text x="330" y="282" text-anchor="middle" class="small">目的端口</text>
+  <rect x="400" y="252" width="140" height="50" class="box udp"/><text x="470" y="282" text-anchor="middle" class="small">长度</text>
+  <rect x="540" y="252" width="140" height="50" class="box udp"/><text x="610" y="282" text-anchor="middle" class="small">检验和</text>
+  <rect x="120" y="302" width="560" height="46" class="box data"/><text x="400" y="331" text-anchor="middle" class="small">UDP 数据载荷</text>
+
+  <rect x="720" y="260" width="160" height="64" rx="10" class="box sum"/>
+  <text x="800" y="286" text-anchor="middle" class="mid">一起计算</text>
+  <text x="800" y="309" text-anchor="middle" class="small">16 bit 检验和</text>
+  <text x="490" y="395" text-anchor="middle" class="small">检验失败：接收方 UDP 丢弃该用户数据报，不确认、不重传</text>
+</svg>

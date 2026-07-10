@@ -1,0 +1,384 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>IP Multicast | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="IP 多播多播是一对多通信。发送者只发送一份数据，网络在需要分叉的地方复制分组，把数据送给多播组成员。  与单播相比，多播能减少源主机发送副本数量，也能减少链路上的重复流量。典型场景是视频直播、会议分发、组通信等。 多播组和多播地址IPv4 多播地址使用 D 类地址，即 224.0.0.0 到 239.255.255.255。多播地址只能作为目的地址，不能作为源地址。 一个 IP 多播地址标识一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IP Multicast">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/08/IP-Multicast/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="IP 多播多播是一对多通信。发送者只发送一份数据，网络在需要分叉的地方复制分组，把数据送给多播组成员。  与单播相比，多播能减少源主机发送副本数量，也能减少链路上的重复流量。典型场景是视频直播、会议分发、组通信等。 多播组和多播地址IPv4 多播地址使用 D 类地址，即 224.0.0.0 到 239.255.255.255。多播地址只能作为目的地址，不能作为源地址。 一个 IP 多播地址标识一个">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-08T08:05:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.018Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="NetworkLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "IP Multicast",
+  "url": "https://eliano64.github.io/2026/07/08/IP-Multicast/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-08T08:05:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.018Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/08/IP-Multicast/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'IP Multicast',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">IP Multicast</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">IP Multicast</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-08T08:05:00.000Z" title="发表于 2026-07-08 16:05:00">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.018Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="IP-多播"><a href="#IP-多播" class="headerlink" title="IP 多播"></a>IP 多播</h1><p>多播是一对多通信。发送者只发送一份数据，网络在需要分叉的地方复制分组，把数据送给多播组成员。</p>
+<p><img src="/assets/unicast-vs-multicast.svg" alt="900"></p>
+<p>与单播相比，多播能减少源主机发送副本数量，也能减少链路上的重复流量。典型场景是视频直播、会议分发、组通信等。</p>
+<h1 id="多播组和多播地址"><a href="#多播组和多播地址" class="headerlink" title="多播组和多播地址"></a>多播组和多播地址</h1><p>IPv4 多播地址使用 D 类地址，即 <code>224.0.0.0</code> 到 <code>239.255.255.255</code>。多播地址只能作为目的地址，不能作为源地址。</p>
+<p>一个 IP 多播地址标识一个多播组。使用同一个 IP 多播地址接收数据报的主机构成一个多播组。</p>
+<p>多播组有几个特点：</p>
+<ul>
+<li>主机可以动态加入或离开多播组。</li>
+<li>一台主机可以加入多个多播组。</li>
+<li>多播组成员数量和位置可以变化。</li>
+<li>发送者不一定是多播组成员。</li>
+</ul>
+<p>IP 多播可以发生在局域网内，也可以跨越因特网。跨网络多播需要多播路由选择；到达最后一个局域网后，通常还要依赖局域网硬件多播交付给组成员。</p>
+<h1 id="多播-MAC-映射"><a href="#多播-MAC-映射" class="headerlink" title="多播 MAC 映射"></a>多播 MAC 映射</h1><p>以太网支持多播 MAC 地址。IPv4 多播数据报在以太网上发送时，需要把 IP 多播地址映射成以太网多播 MAC 地址。</p>
+<p><img src="/assets/ipv4-multicast-mac-mapping.svg" alt="900"></p>
+<p>映射规则的关键是：</p>
+<ul>
+<li>以太网多播 MAC 地址前缀为 <code>01-00-5E</code>。</li>
+<li>MAC 地址后 23 bit 来自 IPv4 多播地址的低 23 bit。</li>
+<li>IPv4 多播地址中有 28 bit 多播组号，但只有低 23 bit 参与映射。</li>
+</ul>
+<p>因此，IPv4 多播地址到以太网多播 MAC 地址的映射不是一一对应。32($2^{5}$, 即低23位相同但被丢弃的高5位不同的情况)个 IP 多播地址映射到同一个多播 MAC 地址。</p>
+<p>这会带来一个后果：主机网卡可能接收了某个以太网多播帧，但帧中 IP 多播地址并不是自己真正加入的多播组。主机还需要在 IP 层进行软件过滤。</p>
+<h1 id="IGMP"><a href="#IGMP" class="headerlink" title="IGMP"></a>IGMP</h1><p>IGMP 网际组管理协议用于让多播路由器知道自己直连网络中有哪些多播组成员。它管理的是<strong>某个直连网络是否有某个多播组成员，不记录每个成员主机的完整名单。</strong></p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||570)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||570)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/igmp-membership-slides.html" style="width:100%;height:570px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>IGMP 报文封装在 IP 数据报中，IP 首部的协议字段取值为 <code>2</code>。基本工作包括：</p>
+<table>
+<thead>
+<tr>
+<th>过程</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>加入多播组</td>
+<td>主机发送成员报告，报告自己要加入的 IP 多播组</td>
+</tr>
+<tr>
+<td>成员报告抑制</td>
+<td>同组其他主机听到报告后取消自己的报告</td>
+</tr>
+<tr>
+<td>成员查询</td>
+<td>多播路由器周期性查询直连网络上的组成员情况</td>
+</tr>
+<tr>
+<td>超时删除</td>
+<td>长时间没有成员报告的组从列表中删除</td>
+</tr>
+<tr>
+<td>退出多播组</td>
+<td>IGMPv2 支持主机主动发送离开报文</td>
+</tr>
+</tbody></table>
+<p>同一链路上可能有多个多播路由器，但通常只需要一个查询路由器周期性发送查询。常见选举规则是 IP 地址较小的多播路由器成为查询路由器。</p>
+<h1 id="多播转发树"><a href="#多播转发树" class="headerlink" title="多播转发树"></a>多播转发树</h1><p>单播路由只需要给每个目的网络选择下一跳；多播路由要为每个多播组建立覆盖成员的转发结构。这个结构称为多播转发树。</p>
+<p>多播转发树需要满足两个目标：</p>
+<ul>
+<li>数据能到达所有有成员的网络。</li>
+<li>尽量不要把数据发送到没有成员、也不通向成员的分支。</li>
+</ul>
+<p><img src="/assets/multicast-tree-prune-graft.svg" alt="900"></p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/multicast-tree-prune-graft-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>一种思路是先形成广播转发树，再剪掉不需要的分支：</p>
+<ul>
+<li>反向路径广播 RPB 用来避免广播分组兜圈。</li>
+<li>若某叶节点路由器没有多播组成员，也没有下游成员路由器，就向上游发送剪枝报文。</li>
+<li>若后来该分支又出现多播组成员，则发送嫁接报文重新加入多播转发树。</li>
+</ul>
+<p>另一种思路是使用共享树。每个多播组指定一个核心路由器，成员路由器向核心发送加入报文，逐步形成以核心为根的共享树。</p>
+<h1 id="常见多播路由协议"><a href="#常见多播路由协议" class="headerlink" title="常见多播路由协议"></a>常见多播路由协议</h1><p>常见多播路由选择协议包括：</p>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>简要含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DVMRP</td>
+<td>距离向量多播路由选择协议</td>
+</tr>
+<tr>
+<td>MOSPF</td>
+<td>OSPF 的多播扩展</td>
+</tr>
+<tr>
+<td>PIM-SM</td>
+<td>协议无关多播，稀疏方式</td>
+</tr>
+<tr>
+<td>PIM-DM</td>
+<td>协议无关多播，密集方式</td>
+</tr>
+<tr>
+<td>CBT</td>
+<td>基于核心的转发树</td>
+</tr>
+</tbody></table>
+<p>IP 多播在整个因特网范围内推广并不容易，主要部署在局部园区网络、专用网络或 VPN 中。应用层多播和内容分发系统也常用类似“树形分发”的思想。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/08/IP-Multicast/">https://eliano64.github.io/2026/07/08/IP-Multicast/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/08/Software-Defined-Networking/" title="Software Defined Networking"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Software Defined Networking</div></div><div class="info-2"><div class="info-item-1">SDN软件定义网络 SDN 的核心是把传统网络设备中的控制层面和数据层面分离。 传统路由器内部同时有两类功能：  数据层面：根据转发表快速转发分组。 控制层面：运行路由协议，交换路由信息，计算路由表和转发表。  SDN 把控制功能从数据层设备中抽离出来，放到逻辑集中的控制器中。数据层设备变得更简单，主要按控制器下发的规则执行“匹配 + 动作”。  这里的“逻辑集中”不等于物理上只有一台控制器。实际部署中可以有多台服务器组成控制层面，但对数据层设备来说，它表现为统一的网络控制中心。 传统转发和广义转发传统 IP 转发可以概括为： $$\text{匹配目的网络前缀}\rightarrow\text{选择输出接口或下一跳}$$ 也就是说，路由器通常按目的 IP 地址做最长前缀匹配，然后转发分组。 SDN 把这种方式扩展为广义转发： $$\text{匹配多层首部字段}\rightarrow\text{执行指定动作}$$ 匹配字段不局限于目的 IP 前缀，可以包括：  入端口。 源 MAC 地址、目的 MAC 地址。 源 IP 地址、目的 IP...</div></div></div></a><a class="pagination-related" href="/2026/07/08/IPv6/" title="IPv6"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">IPv6</div></div><div class="info-2"><div class="info-item-1">IPv6IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网规模增长。IPv6 把地址长度扩展到 128 bit，同时调整首部结构、扩展首部、地址类型和控制协议。 IPv6 仍提供无连接、尽最大努力交付的不可靠数据报服务。它不是把 IP 变成可靠协议，而是在地址空间和转发机制上做了新设计。 主要变化IPv6 的主要变化包括：  地址长度从 32 bit 增加到 128 bit。 基本首部固定为 40 字节。 取消 IPv4 首部中的首部长度、首部检验和、标识、标志、片偏移等字段。 使用扩展首部承载选项和分片等功能。 使用“下一个首部”字段串联扩展首部或上层协议。 引入流标号，便于标识同一类需要特殊处理的数据报序列。 不使用广播，把广播看作多播的特殊情形。 不使用 ARP，邻站发现由 ICMPv6 完成。   基本首部IPv6 基本首部固定 40 字节。  IPv6 基本首部字段如下：    字段 长度 作用    版本 4 bit IPv6 中取值为 6   通信量类 8...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#IP-%E5%A4%9A%E6%92%AD"><span class="toc-text">IP 多播</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E6%92%AD%E7%BB%84%E5%92%8C%E5%A4%9A%E6%92%AD%E5%9C%B0%E5%9D%80"><span class="toc-text">多播组和多播地址</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E6%92%AD-MAC-%E6%98%A0%E5%B0%84"><span class="toc-text">多播 MAC 映射</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#IGMP"><span class="toc-text">IGMP</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E6%92%AD%E8%BD%AC%E5%8F%91%E6%A0%91"><span class="toc-text">多播转发树</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%A4%9A%E6%92%AD%E8%B7%AF%E7%94%B1%E5%8D%8F%E8%AE%AE"><span class="toc-text">常见多播路由协议</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

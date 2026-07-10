@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="620" viewBox="0 0 980 620" role="img" aria-labelledby="title desc">
+  <title id="title">哲学家就餐问题三种破局方式</title>
+  <desc id="desc">对比限制最多四人拿筷子、奇偶哲学家拿筷子顺序不同、互斥执行拿筷子动作三种防止死锁的思路。</desc>
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      :root {
+        --bg: #ffffff;
+        --panel: #f8fafc;
+        --line: #cbd5e1;
+        --text: #172033;
+        --muted: #64748b;
+        --blue: #dbeafe;
+        --blue-line: #2563eb;
+        --green: #dcfce7;
+        --green-line: #16a34a;
+        --yellow: #fef3c7;
+        --yellow-line: #d97706;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f172a;
+          --panel: #111827;
+          --line: #334155;
+          --text: #e5e7eb;
+          --muted: #94a3b8;
+          --blue: #1e3a8a;
+          --blue-line: #60a5fa;
+          --green: #14532d;
+          --green-line: #4ade80;
+          --yellow: #713f12;
+          --yellow-line: #fbbf24;
+        }
+      }
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--text); }
+      .title { font-size: 34px; font-weight: 700; }
+      .card { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 18; }
+      .head { font-size: 25px; font-weight: 700; }
+      .body { font-size: 20px; }
+      .small { font-size: 18px; fill: var(--muted); }
+      .pill1 { fill: var(--blue); stroke: var(--blue-line); stroke-width: 2; rx: 14; }
+      .pill2 { fill: var(--green); stroke: var(--green-line); stroke-width: 2; rx: 14; }
+      .pill3 { fill: var(--yellow); stroke: var(--yellow-line); stroke-width: 2; rx: 14; }
+    </style>
+  </defs>
+  <rect width="980" height="620" fill="var(--bg)"/>
+  <text x="50" y="58" class="title">三种防止死锁的思路</text>
+
+  <rect x="50" y="102" width="280" height="420" class="card"/>
+  <rect x="78" y="136" width="92" height="48" class="pill1"/>
+  <text x="98" y="167" class="head">方法 1</text>
+  <text x="78" y="224" class="head">最多允许 4 人竞争</text>
+  <text x="78" y="270" class="body">增加信号量 room = 4。</text>
+  <text x="78" y="306" class="body">哲学家拿筷子前先 P(room)，</text>
+  <text x="78" y="338" class="body">吃完后 V(room)。</text>
+  <text x="78" y="394" class="small">这样总有至少一支筷子没有</text>
+  <text x="78" y="424" class="small">被占有，循环等待被打破。</text>
+
+  <rect x="350" y="102" width="280" height="420" class="card"/>
+  <rect x="378" y="136" width="92" height="48" class="pill2"/>
+  <text x="398" y="167" class="head">方法 2</text>
+  <text x="378" y="224" class="head">改变拿筷子顺序</text>
+  <text x="378" y="270" class="body">奇数号先左后右，</text>
+  <text x="378" y="306" class="body">偶数号先右后左。</text>
+  <text x="378" y="362" class="small">相邻哲学家不会同时都先</text>
+  <text x="378" y="392" class="small">拿到夹在中间的第一支筷子。</text>
+  <text x="378" y="422" class="small">资源请求方向不再首尾一致。</text>
+
+  <rect x="650" y="102" width="280" height="420" class="card"/>
+  <rect x="678" y="136" width="92" height="48" class="pill3"/>
+  <text x="698" y="167" class="head">方法 3</text>
+  <text x="678" y="224" class="head">互斥执行拿筷子动作</text>
+  <text x="678" y="270" class="body">用 mutex 包住</text>
+  <text x="678" y="306" class="body">“拿左、拿右”这一组动作。</text>
+  <text x="678" y="362" class="small">拿筷子过程不会交错，</text>
+  <text x="678" y="392" class="small">不会出现五人各持一支</text>
+  <text x="678" y="422" class="small">再同时等待下一支的局面。</text>
+
+  <text x="50" y="574" class="small">三种方法本质都是破坏“持有一部分资源并形成循环等待”的条件，但并发度和实现代价不同。</text>
+</svg>

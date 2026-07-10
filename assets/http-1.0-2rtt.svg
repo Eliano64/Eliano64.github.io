@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP 1.0 请求一个对象的两 RTT 时序</title><desc id="desc">时间向下，第一个 RTT 用于 TCP 三次握手，第二个 RTT 从发送 HTTP 请求到响应首字节到达，之后还需对象传输时延。</desc>
+  <defs><marker id="blueArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker><marker id="greenArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#059669"/></marker></defs>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+:root{color-scheme:light dark}.title{font:700 24px "Microsoft YaHei",sans-serif;fill:#172033}.label{font:700 17px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:14px "Microsoft YaHei",sans-serif;fill:#526174}.small{font:13px "Microsoft YaHei",sans-serif;fill:#526174}.box{fill:#fff;stroke:#64748b;stroke-width:2}.client{fill:#ecfdf5;stroke:#059669}.server{fill:#eff6ff;stroke:#2563eb}.panel{fill:#f8fafc;stroke:#cbd5e1}.life{stroke:#94a3b8;stroke-width:2}.tcp{stroke:#64748b;stroke-width:2;marker-end:url(#blueArrow)}.request{stroke:#2563eb;stroke-width:3;marker-end:url(#blueArrow)}.response{stroke:#059669;stroke-width:3;marker-end:url(#greenArrow)}.transfer{stroke:#059669;stroke-width:8;opacity:.35}.brace{fill:none;stroke:#dc2626;stroke-width:2}.red{fill:#dc2626}.blue{fill:#2563eb}.green{fill:#059669}@media(prefers-color-scheme:dark){.title,.label{fill:#e5edf5}.sub,.small{fill:#a9b7c6}.box{fill:#121b25}.client{fill:#123d2d}.server{fill:#17345a}.panel{fill:#121b25;stroke:#344354}.life{stroke:#526174}.red{fill:#fca5a5}.blue{fill:#93c5fd}.green{fill:#6ee7b7}}</style>
+  <text x="480" y="36" text-anchor="middle" class="title">HTTP/1.0 非持续连接：请求一个对象的时间</text>
+  <rect x="90" y="58" width="190" height="54" rx="7" class="box client"/><text x="185" y="82" text-anchor="middle" class="label">浏览器（HTTP 客户）</text><text x="185" y="102" text-anchor="middle" class="sub">时间向下</text>
+  <rect x="680" y="58" width="190" height="54" rx="7" class="box server"/><text x="775" y="82" text-anchor="middle" class="label">万维网服务器</text><text x="775" y="102" text-anchor="middle" class="sub">TCP 80</text>
+  <line x1="185" y1="112" x2="185" y2="382" class="life"/><line x1="775" y1="112" x2="775" y2="382" class="life"/>
+  <line x1="185" y1="132" x2="775" y2="154" class="tcp"/><text x="480" y="137" text-anchor="middle" class="small">SYN</text>
+  <line x1="775" y1="174" x2="185" y2="196" class="tcp"/><text x="480" y="177" text-anchor="middle" class="small">SYN + ACK</text>
+  <line x1="185" y1="216" x2="775" y2="238" class="tcp"/><text x="480" y="221" text-anchor="middle" class="small">ACK</text>
+  <path d="M157 129H143V238H157" class="brace"/><text x="130" y="187" text-anchor="end" class="label red">RTT 1</text><text x="130" y="207" text-anchor="end" class="sub">建立 TCP 连接</text>
+  <line x1="185" y1="266" x2="775" y2="288" class="request"/><text x="480" y="269" text-anchor="middle" class="label blue">HTTP 请求</text>
+  <line x1="775" y1="316" x2="185" y2="338" class="response"/><text x="480" y="319" text-anchor="middle" class="label green">HTTP 响应首字节</text>
+  <path d="M157 263H143V338H157" class="brace"/><text x="130" y="297" text-anchor="end" class="label red">RTT 2</text><text x="130" y="317" text-anchor="end" class="sub">请求至首字节</text>
+  <line x1="775" y1="338" x2="185" y2="370" class="transfer"/><text x="480" y="372" text-anchor="middle" class="sub green">对象其余字节持续到达：文档传输时延</text>
+  <rect x="300" y="388" width="360" height="34" rx="6" class="panel"/><text x="480" y="411" text-anchor="middle" class="label">总时间 = 2 RTT + 对象传输时延</text>
+</svg>

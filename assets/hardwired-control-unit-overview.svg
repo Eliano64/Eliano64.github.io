@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">硬布线控制器基本思路</title>
+  <desc id="desc">指令操作码、工作周期、节拍信号和状态条件进入组合逻辑，产生微命令和控制信号。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill: #ffffff; }
+    .box { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 10; }
+    .logic { fill: #ecfeff; stroke: #0f766e; stroke-width: 2.5; rx: 14; }
+    .out { fill: #fff7ed; stroke: #c2410c; stroke-width: 2; rx: 10; }
+    .text { fill: #0f172a; font: 24px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .small { fill: #334155; font: 19px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .wire { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .arrowhead { fill: #475569; }
+    .dash { stroke-dasharray: 7 7; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f172a; }
+      .box { fill: #111827; stroke: #94a3b8; }
+      .logic { fill: #0f2f2e; stroke: #5eead4; }
+      .out { fill: #2b1a0d; stroke: #fdba74; }
+      .text { fill: #e5e7eb; }
+      .small { fill: #cbd5e1; }
+      .wire { stroke: #cbd5e1; }
+      .arrowhead { fill: #cbd5e1; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path class="arrowhead" d="M 0 0 L 10 5 L 0 10 z"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1120" height="520"/>
+  <rect class="box" x="70" y="55" width="220" height="70"/>
+  <text class="text" x="180" y="98" text-anchor="middle">指令操作码</text>
+  <text class="small" x="180" y="152" text-anchor="middle">来自 IR / 译码器</text>
+  <rect class="box" x="70" y="170" width="220" height="70"/>
+  <text class="text" x="180" y="213" text-anchor="middle">工作周期</text>
+  <text class="small" x="180" y="267" text-anchor="middle">FE / IND / EX / INT</text>
+  <rect class="box" x="70" y="285" width="220" height="70"/>
+  <text class="text" x="180" y="328" text-anchor="middle">节拍信号</text>
+  <text class="small" x="180" y="382" text-anchor="middle">T0 / T1 / T2 ...</text>
+  <rect class="box" x="70" y="400" width="220" height="70"/>
+  <text class="text" x="180" y="443" text-anchor="middle">状态条件</text>
+  <text class="small" x="180" y="497" text-anchor="middle">PSW / 中断 / 条件位</text>
+  <rect class="logic" x="445" y="165" width="250" height="150"/>
+  <text class="text" x="570" y="228" text-anchor="middle">组合逻辑电路</text>
+  <text class="small" x="570" y="267" text-anchor="middle">与 / 或 / 非门</text>
+  <rect class="out" x="850" y="75" width="210" height="90"/>
+  <text class="text" x="955" y="112" text-anchor="middle">微命令</text>
+  <text class="small" x="955" y="145" text-anchor="middle">如 PCout, MARin</text>
+  <rect class="out" x="850" y="230" width="210" height="90"/>
+  <text class="text" x="955" y="267" text-anchor="middle">控制信号</text>
+  <text class="small" x="955" y="300" text-anchor="middle">接通数据通路</text>
+  <rect class="out" x="850" y="385" width="210" height="90"/>
+  <text class="text" x="955" y="422" text-anchor="middle">微操作</text>
+  <text class="small" x="955" y="455" text-anchor="middle">如 (PC) -> MAR</text>
+  <path class="wire" d="M290 90 C350 90 360 205 445 205"/>
+  <path class="wire" d="M290 205 L445 225"/>
+  <path class="wire" d="M290 320 L445 255"/>
+  <path class="wire" d="M290 435 C350 435 360 280 445 280"/>
+  <path class="wire" d="M695 220 C760 185 780 125 850 120"/>
+  <path class="wire" d="M695 245 L850 275"/>
+  <path class="wire dash" d="M955 320 L955 385"/>
+  <text class="small" x="728" y="360">控制线有效后，数据通路执行动作</text>
+</svg>

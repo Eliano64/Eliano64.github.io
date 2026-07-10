@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exception And Interrupt Handling</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --panel: #f8fafc;
+      --blue: #2563eb;
+      --green: #059669;
+      --orange: #d97706;
+      --red: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --fg: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #475569;
+        --panel: #111827;
+        --blue: #60a5fa;
+        --green: #34d399;
+        --orange: #fbbf24;
+        --red: #f87171;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 20px 22px 24px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--fg);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue); }
+    .stage {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      min-height: 610px;
+      overflow: hidden;
+      padding: 18px;
+    }
+    svg { width: 100%; height: 520px; display: block; }
+    .caption {
+      margin: 8px 4px 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .step text {
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+    }
+    .box { fill: var(--bg); stroke: var(--line); stroke-width: 2; }
+    .active { fill: color-mix(in srgb, var(--blue) 18%, var(--bg)); stroke: var(--blue); stroke-width: 3; }
+    .soft { fill: color-mix(in srgb, var(--green) 15%, var(--bg)); stroke: var(--green); stroke-width: 2; }
+    .warn { fill: color-mix(in srgb, var(--orange) 18%, var(--bg)); stroke: var(--orange); stroke-width: 2; }
+    .bad { fill: color-mix(in srgb, var(--red) 14%, var(--bg)); stroke: var(--red); stroke-width: 2; }
+    .txt { fill: var(--fg); }
+    .muted { fill: var(--muted); }
+    .arrow { stroke: var(--blue); stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .garrow { stroke: var(--green); stroke-width: 3; fill: none; marker-end: url(#garrow); }
+    .dim { opacity: .28; }
+    .hidden { display: none; }
+    .progress {
+      color: var(--muted);
+      font-size: 14px;
+      min-width: 52px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>异常 / 中断处理过程</h1>
+      <div class="controls">
+        <button id="prev" type="button">上一步</button>
+        <span class="progress" id="progress"></span>
+        <button id="next" type="button">下一步</button>
+      </div>
+    </header>
+    <section class="stage">
+      <svg viewBox="0 0 1060 520" role="img" aria-label="异常和中断处理流程">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"></path></marker>
+          <marker id="garrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--green)"></path></marker>
+        </defs>
+
+        <g id="current-program" class="step">
+          <rect class="box" x="40" y="72" width="190" height="82" rx="8"></rect>
+          <text class="txt" x="135" y="107" text-anchor="middle" font-size="17" font-weight="700">现行程序</text>
+          <text class="muted" x="135" y="132" text-anchor="middle" font-size="13">正在执行指令流</text>
+        </g>
+
+        <g id="event-source" class="step">
+          <rect class="box" x="40" y="232" width="190" height="110" rx="8"></rect>
+          <text class="txt" x="135" y="266" text-anchor="middle" font-size="17" font-weight="700">事件发生</text>
+          <text class="muted" x="135" y="294" text-anchor="middle" font-size="13">中断请求</text>
+          <text class="muted" x="135" y="318" text-anchor="middle" font-size="13">或异常触发</text>
+        </g>
+
+        <g id="detect" class="step">
+          <rect class="box" x="300" y="72" width="210" height="82" rx="8"></rect>
+          <text class="txt" x="405" y="106" text-anchor="middle" font-size="17" font-weight="700">检测与响应条件</text>
+          <text class="muted" x="405" y="132" text-anchor="middle" font-size="13">指令结束后检查外部中断</text>
+        </g>
+
+        <g id="priority" class="step">
+          <rect class="box" x="570" y="72" width="210" height="82" rx="8"></rect>
+          <text class="txt" x="675" y="106" text-anchor="middle" font-size="17" font-weight="700">中断判优</text>
+          <text class="muted" x="675" y="132" text-anchor="middle" font-size="13">多个请求只先响应一个</text>
+        </g>
+
+        <g id="implicit" class="step">
+          <rect class="box" x="840" y="72" width="180" height="146" rx="8"></rect>
+          <text class="txt" x="930" y="104" text-anchor="middle" font-size="17" font-weight="700">中断隐指令</text>
+          <text class="muted" x="930" y="130" text-anchor="middle" font-size="13">关中断</text>
+          <text class="muted" x="930" y="154" text-anchor="middle" font-size="13">保存断点 PC</text>
+          <text class="muted" x="930" y="178" text-anchor="middle" font-size="13">切换到内核态</text>
+          <text class="muted" x="930" y="202" text-anchor="middle" font-size="13">送服务入口到 PC</text>
+        </g>
+
+        <g id="vector" class="step">
+          <rect class="box" x="840" y="250" width="180" height="92" rx="8"></rect>
+          <text class="txt" x="930" y="284" text-anchor="middle" font-size="17" font-weight="700">向量查找</text>
+          <text class="muted" x="930" y="310" text-anchor="middle" font-size="13">类型号 -> 内核入口地址</text>
+        </g>
+
+        <g id="save" class="step">
+          <rect class="box" x="570" y="250" width="210" height="92" rx="8"></rect>
+          <text class="txt" x="675" y="284" text-anchor="middle" font-size="17" font-weight="700">保护现场</text>
+          <text class="muted" x="675" y="310" text-anchor="middle" font-size="13">保存会被破坏的寄存器</text>
+        </g>
+
+        <g id="service" class="step">
+          <rect class="box" x="300" y="250" width="210" height="122" rx="8"></rect>
+          <text class="txt" x="405" y="282" text-anchor="middle" font-size="17" font-weight="700">内核服务程序主体</text>
+          <text class="muted" x="405" y="308" text-anchor="middle" font-size="13">读状态 / 搬数据</text>
+          <text class="muted" x="405" y="332" text-anchor="middle" font-size="13">正常则完成请求</text>
+          <text class="muted" x="405" y="356" text-anchor="middle" font-size="13">异常则按原因处理</text>
+        </g>
+
+        <g id="restore" class="step">
+          <rect class="box" x="300" y="420" width="210" height="72" rx="8"></rect>
+          <text class="txt" x="405" y="450" text-anchor="middle" font-size="17" font-weight="700">恢复现场</text>
+          <text class="muted" x="405" y="474" text-anchor="middle" font-size="13">恢复原程序运行环境</text>
+        </g>
+
+        <g id="return" class="step">
+          <rect class="box" x="40" y="420" width="190" height="72" rx="8"></rect>
+          <text class="txt" x="135" y="450" text-anchor="middle" font-size="17" font-weight="700">中断返回</text>
+          <text class="muted" x="135" y="474" text-anchor="middle" font-size="13">回到断点继续执行</text>
+        </g>
+
+        <path class="arrow" d="M230 113 H300"></path>
+        <path class="arrow" d="M510 113 H570"></path>
+        <path class="arrow" d="M780 113 H840"></path>
+        <path class="arrow" d="M930 218 V250"></path>
+        <path class="garrow" d="M840 296 H780"></path>
+        <path class="garrow" d="M570 296 H510"></path>
+        <path class="garrow" d="M405 372 V420"></path>
+        <path class="garrow" d="M300 456 H230"></path>
+        <path class="arrow" d="M135 154 V232"></path>
+      </svg>
+      <p class="caption" id="caption"></p>
+    </section>
+  </div>
+
+  <script>
+    const steps = [
+      {
+        id: "current-program",
+        text: "CPU 正在执行现行程序。中断或异常的目标不是另开一条独立流程，而是在现行程序被迫暂停时转入操作系统内核中的对应处理程序。"
+      },
+      {
+        id: "event-source",
+        text: "事件发生后，处理器要判断当前是否需要打断现行控制流，并准备进入对应处理程序。"
+      },
+      {
+        id: "detect",
+        text: "外部可屏蔽中断通常在当前指令执行结束后检查；异常则可能在指令执行过程中被发现。INTR 还要看 IF 和屏蔽条件。"
+      },
+      {
+        id: "priority",
+        text: "若多个中断源同时请求，硬件或中断控制器先进行判优，只选择一个进入本次响应。"
+      },
+      {
+        id: "implicit",
+        text: "中断隐指令由硬件完成：关中断、保存断点 PC、切换到内核态、引出中断服务程序。这里保存的是断点，不是完整现场。"
+      },
+      {
+        id: "vector",
+        text: "CPU 使用中断类型号查中断向量表，得到内核处理程序入口地址，再把入口地址送入 PC。"
+      },
+      {
+        id: "save",
+        text: "转入操作系统内核后，软件保护现场：保存通用寄存器、状态字等可能被服务程序破坏的内容。"
+      },
+      {
+        id: "service",
+        text: "内核服务程序主体处理具体事件。I/O 中断通常先读控制器状态，正常则取数据或确认传输完成，异常则按原因处理。"
+      },
+      {
+        id: "restore",
+        text: "服务结束前恢复现场，使原程序继续执行时看到的寄存器和状态与中断前一致。"
+      },
+      {
+        id: "return",
+        text: "执行中断返回指令，回到已保存的断点。若是不可恢复异常，则不会按普通方式返回原程序。"
+      }
+    ];
+    let index = 0;
+    const all = Array.from(document.querySelectorAll(".step"));
+    const caption = document.getElementById("caption");
+    const progress = document.getElementById("progress");
+    function render() {
+      const active = steps[index].id;
+      all.forEach(group => {
+        const rect = group.querySelector("rect");
+        group.classList.toggle("dim", group.id !== active);
+        if (rect) {
+          rect.classList.remove("active", "soft", "warn", "bad");
+          if (group.id === active) rect.classList.add("active");
+        }
+      });
+      caption.textContent = steps[index].text;
+      progress.textContent = `${index + 1} / ${steps.length}`;
+    }
+    document.getElementById("prev").addEventListener("click", () => {
+      index = (index + steps.length - 1) % steps.length;
+      render();
+    });
+    document.getElementById("next").addEventListener("click", () => {
+      index = (index + 1) % steps.length;
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

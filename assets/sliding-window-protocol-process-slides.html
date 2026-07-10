@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑动窗口协议过程</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--amber:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:1120px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;gap:14px}.title{font-size:28px;font-weight:800}.sub{font-size:15px;color:var(--muted);margin-top:6px}.controls{display:flex;gap:8px;flex-wrap:wrap}.controls button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer}.controls button.active{background:var(--blue);border-color:var(--blue);color:#fff}.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:18px}.card{border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:16px}.note{font-size:18px;line-height:1.7}.note b{color:var(--blue)}svg{width:100%;height:450px}.cell{fill:var(--bg);stroke:var(--line);stroke-width:2}.send{fill:color-mix(in srgb,var(--blue) 22%,transparent);stroke:var(--blue);stroke-width:3}.recv{fill:color-mix(in srgb,var(--green) 22%,transparent);stroke:var(--green);stroke-width:3}.done{fill:color-mix(in srgb,var(--muted) 22%,transparent);stroke:var(--muted);stroke-width:2}.cache{fill:color-mix(in srgb,var(--amber) 26%,transparent);stroke:var(--amber);stroke-width:3}.t{fill:var(--text);font-size:18px;font-weight:800}.m{fill:var(--muted);font-size:15px}.line{stroke:var(--line);stroke-width:2}.arrow{stroke:var(--amber);stroke-width:3;marker-end:url(#arrow)}
+@media(max-width:860px){.top{display:block}.controls{margin-top:12px}.grid{grid-template-columns:1fr}svg{height:410px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top">
+<div><div class="title">滑动窗口：发送、确认、缓存、滑动</div><div class="sub">示例：序号 0 到 7 循环，发送窗口 W_T=4，接收窗口 W_R=3。</div></div>
+<div class="controls"><button data-step="0" class="active">初始</button><button data-step="1">连续发送</button><button data-step="2">ACK 到达</button><button data-step="3">接收滑动</button></div>
+</div>
+<section class="grid">
+<article class="card">
+<svg viewBox="0 0 760 450" role="img" aria-label="滑动窗口过程">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--amber)"/></marker></defs>
+<g id="canvas"></g>
+</svg>
+</article>
+<article class="card note" id="note"></article>
+</section>
+</main>
+<script>
+const NS="http://www.w3.org/2000/svg", c=document.getElementById("canvas"), note=document.getElementById("note");
+const notes=[
+"发送窗口覆盖 0,1,2,3；接收窗口覆盖 0,1,2。窗口里的序号才允许发送或接收。",
+"发送方可以连续发送 0,1,2,3。已发送但未确认的数据必须保留在发送缓存中。",
+"ACK0、ACK1 到达后，发送方删除 0、1 的缓存副本，发送窗口向右滑动，4、5 进入窗口。",
+"接收方按序收到 0、1 后，接收窗口向右滑动；若 W_R>1，后续窗口内失序数据可以先缓存。"
+];
+function txt(x,y,s,cls="t",anchor="middle"){const t=document.createElementNS(NS,"text");t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("class",cls);t.setAttribute("text-anchor",anchor);t.textContent=s;c.appendChild(t)}
+function rect(x,y,w,h,cls,label){const r=document.createElementNS(NS,"rect");r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",w);r.setAttribute("height",h);r.setAttribute("rx",4);r.setAttribute("class",cls);c.appendChild(r);txt(x+w/2,y+35,label,"t")}
+function drawRow(y,start,count,winStart,winLen,cls,doneSet,cacheSet){for(let i=0;i<count;i++){let seq=(start+i)%8;let x=150+i*62;let k=String(seq);let cellCls="cell";if(doneSet.has(seq))cellCls="done";if(i>=winStart&&i<winStart+winLen)cellCls=cls;if(cacheSet.has(seq))cellCls="cache";rect(x,y,58,54,cellCls,k)}}
+function render(step){c.innerHTML="";txt(72,76,"发送方","t","start");txt(72,238,"接收方","t","start");txt(150,34,"序号空间循环：0 1 2 3 4 5 6 7","m","start");
+let sStart=0,rStart=0,sdone=new Set(),rdone=new Set(),cache=new Set();
+if(step>=2){sStart=2;sdone=new Set([0,1])}
+if(step>=3){rStart=2;rdone=new Set([0,1]);cache=new Set([3])}
+drawRow(88,0,8,sStart,4,"send",sdone,new Set());
+drawRow(250,0,8,rStart,3,"recv",rdone,cache);
+if(step>=1){txt(328,174,"连续发送 0,1,2,3","m");let l=document.createElementNS(NS,"line");l.setAttribute("x1",280);l.setAttribute("y1",152);l.setAttribute("x2",420);l.setAttribute("y2",224);l.setAttribute("class","arrow");c.appendChild(l)}
+if(step>=2){txt(342,206,"ACK0, ACK1 返回","m");let l=document.createElementNS(NS,"line");l.setAttribute("x1",420);l.setAttribute("y1",230);l.setAttribute("x2",300);l.setAttribute("y2",168);l.setAttribute("class","arrow");c.appendChild(l);txt(522,176,"4,5 进入发送窗口","m")}
+if(step>=3){txt(520,338,"3 可作为窗口内失序数据缓存","m")}
+note.innerHTML=notes[step];document.querySelectorAll("button").forEach((b,i)=>b.classList.toggle("active",i===step))}
+document.querySelectorAll("button").forEach((b,i)=>b.addEventListener("click",()=>render(i)));render(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>B Tree Insert</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1060px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{font-size:14px;color:var(--muted);margin-top:6px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.08fr .92fr;gap:14px}.explain{font-size:18px;line-height:1.65;min-height:92px}.code{font:14px/1.45 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;overflow:auto}svg{width:100%;height:auto}.edge{stroke:#64748b;stroke-width:2}.node{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.hot{fill:#fee2e2;stroke:var(--red);stroke-width:4}.up{fill:#dcfce7;stroke:var(--green);stroke-width:4}.text{fill:var(--text);font-weight:700;font-size:16px;text-anchor:middle}.small{fill:var(--muted);font-size:13px;text-anchor:middle}@media(prefers-color-scheme:dark){.edge{stroke:#94a3b8}.node{fill:#172554;stroke:#38bdf8}.hot{fill:#3f1d1d}.up{fill:#12351f}}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div><h1>5 阶 B 树插入：满结点分裂，中位关键字上提</h1><div class="hint">5 阶：每个结点最多 4 个关键字，除根外至少 2 个关键字。</div></div>
+      <div><button id="prev">上一步</button> <button id="next">下一步</button></div>
+    </div>
+    <div class="card"><div class="stage"><svg viewBox="0 0 620 420" id="tree"></svg><div><div class="explain" id="explain"></div><pre class="code">B 树插入规则：
+1. 像多路查找一样，先找到最底层终端结点。
+2. 把新关键字插入该结点，并保持结点内有序。
+3. 若关键字数没有超过 m-1，结束。
+4. 若超过 m-1，从第 ceil(m/2) 个位置分裂：
+   左半留在原结点；
+   右半放入新结点；
+   中间关键字上提到父结点。
+5. 若父结点也溢出，继续向上分裂。
+6. 若根溢出，产生新根，树高加 1。</pre></div></div></div>
+  </div>
+  <script>
+    const steps=[
+      {text:"从空树开始插入 25、38、49、60。根结点最多可放 4 个关键字，此时未溢出。",nodes:[["25 38 49 60",310,115,"node"]],edges:[]},
+      {text:"插入 80 后，根中有 5 个关键字，超过 5 阶 B 树上限 4。必须分裂。",nodes:[["25 38 49 60 80",310,115,"hot"]],edges:[]},
+      {text:"取第 ceil(5/2)=3 个关键字 49 上提；左边 25、38 留在左结点，右边 60、80 放入右结点。根分裂会产生新根。",nodes:[["49",310,80,"up"],["25 38",190,210,"node"],["60 80",430,210,"node"]],edges:[["49","25 38"],["49","60 80"]]},
+      {text:"继续插入 90、99、88。它们落入右侧终端结点，插入 88 后该结点变成 60、80、88、90、99，再次溢出。",nodes:[["49",310,80,"node"],["25 38",150,210,"node"],["60 80 88 90 99",430,210,"hot"]],edges:[["49","25 38"],["49","60 80 88 90 99"]]},
+      {text:"右侧结点分裂：第 3 个关键字 88 上提到父结点；60、80 留左边，90、99 放右边。父结点变为 49、88。",nodes:[["49 88",310,80,"up"],["25 38",120,220,"node"],["60 80",310,220,"node"],["90 99",500,220,"node"]],edges:[["49 88","25 38"],["49 88","60 80"],["49 88","90 99"]]},
+      {text:"若父结点也因上提而溢出，就继续向上分裂。若根溢出，则产生新根，B 树高度加 1。",nodes:[["49 88",310,80,"node"],["25 38",120,220,"node"],["60 80",310,220,"node"],["90 99",500,220,"node"]],edges:[["49 88","25 38"],["49 88","60 80"],["49 88","90 99"]]}
+    ];
+    let i=0;
+    function draw(){
+      const s=steps[i],svg=document.getElementById("tree"),map=new Map(s.nodes.map(n=>[n[0],n]));
+      svg.innerHTML="";
+      for(const [a,b] of s.edges){const p=map.get(a),q=map.get(b);svg.innerHTML+=`<line class="edge" x1="${p[1]}" y1="${p[2]+25}" x2="${q[1]}" y2="${q[2]-25}"/>`;}
+      for(const [name,x,y,cls] of s.nodes){const w=Math.max(80,name.length*12+34);svg.innerHTML+=`<rect class="${cls}" x="${x-w/2}" y="${y-25}" width="${w}" height="50" rx="8"/><text class="text" x="${x}" y="${y+6}">${name}</text>`;}
+      document.getElementById("explain").textContent=s.text;
+    }
+    document.getElementById("prev").onclick=()=>{i=Math.max(0,i-1);draw()};
+    document.getElementById("next").onclick=()=>{i=Math.min(steps.length-1,i+1);draw()};
+    draw();
+  </script>
+</body>
+</html>

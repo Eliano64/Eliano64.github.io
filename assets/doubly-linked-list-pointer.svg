@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="330" viewBox="0 0 980 330" role="img" aria-labelledby="title desc">
+  <title id="title">Doubly linked list pointer changes</title>
+  <desc id="desc">A headed doubly linked list with prior and next pointers, showing insertion after p.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334e68"/>
+    </marker>
+    <marker id="greenArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f766e"/>
+    </marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      .node{fill:#f8fbff;stroke:#334e68;stroke-width:2}
+      .head{fill:#fff7e6;stroke:#ad6800;stroke-width:2}
+      .new{fill:#e6fffb;stroke:#0f766e;stroke-width:2}
+      .txt{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:18px;fill:#102a43}
+      .small{font-family:Arial,'Microsoft YaHei',sans-serif;font-size:14px;fill:#52616b}
+      .code{font-family:Consolas,monospace;font-size:16px;fill:#1f2933}
+      .ptr{stroke:#334e68;stroke-width:2.2;fill:none;marker-end:url(#arrow)}
+      .newptr{stroke:#0f766e;stroke-width:2.8;fill:none;marker-end:url(#greenArrow)}
+      @media (prefers-color-scheme: dark){
+        svg{background:#0f1720}
+        .node{fill:#16212c;stroke:#9ccfd8}
+        .head{fill:#2a2113;stroke:#f6c177}
+        .new{fill:#102620;stroke:#5eead4}
+        .txt,.code{fill:#e6edf3}
+        .small{fill:#b8c4cf}
+        .ptr{stroke:#9ccfd8}
+        .newptr{stroke:#5eead4}
+      }
+    </style>
+  </defs>
+  <text class="txt" x="36" y="38">双链表：每个结点同时记录前驱 prior 和后继 next</text>
+  <text class="small" x="36" y="64">插入、删除时要同时维护两个方向的链；若后继为 NULL，不能访问后继的 prior。</text>
+  <g transform="translate(54 112)">
+    <rect class="head" x="0" y="0" width="132" height="68" rx="8"/>
+    <line x1="44" y1="0" x2="44" y2="68" stroke="#ad6800" stroke-width="2"/>
+    <line x1="88" y1="0" x2="88" y2="68" stroke="#ad6800" stroke-width="2"/>
+    <text class="small" x="9" y="39">prior</text><text class="txt" x="55" y="39">头</text><text class="small" x="96" y="39">next</text>
+    <rect class="node" x="210" y="0" width="132" height="68" rx="8"/>
+    <line x1="254" y1="0" x2="254" y2="68" stroke="#334e68" stroke-width="2"/>
+    <line x1="298" y1="0" x2="298" y2="68" stroke="#334e68" stroke-width="2"/>
+    <text class="small" x="219" y="39">prior</text><text class="txt" x="268" y="39">x</text><text class="small" x="306" y="39">next</text>
+    <rect class="node" x="420" y="0" width="132" height="68" rx="8"/>
+    <line x1="464" y1="0" x2="464" y2="68" stroke="#334e68" stroke-width="2"/>
+    <line x1="508" y1="0" x2="508" y2="68" stroke="#334e68" stroke-width="2"/>
+    <text class="small" x="429" y="39">prior</text><text class="txt" x="477" y="39">y</text><text class="small" x="516" y="39">next</text>
+    <path class="ptr" d="M 132 26 C 160 26 175 26 204 26"/>
+    <path class="ptr" d="M 210 50 C 176 50 166 50 138 50"/>
+    <path class="ptr" d="M 342 26 C 370 26 385 26 414 26"/>
+    <path class="ptr" d="M 420 50 C 386 50 376 50 348 50"/>
+    <text class="small" x="253" y="-14">p</text>
+    <rect class="new" x="210" y="150" width="132" height="68" rx="8"/>
+    <line x1="254" y1="150" x2="254" y2="218" stroke="#0f766e" stroke-width="2"/>
+    <line x1="298" y1="150" x2="298" y2="218" stroke="#0f766e" stroke-width="2"/>
+    <text class="small" x="219" y="189">prior</text><text class="txt" x="268" y="189">s</text><text class="small" x="306" y="189">next</text>
+    <path class="newptr" d="M 342 184 C 430 174 438 78 420 43"/>
+    <path class="newptr" d="M 420 58 C 370 85 322 125 300 148"/>
+    <path class="newptr" d="M 254 150 C 258 120 260 94 260 69"/>
+    <path class="newptr" d="M 298 68 C 302 96 303 123 300 148"/>
+  </g>
+  <text class="code" x="660" y="126">s->next = p->next;</text>
+  <text class="code" x="660" y="156">p->next->prior = s;</text>
+  <text class="code" x="660" y="186">s->prior = p;</text>
+  <text class="code" x="660" y="216">p->next = s;</text>
+  <text class="small" x="660" y="254">若 p 是尾结点，第 2 句必须跳过。</text>
+</svg>

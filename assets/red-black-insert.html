@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Red Black Insert</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1040px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px;margin-top:6px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tabs button.active{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 25%,transparent)}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.explain{font-size:18px;line-height:1.65;min-height:92px}.code{font:14px/1.45 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap;overflow:auto}svg{width:100%;height:auto}.edge{stroke:#64748b;stroke-width:2}.black{fill:#111827;stroke:#020617;stroke-width:2}.red{fill:#dc2626;stroke:#7f1d1d;stroke-width:2}.focus{stroke:var(--green);stroke-width:5}.label{fill:var(--muted);font-size:13px;text-anchor:middle}.t{fill:#fff;font-weight:700;font-size:16px;text-anchor:middle}@media(prefers-color-scheme:dark){.edge{stroke:#94a3b8}.black{fill:#020617;stroke:#475569}}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>红黑树插入调整</h1>
+        <div class="hint">新结点先按 BST 插入；非根新结点染红。真正要判断的是叔叔结点的颜色。</div>
+      </div>
+      <div><button id="prev">上一步</button> <button id="next">下一步</button></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="card">
+      <div class="stage">
+        <svg viewBox="0 0 580 390" id="tree"></svg>
+        <div>
+          <div class="explain" id="explain"></div>
+          <pre class="code" id="code"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const cases = {
+      redUncle: {
+        name:"红叔：染色上推",
+        code:"父红、叔红：\n1. 父结点染黑\n2. 叔结点染黑\n3. 祖父结点染红\n4. 把祖父当作新结点继续向上检查\n5. 若祖父成为根，最后再染黑",
+        steps:[
+          {text:"插入 N 后，N 与父 P 连续为红，违反“不红红”。叔 U 也是红色。", nodes:[["G",290,70,"black"],["P",200,170,"red focus"],["U",380,170,"red"],["N",150,280,"red focus"]], edges:[["G","P"],["G","U"],["P","N"]]},
+          {text:"红叔不旋转：父、叔染黑，祖父染红。黑高保持一致，但祖父可能继续和上层红父冲突。", nodes:[["G",290,70,"red focus"],["P",200,170,"black"],["U",380,170,"black"],["N",150,280,"red"]], edges:[["G","P"],["G","U"],["P","N"]]}
+        ]
+      },
+      blackLL: {
+        name:"黑叔 LL：右旋",
+        code:"父红、叔黑，N 是 LL：\n1. 以祖父 G 为根做右单旋\n2. 父 P 上升替代 G\n3. P 染黑，G 染红\n\n口诀：父换爷 + 染色",
+        steps:[
+          {text:"N 是 G 的左孩子 P 的左孩子，叔 U 为黑。需要右单旋。", nodes:[["G",300,70,"black"],["P",210,170,"red focus"],["U",410,170,"black"],["N",150,280,"red focus"]], edges:[["G","P"],["G","U"],["P","N"]]},
+          {text:"右旋后 P 上升。P 染黑，原祖父 G 染红，消除连续红，同时保持黑高。", nodes:[["P",300,70,"black focus"],["N",210,180,"red"],["G",410,180,"red"],["U",470,290,"black"]], edges:[["P","N"],["P","G"],["G","U"]]}
+        ]
+      },
+      blackRR: {
+        name:"黑叔 RR：左旋",
+        code:"父红、叔黑，N 是 RR：\n1. 以祖父 G 为根做左单旋\n2. 父 P 上升替代 G\n3. P 染黑，G 染红\n\n口诀：父换爷 + 染色",
+        steps:[
+          {text:"N 是 G 的右孩子 P 的右孩子，叔 U 为黑。需要左单旋。", nodes:[["G",300,70,"black"],["U",190,170,"black"],["P",410,170,"red focus"],["N",470,280,"red focus"]], edges:[["G","U"],["G","P"],["P","N"]]},
+          {text:"左旋后 P 上升。P 染黑，原祖父 G 染红，消除连续红，同时保持黑高。", nodes:[["P",300,70,"black focus"],["G",190,180,"red"],["N",410,180,"red"],["U",130,290,"black"]], edges:[["P","G"],["P","N"],["G","U"]]}
+        ]
+      },
+      blackLR: {
+        name:"黑叔 LR：N 一步上升",
+        code:"父红、叔黑，N 是 LR：\n1. N 一步上升替代祖父 G\n2. N->left = P，N->right = G\n3. N 原左子树挂到 P 的右边\n4. N 原右子树挂到 G 的左边\n5. N 染黑，G 染红\n\n等价于：先左旋 P，再右旋 G",
+        steps:[
+          {text:"N 在 P 的右侧，属于 LR。N 是 P、N、G 三者中关键字居中的结点。", nodes:[["G",300,70,"black"],["P",210,170,"red focus"],["U",410,170,"black"],["N",260,280,"red focus"],["NL",220,350,"black"],["NR",305,350,"black"]], edges:[["G","P"],["G","U"],["P","N"],["N","NL"],["N","NR"]]},
+          {text:"一步重连：N 上升为根，P 和 G 分别成为 N 的左右孩子；N 原左子树挂到 P 右边，原右子树挂到 G 左边。", nodes:[["N",300,70,"black focus"],["P",210,180,"red"],["G",410,180,"red"],["NL",260,290,"black"],["NR",360,290,"black"],["U",470,290,"black"]], edges:[["N","P"],["N","G"],["P","NL"],["G","NR"],["G","U"]]},
+          {text:"最后染色：N 黑、G 红。连续红被消除，经过这棵子树的黑结点数保持不变，因此黑叔旋转后局部结束。", nodes:[["N",300,70,"black focus"],["P",210,180,"red"],["G",410,180,"red"],["NL",260,290,"black"],["NR",360,290,"black"],["U",470,290,"black"]], edges:[["N","P"],["N","G"],["P","NL"],["G","NR"],["G","U"]]}
+        ]
+      },
+      blackRL: {
+        name:"黑叔 RL：N 一步上升",
+        code:"父红、叔黑，N 是 RL：\n1. N 一步上升替代祖父 G\n2. N->left = G，N->right = P\n3. N 原左子树挂到 G 的右边\n4. N 原右子树挂到 P 的左边\n5. N 染黑，G 染红\n\n等价于：先右旋 P，再左旋 G",
+        steps:[
+          {text:"N 在右孩子 P 的左侧，属于 RL。N 是 G、N、P 三者中关键字居中的结点。", nodes:[["G",300,70,"black"],["U",190,170,"black"],["P",410,170,"red focus"],["N",360,280,"red focus"],["NL",320,350,"black"],["NR",405,350,"black"]], edges:[["G","U"],["G","P"],["P","N"],["N","NL"],["N","NR"]]},
+          {text:"一步重连：N 上升为根，G 和 P 分别成为 N 的左右孩子；N 原左子树挂到 G 右边，原右子树挂到 P 左边。", nodes:[["N",300,70,"black focus"],["G",190,180,"red"],["P",410,180,"red"],["U",130,290,"black"],["NL",240,290,"black"],["NR",360,290,"black"]], edges:[["N","G"],["N","P"],["G","U"],["G","NL"],["P","NR"]]},
+          {text:"最后染色：N 黑、G 红。连续红被消除，经过这棵子树的黑结点数保持不变，因此黑叔旋转后局部结束。", nodes:[["N",300,70,"black focus"],["G",190,180,"red"],["P",410,180,"red"],["U",130,290,"black"],["NL",240,290,"black"],["NR",360,290,"black"]], edges:[["N","G"],["N","P"],["G","U"],["G","NL"],["P","NR"]]}
+        ]
+      }
+    };
+    let current="redUncle", step=0;
+    const tabs=document.getElementById("tabs");
+    for(const key of Object.keys(cases)){
+      const b=document.createElement("button");
+      b.textContent=cases[key].name;
+      b.dataset.key=key;
+      b.onclick=()=>{current=key;step=0;draw()};
+      tabs.appendChild(b);
+    }
+    function draw(){
+      const data=cases[current], s=data.steps[step], svg=document.getElementById("tree");
+      document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.key===current));
+      document.getElementById("explain").textContent=s.text;
+      document.getElementById("code").textContent=data.code;
+      const map=new Map(s.nodes.map(n=>[n[0],n]));
+      svg.innerHTML="";
+      for(const [a,b] of s.edges){const p=map.get(a),q=map.get(b);svg.innerHTML+=`<line class="edge" x1="${p[1]}" y1="${p[2]}" x2="${q[1]}" y2="${q[2]}"/>`;}
+      for(const [name,x,y,cls] of s.nodes){svg.innerHTML+=`<circle class="${cls}" cx="${x}" cy="${y}" r="28"/><text class="t" x="${x}" y="${y+6}">${name}</text>`;}
+    }
+    document.getElementById("prev").onclick=()=>{step=Math.max(0,step-1);draw()};
+    document.getElementById("next").onclick=()=>{step=Math.min(cases[current].steps.length-1,step+1);draw()};
+    draw();
+  </script>
+</body>
+</html>

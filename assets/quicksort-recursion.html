@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quick Sort Recursion</title>
+<style>
+:root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--red:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--red:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{padding:22px;max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.title{font-weight:800;font-size:22px}.btns{display:flex;gap:8px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:8px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:16px}.tree{min-height:330px;position:relative}.node{position:absolute;border:2px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 12px;text-align:center;font-weight:800}.active{border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 25%,transparent)}.done{border-color:var(--green)}.bad{border-color:var(--red)}svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.edge{stroke:var(--line);stroke-width:2}.note{font-size:16px;line-height:1.75}.formula{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-family:Consolas,monospace;font-size:13px;line-height:1.45}.progress{color:var(--muted);font-size:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="title">快速排序递归层数与比较次数</div><div id="progress" class="progress"></div></div>
+    <div class="btns"><button id="prev" class="btn">上一步</button><button id="next" class="btn">下一步</button></div>
+  </div>
+  <div class="grid">
+    <div class="panel tree" id="tree"></div>
+    <div class="panel"><div class="note" id="note"></div><div class="formula" id="formula"></div></div>
+  </div>
+</div>
+<script>
+const base=[
+{id:'8',x:48,y:8,t:'n=8'},
+{id:'3',x:22,y:34,t:'3'}, {id:'4',x:72,y:34,t:'4'},
+{id:'1a',x:10,y:60,t:'1'}, {id:'1b',x:34,y:60,t:'1'}, {id:'2',x:62,y:60,t:'2'}, {id:'1c',x:86,y:60,t:'1'},
+{id:'0',x:56,y:84,t:'0'}, {id:'1d',x:70,y:84,t:'1'}
+];
+const edges=[['8','3'],['8','4'],['3','1a'],['3','1b'],['4','2'],['4','1c'],['2','0'],['2','1d']];
+const steps=[
+{act:['8'],done:[],n:"每一次划分确定一个枢轴最终位置，然后递归处理左右子表。递归树的高度决定空间复杂度，也决定总时间中的层数因子。",f:"time = O(n * recursion_levels)\nspace = O(recursion_levels)"},
+{act:['3','4'],done:['8'],n:"最好情况：每次枢轴都把当前区间均匀分成两半。每一层所有划分合计比较次数约不超过 n。",f:"levels ≈ floor(log2 n) + 1"},
+{act:['1a','1b','2','1c'],done:['8','3','4'],n:"继续均匀划分，递归树高度最小。",f:"best time = O(n log2 n)\nbest space = O(log2 n)"},
+{act:['0','1d'],done:['8','3','4','1a','1b','2','1c'],n:"以单元素或空区间为递归边界，不再划分。",f:"if (low >= high) return;"},
+{bad:['8','4','2','1d'],n:"最坏情况：每次枢轴都在最边上，递归树退化为一条链。初始序列有序或逆序且取首元素为枢轴时容易出现。",f:"worst levels = n\nworst time = O(n^2)\nworst space = O(n)"},
+{act:['8'],n:"最好情况下关键字比较次数常按递推式现推：一次划分比较 n-1 次，左右各有约 n/2 个元素。",f:"C(n) = 2C(n/2) + (n - 1)\nC(1) = 0"},
+{act:['8','3','4'],n:"若 n=2^k-1 且每次正好均分，令 n=7：第一层比较 6 次，第二层两个长度 3 的子表各比较 2 次。",f:"C(7) = 6 + 2*2 = 10"},
+{act:['8','3','4','1a','1b','2','1c'],n:"一般记住数量级即可；若题目要求精确值，要按题目给定的 n 和划分规模逐层相加。",f:"best comparison count = sum of partition costs by level"}
+];
+let k=0;
+function render(){const s=steps[k], box=document.getElementById('tree');box.innerHTML='<svg></svg>';const svg=box.querySelector('svg');function pos(id){return base.find(n=>n.id===id)}edges.forEach(([a,b])=>{const p=pos(a),q=pos(b);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',p.x+'%');line.setAttribute('y1',p.y+8+'%');line.setAttribute('x2',q.x+'%');line.setAttribute('y2',q.y+'%');line.setAttribute('class','edge');svg.appendChild(line)});base.forEach(n=>{const d=document.createElement('div');d.className='node';if(s.act?.includes(n.id))d.classList.add('active');if(s.done?.includes(n.id))d.classList.add('done');if(s.bad?.includes(n.id))d.classList.add('bad');d.style.left=`calc(${n.x}% - 32px)`;d.style.top=`${n.y}%`;d.textContent=n.t;box.appendChild(d)});note.textContent=s.n;formula.textContent=s.f;progress.textContent=`${k+1} / ${steps.length}`;}
+prev.onclick=()=>{k=(k-1+steps.length)%steps.length;render()};next.onclick=()=>{k=(k+1)%steps.length;render()};render();
+</script>
+</body>
+</html>

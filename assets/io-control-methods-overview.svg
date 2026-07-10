@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 360" role="img" aria-labelledby="title desc">
+  <title id="title">I/O Control Methods Overview</title>
+  <desc id="desc">I/O control methods reduce CPU involvement from polling to channel control.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#arrow)}.axis{stroke:var(--line);stroke-width:2;fill:none}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker></defs>
+  <rect class="bg" width="1100" height="360"/>
+  <text class="t" x="550" y="42" text-anchor="middle" font-size="24" font-weight="700">I/O 控制方式的演进</text>
+  <path class="axis" d="M115 290 H985"/>
+  <text class="m" x="145" y="323" text-anchor="middle" font-size="14">CPU 参与多</text>
+  <text class="m" x="945" y="323" text-anchor="middle" font-size="14">CPU 参与少</text>
+  <g>
+    <rect class="box" x="70" y="108" width="200" height="120" rx="8"/>
+    <text class="t" x="170" y="142" text-anchor="middle" font-size="18" font-weight="700">程序查询</text>
+    <text class="m" x="170" y="170" text-anchor="middle" font-size="13">CPU 轮询状态</text>
+    <text class="m" x="170" y="194" text-anchor="middle" font-size="13">CPU 搬每个字</text>
+  </g>
+  <g>
+    <rect class="box" x="322" y="108" width="200" height="120" rx="8"/>
+    <text class="t" x="422" y="142" text-anchor="middle" font-size="18" font-weight="700">中断驱动</text>
+    <text class="m" x="422" y="170" text-anchor="middle" font-size="13">设备完成后中断</text>
+    <text class="m" x="422" y="194" text-anchor="middle" font-size="13">CPU 仍搬每个字</text>
+  </g>
+  <g>
+    <rect class="box" x="574" y="108" width="200" height="120" rx="8"/>
+    <text class="t" x="674" y="142" text-anchor="middle" font-size="18" font-weight="700">DMA</text>
+    <text class="m" x="674" y="170" text-anchor="middle" font-size="13">控制器搬整块</text>
+    <text class="m" x="674" y="194" text-anchor="middle" font-size="13">完成后中断 CPU</text>
+  </g>
+  <g>
+    <rect class="box" x="826" y="108" width="200" height="120" rx="8"/>
+    <text class="t" x="926" y="142" text-anchor="middle" font-size="18" font-weight="700">通道控制</text>
+    <text class="m" x="926" y="170" text-anchor="middle" font-size="13">通道执行程序</text>
+    <text class="m" x="926" y="194" text-anchor="middle" font-size="13">管理一组 I/O</text>
+  </g>
+  <path class="a" d="M270 168 H322"/>
+  <path class="a" d="M522 168 H574"/>
+  <path class="a" d="M774 168 H826"/>
+</svg>

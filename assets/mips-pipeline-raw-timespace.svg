@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+  <title id="title">MIPS RAW 相关的时空图分析</title>
+  <desc id="desc">对比 add 和 sub 两条指令在有转发和无转发时的流水线时空图。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --grid: #cbd5e1;
+      --head: #e2e8f0;
+      --if: #dbeafe;
+      --id: #dcfce7;
+      --ex: #fee2e2;
+      --mem: #fef3c7;
+      --wb: #ede9fe;
+      --stall: #f1f5f9;
+      --accent: #dc2626;
+      --accent2: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --grid: #475569;
+        --head: #1e293b;
+        --if: #1d4ed8;
+        --id: #166534;
+        --ex: #991b1b;
+        --mem: #92400e;
+        --wb: #5b21b6;
+        --stall: #334155;
+        --accent: #f87171;
+        --accent2: #60a5fa;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .title { font: 700 24px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); }
+    .subtitle, .note { font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .panel-title { font: 700 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); }
+    .label { font: 600 15px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: var(--fg); }
+    .cell-text { font: 700 15px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; }
+    .cycle { font: 700 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; }
+    .small { font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .grid { fill: none; stroke: var(--grid); stroke-width: 1; }
+    .header { fill: var(--head); stroke: var(--grid); stroke-width: 1; }
+    .if { fill: var(--if); }
+    .id { fill: var(--id); }
+    .ex { fill: var(--ex); }
+    .mem { fill: var(--mem); }
+    .wb { fill: var(--wb); }
+    .stall { fill: var(--stall); }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+    .wait { fill: none; stroke: var(--accent2); stroke-width: 2; stroke-dasharray: 7 5; marker-end: url(#arrow2); }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.small{fill:#f8fafc}}
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+    </marker>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent2)" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1120" height="620" rx="0" />
+  <text class="title" x="48" y="46">RAW 相关：用时空图看转发与停顿</text>
+  <text class="subtitle" x="48" y="74">例：add 写 $t0，紧随其后的 sub 读 $t0。</text>
+
+  <!-- Panel A -->
+  <text class="panel-title" x="48" y="118">有转发：add 的 EX 结果直接送到 sub 的 EX 输入</text>
+  <g transform="translate(48 140)">
+    <rect class="header" x="0" y="0" width="160" height="40" />
+    <text class="cycle" x="80" y="20">指令</text>
+    <g>
+      <rect class="header" x="160" y="0" width="90" height="40" /><text class="cycle" x="205" y="20">1</text>
+      <rect class="header" x="250" y="0" width="90" height="40" /><text class="cycle" x="295" y="20">2</text>
+      <rect class="header" x="340" y="0" width="90" height="40" /><text class="cycle" x="385" y="20">3</text>
+      <rect class="header" x="430" y="0" width="90" height="40" /><text class="cycle" x="475" y="20">4</text>
+      <rect class="header" x="520" y="0" width="90" height="40" /><text class="cycle" x="565" y="20">5</text>
+      <rect class="header" x="610" y="0" width="90" height="40" /><text class="cycle" x="655" y="20">6</text>
+    </g>
+    <rect class="grid" x="0" y="40" width="700" height="52" />
+    <rect class="grid" x="0" y="92" width="700" height="52" />
+    <text class="label" x="16" y="72">add $t0,$t1,$t2</text>
+    <text class="label" x="16" y="124">sub $t3,$t0,$t4</text>
+
+    <rect class="if" x="160" y="40" width="90" height="52" /><text class="cell-text" x="205" y="66">IF</text>
+    <rect class="id" x="250" y="40" width="90" height="52" /><text class="cell-text" x="295" y="66">ID</text>
+    <rect class="ex" x="340" y="40" width="90" height="52" /><text class="cell-text" x="385" y="66">EX</text>
+    <rect class="mem" x="430" y="40" width="90" height="52" /><text class="cell-text" x="475" y="66">MEM</text>
+    <rect class="wb" x="520" y="40" width="90" height="52" /><text class="cell-text" x="565" y="66">WB</text>
+
+    <rect class="if" x="250" y="92" width="90" height="52" /><text class="cell-text" x="295" y="118">IF</text>
+    <rect class="id" x="340" y="92" width="90" height="52" /><text class="cell-text" x="385" y="118">ID</text>
+    <rect class="ex" x="430" y="92" width="90" height="52" /><text class="cell-text" x="475" y="118">EX</text>
+    <rect class="mem" x="520" y="92" width="90" height="52" /><text class="cell-text" x="565" y="118">MEM</text>
+    <rect class="wb" x="610" y="92" width="90" height="52" /><text class="cell-text" x="655" y="118">WB</text>
+
+    <path class="arrow" d="M 405 72 C 420 92, 445 102, 466 113" />
+    <text class="small" x="464" y="82">EX 末产生</text>
+    <text class="small" x="522" y="116">EX 处使用</text>
+  </g>
+
+  <!-- Panel B -->
+  <text class="panel-title" x="48" y="344">无转发：sub 在 add 写回后才进入可正确读数的 ID</text>
+  <g transform="translate(48 366)">
+    <rect class="header" x="0" y="0" width="160" height="40" />
+    <text class="cycle" x="80" y="20">指令</text>
+    <g>
+      <rect class="header" x="160" y="0" width="82" height="40" /><text class="cycle" x="201" y="20">1</text>
+      <rect class="header" x="242" y="0" width="82" height="40" /><text class="cycle" x="283" y="20">2</text>
+      <rect class="header" x="324" y="0" width="82" height="40" /><text class="cycle" x="365" y="20">3</text>
+      <rect class="header" x="406" y="0" width="82" height="40" /><text class="cycle" x="447" y="20">4</text>
+      <rect class="header" x="488" y="0" width="82" height="40" /><text class="cycle" x="529" y="20">5</text>
+      <rect class="header" x="570" y="0" width="82" height="40" /><text class="cycle" x="611" y="20">6</text>
+      <rect class="header" x="652" y="0" width="82" height="40" /><text class="cycle" x="693" y="20">7</text>
+      <rect class="header" x="734" y="0" width="82" height="40" /><text class="cycle" x="775" y="20">8</text>
+      <rect class="header" x="816" y="0" width="82" height="40" /><text class="cycle" x="857" y="20">9</text>
+    </g>
+    <rect class="grid" x="0" y="40" width="898" height="52" />
+    <rect class="grid" x="0" y="92" width="898" height="52" />
+    <text class="label" x="16" y="72">add $t0,$t1,$t2</text>
+    <text class="label" x="16" y="124">sub $t3,$t0,$t4</text>
+
+    <rect class="if" x="160" y="40" width="82" height="52" /><text class="cell-text" x="201" y="66">IF</text>
+    <rect class="id" x="242" y="40" width="82" height="52" /><text class="cell-text" x="283" y="66">ID</text>
+    <rect class="ex" x="324" y="40" width="82" height="52" /><text class="cell-text" x="365" y="66">EX</text>
+    <rect class="mem" x="406" y="40" width="82" height="52" /><text class="cell-text" x="447" y="66">MEM</text>
+    <rect class="wb" x="488" y="40" width="82" height="52" /><text class="cell-text" x="529" y="66">WB</text>
+
+    <rect class="if" x="242" y="92" width="82" height="52" /><text class="cell-text" x="283" y="118">IF</text>
+    <rect class="stall" x="324" y="92" width="246" height="52" /><text class="cell-text" x="447" y="118">阻塞</text>
+    <rect class="id" x="570" y="92" width="82" height="52" /><text class="cell-text" x="611" y="118">ID</text>
+    <rect class="ex" x="652" y="92" width="82" height="52" /><text class="cell-text" x="693" y="118">EX</text>
+    <rect class="mem" x="734" y="92" width="82" height="52" /><text class="cell-text" x="775" y="118">MEM</text>
+    <rect class="wb" x="816" y="92" width="82" height="52" /><text class="cell-text" x="857" y="118">WB</text>
+
+    <path class="wait" d="M 529 92 C 548 122, 578 122, 606 118" />
+    <text class="small" x="586" y="78">WB 完成后，sub 的 ID 才能读到新 $t0</text>
+    <text class="note" x="0" y="184">若采用“前半周期写、后半周期读”的寄存器堆，ID 可与 WB 放在同一周期；否则按图延后一拍。</text>
+  </g>
+</svg>

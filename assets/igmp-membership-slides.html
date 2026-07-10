@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IGMP Membership</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--green:#16a34a;--blue:#2563eb;--red:#dc2626;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--green:#4ade80;--blue:#60a5fa;--red:#f87171;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+.wrap{max-width:980px;margin:auto;padding:22px}
+.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}
+.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:10px;margin-bottom:10px}
+.step.active{outline:2px solid var(--green)}
+.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:14px}
+.note{color:var(--muted);line-height:1.55}
+.controls{text-align:center;margin-top:14px}
+button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">IGMP：让多播路由器知道本链路有哪些组成员</div>
+  <div class="layout">
+    <div id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 670 320" role="img" aria-label="IGMP 成员管理过程">
+        <defs>
+          <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--green)"/>
+          </marker>
+        </defs>
+        <line x1="70" y1="172" x2="420" y2="172" stroke="var(--line)" stroke-width="4"/>
+        <rect x="70" y="65" width="135" height="55" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+        <text x="137" y="90" text-anchor="middle" fill="var(--text)" font-size="13">多播</text>
+        <text x="137" y="108" text-anchor="middle" fill="var(--text)" font-size="13">路由器</text>
+        <circle id="hostA" cx="255" cy="172" r="26" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/>
+        <text x="255" y="178" text-anchor="middle" fill="var(--text)" font-size="14">A</text>
+        <circle id="hostB" cx="370" cy="172" r="26" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/>
+        <text x="370" y="178" text-anchor="middle" fill="var(--text)" font-size="14">B</text>
+        <rect x="475" y="72" width="145" height="150" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+        <text x="547" y="98" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="700">路由器记录</text>
+        <text x="547" y="124" text-anchor="middle" fill="var(--muted)" font-size="13">直连链路</text>
+        <text id="table1" x="547" y="156" text-anchor="middle" fill="var(--text)" font-size="15"></text>
+        <text id="table2" x="547" y="184" text-anchor="middle" fill="var(--text)" font-size="15"></text>
+        <path id="msg" d="M270 143 C235 105, 185 95, 207 95" fill="none" stroke="var(--green)" stroke-width="4" marker-end="url(#arr)"/>
+        <text id="caption" x="335" y="270" text-anchor="middle" fill="var(--text)" font-size="18"></text>
+      </svg>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+  ["成员报告","主机加入多播组时发送 IGMP 成员报告。","报告中包含要加入的 IP 多播组地址；多播路由器只记录直连网络中有该组成员，不记录每个成员主机。","239.1.1.1：有成员","由 A 报告"],
+  ["报告抑制","同组其他成员听到报告后取消自己的报告。","同一链路上每个多播组只需要有一个成员报告，减少 IGMP 报文数量。","239.1.1.1：有成员","B 听到 A 后抑制"],
+  ["成员查询","多播路由器周期性发送成员查询。","查询通常发往 224.0.0.1，让本链路多播主机确认某些组是否仍有成员。","239.1.1.1：等待报告","查询本链路"],
+  ["超时删除","长时间无报告的组从列表中删除。","若没有成员响应，路由器认为该直连网络已没有该多播组成员。","239.1.1.1：删除","不再向本链路转发"],
+  ["退出组","IGMPv2 支持主机主动发送离开报文。","离开报文帮助路由器更快确认组成员变化。","239.1.1.1：重新确认","发送特定组查询"]
+];
+let i=0;
+const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{
+  const e=document.createElement("div");
+  e.className="step";
+  e.innerHTML=`<b>${idx+1}. ${d[0]}</b><span style="font-size:14px;color:var(--muted);line-height:1.45">${d[1]}</span>`;
+  e.onclick=()=>{i=idx;render()};
+  steps.appendChild(e);
+});
+function render(){
+  [...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));
+  caption.textContent=data[i][0];
+  note.textContent=data[i][2];
+  table1.textContent=data[i][3];
+  table2.textContent=data[i][4];
+  msg.setAttribute("stroke", i===3 ? "var(--red)" : (i===2 ? "var(--blue)" : "var(--green)"));
+  msg.setAttribute("d",i===2 ? "M207 100 C224 128,236 148,255 152" : "M255 145 C224 107,185 95,207 95");
+  if(i===4) msg.setAttribute("d","M370 145 C328 105,248 95,207 95");
+}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};
+next.onclick=()=>{i=(i+1)%data.length;render()};
+render();
+</script>
+</body>
+</html>

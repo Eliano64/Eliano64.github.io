@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TCP 2MSL</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--red:#dc2626;--green:#16a34a;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--red:#f87171;--green:#4ade80;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:980px;margin:auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:14px}.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:10px;margin-bottom:10px;cursor:pointer}.step b{display:block;margin-bottom:5px}.step span{font-size:14px;color:var(--muted);line-height:1.45}.step.active{outline:2px solid var(--blue)}.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:12px}.note{color:var(--muted);line-height:1.6;margin-top:6px}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body><div class="wrap"><div class="title">TIME-WAIT 为什么要等待 2MSL</div><div class="layout"><div id="steps"></div><div class="stage">
+<svg viewBox="0 0 680 340" role="img" aria-label="2MSL 必要性">
+<defs><marker id="arrB" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker><marker id="arrR" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--red)"/></marker></defs>
+<text x="150" y="35" text-anchor="middle" fill="var(--text)" font-size="17" font-weight="700">主动关闭方</text><text x="530" y="35" text-anchor="middle" fill="var(--text)" font-size="17" font-weight="700">被动关闭方</text>
+<line x1="150" y1="55" x2="150" y2="300" stroke="var(--line)" stroke-width="3"/><line x1="530" y1="55" x2="530" y2="300" stroke="var(--line)" stroke-width="3"/>
+<path id="fin" d="M530 90 L150 130" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arrB)"/><text id="tfin" x="340" y="95" text-anchor="middle" fill="var(--text)" font-size="15">FIN 重发前的原始 FIN</text>
+<path id="acklost" d="M150 160 L430 190" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="8 7" marker-end="url(#arrR)"/><text id="tacklost" x="285" y="165" text-anchor="middle" fill="var(--red)" font-size="15">最后 ACK 丢失</text>
+<path id="retry" d="M530 220 L150 250" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arrB)"/><text id="tretry" x="340" y="225" text-anchor="middle" fill="var(--text)" font-size="15">服务器重传 FIN</text>
+<path id="ack2" d="M150 275 L530 305" fill="none" stroke="var(--green)" stroke-width="4" marker-end="url(#arrB)"/><text id="tack2" x="340" y="285" text-anchor="middle" fill="var(--green)" font-size="15">TIME-WAIT 中再次 ACK</text>
+</svg><div class="note" id="note"></div></div></div><div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div></div>
+<script>
+const data=[
+ ["最后 ACK 可能丢失","主动关闭方发送最后 ACK。","如果立刻 CLOSED，后续重传 FIN 到达时就无法正确处理。"],
+ ["被动方重传 FIN","被动关闭方收不到最后 ACK，会重传 FIN。","它仍停在 LAST-ACK，等待确认。"],
+ ["TIME-WAIT 处理重传","主动关闭方还在 TIME-WAIT，因此能再次发送 ACK。","这保证被动关闭方最终能进入 CLOSED。"],
+ ["清除旧报文","等待 2MSL 也能让旧连接报文从网络中消失。","避免相同四元组的新连接收到旧报文段。"]
+];let i=0;const steps=document.getElementById("steps");data.forEach((d,k)=>{const e=document.createElement("div");e.className="step";e.innerHTML=`<b>${k+1}. ${d[0]}</b><span>${d[1]}</span>`;e.onclick=()=>{i=k;render()};steps.appendChild(e)});
+function op(id,on){document.getElementById(id).style.opacity=on?1:.06}
+function render(){[...steps.children].forEach((e,k)=>e.classList.toggle("active",k===i));op("fin",i>=0);op("tfin",i>=0);op("acklost",i>=0);op("tacklost",i>=0);op("retry",i>=1);op("tretry",i>=1);op("ack2",i>=2);op("tack2",i>=2);note.textContent=data[i][2]}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};next.onclick=()=>{i=(i+1)%data.length;render()};render();
+</script></body></html>

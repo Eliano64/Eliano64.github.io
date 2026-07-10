@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="520" viewBox="0 0 1080 520" role="img" aria-labelledby="title desc">
+  <title id="title">SSD 页与块</title>
+  <desc id="desc">展示 SSD 中页是读写单位，块是擦除单位。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--text:#172033;--muted:#536171;--line:#8090a3;--g:#059669;--o:#d97706;--r:#dc2626;--soft:#f8fafc;--pg:#d1fae5;--po:#ffedd5;--pr:#fee2e2}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--text:#e5e7eb;--muted:#aab4c3;--line:#687386;--g:#34d399;--o:#fbbf24;--r:#f87171;--soft:#111827;--pg:#064e3b;--po:#451a03;--pr:#450a0a}}
+    .bg{fill:var(--bg)}.title{fill:var(--text);font:700 27px "Microsoft YaHei",sans-serif}.h{fill:var(--text);font:700 18px "Microsoft YaHei",sans-serif}.body{fill:var(--muted);font:15px "Microsoft YaHei",sans-serif}.panel{fill:var(--soft);stroke:var(--line);stroke-width:1.5;rx:14}.page{fill:var(--pg);stroke:var(--g);stroke-width:1.5;rx:8}.dirty{fill:var(--po);stroke:var(--o)}.erase{fill:var(--pr);stroke:var(--r)}.arrow{stroke:var(--line);stroke-width:2.5;marker-end:url(#a);fill:none}
+  </style>
+  <defs><marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1080" height="520"/>
+  <text class="title" x="54" y="55">SSD：页可读写，块才可擦除</text>
+  <rect class="panel" x="70" y="105" width="430" height="300"/>
+  <text class="h" x="285" y="142" text-anchor="middle">一个 Flash 块</text>
+  <g transform="translate(116 170)">
+    <rect class="page" x="0" y="0" width="86" height="58"/><rect class="page" x="104" y="0" width="86" height="58"/><rect class="dirty" x="208" y="0" width="86" height="58"/><rect class="page" x="312" y="0" width="86" height="58"/>
+    <rect class="page" x="0" y="82" width="86" height="58"/><rect class="dirty" x="104" y="82" width="86" height="58"/><rect class="page" x="208" y="82" width="86" height="58"/><rect class="page" x="312" y="82" width="86" height="58"/>
+    <text class="body" x="43" y="35" text-anchor="middle">页</text><text class="body" x="147" y="35" text-anchor="middle">页</text><text class="body" x="251" y="35" text-anchor="middle">旧页</text><text class="body" x="355" y="35" text-anchor="middle">页</text>
+  </g>
+  <path class="arrow" d="M520 255 H610"/>
+  <rect class="panel" x="630" y="105" width="380" height="300"/>
+  <text class="h" x="820" y="142" text-anchor="middle">更新旧数据时</text>
+  <text class="body" x="672" y="190">1. 读出同块内仍有效的页</text>
+  <text class="body" x="672" y="226">2. 擦除整个块</text>
+  <text class="body" x="672" y="262">3. 写回有效页和新页</text>
+  <text class="body" x="672" y="316">因此 SSD 写入常比读取复杂，</text>
+  <text class="body" x="672" y="344">也会带来写放大和寿命问题。</text>
+  <text class="body" x="94" y="454">典型关系：页是读写单位，块是擦除单位。页大小通常小于块大小，一个块包含多个页。</text>
+</svg>

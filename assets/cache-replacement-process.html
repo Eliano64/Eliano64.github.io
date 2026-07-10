@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cache Replacement Process</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --text: #111827;
+    --muted: #4b5563;
+    --line: #cbd5e1;
+    --hit: #16a34a;
+    --miss: #dc2626;
+    --accent: #2563eb;
+    --cell: #eff6ff;
+    --old: #fef3c7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827;
+      --panel: #1f2937;
+      --text: #e5e7eb;
+      --muted: #cbd5e1;
+      --line: #475569;
+      --hit: #86efac;
+      --miss: #fca5a5;
+      --accent: #93c5fd;
+      --cell: #1e3a8a;
+      --old: #713f12;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 22px; }
+  header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
+  h1 { margin: 0; font-size: 24px; }
+  .controls { display: flex; gap: 8px; }
+  button {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 16px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .sequence { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .token {
+    min-width: 34px;
+    padding: 6px 8px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .token.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .cache { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .line {
+    min-height: 88px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--cell);
+  }
+  .line.old { background: var(--old); }
+  .label { color: var(--muted); font-size: 14px; }
+  .value { font-size: 26px; font-weight: 700; margin-top: 8px; }
+  .status { font-size: 22px; font-weight: 700; margin: 8px 0; }
+  .hit { color: var(--hit); }
+  .miss { color: var(--miss); }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 6px; text-align: left; }
+  th { color: var(--muted); font-weight: 600; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>LRU 替换过程：3 行 Cache，访问序列 1 2 3 1 4 2 5 1</h1>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+      <button id="reset">重置</button>
+    </div>
+  </header>
+  <div class="grid">
+    <section class="panel">
+      <div class="label">当前访问</div>
+      <div id="status" class="status"></div>
+      <div class="sequence" id="seq"></div>
+      <p id="explain" class="muted"></p>
+    </section>
+    <section class="panel">
+      <div class="label">Cache 状态，左侧为最近使用，黄色为将被替换的最久未使用项</div>
+      <div class="cache" id="cache"></div>
+      <table>
+        <thead><tr><th>步</th><th>访问</th><th>结果</th><th>状态</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </section>
+  </div>
+</div>
+<script>
+const accesses = [1, 2, 3, 1, 4, 2, 5, 1];
+const capacity = 3;
+let step = 0;
+
+function simulate(upto) {
+  const cache = [];
+  const rows = [];
+  for (let i = 0; i < upto; i++) {
+    const x = accesses[i];
+    const pos = cache.indexOf(x);
+    let result;
+    if (pos >= 0) {
+      cache.splice(pos, 1);
+      cache.unshift(x);
+      result = "命中";
+    } else {
+      if (cache.length === capacity) cache.pop();
+      cache.unshift(x);
+      result = "未命中";
+    }
+    rows.push({ i: i + 1, x, result, state: cache.slice() });
+  }
+  return { cache, rows };
+}
+
+function render() {
+  const { cache, rows } = simulate(step);
+  const current = accesses[step - 1];
+  const currentRow = rows[rows.length - 1];
+
+  document.getElementById("seq").innerHTML = accesses.map((x, i) =>
+    `<div class="token ${i === step - 1 ? "active" : ""}">${x}</div>`).join("");
+
+  if (!currentRow) {
+    document.getElementById("status").textContent = "尚未开始";
+    document.getElementById("status").className = "status";
+    document.getElementById("explain").textContent = "LRU 总是替换最久没有被访问的块。每次命中后，该块也要移动到最近使用位置。";
+  } else {
+    const hit = currentRow.result === "命中";
+    document.getElementById("status").textContent = `访问 ${current}：${currentRow.result}`;
+    document.getElementById("status").className = `status ${hit ? "hit" : "miss"}`;
+    document.getElementById("explain").textContent = hit
+      ? "命中后不会调入新块，但该块成为最近使用。"
+      : "未命中时调入新块；若 Cache 已满，替换最久未使用的块。";
+  }
+
+  const cells = [];
+  for (let i = 0; i < capacity; i++) {
+    const value = cache[i] ?? "-";
+    const isOld = i === capacity - 1 && cache.length === capacity;
+    cells.push(`<div class="line ${isOld ? "old" : ""}">
+      <div class="label">${i === 0 ? "最近使用" : i === capacity - 1 ? "最久未使用" : "中间"}</div>
+      <div class="value">${value}</div>
+    </div>`);
+  }
+  document.getElementById("cache").innerHTML = cells.join("");
+  document.getElementById("history").innerHTML = rows.map(r =>
+    `<tr><td>${r.i}</td><td>${r.x}</td><td>${r.result}</td><td>${r.state.join(" ")}</td></tr>`).join("");
+}
+
+document.getElementById("prev").onclick = () => { step = Math.max(0, step - 1); render(); };
+document.getElementById("next").onclick = () => { step = Math.min(accesses.length, step + 1); render(); };
+document.getElementById("reset").onclick = () => { step = 0; render(); };
+render();
+</script>
+</body>
+</html>

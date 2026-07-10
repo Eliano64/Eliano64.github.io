@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build Max Heap</title>
+<style>
+:root{--bg:#fff;--ink:#1f2937;--muted:#64748b;--line:#cbd5e1;--node:#f8fafc;--active:#fed7aa;--ok:#dcfce7;--move:#dbeafe;--accent:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#9ca3af;--line:#475569;--node:#111827;--active:#7c2d12;--ok:#064e3b;--move:#172554;--accent:#60a5fa}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:980px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center}.title{font-size:24px;font-weight:750}.sub{color:var(--muted);font-size:14px;margin-top:4px}.btn{border:1px solid var(--line);background:var(--node);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}.controls{display:flex;gap:8px}.stage{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:16px}.array{display:flex;gap:6px;margin-bottom:22px}.cell{width:58px;height:42px;border:1px solid var(--line);border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--node);font:700 17px ui-monospace,Menlo,monospace;position:relative}.cell::after{content:attr(data-i);position:absolute;bottom:-18px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}.tree{width:100%;height:330px}.edge{stroke:var(--line);stroke-width:2}.n{fill:var(--node);stroke:var(--line);stroke-width:2}.active{fill:var(--active)}.ok{fill:var(--ok)}.move{fill:var(--move);stroke:var(--accent)}.v{fill:var(--ink);font:700 16px ui-monospace,Menlo,monospace;text-anchor:middle;dominant-baseline:central}.idx{fill:var(--muted);font:12px ui-monospace,Menlo,monospace;text-anchor:middle}.explain{line-height:1.75;margin-top:8px}.step{color:var(--muted);font-size:14px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top">
+  <div><div class="title">建立大根堆：0 下标自底向上调整</div><div class="sub">序列：53, 17, 78, 09, 45, 65, 87, 32；最后一个分支结点是 n/2-1。</div></div>
+  <div class="controls"><button class="btn" id="prev">上一步</button><button class="btn" id="next">下一步</button></div>
+ </div>
+ <div class="stage">
+  <div class="array" id="array"></div>
+  <svg class="tree" viewBox="0 0 900 330" id="tree"></svg>
+  <div class="explain" id="explain"></div>
+  <div class="step" id="step"></div>
+ </div>
+</div>
+<script>
+const pos={0:[450,34],1:[275,112],2:[625,112],3:[185,198],4:[365,198],5:[535,198],6:[715,198],7:[115,278]};
+const edges=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6],[3,7]];
+const steps=[
+{a:[53,17,78,9,45,65,87,32],act:3,move:[3,7],ok:[],t:'从最后一个分支结点 n/2-1=3 开始。A[3]=09 小于左孩子 A[7]=32，交换。'},
+{a:[53,17,78,32,45,65,87,9],act:2,move:[2,6],ok:[3],t:'检查 i=2。两个孩子 A[5]=65、A[6]=87 中更大的是 87，A[2]=78 与 87 交换。'},
+{a:[53,17,87,32,45,65,78,9],act:1,move:[1,4],ok:[2,3],t:'检查 i=1。两个孩子 A[3]=32、A[4]=45 中更大的是 45，A[1]=17 与 45 交换。'},
+{a:[53,45,87,32,17,65,78,9],act:0,move:[0,2],ok:[1,2,3],t:'检查 i=0。两个孩子 A[1]=45、A[2]=87 中更大的是 87，A[0]=53 与 87 交换。'},
+{a:[87,45,53,32,17,65,78,9],act:2,move:[2,6],ok:[1,3],t:'53 下坠到 i=2 后，孩子 A[5]=65、A[6]=78 中更大的是 78，继续交换。'},
+{a:[87,45,78,32,17,65,53,9],act:null,move:[],ok:[0,1,2,3],t:'调整完成。所有分支结点都满足父结点不小于孩子，得到大根堆。'}
+];
+let cur=0;
+function cls(i,s){if(s.move.includes(i))return 'move';if(s.act===i)return 'active';if(s.ok.includes(i))return 'ok';return ''}
+function render(){
+ const s=steps[cur], arr=document.getElementById('array'), tree=document.getElementById('tree'); arr.innerHTML=''; tree.innerHTML='';
+ s.a.forEach((v,i)=>{const c=document.createElement('div');c.className='cell '+cls(i,s);c.dataset.i=i;c.textContent=String(v).padStart(2,'0');arr.appendChild(c)});
+ edges.forEach(([u,v])=>{const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('class','edge');l.setAttribute('x1',pos[u][0]);l.setAttribute('y1',pos[u][1]);l.setAttribute('x2',pos[v][0]);l.setAttribute('y2',pos[v][1]);tree.appendChild(l)});
+ s.a.forEach((v,i)=>{const g=document.createElementNS('http://www.w3.org/2000/svg','g'), c=document.createElementNS('http://www.w3.org/2000/svg','circle'), tx=document.createElementNS('http://www.w3.org/2000/svg','text'), id=document.createElementNS('http://www.w3.org/2000/svg','text');c.setAttribute('class','n '+cls(i,s));c.setAttribute('cx',pos[i][0]);c.setAttribute('cy',pos[i][1]);c.setAttribute('r',28);tx.setAttribute('class','v');tx.setAttribute('x',pos[i][0]);tx.setAttribute('y',pos[i][1]);tx.textContent=String(v).padStart(2,'0');id.setAttribute('class','idx');id.setAttribute('x',pos[i][0]);id.setAttribute('y',pos[i][1]+45);id.textContent=i;g.append(c,tx,id);tree.appendChild(g)});
+ document.getElementById('explain').innerHTML='<b>'+s.t+'</b><br>0 下标中，结点 i 的孩子是 2i+1、2i+2。若当前结点小于较大的孩子，就交换并继续向下。';
+ document.getElementById('step').textContent=`${cur+1} / ${steps.length}`;
+}
+document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

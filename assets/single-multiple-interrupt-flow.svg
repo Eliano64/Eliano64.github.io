@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 560" role="img" aria-labelledby="title desc">
+  <title id="title">Single And Multiple Interrupt Flow</title>
+  <desc id="desc">Single interrupt does not allow nested interrupt service, while multiple interrupt re-enables interrupt and uses masks to allow higher-priority sources.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#arrow)}.ga{stroke:var(--green);stroke-width:3;fill:none;marker-end:url(#garrow)}.warn{fill:var(--orange);opacity:.15;stroke:var(--orange);stroke-width:2}.ok{fill:var(--green);opacity:.12;stroke:var(--green);stroke-width:2}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker>
+    <marker id="garrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--green)"/></marker>
+  </defs>
+  <rect class="bg" width="1120" height="560"/>
+  <text class="t" x="560" y="38" text-anchor="middle" font-size="24" font-weight="700">单重中断与多重中断</text>
+  <text class="m" x="560" y="66" text-anchor="middle" font-size="15">差别在于中断服务程序执行期间是否重新开中断、是否允许更高优先级请求嵌套进入</text>
+
+  <text class="t" x="280" y="116" text-anchor="middle" font-size="20" font-weight="700">单重中断</text>
+  <g transform="translate(80,150)">
+    <rect class="box" x="0" y="0" width="400" height="54" rx="8"/><text class="t" x="200" y="34" text-anchor="middle" font-size="15">中断隐指令：关中断、保存断点、送入口</text>
+    <rect class="box" x="0" y="84" width="400" height="54" rx="8"/><text class="t" x="200" y="118" text-anchor="middle" font-size="15">保护现场</text>
+    <rect class="warn" x="0" y="168" width="400" height="54" rx="8"/><text class="t" x="200" y="202" text-anchor="middle" font-size="15">执行服务程序：不响应新的中断</text>
+    <rect class="box" x="0" y="252" width="400" height="54" rx="8"/><text class="t" x="200" y="286" text-anchor="middle" font-size="15">恢复现场，开中断，中断返回</text>
+    <path class="a" d="M200 54 V84"/><path class="a" d="M200 138 V168"/><path class="a" d="M200 222 V252"/>
+  </g>
+
+  <text class="t" x="840" y="116" text-anchor="middle" font-size="20" font-weight="700">多重中断</text>
+  <g transform="translate(640,150)">
+    <rect class="box" x="0" y="0" width="400" height="54" rx="8"/><text class="t" x="200" y="34" text-anchor="middle" font-size="15">中断隐指令：关中断、保存断点、送入口</text>
+    <rect class="box" x="0" y="84" width="400" height="54" rx="8"/><text class="t" x="200" y="118" text-anchor="middle" font-size="15">保护现场和屏蔽字</text>
+    <rect class="ok" x="0" y="168" width="400" height="54" rx="8"/><text class="t" x="200" y="202" text-anchor="middle" font-size="15">开中断：允许更高优先级请求进入</text>
+    <rect class="box" x="0" y="252" width="400" height="54" rx="8"/><text class="t" x="200" y="286" text-anchor="middle" font-size="15">执行服务程序，可发生嵌套</text>
+    <rect class="box" x="0" y="336" width="400" height="54" rx="8"/><text class="t" x="200" y="370" text-anchor="middle" font-size="15">关中断，恢复现场和屏蔽字，中断返回</text>
+    <path class="ga" d="M200 54 V84"/><path class="ga" d="M200 138 V168"/><path class="ga" d="M200 222 V252"/><path class="ga" d="M200 306 V336"/>
+  </g>
+</svg>

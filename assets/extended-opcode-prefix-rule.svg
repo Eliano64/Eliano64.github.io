@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">Extended opcode prefix rule</title>
+  <desc id="desc">A bad encoding table where a short opcode is a prefix of longer opcodes, and a correct encoding table where the prefix is reserved for extension only.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #111827;
+      --bad: #fee2e2;
+      --good: #dcfce7;
+      --op: #dbeafe;
+      --reserved: #fef3c7;
+      --panel: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #e5e7eb;
+        --bad: #7f1d1d;
+        --good: #14532d;
+        --op: #1e3a8a;
+        --reserved: #713f12;
+        --panel: #1f2937;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; rx: 10; }
+    .text { fill: var(--text); font-family: "Segoe UI", Arial, sans-serif; }
+    .muted { fill: var(--muted); font-family: "Segoe UI", Arial, sans-serif; }
+    .box { stroke: var(--line); stroke-width: 1.6; rx: 6; }
+    .bad { fill: var(--bad); }
+    .good { fill: var(--good); }
+    .op { fill: var(--op); }
+    .reserved { fill: var(--reserved); }
+    .line { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .thin { stroke: var(--line); stroke-width: 1.2; fill: none; }
+    .strike { stroke: var(--line); stroke-width: 3; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1120" height="520"/>
+  <text class="text" x="42" y="44" font-size="28" font-weight="700">短操作码不能是长操作码的前缀</text>
+  <text class="muted" x="42" y="76" font-size="18">关键不是码形长得像，而是同一个短码能不能同时“自己是一条指令”又“作为扩展入口”。</text>
+
+  <rect class="panel bad" x="50" y="115" width="490" height="330"/>
+  <text class="text" x="295" y="150" font-size="23" font-weight="700" text-anchor="middle">错误设计</text>
+  <text class="muted" x="295" y="178" font-size="16" text-anchor="middle">1111 已经分配给一条短操作码指令</text>
+
+  <rect class="box op" x="92" y="210" width="145" height="52"/>
+  <text class="text" x="164" y="242" font-size="19" font-weight="700" text-anchor="middle">1111</text>
+  <text class="text" x="265" y="242" font-size="18">三地址指令 X</text>
+
+  <rect class="box op" x="92" y="292" width="145" height="52"/>
+  <text class="text" x="164" y="324" font-size="18" font-weight="700" text-anchor="middle">1111 0000</text>
+  <text class="text" x="265" y="324" font-size="18">二地址指令 Y</text>
+
+  <rect class="box op" x="92" y="364" width="145" height="52"/>
+  <text class="text" x="164" y="396" font-size="18" font-weight="700" text-anchor="middle">1111 0001</text>
+  <text class="text" x="265" y="396" font-size="18">二地址指令 Z</text>
+
+  <path class="line" d="M164 263 V286"/>
+  <path class="line" d="M164 344 V358"/>
+  <line class="strike" x1="120" y1="205" x2="430" y2="421"/>
+  <text class="text" x="295" y="470" font-size="18" font-weight="700" text-anchor="middle">冲突：读到 1111 时不知道是否该停止译码</text>
+
+  <rect class="panel good" x="580" y="115" width="490" height="330"/>
+  <text class="text" x="825" y="150" font-size="23" font-weight="700" text-anchor="middle">正确设计</text>
+  <text class="muted" x="825" y="178" font-size="16" text-anchor="middle">1111 只保留为扩展入口，不单独表示指令</text>
+
+  <rect class="box reserved" x="622" y="210" width="145" height="52"/>
+  <text class="text" x="694" y="242" font-size="19" font-weight="700" text-anchor="middle">1111</text>
+  <text class="text" x="795" y="242" font-size="18">保留：继续读后 4 位</text>
+
+  <rect class="box op" x="622" y="292" width="145" height="52"/>
+  <text class="text" x="694" y="324" font-size="18" font-weight="700" text-anchor="middle">1111 0000</text>
+  <text class="text" x="795" y="324" font-size="18">二地址指令 Y</text>
+
+  <rect class="box op" x="622" y="364" width="145" height="52"/>
+  <text class="text" x="694" y="396" font-size="18" font-weight="700" text-anchor="middle">1111 0001</text>
+  <text class="text" x="795" y="396" font-size="18">二地址指令 Z</text>
+
+  <path class="line" d="M694 263 V286"/>
+  <path class="line" d="M694 344 V358"/>
+  <text class="text" x="825" y="470" font-size="18" font-weight="700" text-anchor="middle">无冲突：1111 不是指令，只是扩展标记</text>
+</svg>

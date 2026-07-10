@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dijkstra</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#0f172a;--muted:#475569;--line:#94a3b8;--edge:#64748b;--hot:#2563eb;--done:#059669;--warn:#d97706}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#64748b;--edge:#94a3b8;--hot:#60a5fa;--done:#34d399;--warn:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,sans-serif}.wrap{padding:18px;max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px}.title{font-size:22px;font-weight:750}.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer}.stage{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}.card{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px}.note{color:var(--muted);line-height:1.6}.edge{stroke:var(--edge);stroke-width:3}.pick{stroke:var(--done);stroke-width:5}.relax{stroke:var(--hot);stroke-width:5}.node{fill:var(--bg);stroke:var(--edge);stroke-width:2}.settled{fill:color-mix(in srgb,var(--done) 22%,var(--bg));stroke:var(--done);stroke-width:3}.current{stroke:var(--hot);stroke-width:4}.label{fill:var(--text);font-weight:700;font-size:18px}.w{fill:var(--text);font-size:14px;font-weight:700}.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{border:1px solid var(--line);padding:7px;text-align:center}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top"><div><div class="title">Dijkstra：每轮确定一个 dist 最小顶点</div><div class="note" id="cap"></div></div><div><button class="btn" id="prev">上一页</button> <button class="btn" id="next">下一页</button></div></div>
+ <div class="stage"><div class="card" id="graph"></div><div class="card"><div class="note" id="txt"></div><h3>数组状态</h3><div id="table"></div></div></div>
+</div>
+<script>
+const pos={0:[70,190],1:[220,90],2:[420,90],3:[420,290],4:[220,290]};
+const edges=[[0,1,10],[0,4,5],[4,1,3],[4,2,9],[4,3,2],[1,2,1],[3,2,6],[3,1,4]];
+const steps=[
+{cap:"初始化：源点 V0 已确定。",settled:[0],cur:null,relax:[],dist:[0,10,"INF","INF",5],prev:["-1",0,"-1","-1",0],txt:"dist 先记录源点到各点的直接边；没有直接边则为 INF。"},
+{cap:"第 1 轮：选择未确定顶点中 dist 最小的 V4。",settled:[0,4],cur:4,relax:[[4,1],[4,2],[4,3]],dist:[0,8,14,7,5],prev:["-1",4,4,4,0],txt:"以 V4 为中转点，V1 从 10 改为 5+3=8，V3 从 INF 改为 5+2=7，V2 从 INF 改为 5+9=14。"},
+{cap:"第 2 轮：选择 V3。",settled:[0,4,3],cur:3,relax:[[3,2]],dist:[0,8,13,7,5],prev:["-1",4,3,4,0],txt:"V3 的 dist 为 7。经过 V3 到 V2 的距离为 7+6=13，比原来的 14 更短。"},
+{cap:"第 3 轮：选择 V1。",settled:[0,4,3,1],cur:1,relax:[[1,2]],dist:[0,8,9,7,5],prev:["-1",4,1,4,0],txt:"经过 V1 到 V2 的距离为 8+1=9，继续改短 V2。"},
+{cap:"第 4 轮：选择 V2，算法结束。",settled:[0,4,3,1,2],cur:2,relax:[],dist:[0,8,9,7,5],prev:["-1",4,1,4,0],txt:"V0 到 V2 的最短距离为 9。按 prev 反向追溯：V2 <- V1 <- V4 <- V0。"}
+];
+let i=0;
+function has(list,a,b){return list.some(e=>e[0]===a&&e[1]===b)}
+function render(){
+ const s=steps[i];document.getElementById("cap").textContent=s.cap;document.getElementById("txt").textContent=s.txt;
+ const lines=edges.map(e=>`<line class="${has(s.relax,e[0],e[1])?'relax':(s.settled.includes(e[0])&&s.settled.includes(e[1])&&s.prev[e[1]]==e[0]?'pick':'edge')}" x1="${pos[e[0]][0]}" y1="${pos[e[0]][1]}" x2="${pos[e[1]][0]}" y2="${pos[e[1]][1]}"/><text class="w" x="${(pos[e[0]][0]+pos[e[1]][0])/2}" y="${(pos[e[0]][1]+pos[e[1]][1])/2-8}" text-anchor="middle">${e[2]}</text>`).join("");
+ const nodes=Object.keys(pos).map(v=>`<g><circle class="node ${s.settled.includes(+v)?'settled':''} ${s.cur===+v?'current':''}" cx="${pos[v][0]}" cy="${pos[v][1]}" r="25"/><text class="label" x="${pos[v][0]}" y="${pos[v][1]+6}" text-anchor="middle">V${v}</text></g>`).join("");
+ document.getElementById("graph").innerHTML=`<svg viewBox="0 0 500 380">${lines}${nodes}</svg>`;
+ const vs=[0,1,2,3,4];
+ document.getElementById("table").innerHTML=`<table class="tbl"><tr><th>v</th>${vs.map(v=>`<th>V${v}</th>`).join("")}</tr><tr><td>final</td>${vs.map(v=>`<td>${s.settled.includes(v)?"T":"F"}</td>`).join("")}</tr><tr><td>dist</td>${s.dist.map(x=>`<td>${x}</td>`).join("")}</tr><tr><td>prev</td>${s.prev.map(x=>`<td>${x}</td>`).join("")}</tr></table>`;
+}
+document.getElementById("prev").onclick=()=>{i=(i+steps.length-1)%steps.length;render()};document.getElementById("next").onclick=()=>{i=(i+1)%steps.length;render()};render();
+</script>
+</body>
+</html>

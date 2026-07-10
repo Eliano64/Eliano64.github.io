@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
+  <title>HTTP 基本操作过程</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f6f8fb;--panel:#fff;--ink:#172033;--muted:#566477;--line:#cbd5e1;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--bluebg:#dbeafe;--greenbg:#d1fae5;--amberbg:#fef3c7}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header,footer{background:var(--panel);padding:16px 28px;border-bottom:1px solid var(--line)}footer{border-top:1px solid var(--line);border-bottom:0;display:flex;align-items:center;justify-content:space-between}h1{margin:0;font-size:22px}h2{margin:0 0 14px;font-size:19px}.slide{display:none;padding:22px 28px}.slide.active{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:22px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;min-width:0}.stage{position:relative;height:295px}.node{position:absolute;width:150px;padding:12px;border:2px solid;border-radius:7px;text-align:center;font-weight:700}.browser{left:18px;top:105px;border-color:var(--green);background:var(--greenbg);color:var(--green)}.dns{left:205px;top:24px;border-color:var(--amber);background:var(--amberbg);color:var(--amber)}.server{right:18px;top:105px;border-color:var(--blue);background:var(--bluebg);color:var(--blue)}.arrow{position:absolute;height:2px;background:var(--blue);transform-origin:left center}.arrow::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--blue);border-top:5px solid transparent;border-bottom:5px solid transparent}.arrow.green{background:var(--green)}.arrow.green::after{border-left-color:var(--green)}.arrow.amber{background:var(--amber)}.arrow.amber::after{border-left-color:var(--amber)}.tag{position:absolute;font-size:12px;font-weight:700;background:var(--panel);padding:2px 5px}.steps{margin:0;padding-left:22px}.steps li{margin:10px 0;line-height:1.6}.callout{margin-top:15px;padding:11px 13px;border-left:4px solid var(--amber);background:var(--amberbg);color:var(--amber);line-height:1.55}.packet{border:2px solid var(--blue);border-radius:7px;overflow:hidden;margin:12px 0}.packet div{padding:10px 13px;border-bottom:1px solid var(--line)}.packet div:last-child{border-bottom:0}.packet .start{background:var(--bluebg);color:var(--blue);font-weight:700}.code{font-family:Consolas,monospace}.render{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.render div{padding:15px 8px;border-radius:7px;text-align:center;border:1px solid var(--line);background:var(--panel)}p{font-size:15px;line-height:1.65;margin:8px 0}button{padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font-size:15px;cursor:pointer}.count{color:var(--muted)}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1118;--panel:#121b25;--ink:#e5edf5;--muted:#a9b7c6;--line:#344354;--blue:#93c5fd;--green:#6ee7b7;--amber:#fcd34d;--red:#fca5a5;--bluebg:#17345a;--greenbg:#123d2d;--amberbg:#3c2d0d}}
+    @media(max-width:760px){.slide.active{grid-template-columns:1fr}.stage{height:330px}.dns{left:170px}.node{width:135px}}
+  </style>
+</head>
+<body><main>
+  <header><h1>从输入 URL 到显示页面：HTTP 基本操作过程</h1></header>
+  <section class="slide active">
+    <div class="panel"><h2>1. 解析 URL，确定通信目标</h2><div class="stage">
+      <div class="node browser">浏览器<br><small>HTTP 客户</small></div><div class="node dns">DNS<br><small>域名 → IP</small></div><div class="node server">Web 服务器<br><small>HTTP 服务器</small></div>
+      <div class="arrow amber" style="left:165px;top:124px;width:96px;transform:rotate(-30deg)"></div><span class="tag" style="left:181px;top:74px;color:var(--amber)">查询域名</span>
+      <div class="arrow green" style="left:205px;top:87px;width:100px;transform:rotate(151deg)"></div><span class="tag" style="left:169px;top:42px;color:var(--green)">返回 IP</span>
+      <div class="arrow" style="left:168px;top:184px;width:300px"></div><span class="tag" style="left:266px;top:164px;color:var(--blue)">得到服务器 IP 与端口</span>
+    </div></div>
+    <div class="panel"><h2>URL 提供了什么</h2><ol class="steps"><li>协议决定使用 HTTP 或 HTTPS。</li><li>主机部分若为域名，先通过 DNS 得到服务器 IP 地址。</li><li>端口省略时使用协议默认端口；HTTP 通常为 TCP 80。</li><li>路径成为 HTTP 请求行中的请求目标。</li></ol><div class="callout">DNS 负责找到主机；HTTP 负责请求资源。两者属于不同的应用层协议。</div></div>
+  </section>
+  <section class="slide">
+    <div class="panel"><h2>2. 建立 TCP 连接</h2><div class="stage"><div class="node browser">浏览器</div><div class="node server">Web 服务器<br><small>TCP 80</small></div><div class="arrow" style="left:168px;top:118px;width:300px"></div><span class="tag" style="left:280px;top:98px;color:var(--blue)">SYN</span><div class="arrow green" style="left:468px;top:162px;width:300px;transform:rotate(180deg)"></div><span class="tag" style="left:280px;top:140px;color:var(--green)">SYN + ACK</span><div class="arrow" style="left:168px;top:206px;width:300px"></div><span class="tag" style="left:280px;top:184px;color:var(--blue)">ACK</span></div></div>
+    <div class="panel"><h2>为什么先建立连接</h2><p>HTTP/1.0 和 HTTP/1.1 通常把报文交给 TCP 传输。TCP 先建立连接，再可靠地传送请求与响应。</p><p>这一阶段消耗约 <strong>1 RTT</strong>，但还没有传输 HTTP 请求。</p><div class="callout">HTTPS 还会在 TCP 连接之上进行 TLS 握手；本章按 HTTP 基本过程讨论。</div></div>
+  </section>
+  <section class="slide">
+    <div class="panel"><h2>3. 浏览器发送 HTTP 请求</h2><div class="packet"><div class="start code">GET /index.html HTTP/1.1</div><div class="code">Host: www.example.com</div><div class="code">Connection: keep-alive</div><div>空行</div></div><p>请求行说明方法、请求目标和版本；首部行携带主机、连接方式等附加信息。</p></div>
+    <div class="panel"><h2>请求通过已建立的 TCP 连接</h2><div class="stage" style="height:235px"><div class="node browser">浏览器</div><div class="node server">Web 服务器</div><div class="arrow" style="left:168px;top:145px;width:105px"></div><span class="tag" style="left:168px;top:117px;color:var(--blue)">HTTP 请求报文</span></div><p>服务器根据方法、路径和首部决定读取哪个资源、执行什么操作。</p></div>
+  </section>
+  <section class="slide">
+    <div class="panel"><h2>4. 服务器返回 HTTP 响应</h2><div class="packet"><div class="start code">HTTP/1.1 200 OK</div><div class="code">Content-Type: text/html</div><div class="code">Content-Length: 1250</div><div>空行</div><div>HTML 实体主体</div></div></div>
+    <div class="panel"><h2>从请求到响应首字节</h2><p>服务器处理请求后，通过同一 TCP 连接返回状态行、首部和可选的实体主体。</p><p>从发出 HTTP 请求到收到响应首字节，约再经历 <strong>1 RTT</strong>；随后还需要对象传输时延。</p><div class="callout">因此 HTTP/1.0 请求一个对象的基本时间为：2 RTT + 对象传输时延。</div></div>
+  </section>
+  <section class="slide">
+    <div class="panel"><h2>5. 解析文档，继续请求引用对象</h2><div class="render"><div><strong>HTML</strong><br><small>建立文档结构</small></div><div><strong>CSS</strong><br><small>应用样式</small></div><div><strong>JavaScript</strong><br><small>执行交互逻辑</small></div></div><p>浏览器解析 HTML 后，若发现图片、样式表或脚本等引用对象，还要继续发送 HTTP 请求。</p></div>
+    <div class="panel"><h2>连接是否继续使用</h2><p><strong>非持续连接：</strong>每个对象使用一个新的 TCP 连接。</p><p><strong>持续连接：</strong>复用同一个 TCP 连接请求多个对象。</p><p>对象全部到达后，浏览器完成布局、绘制并显示页面。</p><div class="callout">HTTP 是请求-响应协议；页面显示则是浏览器在收到资源后的本地处理。</div></div>
+  </section>
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main><script>const slides=[...document.querySelectorAll('.slide')];let index=0;function show(n){index=(n+slides.length)%slides.length;slides.forEach((s,i)=>s.classList.toggle('active',i===index));document.getElementById('count').textContent=`${index+1} / ${slides.length}`}document.getElementById('prev').onclick=()=>show(index-1);document.getElementById('next').onclick=()=>show(index+1);addEventListener('keydown',e=>{if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1)});show(0)</script></body></html>

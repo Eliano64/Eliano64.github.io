@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACK 丢失与 ACK 迟到</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--amber:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:1080px;margin:0 auto;padding:22px}.title{font-size:28px;font-weight:800}.sub{font-size:15px;color:var(--muted);margin-top:6px}.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.card{border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:16px}.head{font-size:22px;font-weight:800;margin-bottom:10px}.txt{font-size:17px;line-height:1.7}.txt b{color:var(--blue)}svg{width:100%;height:330px}.axis{stroke:var(--line);stroke-width:2}.msg{stroke:var(--blue);stroke-width:4;marker-end:url(#arrowB)}.ack{stroke:var(--green);stroke-width:4;marker-end:url(#arrowG)}.bad{stroke:var(--red);stroke-width:4;stroke-dasharray:8 6;marker-end:url(#arrowR)}.timer{stroke:var(--amber);stroke-width:3;stroke-dasharray:6 6}.t{fill:var(--text);font-size:16px;font-weight:700}.r{fill:var(--red);font-size:16px;font-weight:800}
+@media(max-width:850px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="title">ACK 丢失与 ACK 迟到：为什么需要序号</div>
+<div class="sub">两种情况都会让发送方重传；接收方要靠序号识别重复数据。</div>
+<section class="cols">
+<article class="card">
+<div class="head">ACK 丢失</div>
+<svg viewBox="0 0 500 330">
+<defs><marker id="arrowB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--blue)"/></marker><marker id="arrowG" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--green)"/></marker><marker id="arrowR" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--red)"/></marker></defs>
+<line x1="80" y1="35" x2="80" y2="300" class="axis"/><line x1="420" y1="35" x2="420" y2="300" class="axis"/>
+<text x="80" y="24" text-anchor="middle" class="t">发送方</text><text x="420" y="24" text-anchor="middle" class="t">接收方</text>
+<line x1="80" y1="62" x2="420" y2="112" class="msg"/><text x="250" y="78" text-anchor="middle" class="t">DATA0</text>
+<line x1="420" y1="132" x2="210" y2="172" class="bad"/><text x="315" y="138" text-anchor="middle" class="r">ACK0 丢失</text>
+<line x1="80" y1="62" x2="80" y2="210" class="timer"/><text x="106" y="145" class="t">RTO</text>
+<line x1="80" y1="232" x2="420" y2="280" class="msg"/><text x="250" y="248" text-anchor="middle" class="t">重传 DATA0</text>
+</svg>
+<div class="txt">接收方收到重复的 DATA0 后，<b>丢弃重复数据</b>，但要重新发 ACK0。</div>
+</article>
+<article class="card">
+<div class="head">ACK 迟到</div>
+<svg viewBox="0 0 500 330">
+<line x1="80" y1="35" x2="80" y2="300" class="axis"/><line x1="420" y1="35" x2="420" y2="300" class="axis"/>
+<text x="80" y="24" text-anchor="middle" class="t">发送方</text><text x="420" y="24" text-anchor="middle" class="t">接收方</text>
+<line x1="80" y1="62" x2="420" y2="112" class="msg"/><text x="250" y="78" text-anchor="middle" class="t">DATA0</text>
+<line x1="80" y1="62" x2="80" y2="176" class="timer"/><text x="106" y="130" class="t">RTO</text>
+<line x1="80" y1="196" x2="420" y2="238" class="msg"/><text x="250" y="210" text-anchor="middle" class="t">重传 DATA0</text>
+<line x1="420" y1="132" x2="80" y2="292" class="ack"/><text x="255" y="230" text-anchor="middle" class="t">迟到 ACK0</text>
+</svg>
+<div class="txt">发送方可能收到重复 ACK。若 RTT 不稳定，ACK 编号能帮助发送方判断它确认的是哪一个数据。</div>
+</article>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>UDP 检验和计算过程</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f8fb; --panel: #ffffff; --ink: #172033; --muted: #566477;
+      --line: #cbd5e1; --blue: #2563eb; --blue-bg: #dbeafe;
+      --green: #047857; --green-bg: #d1fae5; --amber: #b45309; --amber-bg: #fef3c7;
+      --red: #b91c1c; --red-bg: #fee2e2; --code: #111827; --code-ink: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
+    main { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+    header { padding: 18px 28px; background: var(--panel); border-bottom: 1px solid var(--line); }
+    h1 { margin: 0; font-size: 25px; }
+    h2 { margin: 0 0 14px; font-size: 21px; }
+    p { margin: 8px 0; line-height: 1.65; font-size: 16px; }
+    code, .hex { font-family: Consolas, "Courier New", monospace; }
+    .slide { display: none; padding: 24px 28px; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 24px; align-items: start; }
+    .slide.active { display: grid; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; min-width: 0; }
+    .fields { display: grid; grid-template-columns: 1.35fr .65fr; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+    .fields div { padding: 8px 11px; border-bottom: 1px solid var(--line); }
+    .fields div:nth-last-child(-n+2) { border-bottom: 0; }
+    .fields .value { background: var(--blue-bg); color: var(--blue); font-weight: 700; text-align: center; }
+    .word-row { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: start; margin: 9px 0; }
+    .word-row strong { color: var(--muted); font-size: 14px; padding-top: 6px; }
+    .words { display: flex; flex-wrap: wrap; gap: 7px; }
+    .word { padding: 5px 8px; border-radius: 4px; background: var(--blue-bg); color: var(--blue); border: 1px solid color-mix(in srgb, var(--blue) 35%, transparent); font-weight: 700; }
+    .word.zero { background: var(--red-bg); color: var(--red); }
+    .sum { width: min(100%, 460px); margin: 8px auto; font: 700 18px/1.65 Consolas, monospace; }
+    .sum-line { display: grid; grid-template-columns: 34px 1fr 120px; border-bottom: 2px solid var(--ink); padding: 2px 8px; }
+    .sum-line span:nth-child(2) { text-align: right; letter-spacing: 1px; }
+    .sum-line small { color: var(--muted); font: 13px/1.7 Arial, "Microsoft YaHei", sans-serif; padding-left: 12px; }
+    .result { text-align: center; margin: 14px auto 0; padding: 11px; border-radius: 6px; background: var(--green-bg); color: var(--green); font-weight: 700; font-size: 17px; }
+    .carry { margin: 14px 0; padding: 12px 14px; border-left: 4px solid var(--amber); background: var(--amber-bg); color: var(--amber); line-height: 1.6; }
+    .rule { display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: start; margin: 12px 0; }
+    .rule b { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: var(--blue); color: white; }
+    .verify { font: 700 20px/1.8 Consolas, monospace; text-align: center; padding: 18px; background: var(--code); color: var(--code-ink); border-radius: 8px; }
+    footer { padding: 13px 28px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); background: var(--panel); }
+    button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); cursor: pointer; font-size: 15px; }
+    button:disabled { opacity: .4; cursor: default; }
+    .count { color: var(--muted); font-size: 14px; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1118; --panel: #121b25; --ink: #e5edf5; --muted: #a9b7c6; --line: #344354;
+        --blue: #93c5fd; --blue-bg: #17345a; --green: #6ee7b7; --green-bg: #123d2d;
+        --amber: #fcd34d; --amber-bg: #3c2d0d; --red: #fca5a5; --red-bg: #3b1518;
+      }
+    }
+    @media (max-width: 780px) {
+      .slide { grid-template-columns: 1fr; padding: 18px; }
+      .sum-line { grid-template-columns: 28px 1fr; }
+      .sum-line small { grid-column: 1 / -1; text-align: right; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>UDP 检验和：16 bit 反码加法</h1></header>
+
+  <section class="slide active">
+    <div class="panel">
+      <h2>例题中的字段</h2>
+      <div class="fields">
+        <div>源 IP 地址</div><div class="value hex">192.168.1.1</div>
+        <div>目的 IP 地址</div><div class="value hex">192.168.1.2</div>
+        <div>源端口 / 目的端口</div><div class="value hex">1234 / 53</div>
+        <div>数据载荷</div><div class="value hex">"ABCD"</div>
+        <div>UDP 长度</div><div class="value hex">12 B</div>
+      </div>
+      <p>4 B 数据加 8 B UDP 首部，所以 UDP 长度为 <code>0x000C</code>。发送端计算时，检验和字段先置为 <code>0x0000</code>。</p>
+    </div>
+    <div class="panel">
+      <h2>计算规则</h2>
+      <div class="rule"><b>1</b><p>按网络字节序，每 2 B 组成一个 16 bit 字。</p></div>
+      <div class="rule"><b>2</b><p>用<strong>反码加法</strong>逐字相加：最高位产生进位时，把进位加回最低位。</p></div>
+      <div class="rule"><b>3</b><p>把最终 16 bit 和逐位取反，写入检验和字段。</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>拆成 16 bit 字</h2>
+      <div class="word-row"><strong>伪首部</strong><div class="words">
+        <span class="word hex">C0A8</span><span class="word hex">0101</span><span class="word hex">C0A8</span><span class="word hex">0102</span><span class="word hex">0011</span><span class="word hex">000C</span>
+      </div></div>
+      <div class="word-row"><strong>UDP 首部</strong><div class="words">
+        <span class="word hex">04D2</span><span class="word hex">0035</span><span class="word hex">000C</span><span class="word zero hex">0000</span>
+      </div></div>
+      <div class="word-row"><strong>数据</strong><div class="words">
+        <span class="word hex">4142</span><span class="word hex">4344</span>
+      </div></div>
+    </div>
+    <div class="panel">
+      <h2>几个容易漏掉的转换</h2>
+      <p><code>192.168</code> 对应字节 <code>C0 A8</code>，组成 <code>0xC0A8</code>。</p>
+      <p>伪首部中的“全 0 + UDP 协议号 17”组成 <code>0x0011</code>。</p>
+      <p>端口 1234 为 <code>0x04D2</code>，端口 53 为 <code>0x0035</code>。</p>
+      <p>ASCII 字符 <code>ABCD</code> 的字节为 <code>41 42 43 44</code>，组成 <code>0x4142</code>、<code>0x4344</code>。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>第一次回卷</h2>
+      <div class="sum">
+        <div class="sum-line"><span></span><span>C1A9</span><small>前两字之和</small></div>
+        <div class="sum-line"><span>+</span><span>C0A8</span><small>再加目的 IP 高 16 bit</small></div>
+      </div>
+      <div class="verify">0xC1A9 + 0xC0A8 = 0x18251</div>
+      <div class="carry"><strong>回卷：</strong>保留低 16 bit 的 <code>0x8251</code>，再把最高位进位 <code>1</code> 加回，得到 <code>0x8252</code>。</div>
+    </div>
+    <div class="panel">
+      <h2>继续累加</h2>
+      <p>按相同规则继续加剩余各字。加到最后一个数据字之前，16 bit 累加和为：</p>
+      <div class="result hex">0xC9C6</div>
+      <p>最后再加 <code>0x4344</code>，还会产生一次最高位进位。</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>第二次回卷并取反</h2>
+      <div class="verify">0xC9C6 + 0x4344 = 0x10D0A</div>
+      <div class="carry"><code>0x0D0A + 1 = 0x0D0B</code></div>
+      <p>对最终累加和逐位取反：</p>
+      <div class="verify">~0x0D0B = 0xF2F4</div>
+      <div class="result">发送端写入 UDP 检验和字段：<span class="hex">0xF2F4</span></div>
+    </div>
+    <div class="panel">
+      <h2>接收端验证</h2>
+      <p>接收端把收到的检验和也作为一个 16 bit 字参与同样的反码加法：</p>
+      <div class="verify">0x0D0B + 0xF2F4 = 0xFFFF</div>
+      <p>结果为全 1，检验通过。若结果不是 <code>0xFFFF</code>，说明检验失败，UDP 丢弃该用户数据报。</p>
+    </div>
+  </section>
+
+  <footer>
+    <span class="count"><span id="current">1</span> / <span id="total">4</span></span>
+    <div><button id="prev" disabled>上一步</button> <button id="next">下一步</button></div>
+  </footer>
+</main>
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const current = document.getElementById('current');
+  let index = 0;
+  function show(i) {
+    index = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((slide, n) => slide.classList.toggle('active', n === index));
+    current.textContent = String(index + 1);
+    prev.disabled = index === 0;
+    next.disabled = index === slides.length - 1;
+  }
+  prev.addEventListener('click', () => show(index - 1));
+  next.addEventListener('click', () => show(index + 1));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft') show(index - 1);
+    if (event.key === 'ArrowRight') show(index + 1);
+  });
+</script>
+</body>
+</html>

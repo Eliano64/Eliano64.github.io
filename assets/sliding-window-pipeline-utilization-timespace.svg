@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="540" viewBox="0 0 1120 540" role="img" aria-labelledby="title desc">
+  <title id="title">滑动窗口协议信道利用率时空图</title>
+  <desc id="desc">滑动窗口协议中多个数据分组连续发送，ACK返回后窗口继续滑动。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--text:#172033;--muted:#64748b;--line:#334155;--data1:#475569;--data2:#94a3b8;--ack:#64748b;--mark:#111827;--panel:#f8fafc}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--data1:#cbd5e1;--data2:#64748b;--ack:#94a3b8;--mark:#e5e7eb;--panel:#111827}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.axis{stroke:var(--line);stroke-width:2.2}.band1{fill:var(--data1);opacity:.9;stroke:var(--line);stroke-width:1.1}.band2{fill:var(--data2);opacity:.58;stroke:var(--line);stroke-width:1.1}.ack{fill:none;stroke:var(--ack);stroke-width:4.8;stroke-linecap:butt}.thin{stroke:var(--mark);stroke-width:1.7}.guide{stroke:var(--mark);stroke-width:1.2;stroke-dasharray:5 6}.t{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.h{font-size:23px;font-weight:800}.m{fill:var(--muted);font-size:16px}.label{font-size:18px;font-weight:800}.formula{font-size:19px;font-weight:800}
+    /* contrast-audit-fix */
+  .t.m{paint-order:stroke fill;stroke:#f8fafc;stroke-width:3px}@media(prefers-color-scheme:dark){.t.m{stroke:#0b1020}}
+  </style>
+  <defs>
+    <marker id="axisArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--line)"/></marker>
+    <marker id="markArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--mark)"/></marker>
+  </defs>
+  <rect class="bg" width="1120" height="540"/>
+  <text x="56" y="30" class="t h">滑动窗口：窗口内分组连续发送</text>
+
+  <line x1="170" y1="178" x2="1030" y2="178" class="axis" marker-end="url(#axisArrow)"/>
+  <line x1="170" y1="392" x2="1030" y2="392" class="axis" marker-end="url(#axisArrow)"/>
+  <text x="84" y="184" class="t label">发送方</text>
+  <text x="84" y="398" class="t label">接收方</text>
+  <text x="1044" y="164" class="t m">t</text>
+  <text x="1044" y="378" class="t m">t</text>
+
+  <polygon points="220,178 270,178 500,392 450,392" class="band1"/>
+  <polygon points="270,178 320,178 550,392 500,392" class="band2"/>
+  <polygon points="320,178 370,178 600,392 550,392" class="band1"/>
+  <polygon points="370,178 420,178 650,392 600,392" class="band2"/>
+  <polygon points="420,178 470,178 700,392 650,392" class="band1"/>
+
+  <line x1="500" y1="392" x2="740" y2="178" class="ack" marker-end="url(#axisArrow)"/>
+  <line x1="550" y1="392" x2="790" y2="178" class="ack" marker-end="url(#axisArrow)"/>
+  <line x1="600" y1="392" x2="840" y2="178" class="ack" marker-end="url(#axisArrow)"/>
+  <line x1="650" y1="392" x2="890" y2="178" class="ack" marker-end="url(#axisArrow)"/>
+
+  <polygon points="740,178 790,178 1020,392 970,392" class="band2"/>
+  <polygon points="790,178 840,178 1070,392 1020,392" class="band1"/>
+
+  <line x1="220" y1="124" x2="740" y2="124" class="thin" marker-end="url(#markArrow)"/>
+  <line x1="220" y1="113" x2="220" y2="135" class="thin"/>
+  <line x1="740" y1="113" x2="740" y2="135" class="thin"/>
+  <text x="480" y="108" text-anchor="middle" class="t formula">T_D + RTT + T_A</text>
+
+  <line x1="220" y1="84" x2="470" y2="84" class="thin" marker-end="url(#markArrow)"/>
+  <line x1="220" y1="73" x2="220" y2="95" class="thin"/>
+  <line x1="470" y1="73" x2="470" y2="95" class="thin"/>
+  <text x="345" y="68" text-anchor="middle" class="t formula">W_T · T_D</text>
+
+  <line x1="740" y1="178" x2="740" y2="420" class="guide"/>
+  <rect x="240" y="438" width="26" height="16" class="band1"/>
+  <text x="278" y="452" class="t m">窗口内 DATA 连续发送，斜带首尾相接</text>
+  <line x1="650" y1="446" x2="710" y2="446" class="ack"/>
+  <text x="724" y="452" class="t m">ACK 返回后，窗口继续滑动并发送新分组</text>
+  <text x="560" y="502" text-anchor="middle" class="t m">当窗口覆盖等待周期时，发送方不必停下来等待 ACK。</text>
+</svg>

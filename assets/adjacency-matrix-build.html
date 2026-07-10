@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Adjacency Matrix Build</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f8fafc;--panel:#ffffff;--ink:#0f172a;--muted:#475569;--line:#cbd5e1;--accent:#2563eb;--hot:#dc2626;--soft:#dbeafe}
+  @media (prefers-color-scheme:dark){:root{--bg:#0b1220;--panel:#111827;--ink:#f8fafc;--muted:#cbd5e1;--line:#334155;--accent:#60a5fa;--hot:#fb7185;--soft:#1e3a8a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif}
+  .deck{min-height:720px;padding:24px;display:grid;grid-template-rows:auto 1fr auto;gap:14px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  h1{font-size:24px;margin:0}
+  .hint{color:var(--muted);font-size:14px}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;grid-template-columns:390px 1fr;gap:22px;align-items:center}
+  svg{width:100%;height:auto}
+  .node{fill:var(--panel);stroke:var(--accent);stroke-width:4}
+  .edge{stroke:var(--muted);stroke-width:4;fill:none;stroke-linecap:round}
+  .edge.hot{stroke:var(--hot)}
+  .label{fill:var(--ink);font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
+  table{border-collapse:collapse;margin:auto;font-size:21px}
+  th,td{width:58px;height:46px;text-align:center;border:1px solid var(--line)}
+  th{color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--panel) 80%,var(--soft))}
+  td.one{background:var(--soft);color:var(--ink);font-weight:800}
+  td.hot{outline:3px solid var(--hot);outline-offset:-3px}
+  .note{font-size:18px;line-height:1.65;color:var(--ink)}
+  .note strong{color:var(--hot)}
+  footer{display:flex;align-items:center;justify-content:space-between}
+  button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 14px;font-size:15px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="deck">
+  <header>
+    <h1 id="title">由边集填无向图邻接矩阵</h1>
+    <div class="hint">点击卡片或使用按钮翻页</div>
+  </header>
+  <main class="stage" id="stage"></main>
+  <footer>
+    <button id="prev" type="button">上一页</button>
+    <div class="hint" id="count"></div>
+    <button id="next" type="button">下一页</button>
+  </footer>
+</div>
+<script>
+const vertices = ["A","B","C","D"];
+const edges = [["A","B"],["A","C"],["B","D"],["C","D"]];
+const slides = [
+  {edge:null, note:"先固定顶点编号 A、B、C、D。邻接矩阵的行和列都按这个顺序排列，初始值全为 0。"},
+  {edge:["A","B"], note:"发现无向边 AB：把 <strong>A[1][2]</strong> 与 <strong>A[2][1]</strong> 同时置为 1。"},
+  {edge:["A","C"], note:"发现无向边 AC：把 <strong>A[1][3]</strong> 与 <strong>A[3][1]</strong> 同时置为 1。"},
+  {edge:["B","D"], note:"发现无向边 BD：把 <strong>A[2][4]</strong> 与 <strong>A[4][2]</strong> 同时置为 1。"},
+  {edge:["C","D"], note:"发现无向边 CD：把 <strong>A[3][4]</strong> 与 <strong>A[4][3]</strong> 同时置为 1。"},
+  {edge:null, note:"得到的矩阵关于主对角线对称。第 i 行或第 i 列中 1 的个数，就是第 i 个顶点的度。", final:true}
+];
+let index = 0;
+function hasEdgeUntil(a,b,until){
+  for(let i=1;i<=until;i++){
+    const e = slides[i].edge;
+    if(e && ((e[0]===a && e[1]===b) || (e[0]===b && e[1]===a))) return true;
+  }
+  return false;
+}
+function isHot(a,b,s){
+  const e = slides[s].edge;
+  return e && ((e[0]===a && e[1]===b) || (e[0]===b && e[1]===a));
+}
+function graph(s){
+  const points = {A:[80,115], B:[235,75], C:[145,245], D:[310,205]};
+  const lines = edges.map(e=>{
+    const p=points[e[0]], q=points[e[1]];
+    const cls = isHot(e[0],e[1],s) ? "edge hot" : "edge";
+    return `<line class="${cls}" x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"/>`;
+  }).join("");
+  const nodes = vertices.map(v=>`<circle class="node" cx="${points[v][0]}" cy="${points[v][1]}" r="28"/><text class="label" x="${points[v][0]}" y="${points[v][1]+1}">${v}</text>`).join("");
+  return `<svg viewBox="0 0 390 320" aria-label="无向图">${lines}${nodes}</svg>`;
+}
+function matrix(s){
+  let html = "<table><tr><th></th>"+vertices.map(v=>`<th>${v}</th>`).join("")+"</tr>";
+  vertices.forEach(r=>{
+    html += `<tr><th>${r}</th>`;
+    vertices.forEach(c=>{
+      const one = r!==c && hasEdgeUntil(r,c,s);
+      const hot = isHot(r,c,s);
+      html += `<td class="${one?"one":""} ${hot?"hot":""}">${one?1:0}</td>`;
+    });
+    html += "</tr>";
+  });
+  return html + "</table>";
+}
+function render(){
+  const s = slides[index];
+  document.getElementById("stage").innerHTML = `<div>${graph(index)}</div><div>${matrix(index)}<p class="note">${s.note}</p></div>`;
+  document.getElementById("count").textContent = `${index+1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = e => {e.stopPropagation(); index=(index-1+slides.length)%slides.length; render();};
+document.getElementById("next").onclick = e => {e.stopPropagation(); index=(index+1)%slides.length; render();};
+document.body.onclick = () => {index=(index+1)%slides.length; render();};
+render();
+</script>
+</body>
+</html>

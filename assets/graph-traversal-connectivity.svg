@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="540" viewBox="0 0 980 540" role="img" aria-labelledby="title desc">
+  <title id="title">Graph traversal and connectivity</title>
+  <desc id="desc">BFS and DFS traversal calls reveal connected components in undirected graphs, while directed graphs require reachability analysis.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f6f8fb;
+      --text: #172033;
+      --muted: #596578;
+      --edge: #8a94a6;
+      --node: #ffffff;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --orange: #f59e0b;
+      --red: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0f14;
+        --panel: #121923;
+        --text: #e7edf6;
+        --muted: #a5b1c2;
+        --edge: #687386;
+        --node: #151e2b;
+        --blue: #7aa2ff;
+        --green: #4ade80;
+        --orange: #fbbf24;
+        --red: #f87171;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: color-mix(in srgb, var(--muted), transparent 55%); rx: 12; }
+    .title { fill: var(--text); font: 700 28px "Segoe UI", Arial, sans-serif; }
+    .label { fill: var(--text); font: 700 18px "Segoe UI", Arial, sans-serif; }
+    .small { fill: var(--muted); font: 14px "Segoe UI", Arial, sans-serif; }
+    .edge { stroke: var(--edge); stroke-width: 3; fill: none; }
+    .arrow { marker-end: url(#arrow); }
+    .node { fill: var(--node); stroke-width: 3; }
+    .b { stroke: var(--blue); }
+    .g { stroke: var(--green); }
+    .o { stroke: var(--orange); }
+    .r { stroke: var(--red); }
+    .node-text { fill: var(--text); font: 700 16px "Segoe UI", Arial, sans-serif; text-anchor: middle; dominant-baseline: central; }
+    .chip { fill: color-mix(in srgb, var(--blue), transparent 86%); stroke: var(--blue); rx: 8; }
+    .chip2 { fill: color-mix(in srgb, var(--green), transparent 86%); stroke: var(--green); rx: 8; }
+    .chip3 { fill: color-mix(in srgb, var(--orange), transparent 86%); stroke: var(--orange); rx: 8; }
+    .chip-text { fill: var(--text); font: 700 15px "Segoe UI", Arial, sans-serif; text-anchor: middle; dominant-baseline: central; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--edge)"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="540"/>
+  <text x="36" y="48" class="title">图的遍历与连通性</text>
+  <text x="38" y="78" class="small">无向图：完整遍历的启动次数直接对应连通分量数；有向图：要沿弧方向分析实际可达范围。</text>
+
+  <rect x="34" y="112" width="430" height="360" class="panel"/>
+  <rect x="516" y="112" width="430" height="360" class="panel"/>
+
+  <text x="64" y="150" class="label">无向图</text>
+  <path class="edge" d="M120 220 L190 175"/>
+  <path class="edge" d="M190 175 L270 220"/>
+  <path class="edge" d="M120 220 L220 285"/>
+  <path class="edge" d="M220 285 L270 220"/>
+  <path class="edge" d="M350 210 L400 270"/>
+  <circle class="node b" cx="120" cy="220" r="22"/><text class="node-text" x="120" y="220">1</text>
+  <circle class="node b" cx="190" cy="175" r="22"/><text class="node-text" x="190" y="175">2</text>
+  <circle class="node b" cx="270" cy="220" r="22"/><text class="node-text" x="270" y="220">3</text>
+  <circle class="node b" cx="220" cy="285" r="22"/><text class="node-text" x="220" y="285">4</text>
+  <circle class="node g" cx="350" cy="210" r="22"/><text class="node-text" x="350" y="210">5</text>
+  <circle class="node g" cx="400" cy="270" r="22"/><text class="node-text" x="400" y="270">6</text>
+  <rect class="chip" x="76" y="346" width="190" height="42"/><text class="chip-text" x="171" y="367">第 1 次遍历：1-4</text>
+  <rect class="chip2" x="276" y="346" width="148" height="42"/><text class="chip-text" x="350" y="367">第 2 次：5-6</text>
+  <text class="small" x="76" y="418">BFS/DFS 调用次数 = 连通分量数</text>
+
+  <text x="546" y="150" class="label">有向图</text>
+  <path class="edge arrow" d="M610 245 L690 185"/>
+  <path class="edge arrow" d="M690 185 L790 245"/>
+  <path class="edge arrow" d="M790 245 L700 310"/>
+  <path class="edge arrow" d="M700 310 L610 245"/>
+  <path class="edge arrow" d="M790 245 L875 245"/>
+  <circle class="node o" cx="610" cy="245" r="22"/><text class="node-text" x="610" y="245">1</text>
+  <circle class="node o" cx="690" cy="185" r="22"/><text class="node-text" x="690" y="185">2</text>
+  <circle class="node o" cx="790" cy="245" r="22"/><text class="node-text" x="790" y="245">3</text>
+  <circle class="node o" cx="700" cy="310" r="22"/><text class="node-text" x="700" y="310">4</text>
+  <circle class="node r" cx="875" cy="245" r="22"/><text class="node-text" x="875" y="245">5</text>
+  <rect class="chip3" x="564" y="346" width="280" height="42"/><text class="chip-text" x="704" y="367">从 1 可达 1-5：一次即可覆盖</text>
+  <text class="small" x="564" y="418">但换起点可能无法覆盖全部；调用次数需具体分析</text>
+</svg>

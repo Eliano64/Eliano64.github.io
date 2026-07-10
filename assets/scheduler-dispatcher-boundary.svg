@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">调度、分派与进程切换的边界</title>
+  <desc id="desc">展示调度器选择进程，分派器交出CPU，进程切换保存和恢复现场。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --blue:#2563eb; --green:#0f766e; --amber:#b45309; --chip:#e6eef9; --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --blue:#7aa2ff; --green:#62d4c5; --amber:#f6b85f; --chip:#263142; --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:26px; font-weight:700; }
+    .h { fill:var(--text); font-size:20px; font-weight:700; }
+    .t { fill:var(--text); font-size:16px; }
+    .s { fill:var(--muted); font-size:14px; }
+    .box { fill:var(--panel); stroke:var(--line); stroke-width:1.6; rx:14; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .chip { fill:var(--chip); stroke:var(--line); stroke-width:1.2; rx:8; }
+    .line { stroke:var(--line); stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+    .blue { stroke:var(--blue); }
+    .green { stroke:var(--green); }
+    .amber { stroke:var(--amber); }
+    .blueText { fill:var(--blue); font-size:17px; font-weight:700; }
+    .greenText { fill:var(--green); font-size:17px; font-weight:700; }
+    .amberText { fill:var(--amber); font-size:17px; font-weight:700; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" style="fill:var(--line)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="560" y="42" text-anchor="middle">调度、分派与进程切换的边界</text>
+
+  <rect class="box" x="60" y="118" width="210" height="150"/>
+  <text class="h" x="165" y="158" text-anchor="middle">就绪队列</text>
+  <rect class="chip" x="92" y="184" width="146" height="38"/>
+  <text class="t" x="165" y="209" text-anchor="middle">P2 / P3 / P4</text>
+  <text class="s" x="165" y="246" text-anchor="middle">候选进程集合</text>
+
+  <rect class="box" x="340" y="118" width="210" height="150"/>
+  <text class="blueText" x="445" y="153" text-anchor="middle">调度器 scheduler</text>
+  <text class="t" x="445" y="192" text-anchor="middle">决定让谁运行</text>
+  <text class="s" x="445" y="222" text-anchor="middle">调度算法 / 时间片大小</text>
+
+  <rect class="box" x="620" y="118" width="210" height="150"/>
+  <text class="greenText" x="725" y="153" text-anchor="middle">分派器 dispatcher</text>
+  <text class="t" x="725" y="192" text-anchor="middle">真正交出 CPU</text>
+  <text class="s" x="725" y="222" text-anchor="middle">保存现场 / 恢复现场</text>
+
+  <rect class="box" x="900" y="118" width="160" height="150"/>
+  <text class="amberText" x="980" y="153" text-anchor="middle">CPU</text>
+  <text class="t" x="980" y="192" text-anchor="middle">运行 P3</text>
+  <text class="s" x="980" y="222" text-anchor="middle">PC 指向 P3 指令</text>
+
+  <path class="line blue" d="M270 193 L340 193"/>
+  <path class="line green" d="M550 193 L620 193"/>
+  <path class="line amber" d="M830 193 L900 193"/>
+
+  <rect class="box" x="178" y="334" width="764" height="100"/>
+  <text class="h" x="560" y="368" text-anchor="middle">狭义调度只回答“选谁”；广义调度还包括进程切换</text>
+  <text class="t" x="560" y="402" text-anchor="middle">进程切换 = 保存原运行进程现场 + 恢复新进程现场</text>
+</svg>

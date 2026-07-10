@@ -1,0 +1,720 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Virtual Memory And Demand Paging | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="传统存储管理有两个限制：  一次性：作业必须一次性全部装入主存后才能运行。 驻留性：作业装入后通常一直驻留在主存，直到运行结束。  这两个限制会降低主存利用率：程序运行时往往只会在一段时间内集中访问少量代码和数据，暂时不用的部分不必长期占用主存。 虚拟存储器的核心思想是：基于局部性原理，只把当前需要的页面装入主存；暂时不用的页面留在外存；访问到不在主存的页面时，再由操作系统把它调入。 虚拟存储器在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Virtual Memory And Demand Paging">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/01/Virtual-Memory-And-Demand-Paging/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="传统存储管理有两个限制：  一次性：作业必须一次性全部装入主存后才能运行。 驻留性：作业装入后通常一直驻留在主存，直到运行结束。  这两个限制会降低主存利用率：程序运行时往往只会在一段时间内集中访问少量代码和数据，暂时不用的部分不必长期占用主存。 虚拟存储器的核心思想是：基于局部性原理，只把当前需要的页面装入主存；暂时不用的页面留在外存；访问到不在主存的页面时，再由操作系统把它调入。 虚拟存储器在">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-01T15:55:10.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="OperatingSystem">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="Memory">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Virtual Memory And Demand Paging",
+  "url": "https://eliano64.github.io/2026/07/01/Virtual-Memory-And-Demand-Paging/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-01T15:55:10.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/01/Virtual-Memory-And-Demand-Paging/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Virtual Memory And Demand Paging',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Virtual Memory And Demand Paging</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Virtual Memory And Demand Paging</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-01T15:55:10.000Z" title="发表于 2026-07-01 23:55:10">2026-07-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.8k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>传统存储管理有两个限制：</p>
+<ul>
+<li><strong>一次性</strong>：作业必须一次性全部装入主存后才能运行。</li>
+<li><strong>驻留性</strong>：作业装入后通常一直驻留在主存，直到运行结束。</li>
+</ul>
+<p>这两个限制会降低主存利用率：程序运行时往往只会在一段时间内集中访问少量代码和数据，暂时不用的部分不必长期占用主存。</p>
+<p>虚拟存储器的核心思想是：基于局部性原理，只把当前需要的页面装入主存；暂时不用的页面留在外存；访问到不在主存的页面时，再由操作系统把它调入。</p>
+<h1 id="虚拟存储器"><a href="#虚拟存储器" class="headerlink" title="虚拟存储器"></a>虚拟存储器</h1><p>在用户看来，系统好像提供了一片比实际主存更大的内存；实际物理主存没有变，只是操作系统和硬件共同把主存与外存组织成了一个逻辑上的大地址空间。</p>
+<p>虚拟存储器有三个特征：</p>
+<table>
+<thead>
+<tr>
+<th>特征</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多次性</td>
+<td>作业不必一次性全部装入主存，可以分多次调入</td>
+</tr>
+<tr>
+<td>对换性</td>
+<td>作业运行过程中，页面可以在主存和外存之间换入、换出</td>
+</tr>
+<tr>
+<td>虚拟性</td>
+<td>从逻辑上扩充内存容量，使用户看到的容量大于实际主存容量</td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">容量上限</span></div>
+<div class="callout-content"><p>虚拟存储器的最大容量受 CPU 地址结构限制，实际可用容量还受主存与外存容量限制：</p>
+<p>$$<br>\text{虚拟存储实际容量} &#x3D; \min(\text{CPU 寻址范围}, \text{主存容量} + \text{外存可用容量})<br>$$</p>
+<p>例如 32 位按字节编址的系统，CPU 寻址范围最大是 $2^{32}B&#x3D;4GB$。若主存为 512MB，外存可供虚拟存储使用 2GB，则实际容量不是 4GB，而是 2.5GB。</p>
+</div>
+</div>
+## 透明性
+
+<p>虚拟存储的透明性要分两层看。</p>
+<p><img src="/assets/virtual-memory-transparency.svg"></p>
+<p>对进程来说，虚拟存储是透明的：进程只使用<strong>虚拟地址</strong>，不需要知道某个页面现在在主存、在外存、还是刚被换出。</p>
+<p>对硬件来说，虚拟存储并不透明：MMU 拆分页号和页内偏移，查 TLB 或页表，检查状态位和权限，命中时直接形成物理地址。</p>
+<p>对操作系统来说，虚拟存储并不透明。OS 必须维护页表、外存地址、状态位、访问位、修改位；发生缺页时，OS 还要决定从哪里调入页面、分配哪个页框、是否置换、是否写回。</p>
+<div class="callout callout-info">
+<div class="callout-title"><i class="fa-solid fa-circle-info callout-icon"></i><span class="callout-title-text">虚拟地址与物理地址</span></div>
+<div class="callout-content"><p><strong>虚拟地址</strong>是进程发出的地址，也就是前面分页、分段中说的<strong>逻辑地址</strong>。它描述的是进程自己看到的地址空间。</p>
+<p><strong>物理地址</strong>是主存中的实际地址。CPU 执行访存指令时先产生虚拟地址，再由 MMU、页表、TLB 等地址变换机构把虚拟地址翻译成物理地址。</p>
+<p>所以在虚拟存储语境下，可以把“逻辑地址”和“虚拟地址”近似看作同一个概念；强调程序视角时常说逻辑地址，强调虚拟存储和地址空间时常说虚拟地址。</p>
+</div>
+</div>
+# 请求分页
+
+<p>请求分页是在基本分页基础上实现虚拟存储的一种方式。它和<a href="/2026/07/01/Paging-And-Segmentation/#基本分页" class="wikilink">基本分页</a>的主要区别是：页面不必全部在主存中。</p>
+<p>页表项需要记录页面是否已调入主存以及页面在外存的位置。请求页表项通常包含：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>页号</td>
+<td>标识逻辑页</td>
+</tr>
+<tr>
+<td>页框号</td>
+<td>页面已在主存时，指出所在页框</td>
+</tr>
+<tr>
+<td>状态位 &#x2F; 有效位</td>
+<td>表示该页是否已调入主存</td>
+</tr>
+<tr>
+<td>访问字段</td>
+<td>记录访问情况，供置换算法参考</td>
+</tr>
+<tr>
+<td>修改位</td>
+<td>表示该页调入主存后是否被写过</td>
+</tr>
+<tr>
+<td>外存地址</td>
+<td>页面不在主存时，指出从外存哪里调入</td>
+</tr>
+</tbody></table>
+<p>状态位是请求分页的关键：状态位为 1，说明页面在主存；状态位为 0，说明页面不在主存，访问该页会触发缺页故障。</p>
+<h2 id="一次访存的完整路径"><a href="#一次访存的完整路径" class="headerlink" title="一次访存的完整路径"></a>一次访存的完整路径</h2><p>CPU 一次访存会连续经过两类问题：</p>
+<ul>
+<li><strong>地址翻译</strong>：由虚拟地址能不能拿到物理地址？</li>
+<li><strong>数据访问</strong>：有了物理地址后，目标数据能不能从 Cache 直接取到？</li>
+</ul>
+<p><img src="/assets/cpu-memory-access-tlb-page-cache-flow.svg"></p>
+<p>完整流程如下：</p>
+<ol>
+<li>CPU 执行取指或读写数据指令，发出虚拟地址。</li>
+<li>MMU 用虚拟页号查 TLB。<ol>
+<li>若 TLB 命中，直接得到页框号，与页内偏移拼接成物理地址。</li>
+<li>若 TLB 未命中，继续查页表。<ol>
+<li>若页表项状态位为 1，说明页面已在主存：取出页框号，必要时把页表项写入 TLB，再形成物理地址。</li>
+<li>若页表项状态位为 0，说明页面不在主存：产生缺页故障，转入 OS 缺页处理；调页完成后重新执行原访存指令。</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>已经得到物理地址后，再查 Cache。<ol>
+<li>若 Cache 命中，直接从 Cache 读出数据，或在 Cache 中完成写入。</li>
+<li>若 Cache 未命中，说明目标主存块不在 Cache 中；硬件访问主存，把相应主存块调入 Cache，再完成本次访问。</li>
+</ol>
+</li>
+</ol>
+<p>这三种“缺失”层次不同：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>缺的是什么</th>
+<th>页面是否在主存</th>
+<th>主要处理者</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TLB 未命中</td>
+<td>页表项不在 TLB</td>
+<td>不一定缺页</td>
+<td>硬件为主</td>
+<td>查页表；若页面在主存，就补 TLB</td>
+</tr>
+<tr>
+<td>页面缺失</td>
+<td>目标页不在主存</td>
+<td>不在</td>
+<td>OS 为主</td>
+<td>缺页故障，调页，更新页表 &#x2F; TLB，重试指令</td>
+</tr>
+<tr>
+<td>Cache 未命中</td>
+<td>目标主存块不在 Cache</td>
+<td>已在主存</td>
+<td>硬件为主</td>
+<td>从主存取块装入 Cache</td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p>TLB 命中意味着对应页面一定在主存。<br>若某页面被换出，OS 必须使对应 TLB 项失效，否则硬件可能拿着过期页框号访问错误位置。</p>
+</div>
+</div>
+## 缺页故障
+
+<p><strong>缺页故障</strong>是指 CPU 执行访存指令时，MMU 查页表发现目标页面尚未调入主存，于是产生的可恢复异常。处理程序把缺失页面调入主存并更新页表后，通常返回原指令重新执行。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||720)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||720)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/demand-paging-page-fault-slides.html" style="width:100%;height:720px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>一次缺页处理过程：</p>
+<ol>
+<li>CPU 执行访存指令，产生虚拟地址。</li>
+<li>MMU 查 TLB 或请求页表。<ol>
+<li>若页表项状态位为 0，硬件产生缺页故障，转入 OS 缺页处理程序。<ol>
+<li>OS 保存现场，将缺页进程阻塞。</li>
+<li>OS 判断访问是否合法；若非法，终止进程；若合法，继续调页。</li>
+<li>若有空闲页框，直接分配；若没有空闲页框，按页面置换算法选择换出页。<ol>
+<li>若被换出页修改位为 1，写回外存；修改位为 0，则不必写回。</li>
+</ol>
+</li>
+<li>根据页表项中的外存地址，把缺失页面从外存读入页框。</li>
+<li>修改页表项：填入页框号，状态位置为 1，更新访问字段、修改位等。</li>
+<li>必要时把页表项复制到 TLB。</li>
+<li>唤醒进程，重新执行引发缺页的原指令。</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"></div>
+</div>一条指令可能产生多次缺页故障，例如把地址 A 的数据复制到地址 B，而 A 和 B 分属不同页面。
+
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">Warning</span></div>
+<div class="callout-content"><p>缺页故障处理开销远大于一次普通访存，所以虚拟存储依赖局部性；如果频繁缺页，性能会急剧下降。</p>
+</div>
+</div>
+# 页面调入
+
+<h2 id="何时调入"><a href="#何时调入" class="headerlink" title="何时调入"></a>何时调入</h2><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>做法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>预调页</td>
+<td>预测即将访问的页面，提前调入若干页</td>
+<td>可利用空间局部性，但预测不准会浪费 I&#x2F;O</td>
+</tr>
+<tr>
+<td>请求调页</td>
+<td>访问缺失页面时才调入</td>
+<td>调入的一定会被访问，但每次缺页都要付出 I&#x2F;O 开销</td>
+</tr>
+</tbody></table>
+<p>预调页常用于进程首次调入或程序员能指出初始工作区域的场景；请求调页是请求分页的核心，运行时缺哪页调哪页。</p>
+<h2 id="从何处调入"><a href="#从何处调入" class="headerlink" title="从何处调入"></a>从何处调入</h2><p>外存通常可以分为文件区和对换区。</p>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>用途</th>
+<th>分配方式</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文件区</td>
+<td>存放可执行文件、共享库、普通文件映像</td>
+<td>离散分配</td>
+<td>更重视空间利用率，速度相对慢</td>
+</tr>
+<tr>
+<td>对换区</td>
+<td>存放被换出的页面或进程数据</td>
+<td>连续分配</td>
+<td>更重视换入换出速度，通常采用更适合顺序 I&#x2F;O 的管理方式</td>
+</tr>
+</tbody></table>
+<p>页面来源有三种典型情况：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>调入与调出方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对换区空间充足</td>
+<td>运行前可把进程相关页面复制到对换区；之后换入、换出主要在主存和对换区之间进行</td>
+</tr>
+<tr>
+<td>对换区空间不足</td>
+<td>不会被修改的页面可从文件区调入，换出时不写回；可能被修改的页面换出到对换区，再次需要时从对换区调入</td>
+</tr>
+<tr>
+<td>UNIX 方式</td>
+<td>未使用过的页面从文件区首次调入；被使用过并换出的页面写回对换区，再次调入时从对换区读取</td>
+</tr>
+</tbody></table>
+<h2 id="页框分配算法"><a href="#页框分配算法" class="headerlink" title="页框分配算法"></a>页框分配算法</h2><p>页面调入主存前，OS 还要决定进程能分到多少页框。常见页框分配算法有三种：</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>做法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>平均分配算法</td>
+<td>把可分配页框平均分给各进程</td>
+<td>简单，但没有考虑进程大小差异</td>
+</tr>
+<tr>
+<td>按比例分配算法</td>
+<td>按进程大小比例分配页框</td>
+<td>大进程得到更多页框，小进程得到较少页框</td>
+</tr>
+<tr>
+<td>优先权分配算法</td>
+<td>按进程优先级分配页框</td>
+<td>高优先级进程可获得更多页框，低优先级进程可能被压缩</td>
+</tr>
+</tbody></table>
+<p>页框分配必须先满足[[#最小页框数|最小页框数]]。剩余页框再按平均、比例或优先权分配。若某进程低于最小页框数，即使页面置换算法再好，也可能无法稳定执行指令。</p>
+<h2 id="如何调入页面"><a href="#如何调入页面" class="headerlink" title="如何调入页面"></a>如何调入页面</h2><p>页面调入要完成页框选择、磁盘 I&#x2F;O、页表项修改和现场恢复。</p>
+<ol>
+<li>根据缺页页表项中的外存地址，确定页面来源：文件区或对换区。</li>
+<li>检查主存是否有空闲页框。<ol>
+<li>若有空闲页框，直接分配给缺失页面。</li>
+<li>若没有空闲页框，根据页面置换算法选择一个牺牲页。<ol>
+<li>检查牺牲页的修改位：若修改位为 1，先把该页写回外存；若修改位为 0，不必写回。</li>
+<li>将牺牲页对应页表项的状态位置为 0，清除或保留其页框号，并确保相关 TLB 项失效。</li>
+<li>启动磁盘 I&#x2F;O，把缺失页面读入选定页框。</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>更新缺失页的页表项：填写页框号，状态位置为 1，访问字段按置换算法需要设置，修改位通常置为 0。</li>
+<li>必要时把新的页表项写入 TLB。</li>
+<li>唤醒缺页进程，恢复现场，重新执行引发缺页的指令。</li>
+</ol>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">Example</span></div>
+<div class="callout-content"><p>页号 5 原本不在主存，页表项为：页框号空、状态位 0、访问字段 0、修改位 0、外存地址 <code>x</code>。缺页处理把它调入 12 号页框后，页表项要变为：页框号 12、状态位 1、访问字段按规则更新、修改位 0、外存地址仍保留 <code>x</code>。</p>
+</div>
+</div>
+# 页面分配
+
+<h2 id="最小页框数"><a href="#最小页框数" class="headerlink" title="最小页框数"></a>最小页框数</h2><p>进程运行时必须有一个<strong>最小页框数</strong>。如果分配页框数低于这个下限，进程可能连一条指令都无法顺利执行，陷入“刚调入一个页面，又因为缺另一个页面把它换出”的局面。</p>
+<p>最小页框数由指令集结构决定，<strong>取决于一条指令在执行期间最多需要同时访问多少个不同页面，即寻址方式</strong>：</p>
+<ul>
+<li>指令本身所在页面至少需要驻留。</li>
+<li>取操作数可能需要额外页面。</li>
+<li>写回结果也可能落在另一个页面。</li>
+<li>若指令或操作数跨页，还可能需要更多页框。</li>
+</ul>
+<p>例如一条 <code>copy A to B</code> 指令至少可能同时涉及指令页、源操作数页、目标操作数页。若页框数太少，调入源页面时可能换出目标页面，调入目标页面时又可能换出源页面，指令无法稳定向前推进。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p>最小页框数不是越大越好，而是“能正确推进执行”的下限；具体数值由机器指令格式、寻址方式、页面大小和是否允许跨页访问共同决定。</p>
+</div>
+</div>
+
+<h2 id="驻留集"><a href="#驻留集" class="headerlink" title="驻留集"></a>驻留集</h2><p>请求分页要决定一个进程在主存中能占多少页框，这个集合称为<strong>驻留集</strong>。</p>
+<p>驻留集太小，缺页率会很高；驻留集太大，会降低系统并发度。因此页面分配策略的本质是控制每个进程的驻留集大小和变化方式。</p>
+<h2 id="内存分配策略"><a href="#内存分配策略" class="headerlink" title="内存分配策略"></a>内存分配策略</h2><p>这里要分清两个维度：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>问题</th>
+<th>选择</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分配策略</td>
+<td>一个进程的驻留集大小是否固定</td>
+<td>固定分配、可变分配</td>
+</tr>
+<tr>
+<td>置换范围</td>
+<td>缺页时能从哪里选页换出</td>
+<td>局部置换、全局置换</td>
+</tr>
+</tbody></table>
+<p><strong>固定分配</strong>指 OS 在进程运行前或装入时给它分配固定数量的页框，进程运行期间驻留集大小不变。它的难点在于初始数量很难刚好合适：太少会频繁缺页，太多会降低并发度。</p>
+<p><strong>可变分配</strong>指进程运行期间驻留集大小可以调整。OS 可以根据缺页率、进程优先级、系统空闲页框数量等因素，为进程增加或回收页框。</p>
+<p><strong>局部置换</strong>指某进程发生缺页时，只能从该进程自己的驻留集中选页换出。它不会直接抢走其他进程的页框，但如果该进程页框本来就少，可能长期高缺页率。</p>
+<p><strong>全局置换</strong>指某进程发生缺页时，可以从系统范围内获得页框：可以使用空闲页框，也可以换出其他进程的未锁定页面。它更灵活，但会影响其他进程的驻留集大小。</p>
+<p>分配策略和置换范围有以下三种<strong>可行</strong>组合：</p>
+<table>
+<thead>
+<tr>
+<th>组合</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>固定分配 + 局部置换</td>
+<td>驻留集大小固定，缺页时只能在本进程内部换页</td>
+</tr>
+<tr>
+<td>可变分配 + 局部置换</td>
+<td>平时在本进程内部换页，OS 可根据缺页率调整驻留集大小</td>
+</tr>
+<tr>
+<td>可变分配 + 全局置换</td>
+<td>缺页时可从系统范围获取页框，进程页框数会变化</td>
+</tr>
+</tbody></table>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">“固定分配 + 全局置换”为什么不可行？</span></div>
+<div class="callout-content"><p>全局置换可能让进程页框数变化，和固定分配矛盾      </p>
+</div>
+</div>
+三种可行组合的差异：
+
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>过程</th>
+<th>主要问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>固定分配局部置换</td>
+<td>每个进程页框数固定；缺页时从本进程页面中换出一页</td>
+<td>初始页框数很难设得刚好</td>
+</tr>
+<tr>
+<td>可变分配全局置换</td>
+<td>缺页时优先给进程新页框；无空闲页框时可从全局选择未锁定页换出</td>
+<td>一个进程频繁缺页可能挤压其他进程</td>
+</tr>
+<tr>
+<td>可变分配局部置换</td>
+<td>缺页时先在本进程内换页；OS 根据缺页率增减该进程页框数</td>
+<td>需要持续监控缺页情况</td>
+</tr>
+</tbody></table>
+<p>固定分配局部置换中，OS 在进程开始运行前就确定页框数。运行中一旦缺页，只能在该进程自己的驻留集中选一页换出，所以它不会抢占其他进程的页框，但对初始分配数量很敏感。</p>
+<p>可变分配全局置换中，每个进程页框数不固定；进程缺页时通常获得一个新页框；如果没有空闲页框，系统可从全局选择一个未锁定页面换出。它能快速照顾缺页进程，但可能让其他进程的驻留集变小。</p>
+<p>可变分配局部置换中，每个进程页框数不固定；缺页时仍优先在本进程内部置换；OS 根据缺页率调整驻留集。缺页率过高，说明页框可能不足，可以增加页框；缺页率很低，说明分配可能偏多，可以回收部分页框。</p>
+<h1 id="页面置换"><a href="#页面置换" class="headerlink" title="页面置换"></a>页面置换</h1><p>详见<a href="/2026/07/02/Page-Replacement-Algorithms/" class="wikilink">Page-Replacement-Algorithms</a></p>
+<h1 id="抖动与工作集"><a href="#抖动与工作集" class="headerlink" title="抖动与工作集"></a>抖动与工作集</h1><p>抖动也叫颠簸，指刚换出的页面很快又要换入，刚换入的页面很快又要换出，系统大量时间耗在页面调度上，真正执行进程的时间很少。</p>
+<p>抖动的直接原因通常是：进程频繁访问的页面数大于分配给它的页框数。</p>
+<p>工作集是某段时间窗口内进程实际访问过的页面集合，用于估计进程近期真正需要的页面范围。</p>
+<p>驻留集大小不应小于工作集大小，否则进程会频繁缺页。但驻留集太大又会降低并发度。</p>
+<h1 id="页框回收"><a href="#页框回收" class="headerlink" title="页框回收"></a>页框回收</h1><p>页框回收不一定要立刻把被换出的页面彻底覆盖。为了降低页面换入、换出的开销，系统可以使用<strong>页面缓冲算法</strong>。</p>
+<p>页面缓冲算法的思想是：被置换出的页面先进入缓冲队列，页框暂时作为可用页框管理；如果该页很快又被访问，且页框内容还没有被新页面覆盖，就可以直接把它恢复回来，避免一次外存读入。</p>
+<p>常见做法是维护两个队列：</p>
+<table>
+<thead>
+<tr>
+<th>队列</th>
+<th>保存对象</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>空闲页框队列</td>
+<td>可直接分配的页框，可能仍保留旧页面内容</td>
+<td>缺页时优先从这里取页框</td>
+</tr>
+<tr>
+<td>修改页队列</td>
+<td>被换出且修改位为 1 的页面</td>
+<td>暂不立即写回，可集中批量写回外存</td>
+</tr>
+</tbody></table>
+<p>页面被换出时：</p>
+<ol>
+<li>若页面未修改，外存中已有正确副本，不必写回；页框加入空闲页框队列。</li>
+<li>若页面已修改，页框加入修改页队列，等待写回外存。</li>
+<li>页表项状态位置为 0，使相关 TLB 项失效。</li>
+<li>若该页在页框被复用前又被访问，可以直接从缓冲队列恢复映射。</li>
+<li>若页框被分配给新页面，旧页面内容被覆盖；之后再访问旧页面，就必须从外存重新调入。</li>
+</ol>
+<p>页面缓冲算法的效果有两点：</p>
+<ul>
+<li>对刚被换出又马上访问的页面，可能避免一次外存读入。</li>
+<li>对修改页，可以延迟并批量写回，减少零散 I&#x2F;O。</li>
+</ul>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p>页面缓冲算法不改变“缺页时要选页换出”的事实。它优化的是换出后的页框回收和再次访问路径：被换出的页不是立刻彻底消失，而是在缓冲队列中保留一段时间。</p>
+</div>
+</div>
+# 内存映射文件
+
+<p>文件也可以作为页面的后备存储，映射到进程虚拟地址空间。详见 <a href="/2026/07/02/Memory-Mapped-Files-And-mmap/" class="wikilink">Memory-Mapped-Files-And-mmap</a>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/01/Virtual-Memory-And-Demand-Paging/">https://eliano64.github.io/2026/07/01/Virtual-Memory-And-Demand-Paging/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/01/Exception-And-Interrupt-Brief/" title="Exception And Interrupt Brief"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Exception And Interrupt Brief</div></div><div class="info-2"><div class="info-item-1">异常与中断CPU 正常执行指令时，可能因为某个事件临时改变控制流，转去执行操作系统内核中的处理程序。这个机制常被统称为“中断机制”，分为以下两种：  异常：由 CPU 内部原因产生，通常和当前正在执行的指令有关。 中断：由 CPU 外部设备产生，通常和当前正在执行的指令无关。  异常异常来自 CPU...</div></div></div></a><a class="pagination-related" href="/2026/07/02/Memory-Mapped-Files-And-mmap/" title="Memory Mapped Files And mmap"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Memory Mapped Files And mmap</div></div><div class="info-2"><div class="info-item-1">内存映射文件与 mmap内存映射文件把文件的一段内容映射到进程的虚拟地址空间。映射建立后，程序可以像访问普通内存一样读写这段地址；文件数据的调入、写回由操作系统结合缺页机制完成。 12int fd = open(&quot;data.bin&quot;, O_RDWR);void *p = mmap(NULL, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);  这里的 p 是一个虚拟地址。程序访问 p[i] 时，CPU 仍然发出虚拟地址；MMU 查页表；若对应文件页尚未在主存中，就触发缺页故障，由 OS 从文件读入对应页面。 mmapmmap 的关键是建立映射关系： $$\text{进程虚拟页} \longleftrightarrow \text{文件中的某个页大小区间}$$  一次典型访问过程：  open 打开文件，得到文件描述符。 mmap 在进程虚拟地址空间中划出一段区域。 OS...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%AD%98%E5%82%A8%E5%99%A8"><span class="toc-text">虚拟存储器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E8%AE%BF%E5%AD%98%E7%9A%84%E5%AE%8C%E6%95%B4%E8%B7%AF%E5%BE%84"><span class="toc-text">一次访存的完整路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%95%E6%97%B6%E8%B0%83%E5%85%A5"><span class="toc-text">何时调入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E4%BD%95%E5%A4%84%E8%B0%83%E5%85%A5"><span class="toc-text">从何处调入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E6%A1%86%E5%88%86%E9%85%8D%E7%AE%97%E6%B3%95"><span class="toc-text">页框分配算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%B0%83%E5%85%A5%E9%A1%B5%E9%9D%A2"><span class="toc-text">如何调入页面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%B0%8F%E9%A1%B5%E6%A1%86%E6%95%B0"><span class="toc-text">最小页框数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A9%BB%E7%95%99%E9%9B%86"><span class="toc-text">驻留集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="toc-text">内存分配策略</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2"><span class="toc-text">页面置换</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8A%96%E5%8A%A8%E4%B8%8E%E5%B7%A5%E4%BD%9C%E9%9B%86"><span class="toc-text">抖动与工作集</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A1%B5%E6%A1%86%E5%9B%9E%E6%94%B6"><span class="toc-text">页框回收</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

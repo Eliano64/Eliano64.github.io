@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" role="img" aria-labelledby="title desc">
+  <title id="title">Instruction forms by address count</title>
+  <desc id="desc">Zero to four address instruction formats compared by explicit fields, meaning and memory accesses.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { --bg:#fff; --text:#111827; --muted:#4b5563; --line:#111827; --op:#dbeafe; --a:#dcfce7; --result:#fef3c7; --warn:#fee2e2; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#111827; --text:#e5e7eb; --muted:#cbd5e1; --line:#e5e7eb; --op:#1e3a8a; --a:#14532d; --result:#713f12; --warn:#7f1d1d; } }
+    .bg{fill:var(--bg)} .text{fill:var(--text);font-family:"Segoe UI",Arial,sans-serif} .muted{fill:var(--muted);font-family:"Segoe UI",Arial,sans-serif}
+    .cell{stroke:var(--line);stroke-width:1.6;rx:6}.op{fill:var(--op)}.a{fill:var(--a)}.result{fill:var(--result)}.warn{fill:var(--warn)}
+    .rule{stroke:var(--line);stroke-width:1.2}.head{font-weight:700}
+  </style>
+  <rect class="bg" width="1100" height="620"/>
+  <text class="text" x="42" y="44" font-size="28" font-weight="700">按显式地址码个数分类</text>
+  <text class="muted" x="42" y="74" font-size="18">显式地址越多，表达越直接；固定指令字长下，留给每个地址的位数越少。</text>
+
+  <text class="text head" x="60" y="120" font-size="19">类型</text>
+  <text class="text head" x="190" y="120" font-size="19">格式</text>
+  <text class="text head" x="555" y="120" font-size="19">典型含义</text>
+  <text class="text head" x="870" y="120" font-size="19">执行阶段访存</text>
+  <line class="rule" x1="50" y1="135" x2="1050" y2="135"/>
+
+  <g transform="translate(0,155)">
+    <text class="text" x="60" y="35" font-size="20" font-weight="700">零地址</text>
+    <rect class="cell op" x="190" y="4" width="250" height="48"/><text class="text" x="315" y="34" font-size="20" text-anchor="middle">OP</text>
+    <text class="text" x="555" y="25" font-size="18">无操作数，或栈顶/次栈顶隐含</text>
+    <text class="muted" x="870" y="25" font-size="18">通常 0 次</text>
+  </g>
+  <g transform="translate(0,235)">
+    <text class="text" x="60" y="35" font-size="20" font-weight="700">一地址</text>
+    <rect class="cell op" x="190" y="4" width="120" height="48"/><rect class="cell a" x="310" y="4" width="130" height="48"/>
+    <text class="text" x="250" y="34" font-size="19" text-anchor="middle">OP</text><text class="text" x="375" y="34" font-size="19" text-anchor="middle">A1</text>
+    <text class="text" x="555" y="25" font-size="18">(ACC) OP (A1) -> ACC</text>
+    <text class="muted" x="870" y="25" font-size="18">常见 1 次</text>
+  </g>
+  <g transform="translate(0,315)">
+    <text class="text" x="60" y="35" font-size="20" font-weight="700">二地址</text>
+    <rect class="cell op" x="190" y="4" width="90" height="48"/><rect class="cell result" x="280" y="4" width="80" height="48"/><rect class="cell a" x="360" y="4" width="80" height="48"/>
+    <text class="text" x="235" y="34" font-size="18" text-anchor="middle">OP</text><text class="text" x="320" y="34" font-size="18" text-anchor="middle">A1</text><text class="text" x="400" y="34" font-size="18" text-anchor="middle">A2</text>
+    <text class="text" x="555" y="25" font-size="18">(A1) OP (A2) -> A1</text>
+    <text class="muted" x="870" y="25" font-size="18">常见 3 次</text>
+  </g>
+  <g transform="translate(0,395)">
+    <text class="text" x="60" y="35" font-size="20" font-weight="700">三地址</text>
+    <rect class="cell op" x="190" y="4" width="70" height="48"/><rect class="cell a" x="260" y="4" width="60" height="48"/><rect class="cell a" x="320" y="4" width="60" height="48"/><rect class="cell result" x="380" y="4" width="60" height="48"/>
+    <text class="text" x="225" y="34" font-size="17" text-anchor="middle">OP</text><text class="text" x="290" y="34" font-size="17" text-anchor="middle">A1</text><text class="text" x="350" y="34" font-size="17" text-anchor="middle">A2</text><text class="text" x="410" y="34" font-size="17" text-anchor="middle">A3</text>
+    <text class="text" x="555" y="25" font-size="18">(A1) OP (A2) -> A3</text>
+    <text class="muted" x="870" y="25" font-size="18">常见 3 次</text>
+  </g>
+  <g transform="translate(0,475)">
+    <text class="text" x="60" y="35" font-size="20" font-weight="700">四地址</text>
+    <rect class="cell op" x="190" y="4" width="58" height="48"/><rect class="cell a" x="248" y="4" width="48" height="48"/><rect class="cell a" x="296" y="4" width="48" height="48"/><rect class="cell result" x="344" y="4" width="48" height="48"/><rect class="cell warn" x="392" y="4" width="48" height="48"/>
+    <text class="text" x="219" y="34" font-size="15" text-anchor="middle">OP</text><text class="text" x="272" y="34" font-size="15" text-anchor="middle">A1</text><text class="text" x="320" y="34" font-size="15" text-anchor="middle">A2</text><text class="text" x="368" y="34" font-size="15" text-anchor="middle">A3</text><text class="text" x="416" y="34" font-size="15" text-anchor="middle">A4</text>
+    <text class="text" x="555" y="25" font-size="18">结果写 A3，下一条由 A4 指出</text>
+    <text class="muted" x="870" y="25" font-size="18">常见 3 次</text>
+  </g>
+  <text class="muted" x="60" y="590" font-size="17">说明：若操作数或结果在寄存器中，访存次数会减少；取指访存不计入表中。</text>
+</svg>

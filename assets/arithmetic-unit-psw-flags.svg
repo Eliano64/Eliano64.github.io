@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="640" viewBox="0 0 980 640" role="img" aria-labelledby="title desc">
+  <title id="title">PSW arithmetic flags</title>
+  <desc id="desc">The four arithmetic flags in the program status word: zero, sign, carry, and overflow.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    .bg { fill: #f7f8f6; }
+    .title { fill: #20242a; font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .text { fill: #303842; font: 18px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: #56616d; font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .psw { fill: #ffffff; stroke: #c9d2dc; stroke-width: 2; }
+    .cell { fill: #eaf3fb; stroke: #2d6f9f; stroke-width: 2; }
+    .signed { fill: #fff3df; stroke: #bd7a20; stroke-width: 2; }
+    .unsigned { fill: #eff7ed; stroke: #4e8555; stroke-width: 2; }
+    .neutral { fill: #f2f2f2; stroke: #8a949e; stroke-width: 2; }
+    .flag { fill: #20242a; font: 700 26px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .line { stroke: #7a8490; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #151719; }
+      .title, .text, .flag { fill: #edf0f2; }
+      .small { fill: #aeb7c0; }
+      .psw { fill: #20252a; stroke: #3a424b; }
+      .cell { fill: #1d3342; stroke: #82bee8; }
+      .signed { fill: #3a2b18; stroke: #efb463; }
+      .unsigned { fill: #203522; stroke: #94ca8e; }
+      .neutral { fill: #272d33; stroke: #7f8994; }
+      .line { stroke: #aeb7c0; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#7a8490"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="640"/>
+  <text class="title" x="50" y="58">PSW 中常用的 4 个运算标志</text>
+  <text class="small" x="50" y="88">标志位描述“本次 ALU 运算结果”的特征，供条件转移、溢出判断等后续动作使用。</text>
+
+  <rect class="psw" x="92" y="132" width="796" height="92" rx="8"/>
+  <text class="text" x="126" y="168">PSW / 标志寄存器</text>
+  <rect class="cell" x="328" y="156" width="110" height="46" rx="6"/>
+  <text class="flag" x="361" y="188">ZF</text>
+  <rect class="cell" x="454" y="156" width="110" height="46" rx="6"/>
+  <text class="flag" x="488" y="188">SF</text>
+  <rect class="cell" x="580" y="156" width="110" height="46" rx="6"/>
+  <text class="flag" x="613" y="188">CF</text>
+  <rect class="cell" x="706" y="156" width="110" height="46" rx="6"/>
+  <text class="flag" x="739" y="188">OF</text>
+
+  <rect class="neutral" x="62" y="314" width="204" height="122" rx="8"/>
+  <text class="flag" x="92" y="352">ZF</text>
+  <text class="text" x="138" y="350">Zero Flag</text>
+  <text class="small" x="90" y="386">结果是否为 0</text>
+  <text class="small" x="90" y="414">F = 0 时 ZF = 1</text>
+
+  <rect class="signed" x="286" y="314" width="204" height="122" rx="8"/>
+  <text class="flag" x="316" y="352">SF</text>
+  <text class="text" x="362" y="350">Sign Flag</text>
+  <text class="small" x="314" y="386">结果最高位</text>
+  <text class="small" x="314" y="414">按补码看正负</text>
+
+  <rect class="unsigned" x="510" y="314" width="204" height="122" rx="8"/>
+  <text class="flag" x="540" y="352">CF</text>
+  <text class="text" x="586" y="350">Carry Flag</text>
+  <text class="small" x="538" y="386">无符号进位/借位</text>
+  <text class="small" x="538" y="414">判断无符号溢出</text>
+
+  <rect class="signed" x="734" y="314" width="204" height="122" rx="8"/>
+  <text class="flag" x="764" y="352">OF</text>
+  <text class="text" x="810" y="350">Overflow Flag</text>
+  <text class="small" x="762" y="386">有符号补码溢出</text>
+  <text class="small" x="762" y="414">判断真值是否越界</text>
+
+  <path class="line" d="M383 202 C330 238 220 278 164 314"/>
+  <path class="line" d="M509 202 C472 238 416 278 388 314"/>
+  <path class="line" d="M635 202 C628 238 620 278 612 314"/>
+  <path class="line" d="M761 202 C786 238 824 278 836 314"/>
+
+  <text class="small" x="92" y="520">ZF 与具体有符号/无符号解释无关，只看结果是否全 0。</text>
+  <text class="small" x="92" y="550">SF、OF 服务于有符号补码解释；CF 服务于无符号整数解释。</text>
+  <text class="small" x="92" y="580">同一个 bit 结果可能同时需要看 CF 和 OF，因为它可以有不同的数值解释。</text>
+</svg>

@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="720" viewBox="0 0 1180 720" role="img" aria-labelledby="title desc">
+  <title id="title">CPU 一次访存中的 TLB、页面和 Cache 命中缺失关系</title>
+  <desc id="desc">展示 CPU 发出虚拟地址后，先查 TLB，再必要时查页表；若页面不在主存则缺页，若页面在主存则形成物理地址后查 Cache，Cache 未命中再访问主存。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --ink: #172033;
+      --muted: #5b6678;
+      --line: #40516b;
+      --panel: #f8fafc;
+      --chip: #ffffff;
+      --blue: #2563eb;
+      --green: #15803d;
+      --red: #b91c1c;
+      --orange: #c2410c;
+      --purple: #7c3aed;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --ink: #e5e7eb;
+        --muted: #aab6c8;
+        --line: #b6c2d3;
+        --panel: #172033;
+        --chip: #111827;
+        --blue: #60a5fa;
+        --green: #4ade80;
+        --red: #f87171;
+        --orange: #fb923c;
+        --purple: #a78bfa;
+      }
+    }
+    svg { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    text { fill: var(--ink); font-size: 17px; }
+    .title { font-size: 28px; font-weight: 700; }
+    .small { font-size: 14px; fill: var(--muted); }
+    .tiny { font-size: 12px; fill: var(--muted); }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 8; }
+    .decision { fill: var(--chip); stroke: var(--line); stroke-width: 2; }
+    .hot { fill: var(--chip); stroke: var(--blue); stroke-width: 2.4; rx: 8; }
+    .ok { fill: color-mix(in srgb, var(--green), transparent 88%); stroke: var(--green); stroke-width: 2; rx: 8; }
+    .bad { fill: color-mix(in srgb, var(--red), transparent 88%); stroke: var(--red); stroke-width: 2; rx: 8; }
+    .arrow { stroke: var(--line); stroke-width: 2.3; fill: none; marker-end: url(#arrow); }
+    .hit { stroke: var(--green); }
+    .miss { stroke: var(--orange); }
+    .fault { stroke: var(--red); stroke-dasharray: 8 6; }
+    .purple { stroke: var(--purple); }
+    .label { font-size: 14px; font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+    </marker>
+  </defs>
+
+  <text x="42" y="48" class="title">CPU 一次访存：TLB、页面、Cache 三种“缺失”不是一回事</text>
+  <text x="44" y="78" class="small">顺序记忆：先把虚拟地址翻译成物理地址，再用物理地址访问 Cache / 主存。</text>
+
+  <rect x="50" y="130" width="150" height="64" class="hot" />
+  <text x="84" y="167" font-weight="700">CPU</text>
+  <text x="73" y="188" class="tiny">发出虚拟地址 VA</text>
+
+  <path d="M 200 162 H 275" class="arrow" />
+  <rect x="275" y="130" width="170" height="64" class="hot" />
+  <text x="325" y="160" font-weight="700">TLB</text>
+  <text x="300" y="184" class="tiny">查页号到页框号</text>
+
+  <path d="M 445 162 H 520" class="arrow hit" />
+  <text x="463" y="147" class="label">命中</text>
+  <rect x="520" y="130" width="180" height="64" class="ok" />
+  <text x="554" y="160" font-weight="700">得到物理地址</text>
+  <text x="548" y="184" class="tiny">页框号 + 页内偏移</text>
+
+  <path d="M 360 194 V 268" class="arrow miss" />
+  <text x="374" y="238" class="label">TLB 未命中</text>
+  <rect x="275" y="268" width="170" height="64" class="box" />
+  <text x="316" y="298" font-weight="700">查页表</text>
+  <text x="296" y="322" class="tiny">读取请求页表项</text>
+
+  <path d="M 445 300 H 520" class="arrow hit" />
+  <text x="455" y="286" class="label">状态位=1</text>
+  <path d="M 610 194 V 246 C 610 272 590 300 520 300" class="arrow hit" />
+
+  <path d="M 360 332 V 430" class="arrow fault" />
+  <text x="376" y="388" class="label">状态位=0</text>
+  <rect x="260" y="430" width="205" height="74" class="bad" />
+  <text x="296" y="462" font-weight="700">缺页故障</text>
+  <text x="286" y="487" class="tiny">OS 调页，更新页表 / TLB</text>
+  <path d="M 465 467 C 555 535 670 505 660 194" class="arrow fault" />
+  <text x="530" y="536" class="tiny">调页后重试原访存指令</text>
+
+  <path d="M 700 162 H 775" class="arrow" />
+  <rect x="775" y="130" width="170" height="64" class="hot" />
+  <text x="830" y="160" font-weight="700">Cache</text>
+  <text x="808" y="184" class="tiny">用物理地址查块</text>
+
+  <path d="M 945 162 H 1020" class="arrow hit" />
+  <text x="962" y="147" class="label">命中</text>
+  <rect x="1020" y="130" width="120" height="64" class="ok" />
+  <text x="1047" y="160" font-weight="700">返回数据</text>
+  <text x="1051" y="184" class="tiny">完成访存</text>
+
+  <path d="M 860 194 V 268" class="arrow miss" />
+  <text x="876" y="238" class="label">Cache 未命中</text>
+  <rect x="775" y="268" width="170" height="64" class="box" />
+  <text x="825" y="298" font-weight="700">主存</text>
+  <text x="797" y="322" class="tiny">取出对应主存块</text>
+  <path d="M 945 300 C 1005 300 1080 255 1080 194" class="arrow purple" />
+  <text x="993" y="308" class="tiny">装入 Cache 后返回</text>
+
+  <rect x="70" y="570" width="1040" height="92" class="box" />
+  <text x="96" y="603" font-weight="700">三种缺失的含义：</text>
+  <text x="96" y="632" class="small">TLB 未命中：页表项副本不在 TLB，可能仍然在主存；查页表即可。</text>
+  <text x="442" y="632" class="small">页面缺失：页表项状态位为 0，页面不在主存；必须 OS 调页。</text>
+  <text x="790" y="632" class="small">Cache 未命中：页面已在主存，只是主存块不在 Cache；硬件从主存取块。</text>
+</svg>

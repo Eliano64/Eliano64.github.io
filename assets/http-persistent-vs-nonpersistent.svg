@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP 请求三个对象的连接方式与 RTT 对比</title><desc id="desc">非持续连接每个对象都重新握手，持续非流水线只握手一次但逐个等待响应，持续流水线可连续发出请求。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+:root{color-scheme:light dark}.title{font:700 23px "Microsoft YaHei",sans-serif;fill:#172033}.head{font:700 18px "Microsoft YaHei",sans-serif}.label{font:700 15px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:13px "Microsoft YaHei",sans-serif;fill:#526174}.box{fill:#fff;stroke:#64748b;stroke-width:1.8}.redbox{fill:#fef2f2;stroke:#dc2626}.bluebox{fill:#eff6ff;stroke:#2563eb}.greenbox{fill:#ecfdf5;stroke:#059669}.step{fill:#f8fafc;stroke:#cbd5e1}.divider{stroke:#cbd5e1;stroke-dasharray:6 6}.red{fill:#dc2626}.blue{fill:#2563eb}.green{fill:#059669}@media(prefers-color-scheme:dark){.title,.label{fill:#e5edf5}.sub{fill:#a9b7c6}.box{fill:#121b25}.redbox{fill:#3b1518}.bluebox{fill:#17345a}.greenbox{fill:#123d2d}.step{fill:#16212c;stroke:#344354}.divider{stroke:#344354}.red{fill:#fca5a5}.blue{fill:#93c5fd}.green{fill:#6ee7b7}}</style>
+  <text x="480" y="36" text-anchor="middle" class="title">同一页面包含 3 个对象：连接方式决定 RTT 开销</text>
+  <line x1="320" y1="56" x2="320" y2="482" class="divider"/><line x1="640" y1="56" x2="640" y2="482" class="divider"/>
+
+  <text x="160" y="78" text-anchor="middle" class="head red">HTTP/1.0 非持续连接</text><text x="160" y="101" text-anchor="middle" class="sub">每个对象单独建立 TCP 连接</text>
+  <rect x="44" y="126" width="232" height="64" rx="7" class="box redbox"/><text x="160" y="150" text-anchor="middle" class="label">对象 1</text><text x="160" y="174" text-anchor="middle" class="sub">1 RTT 握手 + 1 RTT 请求/响应</text>
+  <rect x="44" y="204" width="232" height="64" rx="7" class="box redbox"/><text x="160" y="228" text-anchor="middle" class="label">对象 2</text><text x="160" y="252" text-anchor="middle" class="sub">重新握手，再请求</text>
+  <rect x="44" y="282" width="232" height="64" rx="7" class="box redbox"/><text x="160" y="306" text-anchor="middle" class="label">对象 3</text><text x="160" y="330" text-anchor="middle" class="sub">重新握手，再请求</text>
+  <rect x="44" y="372" width="232" height="70" rx="7" class="box step"/><text x="160" y="399" text-anchor="middle" class="label red">共 6 RTT</text><text x="160" y="424" text-anchor="middle" class="sub">另加 3 个对象的传输时延</text>
+
+  <text x="480" y="78" text-anchor="middle" class="head blue">持续连接，非流水线</text><text x="480" y="101" text-anchor="middle" class="sub">连接复用，但收到响应后才发下一个请求</text>
+  <rect x="364" y="126" width="232" height="52" rx="7" class="box bluebox"/><text x="480" y="158" text-anchor="middle" class="label">只握手一次：1 RTT</text>
+  <rect x="364" y="194" width="232" height="52" rx="7" class="box step"/><text x="480" y="226" text-anchor="middle" class="label">请求对象 1：1 RTT</text>
+  <rect x="364" y="258" width="232" height="52" rx="7" class="box step"/><text x="480" y="290" text-anchor="middle" class="label">请求对象 2：1 RTT</text>
+  <rect x="364" y="322" width="232" height="52" rx="7" class="box step"/><text x="480" y="354" text-anchor="middle" class="label">请求对象 3：1 RTT</text>
+  <rect x="364" y="390" width="232" height="70" rx="7" class="box bluebox"/><text x="480" y="417" text-anchor="middle" class="label blue">共 4 RTT</text><text x="480" y="442" text-anchor="middle" class="sub">1 次握手 + 3 次请求/响应</text>
+
+  <text x="800" y="78" text-anchor="middle" class="head green">持续连接，流水线</text><text x="800" y="101" text-anchor="middle" class="sub">连续发出 3 个请求，不逐个等待</text>
+  <rect x="684" y="126" width="232" height="52" rx="7" class="box greenbox"/><text x="800" y="158" text-anchor="middle" class="label">只握手一次：1 RTT</text>
+  <rect x="684" y="204" width="232" height="116" rx="7" class="box step"/><text x="800" y="234" text-anchor="middle" class="label">连续发送</text><text x="800" y="261" text-anchor="middle" class="sub">GET 对象 1</text><text x="800" y="283" text-anchor="middle" class="sub">GET 对象 2</text><text x="800" y="305" text-anchor="middle" class="sub">GET 对象 3</text>
+  <rect x="684" y="346" width="232" height="52" rx="7" class="box step"/><text x="800" y="378" text-anchor="middle" class="label">约 1 RTT 后开始收到响应</text>
+  <rect x="684" y="414" width="232" height="70" rx="7" class="box greenbox"/><text x="800" y="441" text-anchor="middle" class="label green">约 2 RTT</text><text x="800" y="466" text-anchor="middle" class="sub">另加对象传输时延</text>
+  <text x="480" y="507" text-anchor="middle" class="sub">以上忽略 DNS、服务器处理时间和对象传输时延，只比较顺序请求三个对象的 RTT 等待</text>
+</svg>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reverse Topological DFS</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#0f172a;--muted:#475569;--line:#94a3b8;--edge:#64748b;--hot:#2563eb;--done:#059669}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#f8fafc;--muted:#cbd5e1;--line:#64748b;--edge:#94a3b8;--hot:#60a5fa;--done:#34d399}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,sans-serif}.wrap{padding:18px;max-width:1120px;margin:auto}.top{display:flex;justify-content:space-between;gap:12px}.title{font-size:22px;font-weight:750}.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer}.stage{display:grid;grid-template-columns:1fr .9fr;gap:16px;margin-top:14px}.card{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px}.note{color:var(--muted);line-height:1.6}.edge{stroke:var(--edge);stroke-width:3;marker-end:url(#arr)}.hotEdge{stroke:var(--hot);stroke-width:5;marker-end:url(#arrHot)}.node{fill:var(--bg);stroke:var(--edge);stroke-width:2}.visiting{stroke:var(--hot);stroke-width:4}.done{fill:color-mix(in srgb,var(--done) 22%,var(--bg));stroke:var(--done);stroke-width:3}.label{fill:var(--text);font-weight:700;font-size:17px}.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:var(--bg)}@media(max-width:760px){.stage{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top"><div><div class="title">DFS 逆拓扑：退栈前输出</div><div class="note" id="cap"></div></div><div><button class="btn" id="prev">上一页</button> <button class="btn" id="next">下一页</button></div></div>
+ <div class="stage"><div class="card" id="graph"></div><div class="card"><div class="note" id="txt"></div><h3>递归栈</h3><div class="pills" id="stack"></div><h3>逆拓扑序列</h3><div class="pills" id="order"></div></div></div>
+</div>
+<script>
+const pos={0:[80,190],1:[230,95],2:[230,285],3:[390,120],4:[390,270]};
+const edges=[[0,1],[0,2],[1,3],[2,3],[2,4],[3,4]];
+const steps=[
+{cap:"从 0 开始 DFS。",stack:[0],done:[],hot:[],order:[],txt:"顶点进入递归栈时标记为 VISITING。"},
+{cap:"沿 0 -> 1 深入。",stack:[0,1],done:[],hot:[[0,1]],order:[],txt:"先处理 0 的一个后继 1。"},
+{cap:"沿 1 -> 3 深入。",stack:[0,1,3],done:[],hot:[[1,3]],order:[],txt:"继续沿未访问后继深入。"},
+{cap:"沿 3 -> 4 深入。",stack:[0,1,3,4],done:[],hot:[[3,4]],order:[],txt:"4 没有后继，马上要退栈。"},
+{cap:"4 退栈前输出。",stack:[0,1,3],done:[4],hot:[],order:[4],txt:"一个顶点所有后继都处理完，才输出它。"},
+{cap:"3 退栈前输出。",stack:[0,1],done:[4,3],hot:[],order:[4,3],txt:"因为 3 的后继 4 已完成，所以输出 3。"},
+{cap:"1 退栈前输出。",stack:[0],done:[4,3,1],hot:[],order:[4,3,1],txt:"1 的后继 3 已完成，所以输出 1。"},
+{cap:"回到 0，再访问 2。",stack:[0,2],done:[4,3,1],hot:[[0,2]],order:[4,3,1],txt:"2 的后继 3、4 都已经 DONE，不需要重复递归。"},
+{cap:"2 退栈前输出。",stack:[0],done:[4,3,1,2],hot:[],order:[4,3,1,2],txt:"指向 DONE 顶点不是环，只是共享后继。"},
+{cap:"0 退栈前输出。",stack:[],done:[4,3,1,2,0],hot:[],order:[4,3,1,2,0],txt:"得到逆拓扑序列 4,3,1,2,0。倒过来就是一个拓扑序列 0,2,1,3,4。"}
+];
+let i=0;
+function isHot(s,a,b){return s.hot.some(e=>e[0]===a&&e[1]===b)}
+function render(){
+ const s=steps[i];document.getElementById("cap").textContent=s.cap;document.getElementById("txt").textContent=s.txt;
+ const lines=edges.map(e=>`<line class="${isHot(s,e[0],e[1])?'hotEdge':'edge'}" x1="${pos[e[0]][0]}" y1="${pos[e[0]][1]}" x2="${pos[e[1]][0]}" y2="${pos[e[1]][1]}"/>`).join("");
+ const nodes=Object.keys(pos).map(v=>`<g><circle class="node ${s.stack.includes(+v)?'visiting':''} ${s.done.includes(+v)?'done':''}" cx="${pos[v][0]}" cy="${pos[v][1]}" r="25"/><text class="label" x="${pos[v][0]}" y="${pos[v][1]+6}" text-anchor="middle">${v}</text></g>`).join("");
+ document.getElementById("graph").innerHTML=`<svg viewBox="0 0 500 380"><defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--edge)"/></marker><marker id="arrHot" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="var(--hot)"/></marker></defs>${lines}${nodes}</svg>`;
+ document.getElementById("stack").innerHTML=s.stack.map(v=>`<span class="pill">${v}</span>`).join("")||"<span class='pill'>empty</span>";
+ document.getElementById("order").innerHTML=s.order.map(v=>`<span class="pill">${v}</span>`).join("")||"<span class='pill'>empty</span>";
+}
+document.getElementById("prev").onclick=()=>{i=(i+steps.length-1)%steps.length;render()};document.getElementById("next").onclick=()=>{i=(i+1)%steps.length;render()};render();
+</script>
+</body>
+</html>

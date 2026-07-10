@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">管程结构</title>
+  <desc id="desc">展示管程名、局部共享数据、入口过程、初始化语句、条件变量和互斥入口</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#ffffff;--panel:#f8fafc;--line:#334155;--text:#172033;--muted:#64748b;--blue:#dbeafe;--blue-line:#2563eb;--green:#dcfce7;--green-line:#16a34a;--amber:#fef3c7;--amber-line:#d97706;--red:#fee2e2;--red-line:#dc2626}
+    @media (prefers-color-scheme: dark){:root{--bg:#0f172a;--panel:#111827;--line:#94a3b8;--text:#e5e7eb;--muted:#94a3b8;--blue:#1e3a8a;--blue-line:#60a5fa;--green:#14532d;--green-line:#4ade80;--amber:#713f12;--amber-line:#fbbf24;--red:#7f1d1d;--red-line:#f87171}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.outer{fill:none;stroke:var(--blue-line);stroke-width:3}.data{fill:var(--green);stroke:var(--green-line);stroke-width:2}.proc{fill:var(--blue);stroke:var(--blue-line);stroke-width:2}.cond{fill:var(--amber);stroke:var(--amber-line);stroke-width:2}.init{fill:var(--red);stroke:var(--red-line);stroke-width:2}.arrow{fill:none;stroke:var(--line);stroke-width:2.5;marker-end:url(#arrow)}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.label{font-size:20px;font-weight:700}.small{font-size:16px;fill:var(--muted)}.note{font-size:17px}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="var(--line)"/></marker>
+  </defs>
+  <rect class="bg" width="980" height="560"/>
+  <text x="50" y="54" class="title">管程：把共享数据和访问规则封装在一起</text>
+  <rect x="250" y="88" width="610" height="396" rx="18" class="outer"/>
+  <text x="555" y="125" text-anchor="middle" class="label">monitor ProducerConsumer</text>
+  <rect x="300" y="160" width="230" height="110" rx="12" class="data"/>
+  <text x="415" y="200" text-anchor="middle" class="label">局部共享数据</text>
+  <text x="415" y="232" text-anchor="middle" class="note">buffer, count</text>
+  <rect x="590" y="160" width="220" height="110" rx="12" class="cond"/>
+  <text x="700" y="200" text-anchor="middle" class="label">条件变量</text>
+  <text x="700" y="232" text-anchor="middle" class="note">notFull, notEmpty</text>
+  <rect x="300" y="320" width="150" height="82" rx="12" class="proc"/>
+  <text x="375" y="354" text-anchor="middle" class="label">insert</text>
+  <text x="375" y="382" text-anchor="middle" class="small">生产者入口</text>
+  <rect x="500" y="320" width="150" height="82" rx="12" class="proc"/>
+  <text x="575" y="354" text-anchor="middle" class="label">remove</text>
+  <text x="575" y="382" text-anchor="middle" class="small">消费者入口</text>
+  <rect x="700" y="320" width="110" height="82" rx="12" class="init"/>
+  <text x="755" y="354" text-anchor="middle" class="label">init</text>
+  <text x="755" y="382" text-anchor="middle" class="small">设置初值</text>
+  <path d="M375 320 V270" class="arrow"/>
+  <path d="M575 320 C560 285 530 265 500 245" class="arrow"/>
+  <path d="M650 320 C672 288 690 270 700 270" class="arrow"/>
+  <rect x="70" y="185" width="130" height="58" rx="10" class="box"/>
+  <text x="135" y="220" text-anchor="middle" class="label">生产者</text>
+  <path d="M200 214 H300" class="arrow"/>
+  <rect x="70" y="332" width="130" height="58" rx="10" class="box"/>
+  <text x="135" y="367" text-anchor="middle" class="label">消费者</text>
+  <path d="M200 361 H300" class="arrow"/>
+  <text x="50" y="470" class="small">入口规则：同一时刻只允许一个进程在管程内执行某个过程。</text>
+</svg>

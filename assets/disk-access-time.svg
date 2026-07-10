@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="420" viewBox="0 0 1080 420" role="img" aria-labelledby="title desc">
+  <title id="title">磁盘访问时间组成</title>
+  <desc id="desc">展示磁盘访问时间由寻道时间、旋转延迟和传输时间组成。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--text:#172033;--muted:#536171;--line:#8090a3;--b:#2563eb;--g:#059669;--o:#d97706;--sb:#dbeafe;--sg:#d1fae5;--so:#ffedd5}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--text:#e5e7eb;--muted:#aab4c3;--line:#687386;--b:#60a5fa;--g:#34d399;--o:#fbbf24;--sb:#172554;--sg:#064e3b;--so:#451a03}}
+    .bg{fill:var(--bg)}.title{fill:var(--text);font:700 27px "Microsoft YaHei",sans-serif}.h{fill:var(--text);font:700 18px "Microsoft YaHei",sans-serif}.body{fill:var(--muted);font:15px "Microsoft YaHei",sans-serif}.seg{stroke-width:2;rx:12}.axis{stroke:var(--line);stroke-width:2.5;marker-end:url(#a);fill:none}
+  </style>
+  <defs><marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1080" height="420"/>
+  <text class="title" x="54" y="58">一次磁盘访问时间</text>
+  <path class="axis" d="M108 245 H970"/>
+  <rect class="seg" x="130" y="160" width="290" height="86" fill="var(--sb)" stroke="var(--b)"/><text class="h" x="275" y="194" text-anchor="middle">寻道时间 $T_s$</text><text class="body" x="275" y="224" text-anchor="middle">磁头移动到目标磁道</text>
+  <rect class="seg" x="420" y="160" width="270" height="86" fill="var(--sg)" stroke="var(--g)"/><text class="h" x="555" y="194" text-anchor="middle">旋转延迟 $T_r$</text><text class="body" x="555" y="224" text-anchor="middle">目标扇区转到磁头下</text>
+  <rect class="seg" x="690" y="160" width="250" height="86" fill="var(--so)" stroke="var(--o)"/><text class="h" x="815" y="194" text-anchor="middle">传输时间 $T_t$</text><text class="body" x="815" y="224" text-anchor="middle">真正读出或写入数据</text>
+  <text class="body" x="540" y="322" text-anchor="middle">平均存取时间：$T_a=T_s+T_r+T_t$</text>
+  <text class="body" x="540" y="352" text-anchor="middle">磁盘调度主要优化寻道时间；交替编号、错位命名主要减少旋转等待。</text>
+</svg>

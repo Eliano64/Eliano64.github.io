@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="500" viewBox="0 0 1040 500" role="img" aria-labelledby="title desc">
+  <title id="title">Kernel structure, boot, and virtualization overview</title>
+  <desc id="desc">A compact diagram showing kernel placement, boot sequence, and type 1/type 2 virtual machine monitors.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --line: #94a3b8;
+      --a: #dbeafe;
+      --b: #dcfce7;
+      --c: #fef3c7;
+      --d: #fee2e2;
+      --accent: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #64748b;
+        --a: #1e3a8a;
+        --b: #14532d;
+        --c: #713f12;
+        --d: #7f1d1d;
+        --accent: #60a5fa;
+      }
+    }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--fg); }
+    .bg { fill: var(--bg); }
+    .box { stroke: var(--line); stroke-width: 2; rx: 8; }
+    .h { font-size: 22px; font-weight: 700; }
+    .t { font-size: 16px; }
+    .small { font-size: 14px; fill: var(--muted); }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1040" height="500"/>
+  <text class="h" x="70" y="52">内核位置</text>
+  <rect class="box" x="70" y="76" width="280" height="48" fill="var(--a)"/>
+  <text class="t" x="210" y="106" text-anchor="middle">用户态：应用程序 / GUI</text>
+  <rect class="box" x="70" y="134" width="280" height="72" fill="var(--b)"/>
+  <text class="t" x="210" y="164" text-anchor="middle">内核态：进程 / 内存 / 设备</text>
+  <text class="small" x="210" y="188" text-anchor="middle">时钟、中断处理、原语</text>
+  <rect class="box" x="70" y="216" width="280" height="48" fill="var(--d)"/>
+  <text class="t" x="210" y="246" text-anchor="middle">硬件</text>
+  <text class="h" x="410" y="52">引导链</text>
+  <rect class="box" x="410" y="76" width="220" height="44" fill="var(--c)"/>
+  <text class="t" x="520" y="104" text-anchor="middle">ROM 自举程序</text>
+  <rect class="box" x="410" y="150" width="220" height="44" fill="var(--c)"/>
+  <text class="t" x="520" y="178" text-anchor="middle">MBR / 分区表</text>
+  <rect class="box" x="410" y="224" width="220" height="44" fill="var(--c)"/>
+  <text class="t" x="520" y="252" text-anchor="middle">活动分区引导记录</text>
+  <rect class="box" x="410" y="298" width="220" height="44" fill="var(--c)"/>
+  <text class="t" x="520" y="326" text-anchor="middle">OS 初始化程序</text>
+  <path class="arrow" d="M 520 120 L 520 150"/>
+  <path class="arrow" d="M 520 194 L 520 224"/>
+  <path class="arrow" d="M 520 268 L 520 298"/>
+  <text class="h" x="700" y="52">虚拟化</text>
+  <rect class="box" x="700" y="76" width="270" height="70" fill="var(--a)"/>
+  <text class="t" x="835" y="106" text-anchor="middle">第一类 VMM</text>
+  <text class="small" x="835" y="130" text-anchor="middle">直接运行在硬件上</text>
+  <rect class="box" x="700" y="178" width="270" height="70" fill="var(--b)"/>
+  <text class="t" x="835" y="208" text-anchor="middle">第二类 VMM</text>
+  <text class="small" x="835" y="232" text-anchor="middle">运行在宿主 OS 上</text>
+  <rect class="box" x="700" y="280" width="270" height="70" fill="var(--d)"/>
+  <text class="t" x="835" y="310" text-anchor="middle">CPU 权限级</text>
+  <text class="small" x="835" y="334" text-anchor="middle">Ring 0 权限高，Ring 3 权限低</text>
+</svg>

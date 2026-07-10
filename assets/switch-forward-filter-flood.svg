@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-label="交换机转发过滤泛洪三种情况">
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:#172033}
+    .box{fill:#fff;stroke:#8a98aa;stroke-width:2;rx:12}.sw{fill:#eef6ff;stroke:#2f73c8;stroke-width:2.5;rx:10}.host{fill:#fff;stroke:#7d8aa0;stroke-width:2;rx:8}
+    .line{stroke:#8a98aa;stroke-width:2.5}.arr{stroke:#2f73c8;stroke-width:3;fill:none;marker-end:url(#arrow)}.drop{stroke:#d14343;stroke-width:3;fill:none;stroke-dasharray:8 7}.flood{stroke:#bf7a18;stroke-width:3;fill:none;marker-end:url(#arrow2)}
+    .title{font-size:28px;font-weight:700}.label{font-size:18px;font-weight:700}.small{font-size:15px}.muted{fill:#5d6b7e}
+    @media(prefers-color-scheme:dark){text{fill:#e7edf7}.muted{fill:#b6c2d2}.box,.host{fill:#111827;stroke:#718096}.sw{fill:#10243d;stroke:#63a3ff}.line{stroke:#a8b4c5}.arr{stroke:#7ab0ff}.drop{stroke:#ff8585}.flood{stroke:#ffd166}}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2f73c8"/></marker><marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#bf7a18"/></marker></defs>
+  <text x="480" y="42" text-anchor="middle" class="title">交换机收到帧后的三种处理</text>
+  <g transform="translate(45 90)">
+    <rect width="260" height="330" class="box"/><text x="130" y="34" text-anchor="middle" class="label">转发</text>
+    <rect x="85" y="138" width="90" height="52" class="sw"/><text x="130" y="170" text-anchor="middle">SW</text>
+    <rect x="25" y="70" width="60" height="38" class="host"/><text x="55" y="95" text-anchor="middle">A</text>
+    <rect x="175" y="250" width="60" height="38" class="host"/><text x="205" y="275" text-anchor="middle">B</text>
+    <path d="M85 108 L115 138" class="line"/><path d="M145 190 L185 250" class="arr"/>
+    <text x="130" y="315" text-anchor="middle" class="small muted">目的端口已知，且不同于入端口</text>
+  </g>
+  <g transform="translate(350 90)">
+    <rect width="260" height="330" class="box"/><text x="130" y="34" text-anchor="middle" class="label">过滤</text>
+    <rect x="85" y="138" width="90" height="52" class="sw"/><text x="130" y="170" text-anchor="middle">SW</text>
+    <rect x="25" y="70" width="60" height="38" class="host"/><text x="55" y="95" text-anchor="middle">A</text>
+    <rect x="25" y="250" width="60" height="38" class="host"/><text x="55" y="275" text-anchor="middle">B</text>
+    <path d="M85 108 L115 138" class="line"/><path d="M115 190 L85 250" class="drop"/>
+    <text x="130" y="315" text-anchor="middle" class="small muted">目的就在入端口方向，不转发</text>
+  </g>
+  <g transform="translate(655 90)">
+    <rect width="260" height="330" class="box"/><text x="130" y="34" text-anchor="middle" class="label">泛洪</text>
+    <rect x="85" y="138" width="90" height="52" class="sw"/><text x="130" y="170" text-anchor="middle">SW</text>
+    <rect x="25" y="70" width="60" height="38" class="host"/><text x="55" y="95" text-anchor="middle">A</text>
+    <rect x="175" y="70" width="60" height="38" class="host"/><text x="205" y="95" text-anchor="middle">B</text>
+    <rect x="175" y="250" width="60" height="38" class="host"/><text x="205" y="275" text-anchor="middle">C</text>
+    <path d="M85 108 L115 138" class="line"/><path d="M145 138 L190 108" class="flood"/><path d="M145 190 L190 250" class="flood"/>
+    <text x="130" y="315" text-anchor="middle" class="small muted">目的未知或广播，除入端口外转发</text>
+  </g>
+</svg>

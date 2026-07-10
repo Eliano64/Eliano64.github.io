@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="680" viewBox="0 0 1120 680" role="img" aria-labelledby="title desc">
+  <title id="title">进程七状态模型</title>
+  <desc id="desc">展示创建、就绪、运行、阻塞、终止、就绪挂起、阻塞挂起之间的主要转换关系。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --node: #f8fafc;
+      --suspend: #fff7ed;
+      --text: #172033;
+      --muted: #536174;
+      --line: #516070;
+      --run: #dbeafe;
+      --block: #fee2e2;
+      --ready: #dcfce7;
+      --accent: #2563eb;
+      --warn: #b45309;
+      --shadow: rgba(15, 23, 42, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111318;
+        --node: #1b2029;
+        --suspend: #30281c;
+        --text: #e8edf5;
+        --muted: #aab5c4;
+        --line: #9aa8ba;
+        --run: #1a3158;
+        --block: #4b2227;
+        --ready: #173824;
+        --accent: #7aa2ff;
+        --warn: #f6b85f;
+        --shadow: rgba(0, 0, 0, 0.38);
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { fill: var(--text); font-size: 26px; font-weight: 700; }
+    .node { fill: var(--node); stroke: var(--line); stroke-width: 1.8; rx: 12; filter: drop-shadow(0 6px 12px var(--shadow)); }
+    .ready { fill: var(--ready); }
+    .run { fill: var(--run); }
+    .block { fill: var(--block); }
+    .suspend { fill: var(--suspend); stroke-dasharray: 8 5; }
+    .text { fill: var(--text); font-size: 20px; font-weight: 700; }
+    .small { fill: var(--muted); font-size: 14px; }
+    .label { fill: var(--muted); font-size: 14px; }
+    .key { fill: var(--text); font-size: 15px; font-weight: 700; }
+    .arrow { fill: none; stroke: var(--line); stroke-width: 2.2; marker-end: url(#arrow); }
+    .arrow-accent { stroke: var(--accent); }
+    .arrow-warn { stroke: var(--warn); stroke-dasharray: 7 5; }
+    .group { fill: none; stroke: var(--line); stroke-width: 1.4; stroke-dasharray: 6 6; rx: 18; }
+    .group-title { fill: var(--muted); font-size: 16px; font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" style="fill: var(--line);"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="560" y="42" text-anchor="middle">进程七状态模型</text>
+
+  <rect class="group" x="58" y="84" width="1004" height="330"/>
+  <text class="group-title" x="82" y="116">内存中的进程状态</text>
+
+  <rect class="node" x="90" y="180" width="138" height="76"/>
+  <text class="text" x="159" y="214" text-anchor="middle">创建态</text>
+  <text class="small" x="159" y="238" text-anchor="middle">建立 PCB</text>
+
+  <rect class="node ready" x="308" y="180" width="138" height="76"/>
+  <text class="text" x="377" y="214" text-anchor="middle">就绪态</text>
+  <text class="small" x="377" y="238" text-anchor="middle">等待 CPU</text>
+
+  <rect class="node run" x="526" y="180" width="138" height="76"/>
+  <text class="text" x="595" y="214" text-anchor="middle">运行态</text>
+  <text class="small" x="595" y="238" text-anchor="middle">占用 CPU</text>
+
+  <rect class="node block" x="526" y="308" width="138" height="76"/>
+  <text class="text" x="595" y="342" text-anchor="middle">阻塞态</text>
+  <text class="small" x="595" y="366" text-anchor="middle">等待事件</text>
+
+  <rect class="node" x="836" y="180" width="138" height="76"/>
+  <text class="text" x="905" y="214" text-anchor="middle">终止态</text>
+  <text class="small" x="905" y="238" text-anchor="middle">回收资源</text>
+
+  <rect class="group" x="212" y="462" width="696" height="154"/>
+  <text class="group-title" x="236" y="494">外存中的挂起状态</text>
+
+  <rect class="node suspend ready" x="308" y="520" width="138" height="76"/>
+  <text class="text" x="377" y="554" text-anchor="middle">就绪挂起</text>
+  <text class="small" x="377" y="578" text-anchor="middle">调入后可就绪</text>
+
+  <rect class="node suspend block" x="526" y="520" width="138" height="76"/>
+  <text class="text" x="595" y="554" text-anchor="middle">阻塞挂起</text>
+  <text class="small" x="595" y="578" text-anchor="middle">仍在等事件</text>
+
+  <path class="arrow" d="M 228 218 L 308 218"/>
+  <text class="label" x="268" y="204" text-anchor="middle">创建完成</text>
+
+  <path class="arrow arrow-accent" d="M 446 218 L 526 218"/>
+  <text class="label" x="486" y="204" text-anchor="middle">调度</text>
+
+  <path class="arrow" d="M 526 238 C 492 278, 488 300, 526 330"/>
+  <text class="label" x="474" y="292" text-anchor="middle">等待事件</text>
+
+  <path class="arrow" d="M 595 308 L 595 256"/>
+  <text class="label" x="630" y="286">事件发生后需再竞争 CPU</text>
+
+  <path class="arrow" d="M 526 196 C 494 150, 448 150, 416 180"/>
+  <text class="label" x="474" y="144" text-anchor="middle">时间片到 / 被抢占</text>
+
+  <path class="arrow" d="M 664 218 L 836 218"/>
+  <text class="label" x="750" y="204" text-anchor="middle">完成 / 异常终止</text>
+
+  <path class="arrow arrow-warn" d="M 377 256 L 377 520"/>
+  <text class="label" x="334" y="392" text-anchor="middle">挂起</text>
+
+  <path class="arrow arrow-warn" d="M 406 520 L 406 256"/>
+  <text class="label" x="444" y="392">激活</text>
+
+  <path class="arrow arrow-warn" d="M 595 384 L 595 520"/>
+  <text class="label" x="552" y="456" text-anchor="middle">挂起</text>
+
+  <path class="arrow arrow-warn" d="M 624 520 L 624 384"/>
+  <text class="label" x="660" y="456">激活</text>
+
+  <path class="arrow" d="M 526 558 L 446 558"/>
+  <text class="label" x="486" y="544" text-anchor="middle">事件发生</text>
+
+  <rect class="node" x="742" y="520" width="136" height="76"/>
+  <text class="key" x="810" y="552" text-anchor="middle">关键区别</text>
+  <text class="small" x="810" y="576" text-anchor="middle">阻塞：在内存等事件</text>
+  <text class="small" x="810" y="596" text-anchor="middle">挂起：进程映像在外存</text>
+</svg>

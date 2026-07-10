@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">数据报服务和虚电路服务对比</title>
+  <desc id="desc">数据报服务让每个分组独立携带完整目的地址；虚电路服务先建立逻辑连接，后续分组携带虚电路号。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    .bg { fill: #f8fafc; }
+    .panel { fill: #fff; stroke: #cbd5e1; stroke-width: 2; }
+    .node { fill: #eef2ff; stroke: #6366f1; stroke-width: 2; }
+    .vc { fill: #fff7ed; stroke: #f97316; stroke-width: 2; }
+    .line { stroke: #64748b; stroke-width: 2.4; fill: none; }
+    .blue { stroke: #2563eb; stroke-width: 4; fill: none; marker-end: url(#arrowBlue); }
+    .green { stroke: #059669; stroke-width: 4; fill: none; marker-end: url(#arrowGreen); }
+    .orange { stroke: #f97316; stroke-width: 5; fill: none; marker-end: url(#arrowOrange); }
+    .text { fill: #0f172a; font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; font-size: 18px; }
+    .small { fill: #334155; font-size: 15px; }
+    .caption { fill: #475569; font-size: 14px; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #020617; }
+      .panel { fill: #0f172a; stroke: #334155; }
+      .node { fill: #1e1b4b; stroke: #818cf8; }
+      .vc { fill: #431407; stroke: #fb923c; }
+      .line { stroke: #64748b; }
+      .text { fill: #e5e7eb; }
+      .small { fill: #cbd5e1; }
+      .caption { fill: #94a3b8; }
+    }
+  </style>
+  <defs>
+    <marker id="arrowBlue" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto"><path d="M2 2 L11 6.5 L2 11 Z" fill="#2563eb"/></marker>
+    <marker id="arrowGreen" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto"><path d="M2 2 L11 6.5 L2 11 Z" fill="#059669"/></marker>
+    <marker id="arrowOrange" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto"><path d="M2 2 L11 6.5 L2 11 Z" fill="#f97316"/></marker>
+  </defs>
+  <rect class="bg" width="980" height="560"/>
+  <text class="text" x="490" y="42" text-anchor="middle" font-size="26" font-weight="700">两种网络层服务模型</text>
+
+  <rect class="panel" x="46" y="82" width="888" height="200" rx="14"/>
+  <text class="text" x="88" y="120" font-weight="700">数据报服务</text>
+  <text class="small" x="88" y="148">不建立网络层连接；每个分组独立携带完整目的地址；路径可以不同。</text>
+  <circle class="node" cx="118" cy="220" r="26"/><text class="text small" x="118" y="225" text-anchor="middle">S</text>
+  <circle class="node" cx="282" cy="172" r="24"/><text class="text small" x="282" y="177" text-anchor="middle">R1</text>
+  <circle class="node" cx="282" cy="246" r="24"/><text class="text small" x="282" y="251" text-anchor="middle">R2</text>
+  <circle class="node" cx="512" cy="172" r="24"/><text class="text small" x="512" y="177" text-anchor="middle">R3</text>
+  <circle class="node" cx="512" cy="246" r="24"/><text class="text small" x="512" y="251" text-anchor="middle">R4</text>
+  <circle class="node" cx="764" cy="220" r="26"/><text class="text small" x="764" y="225" text-anchor="middle">D</text>
+  <path class="line" d="M144 220 L258 172 M144 220 L258 246 M306 172 H488 M306 246 H488 M536 172 L738 220 M536 246 L738 220"/>
+  <path class="blue" d="M144 220 L258 172 H488 L738 220"/>
+  <path class="green" d="M144 220 L258 246 H488 L738 220"/>
+  <text class="caption" x="393" y="151" text-anchor="middle">分组 1</text>
+  <text class="caption" x="393" y="275" text-anchor="middle">分组 2</text>
+
+  <rect class="panel" x="46" y="320" width="888" height="200" rx="14"/>
+  <text class="text" x="88" y="358" font-weight="700">虚电路服务</text>
+  <text class="small" x="88" y="386">先建立逻辑连接；后续分组沿同一路径转发；分组首部只需携带虚电路号。</text>
+  <circle class="vc" cx="118" cy="458" r="26"/><text class="text small" x="118" y="463" text-anchor="middle">S</text>
+  <circle class="vc" cx="282" cy="410" r="24"/><text class="text small" x="282" y="415" text-anchor="middle">R1</text>
+  <circle class="vc" cx="282" cy="484" r="24"/><text class="text small" x="282" y="489" text-anchor="middle">R2</text>
+  <circle class="vc" cx="512" cy="410" r="24"/><text class="text small" x="512" y="415" text-anchor="middle">R3</text>
+  <circle class="vc" cx="512" cy="484" r="24"/><text class="text small" x="512" y="489" text-anchor="middle">R4</text>
+  <circle class="vc" cx="764" cy="458" r="26"/><text class="text small" x="764" y="463" text-anchor="middle">D</text>
+  <path class="line" d="M144 458 L258 410 M144 458 L258 484 M306 410 H488 M306 484 H488 M536 410 L738 458 M536 484 L738 458"/>
+  <path class="orange" d="M144 458 L258 410 H488 L738 458"/>
+  <text class="caption" x="460" y="436" text-anchor="middle">同一条虚电路 VC#17</text>
+</svg>

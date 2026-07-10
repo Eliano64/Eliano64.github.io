@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
+  <title id="title">负载均衡与处理机亲和性</title>
+  <desc id="desc">图示负载均衡希望迁移任务，处理机亲和性希望进程留在同一 CPU 上，两者存在张力。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+      --cpu:#dbeafe; --cache:#fff7ed; --queue:#e6eef9; --hot:#fee2e2; --cool:#dcfce7;
+      --p:#2563eb; --accent:#b45309; --good:#0f766e; --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+        --cpu:#223553; --cache:#3b3025; --queue:#263142; --hot:#4a2528; --cool:#1f4036;
+        --p:#7aa2ff; --accent:#f6b85f; --good:#62d4c5; --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:25px; font-weight:700; }
+    .panel { fill:var(--panel); stroke:var(--line); stroke-width:1.5; rx:16; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .head { fill:var(--text); font-size:18px; font-weight:700; }
+    .label { fill:var(--text); font-size:14px; font-weight:700; }
+    .small { fill:var(--muted); font-size:13px; }
+    .cpu { fill:var(--cpu); stroke:var(--line); stroke-width:1.3; rx:10; }
+    .cache { fill:var(--cache); stroke:var(--line); stroke-width:1.1; rx:8; }
+    .queue { fill:var(--queue); stroke:var(--line); stroke-width:1.2; rx:10; }
+    .hot { fill:var(--hot); stroke:var(--line); stroke-width:1.2; rx:10; }
+    .cool { fill:var(--cool); stroke:var(--line); stroke-width:1.2; rx:10; }
+    .proc { fill:var(--p); stroke:var(--line); stroke-width:1; rx:8; }
+    .procText { fill:#fff; font-size:13px; font-weight:700; }
+    .arrow { stroke:var(--accent); stroke-width:2.4; fill:none; marker-end:url(#arrow); }
+    .soft { stroke:var(--good); stroke-width:2.4; fill:none; stroke-dasharray:8 6; marker-end:url(#arrowGood); }
+    /* contrast-audit-fix */
+  @media(prefers-color-scheme:dark){.procText{fill:#0f172a}}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--accent)"/>
+    </marker>
+    <marker id="arrowGood" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--good)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="560" y="42" text-anchor="middle">负载均衡与处理机亲和性的取舍</text>
+
+  <g transform="translate(48 86)">
+    <rect class="panel" x="0" y="0" width="1024" height="380"/>
+    <text class="head" x="512" y="38" text-anchor="middle">同一个调度器要同时考虑“忙不忙”和“熟不熟”</text>
+
+    <g transform="translate(58 82)">
+      <rect class="cool" x="0" y="0" width="172" height="236"/>
+      <text class="label" x="86" y="28" text-anchor="middle">CPU1</text>
+      <text class="small" x="86" y="51" text-anchor="middle">负载 35%</text>
+      <rect class="cache" x="36" y="70" width="100" height="40"/><text class="small" x="86" y="95" text-anchor="middle">Cache</text>
+      <rect class="queue" x="28" y="132" width="116" height="76"/>
+      <rect class="proc" x="58" y="154" width="56" height="30"/><text class="procText" x="86" y="174" text-anchor="middle">P1</text>
+    </g>
+    <g transform="translate(304 82)">
+      <rect class="queue" x="0" y="0" width="172" height="236"/>
+      <text class="label" x="86" y="28" text-anchor="middle">CPU2</text>
+      <text class="small" x="86" y="51" text-anchor="middle">负载 75%</text>
+      <rect class="cache" x="36" y="70" width="100" height="40"/><text class="small" x="86" y="95" text-anchor="middle">Cache</text>
+      <rect class="proc" x="32" y="130" width="48" height="30"/><text class="procText" x="56" y="150" text-anchor="middle">P2</text>
+      <rect class="proc" x="92" y="130" width="48" height="30"/><text class="procText" x="116" y="150" text-anchor="middle">P6</text>
+    </g>
+    <g transform="translate(550 82)">
+      <rect class="queue" x="0" y="0" width="172" height="236"/>
+      <text class="label" x="86" y="28" text-anchor="middle">CPU3</text>
+      <text class="small" x="86" y="51" text-anchor="middle">负载 80%</text>
+      <rect class="cache" x="36" y="70" width="100" height="40"/><text class="small" x="86" y="95" text-anchor="middle">Cache</text>
+      <rect class="proc" x="32" y="130" width="48" height="30"/><text class="procText" x="56" y="150" text-anchor="middle">P3</text>
+      <rect class="proc" x="92" y="130" width="48" height="30"/><text class="procText" x="116" y="150" text-anchor="middle">P7</text>
+    </g>
+    <g transform="translate(796 82)">
+      <rect class="hot" x="0" y="0" width="172" height="236"/>
+      <text class="label" x="86" y="28" text-anchor="middle">CPU4</text>
+      <text class="small" x="86" y="51" text-anchor="middle">负载 95%</text>
+      <rect class="cache" x="36" y="70" width="100" height="40"/><text class="small" x="86" y="95" text-anchor="middle">Cache 中有 P4 数据</text>
+      <rect class="proc" x="20" y="130" width="48" height="30"/><text class="procText" x="44" y="150" text-anchor="middle">P4</text>
+      <rect class="proc" x="72" y="130" width="48" height="30"/><text class="procText" x="96" y="150" text-anchor="middle">P8</text>
+      <rect class="proc" x="124" y="130" width="36" height="30"/><text class="procText" x="142" y="150" text-anchor="middle">P12</text>
+    </g>
+
+    <path class="arrow" d="M810 228 C690 282, 310 282, 216 228"/>
+    <text class="label" x="512" y="292" text-anchor="middle" fill="var(--accent)">负载均衡：把部分任务从忙 CPU 迁到空闲 CPU</text>
+    <path class="soft" d="M882 196 C882 248, 882 272, 882 306"/>
+    <text class="label" x="808" y="334" fill="var(--good)">处理机亲和性：P4 留在 CPU4 更容易复用 Cache</text>
+  </g>
+</svg>

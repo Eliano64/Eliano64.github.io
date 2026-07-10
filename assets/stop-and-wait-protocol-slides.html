@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>停止-等待协议过程</title>
+<style>
+:root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--amber:#fbbf24}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:1080px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.title{font-size:28px;font-weight:800}.sub{font-size:15px;color:var(--muted);margin-top:6px}.controls{display:flex;gap:8px;flex-wrap:wrap}.controls button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer}.controls button.active{background:var(--blue);border-color:var(--blue);color:#fff}.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:18px}.card{border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:16px}.note{line-height:1.75;font-size:18px}.note b{color:var(--blue)}svg{width:100%;height:430px;display:block}.axis{stroke:var(--line);stroke-width:2}.msg{stroke:var(--blue);stroke-width:4;marker-end:url(#arrow)}.ack{stroke:var(--green);stroke-width:4;marker-end:url(#arrow)}.bad{stroke:var(--red);stroke-width:4;stroke-dasharray:8 6;marker-end:url(#arrowRed)}.timer{stroke:var(--amber);stroke-width:3;stroke-dasharray:6 6}.t{fill:var(--text);font-size:18px;font-weight:700}.m{fill:var(--muted);font-size:15px}.lost{fill:var(--red);font-size:20px;font-weight:900}
+@media(max-width:850px){.top{display:block}.controls{margin-top:12px}.grid{grid-template-columns:1fr}svg{height:390px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div><div class="title">停止-等待：每次只保留一个未确认分组</div><div class="sub">纵向是时间，横向是发送方到接收方。点击不同步骤观察协议机制如何补齐。</div></div>
+    <div class="controls"><button data-step="0" class="active">正常</button><button data-step="1">数据丢失</button><button data-step="2">ACK 丢失</button><button data-step="3">重复识别</button></div>
+  </div>
+  <section class="grid">
+    <article class="card">
+      <svg viewBox="0 0 700 430" role="img" aria-label="停止等待协议时序图">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--blue)"/></marker>
+          <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--red)"/></marker>
+        </defs>
+        <line x1="130" y1="46" x2="130" y2="390" class="axis"/><line x1="555" y1="46" x2="555" y2="390" class="axis"/>
+        <text x="130" y="30" text-anchor="middle" class="t">发送方</text><text x="555" y="30" text-anchor="middle" class="t">接收方</text>
+        <g id="paths"></g>
+      </svg>
+    </article>
+    <article class="card note" id="note"></article>
+  </section>
+</main>
+<script>
+const data=[
+ {note:"<b>正常情况：</b>发送 DATA0 后启动计时器。接收方正确收到后返回 ACK0，发送方删除缓存副本，再发送 DATA1。", paths:[
+  ["msg",130,70,555,135,"DATA0"],["ack",555,155,130,220,"ACK0"],["msg",130,260,555,325,"DATA1"]
+ ]},
+ {note:"<b>数据丢失：</b>DATA0 没有到达，接收方不会产生 ACK。发送方等到 RTO 后自动重传缓存中的 DATA0。", paths:[
+  ["bad",130,70,410,112,"DATA0 丢失"],["timer",130,76,130,220,"RTO"],["msg",130,246,555,315,"重传 DATA0"]
+ ]},
+ {note:"<b>ACK 丢失：</b>接收方已经收到 DATA0，但 ACK0 丢失。发送方不知道接收方已经收到，只能超时后重传 DATA0。", paths:[
+  ["msg",130,70,555,135,"DATA0"],["bad",555,158,310,195,"ACK0 丢失"],["timer",130,76,130,242,"RTO"],["msg",130,270,555,340,"重传 DATA0"]
+ ]},
+ {note:"<b>重复识别：</b>重传 DATA0 到达时，接收方发现序号还是 0，知道这是重复分组：丢弃数据，但仍返回 ACK0。", paths:[
+  ["msg",130,70,555,135,"DATA0"],["bad",555,158,310,195,"ACK0 丢失"],["msg",130,248,555,312,"重传 DATA0"],["ack",555,332,130,382,"ACK0"]
+ ]}
+];
+const buttons=[...document.querySelectorAll("button")], g=document.getElementById("paths"), note=document.getElementById("note");
+function draw(i){g.innerHTML="";data[i].paths.forEach(p=>{const [cls,x1,y1,x2,y2,label]=p;const line=document.createElementNS("http://www.w3.org/2000/svg","line");line.setAttribute("x1",x1);line.setAttribute("y1",y1);line.setAttribute("x2",x2);line.setAttribute("y2",y2);line.setAttribute("class",cls);g.appendChild(line);const tx=document.createElementNS("http://www.w3.org/2000/svg","text");tx.setAttribute("x",(x1+x2)/2);tx.setAttribute("y",(y1+y2)/2-10);tx.setAttribute("text-anchor","middle");tx.setAttribute("class",cls==="bad"?"lost":"t");tx.textContent=label;g.appendChild(tx);});note.innerHTML=data[i].note;buttons.forEach((b,k)=>b.classList.toggle("active",k===i));}
+buttons.forEach((b,i)=>b.addEventListener("click",()=>draw(i)));draw(0);
+</script>
+</body>
+</html>

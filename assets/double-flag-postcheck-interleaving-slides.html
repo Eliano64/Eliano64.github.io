@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Double Flag Postcheck Interleaving</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #cbd5e1;
+      --accent: #7c3aed;
+      --bad: #dc2626;
+      --warn: #f59e0b;
+      --code: #f5f3ff;
+      --shadow: rgba(15, 23, 42, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --line: #374151;
+        --accent: #a78bfa;
+        --bad: #fb7185;
+        --warn: #fbbf24;
+        --code: #2e1065;
+        --shadow: rgba(0, 0, 0, .35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .deck {
+      width: min(1120px, 100vw);
+      margin: 0 auto;
+      padding: 22px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 7px 12px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+    button:hover { border-color: var(--accent); }
+    .counter { color: var(--muted); min-width: 56px; text-align: center; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr .95fr;
+      gap: 16px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 8px 20px var(--shadow);
+      min-height: 420px;
+    }
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+    .code {
+      display: grid;
+      gap: 8px;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 15px;
+    }
+    .line {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 7px 9px;
+      white-space: nowrap;
+    }
+    .line.active {
+      border-color: var(--accent);
+      background: var(--code);
+      box-shadow: inset 4px 0 0 var(--accent);
+    }
+    .state {
+      display: grid;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .flag {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      display: grid;
+      gap: 6px;
+    }
+    .value {
+      font: 700 26px/1 Consolas, monospace;
+      color: var(--bad);
+    }
+    .value.false { color: #16a34a; }
+    @media (prefers-color-scheme: dark) {
+      .value.false { color: #34d399; }
+    }
+    .wait {
+      border: 2px solid var(--warn);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 110px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+    }
+    .wait.blocked {
+      color: var(--warn);
+      font-weight: 700;
+      background: color-mix(in srgb, var(--warn) 12%, transparent);
+    }
+    .step-text { margin-top: 14px; }
+    .muted { color: var(--muted); }
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .panel { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <header>
+      <h1>双标志后检查法：先上锁后检查导致互相等待</h1>
+      <div class="controls">
+        <button id="prev">上一步</button>
+        <span class="counter" id="counter"></span>
+        <button id="next">下一步</button>
+        <button id="reset">重置</button>
+      </div>
+    </header>
+    <section class="grid">
+      <div class="panel">
+        <h2>P0</h2>
+        <div class="code">
+          <div class="line" data-line="p0-1">flag[0] = true;</div>
+          <div class="line" data-line="p0-2">while (flag[1]);</div>
+          <div class="line" data-line="p0-3">critical section;</div>
+          <div class="line" data-line="p0-4">flag[0] = false;</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>P1</h2>
+        <div class="code">
+          <div class="line" data-line="p1-1">flag[1] = true;</div>
+          <div class="line" data-line="p1-2">while (flag[0]);</div>
+          <div class="line" data-line="p1-3">critical section;</div>
+          <div class="line" data-line="p1-4">flag[1] = false;</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>共享状态</h2>
+        <div class="state">
+          <div class="flag">flag[0]<span class="value false" id="f0">false</span></div>
+          <div class="flag">flag[1]<span class="value false" id="f1">false</span></div>
+          <div class="wait" id="wait">两个进程还未等待</div>
+        </div>
+        <p class="step-text" id="desc"></p>
+        <p class="muted">问题根源：先上锁能避免同时进入，但双方都先上锁时，会把对方都挡在外面。</p>
+      </div>
+    </section>
+  </main>
+  <script>
+    const steps = [
+      { line: "", f0: false, f1: false, wait: "", desc: "初始状态：两个进程都没有进入意愿。" },
+      { line: "p0-1", f0: true, f1: false, wait: "", desc: "P0 先设置 flag[0] = true，表示自己准备进入。" },
+      { line: "p1-1", f0: true, f1: true, wait: "", desc: "P0 尚未检查 flag[1] 就被切换。P1 也设置 flag[1] = true。" },
+      { line: "p0-2", f0: true, f1: true, wait: "P0 等待 P1 清除 flag[1]", desc: "P0 检查到 flag[1] 为 true，于是停在 while 循环。" },
+      { line: "p1-2", f0: true, f1: true, wait: "P0 等 P1；P1 等 P0", desc: "P1 检查到 flag[0] 为 true，也停在 while 循环。双方都无法进入临界区。" }
+    ];
+    let index = 0;
+    const els = {
+      f0: document.getElementById("f0"),
+      f1: document.getElementById("f1"),
+      wait: document.getElementById("wait"),
+      desc: document.getElementById("desc"),
+      counter: document.getElementById("counter")
+    };
+    function setBool(el, value) {
+      el.textContent = value ? "true" : "false";
+      el.className = "value " + (value ? "true" : "false");
+    }
+    function render() {
+      const step = steps[index];
+      document.querySelectorAll(".line").forEach(el => {
+        el.classList.toggle("active", el.dataset.line === step.line);
+      });
+      setBool(els.f0, step.f0);
+      setBool(els.f1, step.f1);
+      els.wait.textContent = step.wait || "两个进程还未等待";
+      els.wait.classList.toggle("blocked", Boolean(step.wait));
+      els.desc.textContent = step.desc;
+      els.counter.textContent = `${index + 1}/${steps.length}`;
+    }
+    document.getElementById("prev").onclick = () => { index = Math.max(0, index - 1); render(); };
+    document.getElementById("next").onclick = () => { index = Math.min(steps.length - 1, index + 1); render(); };
+    document.getElementById("reset").onclick = () => { index = 0; render(); };
+    render();
+  </script>
+</body>
+</html>

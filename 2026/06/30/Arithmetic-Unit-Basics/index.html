@@ -1,0 +1,653 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Arithmetic Unit Basics | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="运算器与 ALU运算器负责对数据进行处理。ALU（Arithmetic and Logic Unit，算术逻辑单元）是运算器的核心部件。  ALU 可以看成一个受控制信号驱动的数据处理单元：    项目 含义    操作数 A、B 参与运算的两个 n bit 数据   控制信号 指定本次执行加、减、与、或、异或、移位等哪一种操作   Cin 进位输入，常用于加法、减法、带进位运算   结果 F n">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Arithmetic Unit Basics">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/30/Arithmetic-Unit-Basics/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="运算器与 ALU运算器负责对数据进行处理。ALU（Arithmetic and Logic Unit，算术逻辑单元）是运算器的核心部件。  ALU 可以看成一个受控制信号驱动的数据处理单元：    项目 含义    操作数 A、B 参与运算的两个 n bit 数据   控制信号 指定本次执行加、减、与、或、异或、移位等哪一种操作   Cin 进位输入，常用于加法、减法、带进位运算   结果 F n">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-30T05:00:09.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.001Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerOrganization">
+<meta property="article:tag" content="Number">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Arithmetic Unit Basics",
+  "url": "https://eliano64.github.io/2026/06/30/Arithmetic-Unit-Basics/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-30T05:00:09.000Z",
+  "dateModified": "2026-07-10T07:16:51.001Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/30/Arithmetic-Unit-Basics/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Arithmetic Unit Basics',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Arithmetic Unit Basics</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Arithmetic Unit Basics</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-30T05:00:09.000Z" title="发表于 2026-06-30 13:00:09">2026-06-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.001Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.3k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="运算器与-ALU"><a href="#运算器与-ALU" class="headerlink" title="运算器与 ALU"></a>运算器与 ALU</h1><p>运算器负责对数据进行处理。<br><strong>ALU</strong>（Arithmetic and Logic Unit，算术逻辑单元）是运算器的核心部件。</p>
+<p><img src="/assets/arithmetic-unit-alu-interface.svg"></p>
+<p>ALU 可以看成一个受控制信号驱动的数据处理单元：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>操作数 <code>A</code>、<code>B</code></td>
+<td>参与运算的两个 n bit 数据</td>
+</tr>
+<tr>
+<td>控制信号</td>
+<td>指定本次执行加、减、与、或、异或、移位等哪一种操作</td>
+</tr>
+<tr>
+<td><code>Cin</code></td>
+<td>进位输入，常用于加法、减法、带进位运算</td>
+</tr>
+<tr>
+<td>结果 <code>F</code></td>
+<td>n bit 运算结果</td>
+</tr>
+<tr>
+<td><code>Cout</code></td>
+<td>进位输出</td>
+</tr>
+<tr>
+<td>标志位</td>
+<td>描述本次结果的特征，如是否为 0、是否溢出</td>
+</tr>
+</tbody></table>
+<p>如果 ALU 支持 $k$ 种操作，至少需要：</p>
+<p>$$<br>m \ge \lceil \log_2 k \rceil<br>$$</p>
+<p>位控制信号，才能区分这些操作。</p>
+<h1 id="基本运算"><a href="#基本运算" class="headerlink" title="基本运算"></a>基本运算</h1><p>ALU 支持的操作可以先分成三类。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>常见操作</th>
+<th>关注点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>算术运算</td>
+<td>加、减、乘、除</td>
+<td>数值结果、进位、溢出</td>
+</tr>
+<tr>
+<td>逻辑运算</td>
+<td>与、或、非、异或</td>
+<td>按 bit 处理，不关心数值正负</td>
+</tr>
+<tr>
+<td>移位运算</td>
+<td>逻辑移位、算术移位、循环移位</td>
+<td>bit 位置变化，可能影响符号位或进位位</td>
+</tr>
+</tbody></table>
+<h2 id="逻辑运算"><a href="#逻辑运算" class="headerlink" title="逻辑运算"></a>逻辑运算</h2><p>逻辑运算按 bit 独立处理。例如：</p>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>含义</th>
+<th>常见用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>AND</code></td>
+<td>两位都为 1 才为 1</td>
+<td>清零、取掩码</td>
+</tr>
+<tr>
+<td><code>OR</code></td>
+<td>至少一位为 1 就为 1</td>
+<td>置位</td>
+</tr>
+<tr>
+<td><code>NOT</code></td>
+<td>0&#x2F;1 取反</td>
+<td>构造反码、按位取反</td>
+</tr>
+<tr>
+<td><code>XOR</code></td>
+<td>两位不同为 1</td>
+<td>判断不同、翻转指定 bit</td>
+</tr>
+</tbody></table>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">逻辑运算不是逻辑判断</span></div>
+<div class="callout-content"><p><code>AND</code>、<code>OR</code>、<code>XOR</code> 在 ALU 中通常是按 bit 运算。它们处理的是 bit 模式，不直接关心这个 bit 模式被解释成无符号数还是补码数。</p>
+</div>
+</div>
+## 移位运算
+
+<p>移位运算通过改变 bit 位置来改变各位的位权。直观上：</p>
+<ul>
+<li>左移 1 位，常对应乘以 2。</li>
+<li>右移 1 位，常对应除以 2。</li>
+</ul>
+<p><img src="/assets/arithmetic-unit-shift-operations.svg"></p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">Warning</span></div>
+<div class="callout-content"><p>左移时若有效高位被舍弃，可能发生溢出。<br>右移时若低位被舍弃，可能丢失精度，即使再次左移也不能恢复。</p>
+</div>
+</div>
+
+<h3 id="逻辑移位"><a href="#逻辑移位" class="headerlink" title="逻辑移位"></a>逻辑移位</h3><p>逻辑移位把操作数看作无符号数。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>规则</th>
+<th>常见理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>逻辑左移</td>
+<td>低位补 0，高位舍弃</td>
+<td>无符号数乘 2</td>
+</tr>
+<tr>
+<td>逻辑右移</td>
+<td>高位补 0，低位舍弃</td>
+<td>无符号数除 2</td>
+</tr>
+</tbody></table>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1011 0101 逻辑右移 1 位 -&gt; 0101 1010</span><br><span class="line">1011 0101 逻辑左移 1 位 -&gt; 0110 1010</span><br></pre></td></tr></table></figure>
+
+<p>逻辑移位适合无符号数。</p>
+<h3 id="算术移位"><a href="#算术移位" class="headerlink" title="算术移位"></a>算术移位</h3><p>算术移位将操作数视为由补码表示。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>规则</th>
+<th>常见理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>算术左移</td>
+<td>低位补 0，高位舍弃</td>
+<td>乘 2，可能溢出</td>
+</tr>
+<tr>
+<td>算术右移</td>
+<td>高位补符号位，低位舍弃</td>
+<td>除 2，保留正负号</td>
+</tr>
+</tbody></table>
+<p>例如 8 bit 补码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1111 0110 = -10</span><br></pre></td></tr></table></figure>
+
+<p>算术右移 1 位：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1111 1011 = -5</span><br></pre></td></tr></table></figure>
+
+<p>最高位补 1，是为了保留负数符号。</p>
+<h3 id="循环移位"><a href="#循环移位" class="headerlink" title="循环移位"></a>循环移位</h3><p>循环移位将移出位送回另一端。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>循环左移</td>
+<td>最高位移到最低位</td>
+</tr>
+<tr>
+<td>循环右移</td>
+<td>最低位移到最高位</td>
+</tr>
+</tbody></table>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1011 0101 循环左移 1 位 -&gt; 0110 1011</span><br></pre></td></tr></table></figure>
+
+<p>循环移位常用于需要重新排列 bit 的场景。它不是普通乘除法。</p>
+<h3 id="带进位循环移位"><a href="#带进位循环移位" class="headerlink" title="带进位循环移位"></a>带进位循环移位</h3><p>带进位循环移位把 <code>CF</code> 也看成循环的一部分。</p>
+<p>以带进位循环左移为例：</p>
+<ol>
+<li>最高位移入 <code>CF</code>。</li>
+<li>原 <code>CF</code> 移入最低位。</li>
+<li>其余 bit 左移。</li>
+</ol>
+<p>因此它循环的是：$n \text{ 个数据位} + CF$</p>
+<h1 id="加法器"><a href="#加法器" class="headerlink" title="加法器"></a>加法器</h1><p>输入两个 n bit 数据和一个进位输入，输出 n bit 和、进位输出以及相关标志。</p>
+<p>对 n bit 加法来说，机器实际计算的是：</p>
+<p>$$<br>F &#x3D; (A + B + C_{in}) \bmod 2^n<br>$$</p>
+<p>超出 n bit 的部分会体现在进位或溢出相关标志里。</p>
+<p>加法器重要，是因为很多运算可以转化为加法：</p>
+<ul>
+<li>加法：$A+B$</li>
+<li>减法：$A-B &#x3D; A + (-B)$</li>
+<li>补码减法：$A-B &#x3D; A + (\sim B) + 1$</li>
+<li>乘法：可以看成移位与多次加法的组合</li>
+<li>除法：可以看成移位、比较、减法的组合</li>
+</ul>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">补码让减法复用加法器</span></div>
+<div class="callout-content"><p>补码系统中，减法可以通过“被减数不变，减数按位取反再加 1”转化为加法，因此 ALU 不需要把加法和减法理解成完全无关的两套数值机制。</p>
+</div>
+</div>
+## 补码加法
+
+<p>n bit 补码加法直接按位相加，符号位也参与运算。</p>
+<p>$$<br>[X+Y]<em>{\text{补}} &#x3D; [X]</em>{\text{补}} + [Y]_{\text{补}} \pmod {2^n}<br>$$</p>
+<p>机器只保留低 n bit。最高位向外的进位会被丢弃，但可以参与标志位生成。</p>
+<p>例如 8 bit 补码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">  0000 1111   (+15)</span><br><span class="line">+ 1110 1000   (-24)</span><br><span class="line">= 1111 0111   (-9)</span><br></pre></td></tr></table></figure>
+
+<p>结果 <code>1111 0111</code> 按补码解释为 $-9$。</p>
+<h2 id="补码减法"><a href="#补码减法" class="headerlink" title="补码减法"></a>补码减法</h2><p>补码减法先把减数变成相反数，再交给加法器。</p>
+<p>$$<br>[X-Y]<em>{\text{补}} &#x3D; [X]</em>{\text{补}} + [-Y]_{\text{补}}<br>$$</p>
+<p>求 $[-Y]_{\text{补}}$ 的常用方法是：</p>
+<ol>
+<li>将 $[Y]_{\text{补}}$ 连同符号位一起按位取反。</li>
+<li>末位加 1。这个 1 有 $C_{in}$ 提供。所以补码减法的$C_{in}$为1。</li>
+</ol>
+<p>例如 4 bit 补码，$X&#x3D;3$，$Y&#x3D;4$：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">X      = 0011</span><br><span class="line">Y      = 0100</span><br><span class="line">-Y     = 1100</span><br><span class="line">X - Y  = 0011 + 1100 = 1111</span><br></pre></td></tr></table></figure>
+
+<p><code>1111</code> 按 4 bit 补码解释为 $-1$。</p>
+<h2 id="无符号加减法"><a href="#无符号加减法" class="headerlink" title="无符号加减法"></a>无符号加减法</h2><p>无符号整数的加减法也可以复用同一个 n bit 加法器。</p>
+<p>无符号加法：</p>
+<p>$$<br>F &#x3D; (X + Y) \bmod 2^n<br>$$</p>
+<p>无符号减法：</p>
+<p>$$<br>F &#x3D; (X - Y) \bmod 2^n &#x3D; (X + (2^n - Y)) \bmod {2^n}<br>$$</p>
+<p>$2^{n}-Y$等价于$Y$按位取反末位加 1。</p>
+<p>这个 1 有 $C_{in}$ 提供。所以无符号减法的$C_{in}$为1。</p>
+<p>例如 4 bit 无符号数，$X&#x3D;8$，$Y&#x3D;7$：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">X      = 1000</span><br><span class="line">Y      = 0111</span><br><span class="line">16 -Y  = 1001</span><br><span class="line">X - Y  = 1000 + 1001 = 1 0001</span><br></pre></td></tr></table></figure>
+
+<p>机器保留低 4 bit，结果为 <code>0001</code>，即 $1$。最高位进位不作为结果保存。</p>
+<h2 id="加减法溢出判断"><a href="#加减法溢出判断" class="headerlink" title="加减法溢出判断"></a>加减法溢出判断</h2><p>同一个 n bit 加法器可以算补码数，也可以算无符号数。区别在于结果如何解释，以及看哪个标志。</p>
+<table>
+<thead>
+<tr>
+<th>数的解释</th>
+<th>溢出含义</th>
+<th>主要看</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无符号数</td>
+<td>结果超出 $0$ 到 $2^n-1$</td>
+<td><code>CF</code></td>
+</tr>
+<tr>
+<td>有符号补码</td>
+<td>结果超出 $-2^{n-1}$ 到 $2^{n-1}-1$</td>
+<td><code>OF</code></td>
+</tr>
+</tbody></table>
+<p>无符号加法：</p>
+<ul>
+<li>最高位向外产生进位，<code>CF = 1</code>。</li>
+<li>没有进位，<code>CF = 0</code>。</li>
+</ul>
+<p>无符号减法：</p>
+<ul>
+<li>减法转加法后，若最高位没有产生进位，说明发生借位，<code>CF = 1</code>。</li>
+<li>若最高位产生进位，说明没有借位，<code>CF = 0</code>。</li>
+</ul>
+<p>补码加减法：</p>
+<ul>
+<li>两个正数相加得到负数，发生上溢。</li>
+<li>两个负数相加得到正数，发生下溢。</li>
+<li>硬件上常用 $OF &#x3D; C_n \oplus C_{n-1}$ 判断。</li>
+</ul>
+<h1 id="PSW-与运算标志"><a href="#PSW-与运算标志" class="headerlink" title="PSW 与运算标志"></a>PSW 与运算标志</h1><p>ALU 运算完成后，除了产生结果 <code>F</code>，还会产生若干标志位。这些标志位通常送入 <strong>PSW</strong>（Program Status Word，程序状态字）或标志寄存器。</p>
+<p><img src="/assets/arithmetic-unit-psw-flags.svg"></p>
+<p>常见的 4 个运算标志如下。</p>
+<table>
+<thead>
+<tr>
+<th>标志</th>
+<th>名称</th>
+<th>置 1 条件</th>
+<th>主要服务对象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ZF</code></td>
+<td>Zero Flag，零标志</td>
+<td>运算结果为 0</td>
+<td>判断结果是否为 0</td>
+</tr>
+<tr>
+<td><code>SF</code></td>
+<td>Sign Flag，符号标志</td>
+<td>结果最高位为 1</td>
+<td><strong>有</strong>符号数的正负</td>
+</tr>
+<tr>
+<td><code>CF</code></td>
+<td>Carry Flag，进位&#x2F;借位标志</td>
+<td>无符号加减法发生进位或借位</td>
+<td><strong>无</strong>符号数溢出</td>
+</tr>
+<tr>
+<td><code>OF</code></td>
+<td>Overflow Flag，溢出标志</td>
+<td>有符号补码结果超出表示范围</td>
+<td><strong>有</strong>符号数溢出</td>
+</tr>
+</tbody></table>
+<h2 id="ZF：结果是否为-0"><a href="#ZF：结果是否为-0" class="headerlink" title="ZF：结果是否为 0"></a>ZF：结果是否为 0</h2><p><code>ZF</code> 只看结果 bit 是否全为 0。</p>
+<p>$$<br>ZF &#x3D;<br>\begin{cases}<br>1, &amp; F &#x3D; 0 \<br>0, &amp; F \ne 0<br>\end{cases}<br>$$</p>
+<p>它不关心结果被解释成无符号数还是有符号数。</p>
+<h2 id="SF：结果最高位"><a href="#SF：结果最高位" class="headerlink" title="SF：结果最高位"></a>SF：结果最高位</h2><p><code>SF</code> 取结果 <code>F</code> 的最高位。</p>
+<p>若把结果解释为补码整数：</p>
+<ul>
+<li><code>SF = 0</code>：结果非负</li>
+<li><code>SF = 1</code>：结果为负</li>
+</ul>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">Warning</span></div>
+<div class="callout-content"><p><code>SF</code> 只反映结果最高位。若有符号运算已经溢出，<code>SF</code> 看到的是截断后的机器结果符号，不是真实数学结果的符号。</p>
+</div>
+</div>
+## CF：无符号进位或借位
+
+<p><code>CF</code> 服务于无符号整数。</p>
+<p>对无符号加法：</p>
+<ul>
+<li>最高位向外产生进位，说明结果超过 n bit 无符号数范围。</li>
+<li>此时 <code>CF = 1</code>。</li>
+</ul>
+<p>对无符号减法：</p>
+<ul>
+<li>实质：$(a+(2^{n}-b))\text{mod}(2^{n})$</li>
+</ul>
+<ul>
+<li>若<strong>未</strong>发生进位，说明被减数小于减数，发生<strong>下溢</strong>。</li>
+<li>此时 <code>CF = 1</code>。</li>
+</ul>
+<p>若用统一加法器表示加减法，可以记作：</p>
+<p>$$<br>CF &#x3D; C_{out} \oplus C_{in}<br>$$</p>
+<p>其中加法时 $C_{in}&#x3D;0$，减法转加法时常取 $C_{in}&#x3D;1$。</p>
+<h2 id="OF：有符号补码溢出"><a href="#OF：有符号补码溢出" class="headerlink" title="OF：有符号补码溢出"></a>OF：有符号补码溢出</h2><p><code>OF</code> 服务于有符号补码整数。</p>
+<p>对 n bit 补码，表示范围是：</p>
+<p>$$<br>-2^{n-1} \le x \le 2^{n-1}-1<br>$$</p>
+<p>若加减结果超出这个范围，<code>OF = 1</code>。</p>
+<p>硬件上常用下面的等价判断：</p>
+<p>$$<br>OF &#x3D; C_n \oplus C_{n-1}<br>$$</p>
+<p>其中 $C_n$ 是符号位产生的进位，$C_{n-1}$ 是最高数值位向符号位产生的进位。二者不同，说明有符号补码溢出。</p>
+<h2 id="CF-与-OF-辨析"><a href="#CF-与-OF-辨析" class="headerlink" title="CF 与 OF 辨析"></a>CF 与 OF 辨析</h2><p><code>CF</code> 和 <code>OF</code> 是最容易混淆的一对。</p>
+<table>
+<thead>
+<tr>
+<th>标志</th>
+<th>判断对象</th>
+<th>关心的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CF</code></td>
+<td>无符号数</td>
+<td>结果是否超出 $0$ 到 $2^n-1$</td>
+</tr>
+<tr>
+<td><code>OF</code></td>
+<td>有符号补码数</td>
+<td>结果是否超出 $-2^{n-1}$ 到 $2^{n-1}-1$</td>
+</tr>
+</tbody></table>
+<p>同一个 bit 结果，可以有两种解释。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">$0111~1111B+0000~0001B=1000~0000B$</span></div>
+<div class="callout-content"><p>若按无符号数解释, 结果为128，<code>CF = 0</code>;</p>
+</div>
+</div>若按有符号补码解释, 结果为-128，发生上溢，`OF = 1`。
+
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">$1111~1111B + 0000~0001B=1~0000~0000B$</span></div>
+<div class="callout-content"></div>
+</div>若按无符号数解释, 表示$255+1$, 发生上溢，`CF = 1`；
+若按补码解释，表示$-1+1$, 结果为0，`OF = 0`。
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/30/Arithmetic-Unit-Basics/">https://eliano64.github.io/2026/06/30/Arithmetic-Unit-Basics/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/30/Number-Systems-And-Encoding/" title="Number Systems And Encoding"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Number Systems And Encoding</div></div><div class="info-2"><div class="info-item-1">进位计数制进位计数制用有限个数码和位权表示数值。对于 $r$ 进制数： $$K_nK_{n-1}\cdots K_1K_0.K_{-1}K_{-2}\cdots$$ 其真值为： $$\sum_i K_i r^i$$ 其中每个数码 $K_i$ 必须满足： $$0 \le K_i &lt; r$$ 例如： $$(975.36)_{10}&#x3D;9\times10^2+7\times10^1+5\times10^0+3\times10^{-1}+6\times10^{-2}$$  进制转换任意进制转十进制按位权展开后求和。  Example $$  (1011.01)_2=1\times2^3+0\times2^2+1\times2^1+1\times2^0+0\times2^{-1}+1\times2^{-2}=11.25 > $$  十进制转任意进制整数部分和小数部分分开处理。    部分 方法 读数方向    整数部分 除基取余 余数从下往上读   小数部分 乘基取整 整数部分从上往下读   整数部分：除基取余把十进制整数 $N$ 转为 $r$ 进制：  用 $N$ 除以...</div></div></div></a><a class="pagination-related" href="/2026/06/30/Integer-Multiplication-And-Division/" title="Integer Multiplication And Division"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Integer Multiplication And Division</div></div><div class="info-2"><div class="info-item-1">乘法乘法运算常见有三类实现方式：    实现方式 基本思路    迭代式乘法器 复用同一个 ALU 和寄存器，每轮根据乘数位决定加、减或不操作，再移位。若一次ALU加法和一次移位各需要一个时钟周期，则对于$n$位乘法需要$2n$个时钟周期   阵列乘法器 用大量并行硬件同时生成并累加部分积，可在一个时钟周期内完成一次乘法运算。速度最快但硬件开销大。   移位-加减法 从算法层面把乘法转化为移位、加法、减法，硬件成本最低但速度最慢   下面介绍的即迭代式乘法器 无符号乘法乘法过程可以用三个核心寄存器理解：    寄存器 作用    ACC 保存部分积的高位，也参与加法   MQ 初始保存乘数，运算结束后保存乘积低位   X 保存被乘数   ACC 和 MQ 常连在一起看作一个双倍位宽寄存器： 1ACC | MQ  乘法的核心动作是：  看 MQ 的最低位。 若最低位为 1，则 ACC = ACC + X。 若最低位为 0，则 ACC 不变。 将 ACC | MQ 整体右移一位。 重复 n 次后，ACC | MQ 中保存完整乘积。   Note 若 ACC + X...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%90%E7%AE%97%E5%99%A8%E4%B8%8E-ALU"><span class="toc-text">运算器与 ALU</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E8%BF%90%E7%AE%97"><span class="toc-text">基本运算</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E8%BF%90%E7%AE%97"><span class="toc-text">逻辑运算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E7%A7%BB%E4%BD%8D"><span class="toc-text">逻辑移位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%9C%AF%E7%A7%BB%E4%BD%8D"><span class="toc-text">算术移位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E7%A7%BB%E4%BD%8D"><span class="toc-text">循环移位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%A6%E8%BF%9B%E4%BD%8D%E5%BE%AA%E7%8E%AF%E7%A7%BB%E4%BD%8D"><span class="toc-text">带进位循环移位</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8A%A0%E6%B3%95%E5%99%A8"><span class="toc-text">加法器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E7%A0%81%E5%87%8F%E6%B3%95"><span class="toc-text">补码减法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E7%AC%A6%E5%8F%B7%E5%8A%A0%E5%87%8F%E6%B3%95"><span class="toc-text">无符号加减法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A0%E5%87%8F%E6%B3%95%E6%BA%A2%E5%87%BA%E5%88%A4%E6%96%AD"><span class="toc-text">加减法溢出判断</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PSW-%E4%B8%8E%E8%BF%90%E7%AE%97%E6%A0%87%E5%BF%97"><span class="toc-text">PSW 与运算标志</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ZF%EF%BC%9A%E7%BB%93%E6%9E%9C%E6%98%AF%E5%90%A6%E4%B8%BA-0"><span class="toc-text">ZF：结果是否为 0</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SF%EF%BC%9A%E7%BB%93%E6%9E%9C%E6%9C%80%E9%AB%98%E4%BD%8D"><span class="toc-text">SF：结果最高位</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OF%EF%BC%9A%E6%9C%89%E7%AC%A6%E5%8F%B7%E8%A1%A5%E7%A0%81%E6%BA%A2%E5%87%BA"><span class="toc-text">OF：有符号补码溢出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CF-%E4%B8%8E-OF-%E8%BE%A8%E6%9E%90"><span class="toc-text">CF 与 OF 辨析</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

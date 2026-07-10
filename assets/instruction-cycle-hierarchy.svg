@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="500" viewBox="0 0 1120 500" role="img" aria-labelledby="title desc">
+  <title id="title">Instruction cycle hierarchy</title>
+  <desc id="desc">An instruction cycle contains machine cycles, and a machine cycle contains clock cycles or beats.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --ink: #172033;
+      --muted: #5d6980;
+      --line: #526174;
+      --a: #e8f1ff;
+      --b: #fff2d8;
+      --c: #eef7ee;
+      --chip: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1420;
+        --ink: #e7edf7;
+        --muted: #aab6c8;
+        --line: #91a0b5;
+        --a: #17243a;
+        --b: #302417;
+        --c: #18291d;
+        --chip: #151c2a;
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    text { fill: var(--ink); }
+    .title { font-size: 30px; font-weight: 700; }
+    .label { font-size: 23px; font-weight: 700; }
+    .note { font-size: 17px; fill: var(--muted); }
+    .box { stroke: var(--line); stroke-width: 2.2; rx: 14; }
+    .a { fill: var(--a); }
+    .b { fill: var(--b); }
+    .c { fill: var(--c); }
+    .tick { fill: var(--chip); stroke: var(--line); stroke-width: 1.8; rx: 8; }
+    .arrow { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+  <text x="560" y="48" text-anchor="middle" class="title">指令周期、机器周期、时钟周期的层级</text>
+
+  <rect x="80" y="96" width="960" height="118" class="box a"/>
+  <text x="560" y="142" text-anchor="middle" class="label">指令周期</text>
+  <text x="560" y="176" text-anchor="middle" class="note">CPU 从主存取出并执行一条指令所需的全部时间</text>
+
+  <path d="M560 214 V252" class="arrow"/>
+
+  <rect x="110" y="264" width="205" height="86" class="box b"/>
+  <text x="212" y="300" text-anchor="middle" class="label">取指周期</text>
+  <text x="212" y="326" text-anchor="middle" class="note">取出指令</text>
+  <rect x="345" y="264" width="205" height="86" class="box b"/>
+  <text x="447" y="300" text-anchor="middle" class="label">间址周期</text>
+  <text x="447" y="326" text-anchor="middle" class="note">可选</text>
+  <rect x="580" y="264" width="205" height="86" class="box b"/>
+  <text x="682" y="300" text-anchor="middle" class="label">执行周期</text>
+  <text x="682" y="326" text-anchor="middle" class="note">完成指令功能</text>
+  <rect x="815" y="264" width="205" height="86" class="box b"/>
+  <text x="917" y="300" text-anchor="middle" class="label">中断周期</text>
+  <text x="917" y="326" text-anchor="middle" class="note">可选</text>
+
+  <path d="M682 350 V386" class="arrow"/>
+
+  <rect x="362" y="398" width="95" height="48" class="tick"/>
+  <text x="410" y="429" text-anchor="middle" class="label">T0</text>
+  <rect x="472" y="398" width="95" height="48" class="tick"/>
+  <text x="520" y="429" text-anchor="middle" class="label">T1</text>
+  <rect x="582" y="398" width="95" height="48" class="tick"/>
+  <text x="630" y="429" text-anchor="middle" class="label">T2</text>
+  <rect x="692" y="398" width="95" height="48" class="tick"/>
+  <text x="740" y="429" text-anchor="middle" class="label">...</text>
+  <text x="560" y="474" text-anchor="middle" class="note">机器周期又叫 CPU 周期；时钟周期也叫节拍、T 周期，是 CPU 操作的基本时间单位。</text>
+</svg>

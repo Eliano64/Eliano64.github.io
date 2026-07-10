@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="700" viewBox="0 0 1120 700" role="img" aria-labelledby="title desc">
+  <title id="title">Three-level storage system with main memory as hub</title>
+  <desc id="desc">CPU can exchange information directly with Cache and main memory, but cannot directly access secondary storage. Main memory is the hub between CPU-visible storage and secondary storage.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0 L10 5 L0 10 z"/>
+    </marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      .bg{fill:#fbfcff}
+      .title{font:700 28px "Microsoft YaHei",Arial,sans-serif;fill:#172033}
+      .head{font:700 20px "Microsoft YaHei",Arial,sans-serif;fill:#172033}
+      .txt{font:400 15px "Microsoft YaHei",Arial,sans-serif;fill:#40506a}
+      .small{font:400 13px "Microsoft YaHei",Arial,sans-serif;fill:#5c687b}
+      .note{font:700 15px "Microsoft YaHei",Arial,sans-serif;fill:#8a4b00}
+      .box{fill:#fff;stroke:#9aa9bd;stroke-width:1.9;rx:10}
+      .cpu{fill:#eef6ff;stroke:#5f92d6}
+      .cache{fill:#effaf3;stroke:#62a87c}
+      .mem{fill:#fff7e8;stroke:#d49a3a}
+      .disk{fill:#fff1f1;stroke:#c77777}
+      .tag{fill:#f6f7fb;stroke:#c4cedc;stroke-width:1.3;rx:7}
+      .line{stroke:#27354f;stroke-width:2.7;fill:none;marker-end:url(#arrow)}
+      .back{stroke:#27354f;stroke-width:2.7;fill:none;marker-end:url(#arrow)}
+      .redLine{stroke:#b45353;stroke-width:2.8;fill:none;marker-end:url(#arrowRed)}
+      .no{stroke:#b45353;stroke-width:3;fill:none;stroke-dasharray:8 7}
+      .hub{stroke:#d49a3a;stroke-width:2.2;fill:none;stroke-dasharray:7 6}
+      #arrow path{fill:#27354f}
+      #arrowRed path{fill:#b45353}
+      @media (prefers-color-scheme: dark){
+        .bg{fill:#111827}
+        .title,.head{fill:#f3f4f6}
+        .txt,.small{fill:#cbd5e1}
+        .note{fill:#fbbf24}
+        .box{fill:#1f2937;stroke:#64748b}
+        .cpu{fill:#172554;stroke:#60a5fa}
+        .cache{fill:#143525;stroke:#4ade80}
+        .mem{fill:#3b2a12;stroke:#f59e0b}
+        .disk{fill:#3b1d1d;stroke:#f87171}
+        .tag{fill:#263244;stroke:#64748b}
+        .line,.back{stroke:#d1d5db}
+        .redLine,.no{stroke:#f87171}
+        .hub{stroke:#f59e0b}
+        #arrow path{fill:#d1d5db}
+        #arrowRed path{fill:#f87171}
+      }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1120" height="700"/>
+  <text class="title" x="52" y="58">三级存储系统：主存是 CPU 与辅存之间的枢纽</text>
+
+  <rect class="box cpu" x="90" y="250" width="180" height="126"/>
+  <text class="head" x="180" y="294" text-anchor="middle">CPU</text>
+  <text class="txt" x="180" y="324" text-anchor="middle">取指令 / 取数据</text>
+  <text class="small" x="180" y="350" text-anchor="middle">只能直接访问</text>
+  <text class="small" x="180" y="370" text-anchor="middle">Cache 与主存</text>
+
+  <rect class="box cache" x="430" y="118" width="210" height="132"/>
+  <text class="head" x="535" y="160" text-anchor="middle">Cache</text>
+  <text class="txt" x="535" y="190" text-anchor="middle">主存块副本</text>
+  <text class="small" x="535" y="216" text-anchor="middle">解决 CPU - 主存速度差</text>
+  <rect class="tag" x="472" y="226" width="126" height="30"/>
+  <text class="small" x="535" y="246" text-anchor="middle">交换单位：块</text>
+
+  <rect class="box mem" x="430" y="330" width="250" height="158"/>
+  <text class="head" x="555" y="374" text-anchor="middle">主存</text>
+  <text class="txt" x="555" y="404" text-anchor="middle">CPU 可直接访问的运行空间</text>
+  <text class="small" x="555" y="430" text-anchor="middle">Cache 的数据来源</text>
+  <text class="small" x="555" y="452" text-anchor="middle">辅存调入/换出的枢纽</text>
+  <rect class="tag" x="492" y="462" width="126" height="30"/>
+  <text class="small" x="555" y="482" text-anchor="middle">常由 DRAM 实现</text>
+
+  <rect class="box disk" x="840" y="330" width="190" height="158"/>
+  <text class="head" x="935" y="374" text-anchor="middle">辅存</text>
+  <text class="txt" x="935" y="404" text-anchor="middle">程序 / 文件 / 页面</text>
+  <text class="small" x="935" y="430" text-anchor="middle">SSD / 磁盘</text>
+  <text class="small" x="935" y="452" text-anchor="middle">CPU 不能直接取指取数</text>
+  <rect class="tag" x="872" y="462" width="126" height="30"/>
+  <text class="small" x="935" y="482" text-anchor="middle">长期保存</text>
+
+  <ellipse class="hub" cx="555" cy="409" rx="158" ry="105"/>
+  <text class="note" x="555" y="527" text-anchor="middle">主存是枢纽</text>
+
+  <path class="line" d="M270 284 C320 210 365 178 424 178"/>
+  <path class="back" d="M430 202 C365 230 326 286 274 310"/>
+  <text class="small" x="335" y="195" text-anchor="middle">CPU ↔ Cache</text>
+  <text class="small" x="335" y="217" text-anchor="middle">直接交换信息</text>
+
+  <path class="line" d="M270 336 C330 378 365 398 424 398"/>
+  <path class="back" d="M430 430 C360 430 320 392 274 362"/>
+  <text class="small" x="333" y="415" text-anchor="middle">CPU ↔ 主存</text>
+  <text class="small" x="333" y="437" text-anchor="middle">直接交换信息</text>
+
+  <path class="line" d="M555 250 L555 324"/>
+  <path class="back" d="M590 330 L590 256"/>
+  <text class="small" x="646" y="280" text-anchor="middle">Cache 未命中</text>
+  <text class="small" x="646" y="302" text-anchor="middle">从主存取块</text>
+
+  <path class="line" d="M680 392 L834 392"/>
+  <path class="back" d="M840 430 L686 430"/>
+  <text class="small" x="760" y="374" text-anchor="middle">缺页调入</text>
+  <text class="small" x="760" y="454" text-anchor="middle">页面换出</text>
+
+  <path class="no" d="M270 314 C470 590 720 585 840 474"/>
+  <path class="redLine" d="M278 322 L300 350"/>
+  <line class="no" x1="520" y1="566" x2="556" y2="602"/>
+  <line class="no" x1="556" y1="566" x2="520" y2="602"/>
+  <text class="note" x="538" y="628" text-anchor="middle">无直接通路</text>
+
+  <rect class="box" x="90" y="560" width="250" height="72"/>
+  <text class="head" x="215" y="590" text-anchor="middle">Cache - 主存</text>
+  <text class="small" x="215" y="614" text-anchor="middle">硬件自动管理，解决速度矛盾</text>
+
+  <rect class="box" x="780" y="560" width="250" height="72"/>
+  <text class="head" x="905" y="590" text-anchor="middle">主存 - 辅存</text>
+  <text class="small" x="905" y="614" text-anchor="middle">OS + 硬件配合，解决容量矛盾</text>
+</svg>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge Two Sorted Runs</title>
+<style>
+:root{--bg:#fff;--ink:#172033;--muted:#667085;--line:#cbd5e1;--cell:#f8fafc;--left:#dbeafe;--right:#dcfce7;--out:#fef3c7;--pick:#fee2e2;--accent:#2563eb;--code:#0f766e}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#a3aab8;--line:#475569;--cell:#111827;--left:#172554;--right:#064e3b;--out:#713f12;--pick:#7f1d1d;--accent:#60a5fa;--code:#5eead4}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.title{font-size:24px;font-weight:760}
+.sub{margin-top:4px;color:var(--muted);font-size:14px}
+.controls{display:flex;gap:8px}
+button{border:1px solid var(--line);background:var(--cell);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.stage{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:18px}
+.label{color:var(--muted);font-size:13px;margin:10px 0 6px}
+.row{display:flex;gap:8px;align-items:center;min-height:64px;flex-wrap:wrap}
+.cell{width:58px;height:48px;border:1.5px solid var(--line);border-radius:8px;background:var(--cell);display:flex;align-items:center;justify-content:center;font:700 18px ui-monospace,Menlo,monospace;position:relative}
+.idx::after{content:attr(data-i);position:absolute;bottom:-18px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
+.left{background:var(--left)}
+.right{background:var(--right)}
+.out{background:var(--out)}
+.pick{background:var(--pick);border-color:#ef4444}
+.ptr{position:absolute;top:-19px;color:var(--accent);font:700 12px ui-monospace,Menlo,monospace}
+.blank{color:transparent}
+.explain{margin-top:24px;line-height:1.7}
+.code{margin-top:12px;font-family:ui-monospace,Menlo,monospace;color:var(--code);white-space:pre-wrap}
+.step{margin-top:8px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">二路归并：两个有序子表合成一个有序表</div>
+      <div class="sub">A[3, 7) = 16, 24, 37, 45；A[7, 10) = 21, 24, 33</div>
+    </div>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+    </div>
+  </div>
+  <div class="stage">
+    <div class="label">辅助数组 B：先复制 A[left, right)</div>
+    <div class="row" id="src"></div>
+    <div class="label">数组 A：从 k = left 开始写回</div>
+    <div class="row" id="dst"></div>
+    <div class="explain" id="explain"></div>
+    <div class="code" id="code"></div>
+    <div class="step" id="step"></div>
+  </div>
+</div>
+<script>
+const src=[16,24,37,45,21,24,33];
+const base=3;
+const steps=[
+ {i:0,j:4,k:0,out:[],pick:null,t:'复制区间后，i 指向左子表首元素，j 指向右子表首元素，k 指向写回位置。',c:'i = left; j = mid; k = left;'},
+ {i:0,j:5,k:1,out:[21],pick:4,t:'比较 16 和 21，16 更小，写入 A[3]。',c:'B[i] <= B[j]，A[k++] = B[i++];'},
+ {i:1,j:5,k:2,out:[16,21],pick:5,t:'比较 24 和 21，21 更小，写入 A[4]。',c:'B[i] > B[j]，A[k++] = B[j++];'},
+ {i:2,j:5,k:3,out:[16,21,24],pick:1,t:'比较 24 和 24，相等时先取左子表的 24。',c:'B[i] <= B[j]，相等取左侧，稳定性保留下来。'},
+ {i:2,j:6,k:4,out:[16,21,24,24],pick:5,t:'比较 37 和 24，右子表的 24 更小，写入 A[6]。',c:'B[i] > B[j]，A[k++] = B[j++];'},
+ {i:2,j:7,k:5,out:[16,21,24,24,33],pick:6,t:'比较 37 和 33，33 更小，写入 A[7]。右子表已经用完。',c:'j == right，右子表没有剩余元素。'},
+ {i:4,j:7,k:7,out:[16,21,24,24,33,37,45],pick:null,t:'只剩左子表未归并，把 37、45 依次复制到尾部。',c:'while (i < mid) A[k++] = B[i++];'},
+ {i:4,j:7,k:7,out:[16,21,24,24,33,37,45],pick:null,t:'A[left, right) 已整体有序。',c:'Merge 完成：16, 21, 24, 24, 33, 37, 45。'}
+];
+let cur=0;
+function render(){
+ const s=steps[cur];
+ const srcRoot=document.getElementById('src');
+ srcRoot.innerHTML='';
+ src.forEach((v,p)=>{
+  const b=document.createElement('div');
+  b.className='cell idx '+(p<4?'left':'right');
+  if(s.pick===p)b.classList.add('pick');
+  b.textContent=v;
+  b.dataset.i=base+p;
+  if(s.i===p){const tag=document.createElement('span');tag.className='ptr';tag.textContent='i';b.appendChild(tag);}
+  if(s.j===p){const tag=document.createElement('span');tag.className='ptr';tag.textContent='j';b.appendChild(tag);}
+  srcRoot.appendChild(b);
+ });
+ const dstRoot=document.getElementById('dst');
+ dstRoot.innerHTML='';
+ for(let p=0;p<src.length;p++){
+  const b=document.createElement('div');
+  b.className='cell idx out';
+  b.dataset.i=base+p;
+  b.textContent=s.out[p] ?? '';
+  if(s.k===p){const tag=document.createElement('span');tag.className='ptr';tag.textContent='k';b.appendChild(tag);}
+  dstRoot.appendChild(b);
+ }
+ document.getElementById('explain').innerHTML='<b>'+s.t+'</b>';
+ document.getElementById('code').textContent=s.c;
+ document.getElementById('step').textContent=(cur+1)+' / '+steps.length;
+}
+document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};
+document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

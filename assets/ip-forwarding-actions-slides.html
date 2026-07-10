@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>路由器转发动作</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--fg:#0f172a;--muted:#475569;--border:#cbd5e1;--box:#dbeafe;--ok:#dcfce7;--warn:#fed7aa;--accent:#0369a1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--fg:#e5e7eb;--muted:#cbd5e1;--border:#334155;--box:#172554;--ok:#052e16;--warn:#431407;--accent:#67e8f9}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:28px}.title{text-align:center;font-size:26px;font-weight:700}.stage{display:grid;grid-template-columns:265px 1fr;gap:22px;margin-top:24px}.step{border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:10px;color:var(--muted)}.step.active{color:var(--fg);border-color:var(--accent)}.canvas{border:1px solid var(--border);border-radius:10px;padding:22px;min-height:360px}.pkt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}.field{background:var(--box);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}.field.changed{background:var(--warn);outline:2px solid var(--accent)}.card{background:var(--ok);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:16px}.accent{color:var(--accent);font-weight:700}.controls{text-align:center;margin-top:16px}button{background:transparent;color:var(--fg);border:1px solid var(--border);border-radius:8px;padding:8px 16px;margin:0 6px;font:inherit}
+</style>
+</head>
+<body><div class="wrap"><div class="title">路由器收到 IP 数据报后的转发动作</div><div class="stage"><div id="steps"></div><div class="canvas"><div id="view"></div></div></div><div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div></div>
+<script>
+const data=[
+["1. 检查首部",`<div class="pkt"><div class="field">目的 IP<br>192.168.2.5</div><div class="field">TTL<br>3</div><div class="field">首部检验和<br>旧值</div></div><div class="card">先检查首部是否有误、TTL 是否有效。错误或 TTL 到期会丢弃，并可能触发 ICMP 差错。</div>`],
+["2. TTL 减 1",`<div class="pkt"><div class="field">目的 IP<br>192.168.2.5</div><div class="field changed">TTL<br>2</div><div class="field">首部检验和<br>旧值</div></div><div class="card">路由器每转发一次，TTL 至少减 1，防止环路中无限转发。</div>`],
+["3. 重算检验和",`<div class="pkt"><div class="field">目的 IP<br>192.168.2.5</div><div class="field">TTL<br>2</div><div class="field changed">首部检验和<br>新值</div></div><div class="card">IPv4 首部检验和只覆盖首部。TTL 改变后，首部检验和必须重新计算。</div>`],
+["4. 查路由表",`<div class="card"><p><span class="accent">目的 IP</span> 与各路由项掩码相与，找出所有匹配路由。</p><p>若多条匹配，按最长前缀匹配选择最具体的一条。</p></div>`],
+["5. 解析下一跳",`<div class="card"><p>得到输出接口和下一跳 IP 后，若不知道下一跳 MAC 地址，就用 ARP 查询。</p><p>链路层帧会重新封装；IP 源/目的地址通常不变。</p></div>`],
+["6. 发送或丢弃",`<div class="card"><p>查到路由：从指定接口发出。</p><p>查不到路由：丢弃，并通常向源主机返回 ICMP 差错报告。</p></div>`]
+];let i=0;function render(){steps.innerHTML=data.map((x,k)=>`<div class="step ${k===i?'active':''}"><b>${x[0]}</b></div>`).join("");view.innerHTML=data[i][1]}prev.onclick=()=>{i=Math.max(0,i-1);render()};next.onclick=()=>{i=Math.min(data.length-1,i+1);render()};render();
+</script></body></html>

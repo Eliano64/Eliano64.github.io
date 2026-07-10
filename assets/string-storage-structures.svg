@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420" role="img" aria-labelledby="title desc">
+  <title id="title">String Storage Structures</title>
+  <desc id="desc">Sequential and linked storage of strings.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    text { font-family: Arial, sans-serif; font-size: 16px; fill: #1f2937; }
+    .title { font-size: 22px; font-weight: 700; }
+    .small { font-size: 13px; fill: #4b5563; }
+    .box { fill: #f8fafc; stroke: #334155; stroke-width: 1.5; rx: 6; }
+    .cell { fill: #ffffff; stroke: #475569; stroke-width: 1.2; }
+    .accent { fill: #dbeafe; stroke: #2563eb; }
+    .warn { fill: #fef3c7; stroke: #d97706; }
+    .ptr { stroke: #2563eb; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    @media (prefers-color-scheme: dark) {
+      text { fill: #e5e7eb; }
+      .small { fill: #cbd5e1; }
+      .box { fill: #111827; stroke: #94a3b8; }
+      .cell { fill: #0f172a; stroke: #94a3b8; }
+      .accent { fill: #172554; stroke: #60a5fa; }
+      .warn { fill: #422006; stroke: #fbbf24; }
+      .ptr { stroke: #60a5fa; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="32" y="40">Sequential storage</text>
+  <text x="32" y="72">Static array or heap array stores consecutive characters; many textbooks reserve index 0.</text>
+
+  <g transform="translate(32 100)">
+    <text class="small" x="0" y="-12">Textbook style: ch[0] unused, positions start from 1, length stored separately.</text>
+    <rect class="warn" x="0" y="0" width="58" height="52"/>
+    <text x="20" y="32">0</text>
+    <g>
+      <rect class="cell" x="58" y="0" width="58" height="52"/><text x="82" y="32">w</text>
+      <rect class="cell" x="116" y="0" width="58" height="52"/><text x="140" y="32">a</text>
+      <rect class="cell" x="174" y="0" width="58" height="52"/><text x="198" y="32">n</text>
+      <rect class="cell" x="232" y="0" width="58" height="52"/><text x="256" y="32">g</text>
+      <rect class="cell" x="290" y="0" width="58" height="52"/><text x="314" y="32">d</text>
+      <rect class="cell" x="348" y="0" width="58" height="52"/><text x="372" y="32">a</text>
+      <rect class="cell" x="406" y="0" width="58" height="52"/><text x="430" y="32">o</text>
+    </g>
+    <rect class="accent" x="492" y="0" width="100" height="52"/>
+    <text x="512" y="32">length=7</text>
+  </g>
+
+  <g transform="translate(32 205)">
+    <text class="small" x="0" y="-12">C string style: no length field; '\0' marks the end.</text>
+    <rect class="cell" x="0" y="0" width="58" height="52"/><text x="24" y="32">w</text>
+    <rect class="cell" x="58" y="0" width="58" height="52"/><text x="82" y="32">a</text>
+    <rect class="cell" x="116" y="0" width="58" height="52"/><text x="140" y="32">n</text>
+    <rect class="cell" x="174" y="0" width="58" height="52"/><text x="198" y="32">g</text>
+    <rect class="cell" x="232" y="0" width="58" height="52"/><text x="256" y="32">d</text>
+    <rect class="cell" x="290" y="0" width="58" height="52"/><text x="314" y="32">a</text>
+    <rect class="cell" x="348" y="0" width="58" height="52"/><text x="372" y="32">o</text>
+    <rect class="warn" x="406" y="0" width="58" height="52"/><text x="424" y="32">\0</text>
+  </g>
+
+  <text class="title" x="32" y="330">Linked storage</text>
+  <text x="32" y="362">Single-character nodes waste pointer space; block nodes improve storage density.</text>
+  <g transform="translate(610 95)">
+    <rect class="box" x="0" y="0" width="72" height="48"/><text x="25" y="30">a</text>
+    <path class="ptr" d="M72 24 H108"/>
+    <rect class="box" x="112" y="0" width="72" height="48"/><text x="137" y="30">b</text>
+    <path class="ptr" d="M184 24 H220"/>
+    <rect class="box" x="224" y="0" width="72" height="48"/><text x="249" y="30">c</text>
+    <path class="ptr" d="M296 24 H332"/>
+    <text x="338" y="30">NULL</text>
+    <text class="small" x="0" y="76">Low density: 1 byte data plus pointer.</text>
+  </g>
+  <g transform="translate(610 230)">
+    <rect class="box" x="0" y="0" width="116" height="52"/><text x="16" y="32">abcd</text>
+    <path class="ptr" d="M116 26 H154"/>
+    <rect class="box" x="158" y="0" width="116" height="52"/><text x="174" y="32">e###</text>
+    <path class="ptr" d="M274 26 H312"/>
+    <text x="318" y="32">NULL</text>
+    <text class="small" x="0" y="80">Block nodes trade some unused slots for fewer pointers.</text>
+  </g>
+</svg>

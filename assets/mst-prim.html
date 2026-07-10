@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prim MST</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--fg:#111827;--card:#fff;--muted:#64748b;--line:#334155;--edge:#94a3b8;--ok:#16a34a;--accent:#2563eb;--warn:#f59e0b}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--fg:#e5e7eb;--card:#0f172a;--muted:#94a3b8;--line:#94a3b8;--edge:#64748b;--ok:#4ade80;--accent:#60a5fa;--warn:#fbbf24}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1120px;margin:auto;padding:20px}
+.top{display:flex;justify-content:space-between;gap:16px}
+.title{font-size:22px;font-weight:750}
+button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;padding:7px 12px}
+.slide{display:none;background:var(--card);border:1px solid color-mix(in srgb,var(--line) 35%,transparent);border-radius:8px;padding:20px;margin-top:14px;min-height:620px}
+.active{display:block}
+.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:18px}
+svg{width:100%;height:390px}
+.e{stroke:var(--edge);stroke-width:3}
+.t{stroke:var(--ok);stroke-width:6}
+.candidate{stroke:var(--warn);stroke-width:5;stroke-dasharray:8 6}
+.n{fill:var(--card);stroke:var(--accent);stroke-width:3}
+.in{fill:color-mix(in srgb,var(--ok) 20%,var(--card));stroke:var(--ok)}
+.txt{fill:var(--fg);font-weight:700}
+.w{fill:var(--fg);font:700 13px ui-monospace,Consolas,monospace;text-anchor:middle;paint-order:stroke;stroke:var(--card);stroke-width:5}
+.note{border-left:4px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);padding:10px 12px;margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+td,th{border:1px solid var(--line);padding:7px;text-align:center}
+.pick{background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.muted{color:var(--muted)}
+.pager{display:flex;justify-content:space-between;margin-top:12px;color:var(--muted)}
+@media(max-width:850px){.grid{grid-template-columns:1fr}svg{height:340px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <div>
+    <div class="title">Prim：每轮接入一个最近的外部顶点</div>
+    <div class="muted">从 A 出发；`lowCost[v]` 表示外部顶点 v 到当前树集合的最小边权。</div>
+  </div>
+  <div><button id="prev">上一页</button> <button id="next">下一页</button></div>
+</div>
+
+<template id="graph">
+<svg viewBox="0 0 520 390" aria-label="weighted graph">
+<line data-edge="AB" class="e" x1="95" y1="105" x2="245" y2="75"/><text class="w" x="170" y="78">1</text>
+<line data-edge="AC" class="e" x1="95" y1="105" x2="170" y2="250"/><text class="w" x="123" y="178">2</text>
+<line data-edge="BC" class="e" x1="245" y1="75" x2="170" y2="250"/><text class="w" x="216" y="164">2</text>
+<line data-edge="BD" class="e" x1="245" y1="75" x2="355" y2="155"/><text class="w" x="304" y="105">3</text>
+<line data-edge="CE" class="e" x1="170" y1="250" x2="325" y2="295"/><text class="w" x="250" y="286">1</text>
+<line data-edge="DE" class="e" x1="355" y1="155" x2="325" y2="295"/><text class="w" x="354" y="229">2</text>
+<line data-edge="DF" class="e" x1="355" y1="155" x2="455" y2="245"/><text class="w" x="415" y="188">1</text>
+<line data-edge="EF" class="e" x1="325" y1="295" x2="455" y2="245"/><text class="w" x="394" y="288">2</text>
+<line data-edge="CF" class="e" x1="170" y1="250" x2="455" y2="245"/><text class="w" x="310" y="238">4</text>
+<circle data-node="A" class="n" cx="95" cy="105" r="24"/><text class="txt" x="87" y="113">A</text>
+<circle data-node="B" class="n" cx="245" cy="75" r="24"/><text class="txt" x="237" y="83">B</text>
+<circle data-node="C" class="n" cx="170" cy="250" r="24"/><text class="txt" x="162" y="258">C</text>
+<circle data-node="D" class="n" cx="355" cy="155" r="24"/><text class="txt" x="347" y="163">D</text>
+<circle data-node="E" class="n" cx="325" cy="295" r="24"/><text class="txt" x="317" y="303">E</text>
+<circle data-node="F" class="n" cx="455" cy="245" r="24"/><text class="txt" x="447" y="253">F</text>
+</svg>
+</template>
+
+<section class="slide active" data-in="A" data-tree="" data-candidate="AB">
+<h2>1. 初始树集合 {A}</h2>
+<div class="grid"><div class="stage"></div><div>
+<table><tr><th>外部顶点</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr><tr><td>lowCost</td><td class="pick">1(A)</td><td>2(A)</td><td>∞</td><td>∞</td><td>∞</td></tr></table>
+<div class="note">选择 `lowCost` 最小的外部顶点 B，将边 AB 加入生成树。</div>
+</div></div></section>
+
+<section class="slide" data-in="A B" data-tree="AB" data-candidate="AC">
+<h2>2. 接入 B，更新 lowCost</h2>
+<div class="grid"><div class="stage"></div><div>
+<table><tr><th>外部顶点</th><th>C</th><th>D</th><th>E</th><th>F</th></tr><tr><td>lowCost</td><td class="pick">2(A)</td><td>3(B)</td><td>∞</td><td>∞</td></tr></table>
+<div class="note">B 的邻接边只会影响仍在树外的顶点。当前最小值是 C 的 2，下一轮接入 C。</div>
+</div></div></section>
+
+<section class="slide" data-in="A B C" data-tree="AB AC" data-candidate="CE">
+<h2>3. 接入 C，更新 lowCost</h2>
+<div class="grid"><div class="stage"></div><div>
+<table><tr><th>外部顶点</th><th>D</th><th>E</th><th>F</th></tr><tr><td>lowCost</td><td>3(B)</td><td class="pick">1(C)</td><td>4(C)</td></tr></table>
+<div class="note">C 使 E 的接入代价变为 1，这是当前最小值，因此下一轮接入 E。</div>
+</div></div></section>
+
+<section class="slide" data-in="A B C E" data-tree="AB AC CE" data-candidate="DE EF">
+<h2>4. 接入 E，更新 lowCost</h2>
+<div class="grid"><div class="stage"></div><div>
+<table><tr><th>外部顶点</th><th>D</th><th>F</th></tr><tr><td>lowCost</td><td class="pick">2(E)</td><td class="pick">2(E)</td></tr></table>
+<div class="note">D 与 F 的最小接入代价同为 2。本例按顶点字母顺序处理并接入 D。</div>
+</div></div></section>
+
+<section class="slide" data-in="A B C D E" data-tree="AB AC CE DE" data-candidate="DF">
+<h2>5. 接入 D，更新 lowCost</h2>
+<div class="grid"><div class="stage"></div><div>
+<table><tr><th>外部顶点</th><th>F</th></tr><tr><td>lowCost</td><td class="pick">1(D)</td></tr></table>
+<div class="note">只剩一个外部顶点时，按当前最小接入边将其加入生成树。</div>
+</div></div></section>
+
+<section class="slide" data-in="A B C D E F" data-tree="AB AC CE DE DF" data-candidate="">
+<h2>6. Prim 生成树完成</h2>
+<div class="grid"><div class="stage"></div><div>
+<div class="note">选中边为 AB、AC、CE、DE、DF，总权值为 1+2+1+2+1=7。它是一棵最小生成树。</div>
+</div></div></section>
+
+<div class="pager"><span id="page"></span><span>方向键可翻页</span></div>
+</div>
+<script>
+const slides=[...document.querySelectorAll(".slide")];let idx=0;const page=document.querySelector("#page");const template=document.querySelector("#graph");
+function draw(slide){const svg=template.content.firstElementChild.cloneNode(true);const tree=(slide.dataset.tree||"").split(/\s+/).filter(Boolean);const cand=(slide.dataset.candidate||"").split(/\s+/).filter(Boolean);const inside=(slide.dataset.in||"").split(/\s+/).filter(Boolean);for(const e of svg.querySelectorAll("[data-edge]")){const id=e.dataset.edge;if(tree.includes(id))e.setAttribute("class","t");else if(cand.includes(id))e.setAttribute("class","candidate");}for(const n of svg.querySelectorAll("[data-node]")){if(inside.includes(n.dataset.node))n.classList.add("in");}slide.querySelector(".stage").replaceChildren(svg);}
+function show(n){idx=(n+slides.length)%slides.length;slides.forEach((s,i)=>{s.classList.toggle("active",i===idx);if(i===idx)draw(s)});page.textContent=`${idx+1} / ${slides.length}`}
+document.querySelector("#prev").onclick=()=>show(idx-1);document.querySelector("#next").onclick=()=>show(idx+1);addEventListener("keydown",e=>{if(e.key==="ArrowRight")show(idx+1);if(e.key==="ArrowLeft")show(idx-1)});show(0);
+</script>
+</body>
+</html>

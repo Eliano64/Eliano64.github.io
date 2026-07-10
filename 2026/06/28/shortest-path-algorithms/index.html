@@ -1,0 +1,468 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Shortest Path Algorithms | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="最短路径问题讨论的是：在图中，从一个顶点走到另一个顶点，怎样使路径长度最小。 这里的“长度”要分清两种情况：  无权图：每条边都可看成权值为 1，路径长度就是路径上的边数。 带权图：路径长度是路径上各边权值之和，也叫带权路径长度。  问题分类单源最短路径给定一个源点 $s$，求 $s$ 到其他各顶点的最短路径。 常见方法：  无权图：BFS。 非负权图：Dijkstra。 允许负权边但无负权回路：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shortest Path Algorithms">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/28/shortest-path-algorithms/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="最短路径问题讨论的是：在图中，从一个顶点走到另一个顶点，怎样使路径长度最小。 这里的“长度”要分清两种情况：  无权图：每条边都可看成权值为 1，路径长度就是路径上的边数。 带权图：路径长度是路径上各边权值之和，也叫带权路径长度。  问题分类单源最短路径给定一个源点 $s$，求 $s$ 到其他各顶点的最短路径。 常见方法：  无权图：BFS。 非负权图：Dijkstra。 允许负权边但无负权回路：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T13:30:32.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.072Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Graph">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Shortest Path Algorithms",
+  "url": "https://eliano64.github.io/2026/06/28/shortest-path-algorithms/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T13:30:32.000Z",
+  "dateModified": "2026-07-10T07:16:51.072Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/28/shortest-path-algorithms/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Shortest Path Algorithms',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Shortest Path Algorithms</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Shortest Path Algorithms</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T13:30:32.000Z" title="发表于 2026-06-28 21:30:32">2026-06-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.072Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.3k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>最短路径问题讨论的是：在图中，从一个顶点走到另一个顶点，怎样使路径长度最小。</p>
+<p>这里的“长度”要分清两种情况：</p>
+<ul>
+<li><strong>无权图</strong>：每条边都可看成权值为 1，路径长度就是路径上的边数。</li>
+<li><strong>带权图</strong>：路径长度是路径上各边权值之和，也叫<strong>带权路径长度</strong>。</li>
+</ul>
+<h2 id="问题分类"><a href="#问题分类" class="headerlink" title="问题分类"></a>问题分类</h2><h3 id="单源最短路径"><a href="#单源最短路径" class="headerlink" title="单源最短路径"></a>单源最短路径</h3><p>给定一个源点 $s$，求 $s$ 到其他各顶点的最短路径。</p>
+<p>常见方法：</p>
+<ul>
+<li>无权图：BFS。</li>
+<li>非负权图：Dijkstra。</li>
+<li>允许负权边但无负权回路：可用 Bellman-Ford 或 SPFA。</li>
+</ul>
+<h3 id="每对顶点间的最短路径"><a href="#每对顶点间的最短路径" class="headerlink" title="每对顶点间的最短路径"></a>每对顶点间的最短路径</h3><p>求图中任意两个顶点 $V_i$ 到 $V_j$ 的最短路径。</p>
+<p>常见方法：</p>
+<ul>
+<li>Floyd。</li>
+<li>也可以对每个顶点各运行一次 Dijkstra，但前提仍然是边权非负。</li>
+</ul>
+<h2 id="BFS：无权图的单源最短路径"><a href="#BFS：无权图的单源最短路径" class="headerlink" title="BFS：无权图的单源最短路径"></a>BFS：无权图的单源最短路径</h2><p>无权图可以看成每条边权值都为 1 的特殊带权图。BFS 从源点按“距离层次”向外扩展：先访问距离为 1 的点，再访问距离为 2 的点。一个顶点第一次被 BFS 访问时，它的距离已经是从源点到它的最短距离。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||820)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||820)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/shortest-path-bfs.html" style="width:100%;height:820px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="数组含义"><a href="#数组含义" class="headerlink" title="数组含义"></a>数组含义</h3><ul>
+<li><code>visited[v]</code>：顶点 <code>v</code> 是否已经被访问。</li>
+<li><code>dist[v]</code>：源点到 <code>v</code> 的最短边数；不可达时保持 <code>INF</code>。</li>
+<li><code>prev[v]</code>：最短路径上 <code>v</code> 的前驱顶点；源点或不可达点记为 <code>-1</code>。</li>
+</ul>
+<p>例如从顶点 2 出发，如果最后 <code>dist[8] = 3</code>，且 <code>prev[8] = 7</code>、<code>prev[7] = 6</code>、<code>prev[6] = 2</code>，则路径可以反向追溯为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">8 &lt;- 7 &lt;- 6 &lt;- 2</span><br></pre></td></tr></table></figure>
+
+<p>正向路径就是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2 -&gt; 6 -&gt; 7 -&gt; 8</span><br></pre></td></tr></table></figure>
+
+<h3 id="C-代码"><a href="#C-代码" class="headerlink" title="C 代码"></a>C 代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdbool.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_VERTEX_NUM 100</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INF 0x3f3f3f3f</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> vexNum;</span><br><span class="line">    <span class="type">int</span> edgeNum;</span><br><span class="line">    <span class="type">int</span> arcs[MAX_VERTEX_NUM][MAX_VERTEX_NUM];</span><br><span class="line">&#125; MGraph;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> data[MAX_VERTEX_NUM];</span><br><span class="line">    <span class="type">int</span> front;</span><br><span class="line">    <span class="type">int</span> rear;</span><br><span class="line">&#125; Queue;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">InitQueue</span><span class="params">(Queue *<span class="built_in">queue</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">queue</span>-&gt;front = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">queue</span>-&gt;rear = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">IsEmpty</span><span class="params">(<span class="type">const</span> Queue *<span class="built_in">queue</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">queue</span>-&gt;front == <span class="built_in">queue</span>-&gt;rear;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">EnQueue</span><span class="params">(Queue *<span class="built_in">queue</span>, <span class="type">int</span> vertex)</span> &#123;</span><br><span class="line">    <span class="built_in">queue</span>-&gt;data[<span class="built_in">queue</span>-&gt;rear++] = vertex;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">DeQueue</span><span class="params">(Queue *<span class="built_in">queue</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">queue</span>-&gt;data[<span class="built_in">queue</span>-&gt;front++];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Uses BFS to compute shortest paths in an unweighted graph.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   graph: Adjacency matrix. graph-&gt;arcs[u][v] != 0 means u is adjacent to v.</span></span><br><span class="line"><span class="comment"> *   source: The source vertex index.</span></span><br><span class="line"><span class="comment"> *   dist: Output array. dist[v] is the shortest edge count from source to v.</span></span><br><span class="line"><span class="comment"> *   prev: Output array. prev[v] is the predecessor of v on the shortest path.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">BfsShortestPath</span><span class="params">(<span class="type">const</span> MGraph *graph, <span class="type">int</span> source, <span class="type">int</span> dist[], <span class="type">int</span> prev[])</span> &#123;</span><br><span class="line">    <span class="type">bool</span> visited[MAX_VERTEX_NUM] = &#123;<span class="literal">false</span>&#125;;</span><br><span class="line">    Queue <span class="built_in">queue</span>;</span><br><span class="line">    InitQueue(&amp;<span class="built_in">queue</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; graph-&gt;vexNum; ++v) &#123;</span><br><span class="line">        dist[v] = INF;</span><br><span class="line">        prev[v] = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    visited[source] = <span class="literal">true</span>;</span><br><span class="line">    dist[source] = <span class="number">0</span>;</span><br><span class="line">    EnQueue(&amp;<span class="built_in">queue</span>, source);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (!IsEmpty(&amp;<span class="built_in">queue</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> current = DeQueue(&amp;<span class="built_in">queue</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> next = <span class="number">0</span>; next &lt; graph-&gt;vexNum; ++next) &#123;</span><br><span class="line">            <span class="keyword">if</span> (graph-&gt;arcs[current][next] == <span class="number">0</span> || visited[next]) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            visited[next] = <span class="literal">true</span>;</span><br><span class="line">            dist[next] = dist[current] + <span class="number">1</span>;</span><br><span class="line">            prev[next] = current;</span><br><span class="line">            EnQueue(&amp;<span class="built_in">queue</span>, next);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果采用邻接矩阵，BFS 扫描邻接点时需要看整行，时间复杂度为 $O(\lvert V\rvert^2)$；如果采用邻接表，总时间复杂度为 $O(\lvert V\rvert+\lvert E\rvert)$。</p>
+<h2 id="Dijkstra：非负权图的单源最短路径"><a href="#Dijkstra：非负权图的单源最短路径" class="headerlink" title="Dijkstra：非负权图的单源最短路径"></a>Dijkstra：非负权图的单源最短路径</h2><p>Dijkstra 用来求一个源点到其他各顶点的最短路径。它的核心思想是：每一轮从“尚未确定最短路径”的顶点里，选出当前 <code>dist</code> 最小的顶点，并把它加入已确定集合。</p>
+<p>为什么这个顶点可以被确定？因为边权非负。若当前未确定顶点中 <code>dist[x]</code> 已经最小，那么任何绕路都必须先到达另一个未确定顶点，而到另一个未确定顶点的距离不会比 <code>dist[x]</code> 更小；再加上一条非负边，也不可能把到 <code>x</code> 的距离降下来。</p>
+<p>这也是 Dijkstra 不能处理负权边的根本原因：负权边可能在后面把已经确定的距离变小。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||860)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||860)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/shortest-path-dijkstra.html" style="width:100%;height:860px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="数组含义-1"><a href="#数组含义-1" class="headerlink" title="数组含义"></a>数组含义</h3><ul>
+<li><code>final[v]</code>：源点到 <code>v</code> 的最短路径是否已经确定。</li>
+<li><code>dist[v]</code>：当前已知的源点到 <code>v</code> 的最短距离。</li>
+<li><code>prev[v]</code>：当前最短路径上 <code>v</code> 的前驱顶点。</li>
+</ul>
+<p>初始化时：</p>
+<ul>
+<li><code>final[source] = true</code>。</li>
+<li><code>dist[source] = 0</code>。</li>
+<li>对其他顶点 <code>v</code>，若源点到 <code>v</code> 有直接边，则 <code>dist[v]</code> 为该边权值，<code>prev[v] = source</code>；否则 <code>dist[v] = INF</code>，<code>prev[v] = -1</code>。</li>
+</ul>
+<p>每一轮做两件事：</p>
+<ol>
+<li>在 <code>final[v] == false</code> 的顶点中找到 <code>dist[v]</code> 最小者 <code>u</code>。</li>
+<li>用 <code>u</code> 作为新的中转点，检查所有从 <code>u</code> 出发的边，尝试更新其他顶点的 <code>dist</code> 和 <code>prev</code>。</li>
+</ol>
+<h3 id="C-代码-1"><a href="#C-代码-1" class="headerlink" title="C 代码"></a>C 代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdbool.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_VERTEX_NUM 100</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INF 0x3f3f3f3f</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> vexNum;</span><br><span class="line">    <span class="type">int</span> edgeNum;</span><br><span class="line">    <span class="type">int</span> arcs[MAX_VERTEX_NUM][MAX_VERTEX_NUM];</span><br><span class="line">&#125; MGraph;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Uses Dijkstra to compute shortest paths from one source.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   graph: Weighted adjacency matrix. INF means no edge.</span></span><br><span class="line"><span class="comment"> *   source: The source vertex index.</span></span><br><span class="line"><span class="comment"> *   dist: Output array. dist[v] is the shortest distance from source to v.</span></span><br><span class="line"><span class="comment"> *   prev: Output array. prev[v] is the predecessor of v on the shortest path.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   This algorithm requires all edge weights to be non-negative.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">Dijkstra</span><span class="params">(<span class="type">const</span> MGraph *graph, <span class="type">int</span> source, <span class="type">int</span> dist[], <span class="type">int</span> prev[])</span> &#123;</span><br><span class="line">    <span class="type">bool</span> final[MAX_VERTEX_NUM] = &#123;<span class="literal">false</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; graph-&gt;vexNum; ++v) &#123;</span><br><span class="line">        dist[v] = graph-&gt;arcs[source][v];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (graph-&gt;arcs[source][v] &lt; INF &amp;&amp; v != source) &#123;</span><br><span class="line">            prev[v] = source;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            prev[v] = <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dist[source] = <span class="number">0</span>;</span><br><span class="line">    prev[source] = <span class="number">-1</span>;</span><br><span class="line">    final[source] = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> round = <span class="number">1</span>; round &lt; graph-&gt;vexNum; ++round) &#123;</span><br><span class="line">        <span class="type">int</span> minDist = INF;</span><br><span class="line">        <span class="type">int</span> selected = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* Pick the unsettled vertex with the smallest current distance. */</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; graph-&gt;vexNum; ++v) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!final[v] &amp;&amp; dist[v] &lt; minDist) &#123;</span><br><span class="line">                minDist = dist[v];</span><br><span class="line">                selected = v;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (selected == <span class="number">-1</span>) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        final[selected] = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* Relax all outgoing edges of the selected vertex. */</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; graph-&gt;vexNum; ++v) &#123;</span><br><span class="line">            <span class="keyword">if</span> (final[v] || graph-&gt;arcs[selected][v] == INF) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (dist[selected] + graph-&gt;arcs[selected][v] &lt; dist[v]) &#123;</span><br><span class="line">                dist[v] = dist[selected] + graph-&gt;arcs[selected][v];</span><br><span class="line">                prev[v] = selected;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>邻接矩阵版本每一轮要扫描所有顶点找最小 <code>dist</code>，再扫描一行做松弛；共进行约 $\lvert V\rvert-1$ 轮，所以时间复杂度为 $O(\lvert V\rvert^2)$，适合稠密图。</p>
+<h3 id="负权边为什么会破坏-Dijkstra"><a href="#负权边为什么会破坏-Dijkstra" class="headerlink" title="负权边为什么会破坏 Dijkstra"></a>负权边为什么会破坏 Dijkstra</h3><p>设有边：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">V0 -&gt; V1: 10</span><br><span class="line">V0 -&gt; V2: 7</span><br><span class="line">V1 -&gt; V2: -5</span><br></pre></td></tr></table></figure>
+
+<p>Dijkstra 会先确定 <code>V2</code>，因为当前 <code>dist[2] = 7 &lt; dist[1] = 10</code>。但真实最短路径是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">V0 -&gt; V1 -&gt; V2</span><br></pre></td></tr></table></figure>
+
+<p>长度为 $10 + (-5) &#x3D; 5$。也就是说，<code>V2</code> 在被确定后又可能被负权边改小，这违背了 Dijkstra 的贪心前提。</p>
+<h2 id="Floyd：每对顶点间的最短路径"><a href="#Floyd：每对顶点间的最短路径" class="headerlink" title="Floyd：每对顶点间的最短路径"></a>Floyd：每对顶点间的最短路径</h2><p>先只允许顶点 <code>0</code> 作为中转站。对任意两个顶点 <code>i</code>、<code>j</code>，比较：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">不经过 0：dist[i][j]</span><br><span class="line">经过 0：dist[i][0] + dist[0][j]</span><br></pre></td></tr></table></figure>
+
+<p>如果经过 0 更短，就更新 <code>dist[i][j]</code>。</p>
+<p>然后把这个思路推广：</p>
+<ul>
+<li>只允许 <code>V0</code> 中转。</li>
+<li>允许 <code>V0, V1</code> 中转。</li>
+<li>允许 <code>V0, V1, V2</code> 中转。</li>
+<li>直到允许所有顶点中转。</li>
+</ul>
+<p>这就是 Floyd 的动态规划思想。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||1280)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||1280)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/shortest-path-floyd.html" style="width:100%;height:1280px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="递推含义"><a href="#递推含义" class="headerlink" title="递推含义"></a>递推含义</h3><p>令 $A^{(k)}[i][j]$ 表示：从 $V_i$ 到 $V_j$ 的路径中，只允许经过 $V_0,V_1,\dots,V_k$ 作为中转点时的最短路径长度。</p>
+<p>则有：</p>
+<p>$$<br>A^{(k)}[i][j]&#x3D;\min(A^{(k-1)}[i][j], A^{(k-1)}[i][k]+A^{(k-1)}[k][j])<br>$$</p>
+<p>这里的判断很朴素：允许 <code>Vk</code> 之后，<code>i</code> 到 <code>j</code> 的最短路只有两种可能：</p>
+<ul>
+<li>不经过 <code>Vk</code>，维持原值。</li>
+<li>经过 <code>Vk</code>，拆成 <code>i -&gt; k</code> 和 <code>k -&gt; j</code> 两段。</li>
+</ul>
+<h3 id="path-矩阵"><a href="#path-矩阵" class="headerlink" title="path 矩阵"></a><code>path</code> 矩阵</h3><p><code>path[i][j]</code> 记录的是：当前已知的 <code>i -&gt; j</code> 最短路径中，最后一次让路径变短的中转点。</p>
+<p>例如 <code>path[0][2] = 1</code> 表示：从 <code>V0</code> 到 <code>V2</code> 的最短路径需要经过 <code>V1</code>。恢复完整路径时，可以递归地拆分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PrintPath(i, j):</span><br><span class="line">    k = path[i][j]</span><br><span class="line">    若 k == -1，说明 i 和 j 之间不需要继续拆分</span><br><span class="line">    否则先恢复 i -&gt; k，再恢复 k -&gt; j</span><br></pre></td></tr></table></figure>
+
+<h3 id="C-代码-2"><a href="#C-代码-2" class="headerlink" title="C 代码"></a>C 代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_VERTEX_NUM 100</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INF 0x3f3f3f3f</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Uses Floyd-Warshall to compute all-pairs shortest paths.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   vertexCount: Number of vertices.</span></span><br><span class="line"><span class="comment"> *   dist: Input and output matrix. dist[i][j] is the shortest distance i -&gt; j.</span></span><br><span class="line"><span class="comment"> *   path: Output matrix. path[i][j] stores an intermediate vertex, or -1.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   dist[i][i] should be initialized to 0.</span></span><br><span class="line"><span class="comment"> *   dist[i][j] should be initialized to INF when there is no edge i -&gt; j.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">Floyd</span><span class="params">(<span class="type">int</span> vertexCount,</span></span><br><span class="line"><span class="params">           <span class="type">int</span> dist[MAX_VERTEX_NUM][MAX_VERTEX_NUM],</span></span><br><span class="line"><span class="params">           <span class="type">int</span> path[MAX_VERTEX_NUM][MAX_VERTEX_NUM])</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; vertexCount; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; vertexCount; ++j) &#123;</span><br><span class="line">            path[i][j] = <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Floyd的核心就是这三层循环</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; vertexCount; ++k) &#123;</span><br><span class="line">    <span class="comment">// 之前轮次允许0~k-1作为中转站，这一轮新加入k</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; vertexCount; ++i) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; vertexCount; ++j) &#123;</span><br><span class="line">                <span class="keyword">if</span> (dist[i][k] == INF || dist[k][j] == INF) &#123;</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">				<span class="comment">// k作为新的中转站可以使得i-j距离进一步减少</span></span><br><span class="line">                <span class="keyword">if</span> (dist[i][k] + dist[k][j] &lt; dist[i][j]) &#123;</span><br><span class="line">                    dist[i][j] = dist[i][k] + dist[k][j];</span><br><span class="line">                    path[i][j] = k;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Prints intermediate vertices on the shortest path from start to end.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   path: Floyd path matrix.</span></span><br><span class="line"><span class="comment"> *   start: Start vertex.</span></span><br><span class="line"><span class="comment"> *   end: End vertex.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">PrintFloydPath</span><span class="params">(<span class="type">int</span> path[MAX_VERTEX_NUM][MAX_VERTEX_NUM], <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">    <span class="type">int</span> middle = path[start][end];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (middle == <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    PrintFloydPath(path, start, middle);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;V%d &quot;</span>, middle);</span><br><span class="line">    PrintFloydPath(path, middle, end);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Floyd 的时间复杂度为 $O(\lvert V\rvert^3)$，空间复杂度为 $O(\lvert V\rvert^2)$。<strong>它可以处理负权边，但不能处理负权回路</strong>。</p>
+<p>若存在负权回路，路径可以绕着该回路反复走，使总长度不断变小，此时“最短路径”本身就可能没有定义。</p>
+<p>也可以对每个顶点各运行一次 Dijkstra 来求每对顶点间的最短路径。若使用邻接矩阵朴素实现，总复杂度同样是 $O(\lvert V\rvert^3)$，但前提仍然是图中没有负权边。</p>
+<h2 id="SPFA：允许负权边的单源最短路径"><a href="#SPFA：允许负权边的单源最短路径" class="headerlink" title="SPFA：允许负权边的单源最短路径"></a>SPFA：允许负权边的单源最短路径</h2><p>SPFA 可以理解为“只处理有希望继续变短的顶点”的 Bellman-Ford 队列优化。</p>
+<p>普通松弛的想法是：如果已经知道 <code>dist[u]</code>，并且有边 <code>u -&gt; v</code>，那么就检查：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dist[u] + weight(u, v) &lt; dist[v]</span><br></pre></td></tr></table></figure>
+
+<p>如果成立，说明通过 <code>u</code> 到 <code>v</code> 更短，于是更新 <code>dist[v]</code>。一旦 <code>dist[v]</code> 变短，<code>v</code> 的出边也可能让别的顶点继续变短，所以把 <code>v</code> 放进队列。</p>
+<p>SPFA 的优势是写法直观，而且可以顺便<strong>检测</strong>负权回路；但它的最坏时间复杂度仍然可能达到 $O(\lvert V\rvert\lvert E\rvert)$。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||980)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||980)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/shortest-path-spfa.html" style="width:100%;height:980px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="数组含义-2"><a href="#数组含义-2" class="headerlink" title="数组含义"></a>数组含义</h3><ul>
+<li><code>dist[v]</code>：源点到 <code>v</code> 的当前最短距离。</li>
+<li><code>prev[v]</code>：当前最短路径上 <code>v</code> 的前驱顶点。</li>
+<li><code>inQueue[v]</code>：<code>v</code> 是否已经在队列中，避免重复入队。</li>
+<li><code>enqueueCount[v]</code>：<code>v</code> 的入队次数。若某顶点入队次数超过 $\lvert V\rvert$，通常可判断存在负权回路。</li>
+</ul>
+<h3 id="C-代码-3"><a href="#C-代码-3" class="headerlink" title="C 代码"></a>C 代码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdbool.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_VERTEX_NUM 100</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_EDGE_NUM 1000</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INF 0x3f3f3f3f</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">EdgeNode</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> to;</span><br><span class="line">    <span class="type">int</span> weight;</span><br><span class="line">    <span class="type">int</span> next;</span><br><span class="line">&#125; EdgeNode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> vexNum;</span><br><span class="line">    <span class="type">int</span> edgeNum;</span><br><span class="line">    <span class="type">int</span> head[MAX_VERTEX_NUM];</span><br><span class="line">    EdgeNode edges[MAX_EDGE_NUM];</span><br><span class="line">&#125; ALGraph;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> data[MAX_VERTEX_NUM * MAX_VERTEX_NUM];</span><br><span class="line">    <span class="type">int</span> front;</span><br><span class="line">    <span class="type">int</span> rear;</span><br><span class="line">&#125; Queue;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">InitQueue</span><span class="params">(Queue *<span class="built_in">queue</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">queue</span>-&gt;front = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">queue</span>-&gt;rear = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">bool</span> <span class="title function_">IsQueueEmpty</span><span class="params">(<span class="type">const</span> Queue *<span class="built_in">queue</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">queue</span>-&gt;front == <span class="built_in">queue</span>-&gt;rear;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">EnQueue</span><span class="params">(Queue *<span class="built_in">queue</span>, <span class="type">int</span> vertex)</span> &#123;</span><br><span class="line">    <span class="built_in">queue</span>-&gt;data[<span class="built_in">queue</span>-&gt;rear++] = vertex;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">DeQueue</span><span class="params">(Queue *<span class="built_in">queue</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">queue</span>-&gt;data[<span class="built_in">queue</span>-&gt;front++];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">InitALGraph</span><span class="params">(ALGraph *graph, <span class="type">int</span> vertexCount)</span> &#123;</span><br><span class="line">    graph-&gt;vexNum = vertexCount;</span><br><span class="line">    graph-&gt;edgeNum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; vertexCount; ++v) &#123;</span><br><span class="line">        graph-&gt;head[v] = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">AddDirectedEdge</span><span class="params">(ALGraph *graph, <span class="type">int</span> from, <span class="type">int</span> to, <span class="type">int</span> weight)</span> &#123;</span><br><span class="line">    <span class="type">int</span> edgeIndex = graph-&gt;edgeNum++;</span><br><span class="line"></span><br><span class="line">    graph-&gt;edges[edgeIndex].to = to;</span><br><span class="line">    graph-&gt;edges[edgeIndex].weight = weight;</span><br><span class="line">    graph-&gt;edges[edgeIndex].next = graph-&gt;head[from];</span><br><span class="line">    graph-&gt;head[from] = edgeIndex;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Uses SPFA to compute shortest paths from one source.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   graph: Directed weighted adjacency list.</span></span><br><span class="line"><span class="comment"> *   source: The source vertex index.</span></span><br><span class="line"><span class="comment"> *   dist: Output array. dist[v] is the shortest distance from source to v.</span></span><br><span class="line"><span class="comment"> *   prev: Output array. prev[v] is the predecessor of v on the shortest path.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Returns:</span></span><br><span class="line"><span class="comment"> *   true if no negative cycle is found from source.</span></span><br><span class="line"><span class="comment"> *   false if a negative cycle is reachable from source.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">bool</span> <span class="title function_">Spfa</span><span class="params">(<span class="type">const</span> ALGraph *graph, <span class="type">int</span> source, <span class="type">int</span> dist[], <span class="type">int</span> prev[])</span> &#123;</span><br><span class="line">    <span class="type">bool</span> inQueue[MAX_VERTEX_NUM] = &#123;<span class="literal">false</span>&#125;;</span><br><span class="line">    <span class="type">int</span> enqueueCount[MAX_VERTEX_NUM] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    Queue <span class="built_in">queue</span>;</span><br><span class="line">    InitQueue(&amp;<span class="built_in">queue</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> v = <span class="number">0</span>; v &lt; graph-&gt;vexNum; ++v) &#123;</span><br><span class="line">        dist[v] = INF;</span><br><span class="line">        prev[v] = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dist[source] = <span class="number">0</span>;</span><br><span class="line">    EnQueue(&amp;<span class="built_in">queue</span>, source);</span><br><span class="line">    inQueue[source] = <span class="literal">true</span>;</span><br><span class="line">    enqueueCount[source] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (!IsQueueEmpty(&amp;<span class="built_in">queue</span>)) &#123;</span><br><span class="line">        <span class="type">int</span> current = DeQueue(&amp;<span class="built_in">queue</span>);</span><br><span class="line">        inQueue[current] = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> edgeIndex = graph-&gt;head[current];</span><br><span class="line">             edgeIndex != <span class="number">-1</span>;</span><br><span class="line">             edgeIndex = graph-&gt;edges[edgeIndex].next) &#123;</span><br><span class="line">            <span class="type">int</span> next = graph-&gt;edges[edgeIndex].to;</span><br><span class="line">            <span class="type">int</span> weight = graph-&gt;edges[edgeIndex].weight;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (dist[current] == INF || dist[current] + weight &gt;= dist[next]) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            dist[next] = dist[current] + weight;</span><br><span class="line">            prev[next] = current;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!inQueue[next]) &#123;</span><br><span class="line">                EnQueue(&amp;<span class="built_in">queue</span>, next);</span><br><span class="line">                inQueue[next] = <span class="literal">true</span>;</span><br><span class="line">                ++enqueueCount[next];</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (enqueueCount[next] &gt; graph-&gt;vexNum) &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四种方法对比"><a href="#四种方法对比" class="headerlink" title="四种方法对比"></a>四种方法对比</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>主要用途</th>
+<th>边权限制</th>
+<th>常用存储</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BFS</td>
+<td>无权图的单源最短路径</td>
+<td>无权，或所有边权相同</td>
+<td>邻接表或邻接矩阵</td>
+<td>邻接表 $O(\lvert V\rvert+\lvert E\rvert)$，邻接矩阵 $O(\lvert V\rvert^2)$</td>
+</tr>
+<tr>
+<td>Dijkstra</td>
+<td>带权图的单源最短路径</td>
+<td>不能有负权边</td>
+<td>邻接矩阵常见</td>
+<td>$O(\lvert V\rvert^2)$</td>
+</tr>
+<tr>
+<td>Floyd</td>
+<td>每对顶点间的最短路径</td>
+<td>可有负权边，不能有负权回路</td>
+<td>邻接矩阵</td>
+<td>$O(\lvert V\rvert^3)$</td>
+</tr>
+<tr>
+<td>SPFA</td>
+<td>带负权边的单源最短路径</td>
+<td>可有负权边，可<strong>检测</strong>负权回路</td>
+<td>邻接表</td>
+<td>最坏 $O(\lvert V\rvert\lvert E\rvert)$</td>
+</tr>
+</tbody></table>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">选择题常考</span></div>
+<div class="callout-content"><p>Dijkstra 不是“不能处理负权回路”这么简单，而是<strong>只要存在负权边，就不满足它的正确性前提</strong>。<br>Floyd 可以处理负权边，但不能处理负权回路。</p>
+</div>
+</div>
+## 路径恢复
+
+<p>最短路径算法通常不只要求距离，还会要求具体路径。核心做法都是保存前驱或中转信息。</p>
+<h3 id="单源最短路径-1"><a href="#单源最短路径-1" class="headerlink" title="单源最短路径"></a>单源最短路径</h3><p>BFS、Dijkstra、SPFA 常用 <code>prev[]</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">prev[v] = u</span><br></pre></td></tr></table></figure>
+
+<p>表示当前最短路径上，<code>v</code> 的前一个顶点是 <code>u</code>。恢复路径时从终点反向追溯到源点，再逆序输出。</p>
+<h3 id="Floyd"><a href="#Floyd" class="headerlink" title="Floyd"></a>Floyd</h3><p>Floyd 常用 <code>path[][]</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">path[i][j] = k</span><br></pre></td></tr></table></figure>
+
+<p>表示 <code>i -&gt; j</code> 的最短路径需要经过中转点 <code>k</code>。恢复路径时递归拆成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">i -&gt; k</span><br><span class="line">k -&gt; j</span><br></pre></td></tr></table></figure>
+
+<p>直到某一段不再需要中转点。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/28/shortest-path-algorithms/">https://eliano64.github.io/2026/06/28/shortest-path-algorithms/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/28/search-definition/" title="search definition"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">search definition</div></div><div class="info-2"><div class="info-item-1">定义查找是在数据集合中寻找满足某种条件的数据元素。用于查找的数据集合称为查找表或查找结构，通常由同一类型的数据元素组成。 关键字是数据元素中能够标识该元素的数据项。若使用关键字查找，且关键字能唯一标识元素，则查找结果应当唯一。 查找表按操作需求可分为两类：    类型 主要操作 关注点    静态查找表 只查找 查找速度   动态查找表 查找、插入、删除 查找速度与插入、删除是否方便   ASL查找长度是在一次查找过程中进行关键字比较的次数。平均查找长度 ASL 是所有查找过程的关键字比较次数的加权平均： $$ASL&#x3D;\sum_{i&#x3D;1}^{n}P_iC_i$$ 其中 $P_i$ 是第 $i$ 种查找情况发生的概率，$C_i$ 是对应的查找长度。若默认所有元素等概率，则每个成功查找的概率通常取...</div></div></div></a><a class="pagination-related" href="/2026/06/28/topological-sorting/" title="Topological Sorting"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Topological Sorting</div></div><div class="info-2"><div class="info-item-1">Topological Sorting拓扑排序解决的是 AOV 网中的“先后顺序”问题。 AOV 网用顶点表示活动，用有向边 &lt;u, v&gt; 表示活动 u 必须先于活动 v 进行。因为活动依赖不能循环，所以 AOV 网必须是 DAG，也就是有向无环图。  和 DFS 判环的关系 拓扑排序本身可以判断有向图是否有环。DFS 也可以通过 VISITING 状态判断有向环，见 DFS 判有向图环。   ## 拓扑序列的定义  一个有向图的顶点序列若满足：  每个顶点出现且只出现一次。 若图中存在从顶点 A 到顶点 B 的路径，则 A 必须排在 B 前面。  则称该序列为这个图的一个拓扑序列。 等价地说：如果序列中 A 在 B 前面，那么图中不能存在从 B 到 A 的路径。 拓扑序列通常不唯一。例如两个活动互不依赖时，它们谁先谁后都可以。 Kahn 算法：不断删除入度为 0 的顶点Kahn 算法是考研中最常见的拓扑排序实现。时间复杂度与遍历图一样。 核心规则：  从 AOV 网中选择一个没有前驱的顶点，也就是入度为 0...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E7%B1%BB"><span class="toc-text">问题分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E6%BA%90%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-text">单源最短路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AF%8F%E5%AF%B9%E9%A1%B6%E7%82%B9%E9%97%B4%E7%9A%84%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-text">每对顶点间的最短路径</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BFS%EF%BC%9A%E6%97%A0%E6%9D%83%E5%9B%BE%E7%9A%84%E5%8D%95%E6%BA%90%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-text">BFS：无权图的单源最短路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89"><span class="toc-text">数组含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-%E4%BB%A3%E7%A0%81"><span class="toc-text">C 代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Dijkstra%EF%BC%9A%E9%9D%9E%E8%B4%9F%E6%9D%83%E5%9B%BE%E7%9A%84%E5%8D%95%E6%BA%90%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-text">Dijkstra：非负权图的单源最短路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89-1"><span class="toc-text">数组含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-%E4%BB%A3%E7%A0%81-1"><span class="toc-text">C 代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9F%E6%9D%83%E8%BE%B9%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E7%A0%B4%E5%9D%8F-Dijkstra"><span class="toc-text">负权边为什么会破坏 Dijkstra</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Floyd%EF%BC%9A%E6%AF%8F%E5%AF%B9%E9%A1%B6%E7%82%B9%E9%97%B4%E7%9A%84%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-text">Floyd：每对顶点间的最短路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%92%E6%8E%A8%E5%90%AB%E4%B9%89"><span class="toc-text">递推含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#path-%E7%9F%A9%E9%98%B5"><span class="toc-text">path 矩阵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-%E4%BB%A3%E7%A0%81-2"><span class="toc-text">C 代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SPFA%EF%BC%9A%E5%85%81%E8%AE%B8%E8%B4%9F%E6%9D%83%E8%BE%B9%E7%9A%84%E5%8D%95%E6%BA%90%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-text">SPFA：允许负权边的单源最短路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E5%90%AB%E4%B9%89-2"><span class="toc-text">数组含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-%E4%BB%A3%E7%A0%81-3"><span class="toc-text">C 代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E7%A7%8D%E6%96%B9%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="toc-text">四种方法对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E6%BA%90%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84-1"><span class="toc-text">单源最短路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Floyd"><span class="toc-text">Floyd</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

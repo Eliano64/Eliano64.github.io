@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430" role="img" aria-labelledby="title desc">
+  <title id="title">Distance vector and link state comparison</title>
+  <desc id="desc">Distance vector exchanges route distances with neighbors while link state floods topology information to build LSDB.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root { color-scheme: light dark; }
+    text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #172033; }
+    .panel { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 12; }
+    .node { fill: #fff; stroke: #475569; stroke-width: 2; }
+    .line { stroke: #64748b; stroke-width: 2.4; fill: none; }
+    .msg { stroke: #2563eb; stroke-width: 3; fill: none; marker-end: url(#blueArrow); }
+    .flood { stroke: #dc2626; stroke-width: 3; fill: none; marker-end: url(#redArrow); }
+    .label { font-size: 21px; font-weight: 700; }
+    .small { font-size: 15px; }
+    .tiny { font-size: 13px; }
+    @media (prefers-color-scheme: dark) {
+      text { fill: #e5e7eb; }
+      .panel { fill: #111827; stroke: #94a3b8; }
+      .node { fill: #0b1220; stroke: #cbd5e1; }
+      .line { stroke: #94a3b8; }
+      .msg { stroke: #60a5fa; }
+      .flood { stroke: #f87171; }
+    }
+  </style>
+  <defs>
+    <marker id="blueArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker>
+    <marker id="redArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="40" y="55" width="420" height="330" class="panel"/>
+  <rect x="520" y="55" width="420" height="330" class="panel"/>
+  <text x="250" y="92" text-anchor="middle" class="label">距离-向量</text>
+  <text x="730" y="92" text-anchor="middle" class="label">链路状态</text>
+  <circle cx="160" cy="160" r="25" class="node"/><text x="160" y="166" text-anchor="middle" class="small">A</text>
+  <circle cx="310" cy="160" r="25" class="node"/><text x="310" y="166" text-anchor="middle" class="small">B</text>
+  <circle cx="235" cy="255" r="25" class="node"/><text x="235" y="261" text-anchor="middle" class="small">C</text>
+  <path d="M185 160 H285 M176 180 L218 235 M294 180 L252 235" class="line"/>
+  <path d="M186 146 C220 118, 252 118, 285 146" class="msg"/>
+  <path d="M284 174 C252 202, 220 202, 187 174" class="msg"/>
+  <text x="250" y="315" text-anchor="middle" class="small">只和邻居交换“到各目的网络的距离”</text>
+  <text x="250" y="342" text-anchor="middle" class="tiny">信息局部，开销小；坏消息可能传播慢</text>
+  <circle cx="640" cy="160" r="25" class="node"/><text x="640" y="166" text-anchor="middle" class="small">A</text>
+  <circle cx="790" cy="160" r="25" class="node"/><text x="790" y="166" text-anchor="middle" class="small">B</text>
+  <circle cx="715" cy="255" r="25" class="node"/><text x="715" y="261" text-anchor="middle" class="small">C</text>
+  <path d="M665 160 H765 M656 180 L698 235 M774 180 L732 235" class="line"/>
+  <path d="M640 135 C670 80, 765 80, 790 135" class="flood"/>
+  <path d="M790 185 C820 245, 760 315, 715 280" class="flood"/>
+  <path d="M715 230 C645 230, 610 200, 640 185" class="flood"/>
+  <text x="730" y="315" text-anchor="middle" class="small">洪泛链路状态，形成一致的 LSDB</text>
+  <text x="730" y="342" text-anchor="middle" class="tiny">信息更全，收敛较快；实现和开销更大</text>
+</svg>

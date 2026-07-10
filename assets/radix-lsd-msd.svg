@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="520" viewBox="0 0 1060 520">
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#ffffff;--ink:#172033;--muted:#64748b;--line:#cbd5e1;--a:#dbeafe;--b:#dcfce7;--c:#fef3c7;--accent:#2563eb}
+    @media (prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#a3aab8;--line:#475569;--a:#172554;--b:#064e3b;--c:#713f12;--accent:#60a5fa}}
+    text{font-family:system-ui,-apple-system,Segoe UI,sans-serif;fill:var(--ink)}
+    .muted{fill:var(--muted);font-size:16px}
+    .title{font-size:27px;font-weight:750}
+    .head{font-size:22px;font-weight:740}
+    .small{font-size:15px}
+    .box{fill:var(--bg);stroke:var(--line);stroke-width:1.5;rx:10}
+    .chipA{fill:var(--a);stroke:var(--line);stroke-width:1.2;rx:8}
+    .chipB{fill:var(--b);stroke:var(--line);stroke-width:1.2;rx:8}
+    .chipC{fill:var(--c);stroke:var(--line);stroke-width:1.2;rx:8}
+    .arrow{stroke:var(--accent);stroke-width:2.2;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+  <rect width="1060" height="520" fill="var(--bg)"/>
+  <text x="36" y="48" class="title">多关键字排序：LSD 与 MSD</text>
+  <text x="36" y="78" class="muted">关键字写成 (最高位, ..., 最低位)，稳定性决定低位顺序能否被保留。</text>
+
+  <rect x="40" y="112" width="460" height="340" class="box"/>
+  <text x="70" y="154" class="head">LSD：最低位优先</text>
+  <text x="70" y="185" class="muted">先排次关键字，再排主关键字</text>
+  <rect x="84" y="220" width="98" height="44" class="chipA"/><text x="112" y="248" class="small">个位</text>
+  <path d="M190 242 H238" class="arrow"/>
+  <rect x="246" y="220" width="98" height="44" class="chipB"/><text x="274" y="248" class="small">十位</text>
+  <path d="M352 242 H400" class="arrow"/>
+  <rect x="408" y="220" width="70" height="44" class="chipC"/><text x="429" y="248" class="small">百位</text>
+  <text x="70" y="310" class="small">每一趟必须稳定：相同当前位的元素保留上一趟顺序。</text>
+  <text x="70" y="342" class="small">适合用队列做分配与收集。</text>
+  <text x="70" y="374" class="small">完整处理 d 位后，整体按最高位到最低位有序。</text>
+
+  <rect x="560" y="112" width="460" height="340" class="box"/>
+  <text x="590" y="154" class="head">MSD：最高位优先</text>
+  <text x="590" y="185" class="muted">先按主关键字分组，再在组内递归处理</text>
+  <rect x="604" y="220" width="98" height="44" class="chipC"/><text x="632" y="248" class="small">百位</text>
+  <path d="M710 242 H758" class="arrow"/>
+  <rect x="766" y="220" width="98" height="44" class="chipB"/><text x="794" y="248" class="small">十位</text>
+  <path d="M872 242 H920" class="arrow"/>
+  <rect x="928" y="220" width="70" height="44" class="chipA"/><text x="949" y="248" class="small">个位</text>
+  <text x="590" y="310" class="small">先把百位不同的元素分成若干组。</text>
+  <text x="590" y="342" class="small">只在同一百位组内继续比较十位、个位。</text>
+  <text x="590" y="374" class="small">主关键字一旦不同，后续关键字不再影响跨组顺序。</text>
+</svg>

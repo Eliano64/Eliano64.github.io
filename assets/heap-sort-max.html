@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heap Sort With Max Heap</title>
+<style>
+:root{
+  --bg:#ffffff;
+  --ink:#1f2937;
+  --muted:#64748b;
+  --line:#cbd5e1;
+  --edge:#94a3b8;
+  --node:#f8fafc;
+  --heap:#dbeafe;
+  --sorted:#dcfce7;
+  --parent:#fed7aa;
+  --child:#e0e7ff;
+  --chosen:#bfdbfe;
+  --swap:#fee2e2;
+  --accent:#2563eb;
+  --danger:#dc2626;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0b1020;
+    --ink:#e5e7eb;
+    --muted:#9ca3af;
+    --line:#475569;
+    --edge:#64748b;
+    --node:#111827;
+    --heap:#172554;
+    --sorted:#064e3b;
+    --parent:#7c2d12;
+    --child:#312e81;
+    --chosen:#1e40af;
+    --swap:#7f1d1d;
+    --accent:#60a5fa;
+    --danger:#f87171;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:22px}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.title{font-size:24px;font-weight:750}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.controls{display:flex;gap:8px}
+.btn{border:1px solid var(--line);background:var(--node);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer}
+.stage{margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:16px}
+.arrayWrap{position:relative;padding-bottom:34px;margin-bottom:8px}
+.array{display:flex;gap:7px;min-height:68px}
+.cell{width:66px;height:48px;border:1.5px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--node);font:700 18px ui-monospace,Menlo,monospace;position:relative}
+.cell::after{content:attr(data-i);position:absolute;bottom:-20px;color:var(--muted);font:11px ui-monospace,Menlo,monospace}
+.cell.heap{background:var(--heap)}
+.cell.sorted{background:var(--sorted)}
+.cell.parent{background:var(--parent);border-color:#f97316}
+.cell.child{background:var(--child);border-color:#818cf8}
+.cell.chosen{background:var(--chosen);border-color:var(--accent)}
+.cell.swap{background:var(--swap);border-color:var(--danger)}
+.boundary{position:absolute;top:-7px;width:0;border-left:3px solid var(--danger);height:68px}
+.boundaryLabel{position:absolute;top:64px;transform:translateX(-50%);color:var(--danger);font:700 12px ui-monospace,Menlo,monospace;white-space:nowrap}
+.treePanel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:16px}
+.treeTitle{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px;margin:0 2px 4px}
+.tree{width:100%;height:360px}
+.edge{stroke:var(--edge);stroke-width:2.2;fill:none}
+.edgeHot{stroke:var(--accent);stroke-width:4}
+.n{fill:var(--heap);stroke:var(--line);stroke-width:2}
+.n.sorted{fill:var(--sorted)}
+.n.parent{fill:var(--parent);stroke:#f97316}
+.n.child{fill:var(--child);stroke:#818cf8}
+.n.chosen{fill:var(--chosen);stroke:var(--accent);stroke-width:3}
+.n.swap{fill:var(--swap);stroke:var(--danger);stroke-width:3}
+.v{fill:var(--ink);font:700 17px ui-monospace,Menlo,monospace;text-anchor:middle;dominant-baseline:central}
+.idx{fill:var(--muted);font:12px ui-monospace,Menlo,monospace;text-anchor:middle}
+.bottom{display:grid;grid-template-columns:1.45fr .95fr;gap:16px;margin-top:16px}
+.explain{border:1px solid var(--line);border-radius:10px;padding:12px 14px;line-height:1.7;min-height:118px}
+.heading{font-weight:750;margin-bottom:6px}
+.detail{color:var(--ink)}
+.code{border:1px solid var(--line);border-radius:10px;background:var(--node);padding:12px 14px;min-height:118px}
+pre{margin:0;color:var(--ink);font:14px/1.55 ui-monospace,Menlo,monospace;white-space:pre-wrap}
+.step{color:var(--muted);font-size:14px;margin-top:10px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:5px}.dot{width:13px;height:13px;border-radius:4px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">堆排序：大根堆</div>
+      <div class="sub">0 下标：left = 2i + 1，right = 2i + 2。</div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="prev">上一步</button>
+      <button class="btn" id="next">下一步</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="arrayWrap">
+      <div class="array" id="array"></div>
+      <div class="boundary" id="boundary"></div>
+      <div class="boundaryLabel" id="boundaryLabel"></div>
+    </div>
+
+    <div class="legend">
+      <span class="chip"><span class="dot" style="background:var(--heap)"></span>当前堆</span>
+      <span class="chip"><span class="dot" style="background:var(--sorted)"></span>有序区</span>
+      <span class="chip"><span class="dot" style="background:var(--parent)"></span>parent</span>
+      <span class="chip"><span class="dot" style="background:var(--child)"></span>候选孩子</span>
+      <span class="chip"><span class="dot" style="background:var(--chosen)"></span>较大孩子</span>
+      <span class="chip"><span class="dot" style="background:var(--swap)"></span>交换</span>
+    </div>
+
+    <div class="treePanel">
+      <div class="treeTitle">
+        <span id="heapText"></span>
+        <span>右侧为已确定最终位置的有序区。</span>
+      </div>
+      <svg class="tree" viewBox="0 0 980 360" id="tree"></svg>
+    </div>
+
+    <div class="bottom">
+      <div class="explain">
+        <div class="heading" id="heading"></div>
+        <div class="detail" id="detail"></div>
+      </div>
+      <div class="code">
+        <pre id="code"></pre>
+      </div>
+    </div>
+    <div class="step" id="step"></div>
+  </div>
+</div>
+
+<script>
+const cellWidth = 66;
+const gap = 7;
+const positions = [
+  [490,42],
+  [290,126], [690,126],
+  [170,224], [410,224], [570,224], [810,224],
+  [105,320]
+];
+
+const steps = [
+  {
+    a:[87,45,78,32,17,65,53,9], heap:8, role:{},
+    head:'初始大根堆',
+    detail:'A[0]=87 是当前堆的最大值。堆排序的第一件事，是把这个最大值送到当前堆的最后一个位置。',
+    code:'buildMaxHeap(a, n);\nheapSize = 8;'
+  },
+  {
+    a:[87,45,78,32,17,65,53,9], heap:8, role:{0:'swap',7:'swap'},
+    head:'第 1 趟：准备交换堆顶与堆底',
+    detail:'堆顶 A[0]=87 是最大值，当前堆底是 A[7]=09。交换后，87 将离开堆，成为右侧有序区的第一个元素。',
+    code:'swap(a[0], a[heapSize - 1]);\n// swap a[0] and a[7]'
+  },
+  {
+    a:[9,45,78,32,17,65,53,87], heap:7, role:{0:'parent'},
+    head:'缩小 heapSize，从根开始下坠',
+    detail:'87 已经在最终位置，当前堆只剩 A[0..6]。A[0]=09 可能破坏大根堆，所以从 parent=0 开始向下调整。',
+    code:'heapSize--;\nparent = 0;'
+  },
+  {
+    a:[9,45,78,32,17,65,53,87], heap:7, role:{0:'parent',1:'child',2:'child'},
+    head:'计算左右孩子并比较',
+    detail:'parent=0，left=1，right=2。比较 A[1]=45 与 A[2]=78，右孩子更大。',
+    code:'left = 2 * parent + 1;   // 1\nright = left + 1;        // 2\nlarger = right;'
+  },
+  {
+    a:[9,45,78,32,17,65,53,87], heap:7, role:{0:'parent',2:'chosen'},
+    head:'比较 parent 与较大孩子',
+    detail:'A[0]=09 小于较大孩子 A[2]=78，不满足大根堆性质，需要交换。',
+    code:'if (a[parent] < a[larger])\n    swap(a[parent], a[larger]);'
+  },
+  {
+    a:[78,45,9,32,17,65,53,87], heap:7, role:{0:'swap',2:'swap'},
+    head:'交换 09 与 78',
+    detail:'交换后，78 成为堆顶。但 09 下坠到下标 2，它所在的子树可能仍然不满足大根堆，需要继续检查。',
+    code:'swap(a[0], a[2]);\nparent = 2;'
+  },
+  {
+    a:[78,45,9,32,17,65,53,87], heap:7, role:{2:'parent',5:'child',6:'child'},
+    head:'继续下坠：比较下标 2 的孩子',
+    detail:'parent=2，left=5，right=6。比较 A[5]=65 与 A[6]=53，左孩子 65 更大。',
+    code:'left = 2 * 2 + 1;  // 5\nright = 6;\nlarger = left;'
+  },
+  {
+    a:[78,45,9,32,17,65,53,87], heap:7, role:{2:'parent',5:'chosen'},
+    head:'比较 09 与较大孩子 65',
+    detail:'A[2]=09 小于 A[5]=65，继续交换，让较大的孩子上升。',
+    code:'if (a[2] < a[5])\n    swap(a[2], a[5]);'
+  },
+  {
+    a:[78,45,65,32,17,9,53,87], heap:7, role:{2:'swap',5:'swap'},
+    head:'交换 09 与 65',
+    detail:'09 下坠到下标 5。下标 5 没有孩子，下坠停止。A[0..6] 重新成为大根堆。',
+    code:'swap(a[2], a[5]);\n// 5 has no child, stop'
+  },
+  {
+    a:[78,45,65,32,17,9,53,87], heap:7, role:{0:'swap',6:'swap'},
+    head:'第 2 趟：再次交换堆顶与当前堆底',
+    detail:'当前最大值是 A[0]=78，当前堆底是 A[6]=53。交换后 78 进入最终位置。',
+    code:'swap(a[0], a[heapSize - 1]);\n// swap a[0] and a[6]'
+  },
+  {
+    a:[53,45,65,32,17,9,78,87], heap:6, role:{0:'parent',1:'child',2:'child'},
+    head:'缩小 heapSize，调整新的根',
+    detail:'当前堆是 A[0..5]。parent=0，孩子是 A[1]=45 与 A[2]=65，较大孩子是 65。',
+    code:'heapSize--;\nparent = 0;\nlarger = 2;'
+  },
+  {
+    a:[53,45,65,32,17,9,78,87], heap:6, role:{0:'parent',2:'chosen'},
+    head:'判断是否需要交换',
+    detail:'A[0]=53 小于 A[2]=65，需要交换。',
+    code:'if (a[0] < a[2])\n    swap(a[0], a[2]);'
+  },
+  {
+    a:[65,45,53,32,17,9,78,87], heap:6, role:{0:'swap',2:'swap'},
+    head:'交换后堆恢复',
+    detail:'53 下坠到下标 2，它的唯一孩子是下标 5 的 09。53 大于 09，不再交换，堆恢复。',
+    code:'swap(a[0], a[2]);\nparent = 2;\n// a[2] >= a[5], stop'
+  },
+  {
+    a:[65,45,53,32,17,9,78,87], heap:6, role:{0:'swap',5:'swap'},
+    head:'第 3 趟：65 进入最终位置',
+    detail:'交换 A[0] 与 A[5]。交换后右侧有序区变为 65, 78, 87。',
+    code:'swap(a[0], a[5]);\nheapSize--;'
+  },
+  {
+    a:[9,45,53,32,17,65,78,87], heap:5, role:{0:'parent',1:'child',2:'child'},
+    head:'调整 A[0..4]',
+    detail:'parent=0，孩子 45 与 53 中，53 更大。',
+    code:'left = 1;\nright = 2;\nlarger = 2;'
+  },
+  {
+    a:[53,45,9,32,17,65,78,87], heap:5, role:{0:'swap',2:'swap'},
+    head:'09 与 53 交换',
+    detail:'09 下坠到下标 2。下标 2 没有孩子，堆恢复。',
+    code:'swap(a[0], a[2]);\n// stop'
+  },
+  {
+    a:[17,45,9,32,53,65,78,87], heap:4, role:{0:'swap',4:'swap'},
+    head:'第 4 趟：53 进入最终位置',
+    detail:'交换 A[0] 与 A[4]，然后堆缩小为 A[0..3]。',
+    code:'swap(a[0], a[4]);\nheapSize--;'
+  },
+  {
+    a:[17,45,9,32,53,65,78,87], heap:4, role:{0:'parent',1:'chosen',2:'child'},
+    head:'调整根：选择较大孩子 45',
+    detail:'parent=0，孩子 45 与 09 中，45 更大。17 小于 45，需要交换。',
+    code:'larger = 1;\nswap(a[0], a[1]);'
+  },
+  {
+    a:[45,17,9,32,53,65,78,87], heap:4, role:{1:'parent',3:'chosen'},
+    head:'17 继续下坠',
+    detail:'17 到下标 1，它的左孩子是下标 3 的 32。17 小于 32，继续交换。',
+    code:'parent = 1;\nleft = 3;\nswap(a[1], a[3]);'
+  },
+  {
+    a:[45,32,9,17,53,65,78,87], heap:4, role:{1:'swap',3:'swap'},
+    head:'小堆恢复',
+    detail:'17 到达叶子，A[0..3] 恢复为大根堆。',
+    code:'// leaf, stop'
+  },
+  {
+    a:[9,17,32,45,53,65,78,87], heap:2, role:{0:'parent',1:'chosen'},
+    head:'后续趟同理',
+    detail:'重复“交换堆顶、缩小堆、从根下坠”。当堆只剩 A[0..1] 时，09 与 17 比较并交换。',
+    code:'swap(a[0], a[2]);\nheapSize--;\nswap(a[0], a[1]);'
+  },
+  {
+    a:[9,17,32,45,53,65,78,87], heap:1, role:{},
+    head:'排序完成',
+    detail:'只剩一个堆元素，不需要再调整。基于大根堆的堆排序得到递增序列。',
+    code:'heapSize == 1;\n// done'
+  }
+];
+
+let cur = 0;
+
+function roleOf(i, s) {
+  return s.role[i] || (i < s.heap ? 'heap' : 'sorted');
+}
+
+function drawArray(s) {
+  const root = document.getElementById('array');
+  root.innerHTML = '';
+  s.a.forEach((value, i) => {
+    const cell = document.createElement('div');
+    const role = roleOf(i, s);
+    cell.className = 'cell ' + (i < s.heap ? 'heap ' : 'sorted ') + role;
+    cell.dataset.i = i;
+    cell.textContent = String(value).padStart(2, '0');
+    root.appendChild(cell);
+  });
+  const left = s.heap * (cellWidth + gap) - gap / 2;
+  const boundary = document.getElementById('boundary');
+  boundary.style.left = left + 'px';
+  const label = document.getElementById('boundaryLabel');
+  label.style.left = left + 'px';
+  label.textContent = 'heapSize = ' + s.heap;
+}
+
+function drawTree(s) {
+  const svg = document.getElementById('tree');
+  svg.innerHTML = '';
+
+  for (let child = 1; child < s.heap; child++) {
+    const parent = Math.floor((child - 1) / 2);
+    const [x1, y1] = positions[parent];
+    const [x2, y2] = positions[child];
+    const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const childRole = s.role[child];
+    edge.setAttribute('class', childRole === 'chosen' || childRole === 'swap' ? 'edge edgeHot' : 'edge');
+    edge.setAttribute('x1', x1);
+    edge.setAttribute('y1', y1);
+    edge.setAttribute('x2', x2);
+    edge.setAttribute('y2', y2);
+    svg.appendChild(edge);
+  }
+
+  for (let i = 0; i < s.heap; i++) {
+    const [x, y] = positions[i];
+    const role = s.role[i] || '';
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('class', 'n ' + role);
+    circle.setAttribute('cx', x);
+    circle.setAttribute('cy', y);
+    circle.setAttribute('r', 30);
+
+    const value = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    value.setAttribute('class', 'v');
+    value.setAttribute('x', x);
+    value.setAttribute('y', y);
+    value.textContent = String(s.a[i]).padStart(2, '0');
+
+    const idx = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    idx.setAttribute('class', 'idx');
+    idx.setAttribute('x', x);
+    idx.setAttribute('y', y + 46);
+    idx.textContent = i;
+
+    svg.append(circle, value, idx);
+  }
+
+  document.getElementById('heapText').textContent = '当前有效堆：A[0..' + (s.heap - 1) + ']';
+}
+
+function render() {
+  const s = steps[cur];
+  drawArray(s);
+  drawTree(s);
+  document.getElementById('heading').textContent = s.head;
+  document.getElementById('detail').textContent = s.detail;
+  document.getElementById('code').textContent = s.code;
+  document.getElementById('step').textContent = (cur + 1) + ' / ' + steps.length;
+}
+
+document.getElementById('prev').onclick = () => {
+  cur = (cur + steps.length - 1) % steps.length;
+  render();
+};
+document.getElementById('next').onclick = () => {
+  cur = (cur + 1) % steps.length;
+  render();
+};
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 500" role="img" aria-labelledby="title desc">
+  <title id="title">Channel Control Flow</title>
+  <desc id="desc">CPU starts a channel program in memory, then the channel controls controllers and devices, and interrupts CPU when done.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#ba)}.ga{stroke:var(--green);stroke-width:3;fill:none;marker-end:url(#ga)}.irq{stroke:var(--red);stroke-width:3;fill:none;marker-end:url(#ra);stroke-dasharray:8 6}
+  </style>
+  <defs>
+    <marker id="ba" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker>
+    <marker id="ga" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--green)"/></marker>
+    <marker id="ra" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--red)"/></marker>
+  </defs>
+  <rect class="bg" width="1060" height="500"/>
+  <text class="t" x="530" y="42" text-anchor="middle" font-size="24" font-weight="700">通道控制方式</text>
+  <rect class="box" x="70" y="145" width="135" height="90" rx="8"/>
+  <text class="t" x="137" y="181" text-anchor="middle" font-size="18" font-weight="700">CPU</text>
+  <text class="m" x="137" y="209" text-anchor="middle" font-size="13">发 I/O 指令</text>
+  <rect class="box" x="305" y="82" width="180" height="125" rx="8"/>
+  <text class="t" x="395" y="116" text-anchor="middle" font-size="18" font-weight="700">主存</text>
+  <text class="m" x="395" y="144" text-anchor="middle" font-size="13">通道程序</text>
+  <text class="m" x="395" y="168" text-anchor="middle" font-size="13">一串通道指令</text>
+  <rect class="box" x="305" y="280" width="180" height="92" rx="8"/>
+  <text class="t" x="395" y="316" text-anchor="middle" font-size="18" font-weight="700">通道</text>
+  <text class="m" x="395" y="344" text-anchor="middle" font-size="13">执行通道程序</text>
+  <rect class="box" x="625" y="105" width="150" height="82" rx="8"/>
+  <text class="t" x="700" y="138" text-anchor="middle" font-size="17" font-weight="700">控制器 1</text>
+  <text class="m" x="700" y="164" text-anchor="middle" font-size="13">管理设备</text>
+  <rect class="box" x="625" y="283" width="150" height="82" rx="8"/>
+  <text class="t" x="700" y="316" text-anchor="middle" font-size="17" font-weight="700">控制器 2</text>
+  <text class="m" x="700" y="342" text-anchor="middle" font-size="13">管理设备</text>
+  <rect class="box" x="850" y="90" width="135" height="66" rx="8"/>
+  <text class="t" x="917" y="130" text-anchor="middle" font-size="16" font-weight="700">设备 A</text>
+  <rect class="box" x="850" y="178" width="135" height="66" rx="8"/>
+  <text class="t" x="917" y="218" text-anchor="middle" font-size="16" font-weight="700">设备 B</text>
+  <rect class="box" x="850" y="295" width="135" height="66" rx="8"/>
+  <text class="t" x="917" y="335" text-anchor="middle" font-size="16" font-weight="700">设备 C</text>
+  <path class="a" d="M205 188 C250 188 250 326 305 326"/>
+  <text class="m" x="255" y="256" text-anchor="middle" font-size="13">启动通道</text>
+  <path class="ga" d="M395 280 V207"/>
+  <text class="m" x="432" y="246" font-size="13">取通道指令</text>
+  <path class="ga" d="M485 326 H625"/>
+  <path class="ga" d="M485 326 C540 326 560 146 625 146"/>
+  <path class="ga" d="M775 146 H850"/>
+  <path class="ga" d="M775 146 C815 146 815 211 850 211"/>
+  <path class="ga" d="M775 324 H850"/>
+  <path class="irq" d="M305 326 C210 390 112 320 137 235"/>
+  <text class="m" x="210" y="405" text-anchor="middle" font-size="13">完成一组任务后中断 CPU</text>
+</svg>

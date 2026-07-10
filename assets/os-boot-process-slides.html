@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>操作系统引导过程</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --panel-2: #eef2ff;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #94a3b8;
+      --accent: #2563eb;
+      --accent-2: #059669;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --shadow: rgba(15, 23, 42, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --panel-2: #1e293b;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --line: #475569;
+        --accent: #60a5fa;
+        --accent-2: #34d399;
+        --warn: #fbbf24;
+        --danger: #f87171;
+        --shadow: rgba(0, 0, 0, 0.32);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    .deck {
+      min-height: 720px;
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    .progress {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .dot {
+      width: 34px;
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .dot.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+      gap: 18px;
+      min-height: 0;
+    }
+    .visual, .explain {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 12px;
+      box-shadow: 0 12px 24px var(--shadow);
+      padding: 18px;
+      min-height: 0;
+    }
+    .visual {
+      display: grid;
+      place-items: center;
+    }
+    .explain {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+    }
+    .step-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0;
+    }
+    .lead {
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--muted);
+      margin: 0;
+    }
+    .points {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.75;
+      font-size: 16px;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      max-height: 565px;
+    }
+    .box { fill: var(--panel-2); stroke: var(--line); stroke-width: 2; rx: 12; }
+    .box-hot { fill: color-mix(in srgb, var(--accent) 20%, var(--panel)); stroke: var(--accent); stroke-width: 3; rx: 12; }
+    .box-ok { fill: color-mix(in srgb, var(--accent-2) 18%, var(--panel)); stroke: var(--accent-2); stroke-width: 3; rx: 12; }
+    .box-warn { fill: color-mix(in srgb, var(--warn) 18%, var(--panel)); stroke: var(--warn); stroke-width: 3; rx: 12; }
+    .box-danger { fill: color-mix(in srgb, var(--danger) 16%, var(--panel)); stroke: var(--danger); stroke-width: 3; rx: 12; }
+    .label { fill: var(--text); font-size: 17px; font-weight: 700; }
+    .small { fill: var(--muted); font-size: 13px; }
+    .line { fill: none; stroke: var(--line); stroke-width: 2.4; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 3.2; marker-end: url(#arrow); }
+    .arrow-ok { fill: none; stroke: var(--accent-2); stroke-width: 3.2; marker-end: url(#arrow-ok); }
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 8px;
+      min-width: 84px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .counter { color: var(--muted); font-size: 14px; }
+    @media (max-width: 760px) {
+      .deck { min-height: 820px; padding: 14px; }
+      header { align-items: flex-start; flex-direction: column; }
+      .stage { grid-template-columns: 1fr; }
+      svg { max-height: 390px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <header>
+      <h1>操作系统引导过程</h1>
+      <nav class="progress" aria-label="步骤"></nav>
+    </header>
+
+    <section class="stage">
+      <div class="visual">
+        <svg viewBox="0 0 820 520" role="img" aria-label="操作系统引导过程示意图">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
+            </marker>
+            <marker id="arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-2)"></path>
+            </marker>
+          </defs>
+
+          <rect id="cpu" class="box" x="42" y="52" width="150" height="68"></rect>
+          <text class="label" x="117" y="83" text-anchor="middle">CPU</text>
+          <text class="small" x="117" y="105" text-anchor="middle">复位后取指</text>
+
+          <rect id="rom" class="box" x="272" y="40" width="190" height="92"></rect>
+          <text class="label" x="367" y="76" text-anchor="middle">ROM</text>
+          <text class="small" x="367" y="101" text-anchor="middle">自举装入程序 / 硬件自检</text>
+
+          <rect id="ram" class="box" x="552" y="40" width="220" height="92"></rect>
+          <text class="label" x="662" y="76" text-anchor="middle">主存</text>
+          <text class="small" x="662" y="101" text-anchor="middle">逐步装入引导代码与内核</text>
+
+          <rect id="disk" class="box" x="42" y="205" width="730" height="214"></rect>
+          <text class="label" x="407" y="234" text-anchor="middle">启动磁盘</text>
+
+          <rect id="mbr" class="box" x="70" y="270" width="122" height="86"></rect>
+          <text class="label" x="131" y="306" text-anchor="middle">MBR</text>
+          <text class="small" x="131" y="331" text-anchor="middle">磁盘第一块</text>
+
+          <rect id="ptable" class="box" x="216" y="270" width="126" height="86"></rect>
+          <text class="label" x="279" y="306" text-anchor="middle">分区表</text>
+          <text class="small" x="279" y="331" text-anchor="middle">找活动分区</text>
+
+          <rect id="pbr" class="box" x="366" y="270" width="142" height="86"></rect>
+          <text class="label" x="437" y="300" text-anchor="middle">分区引导记录</text>
+          <text class="small" x="437" y="326" text-anchor="middle">启动块 / Boot Sector</text>
+
+          <rect id="fs" class="box" x="532" y="270" width="212" height="86"></rect>
+          <text class="label" x="638" y="300" text-anchor="middle">文件系统</text>
+          <text class="small" x="638" y="326" text-anchor="middle">启动管理器、内核、系统文件</text>
+
+          <rect id="kernel" class="box" x="292" y="452" width="250" height="48"></rect>
+          <text class="label" x="417" y="483" text-anchor="middle">内核接管，建立运行环境</text>
+
+          <path id="a1" class="line" d="M 192 86 L 272 86"></path>
+          <path id="a2" class="line" d="M 462 86 L 552 86"></path>
+          <path id="a3" class="line" d="M 552 112 C 418 158, 238 186, 132 270"></path>
+          <path id="a4" class="line" d="M 192 313 L 216 313"></path>
+          <path id="a5" class="line" d="M 342 313 L 366 313"></path>
+          <path id="a6" class="line" d="M 508 313 L 532 313"></path>
+          <path id="a7" class="line" d="M 638 356 C 610 405, 510 438, 438 452"></path>
+          <path id="a8" class="line" d="M 417 452 C 344 418, 284 382, 437 356"></path>
+        </svg>
+      </div>
+
+      <article class="explain">
+        <h2 class="step-title"></h2>
+        <p class="lead"></p>
+        <ul class="points"></ul>
+      </article>
+    </section>
+
+    <footer>
+      <button class="btn" id="prev" type="button">上一步</button>
+      <span class="counter"></span>
+      <button class="btn" id="next" type="button">下一步</button>
+    </footer>
+  </main>
+
+  <script>
+    const steps = [
+      {
+        title: "0. 磁盘先被准备成可启动结构",
+        lead: "引导不是从一块空白磁盘开始。磁盘经过低级格式化、分区、逻辑格式化和系统安装后，才具备被引导的结构。",
+        points: ["低级格式化形成扇区。", "分区表记录各分区的位置。", "逻辑格式化在分区中建立文件系统。", "安装系统时写入启动管理器、内核和系统文件。"],
+        hot: ["disk", "mbr", "ptable", "pbr", "fs"]
+      },
+      {
+        title: "1. CPU 从固定入口执行 ROM 程序",
+        lead: "上电复位后，CPU 不能凭空知道操作系统在哪里，只能从硬件约定的入口地址取指。",
+        points: ["入口处的指令来自 ROM。", "ROM 中保存的是很小的自举装入程序。", "它先做硬件自检，再按启动顺序选择启动设备。"],
+        hot: ["cpu", "rom"],
+        arrows: ["a1"]
+      },
+      {
+        title: "2. ROM 只负责找到第一段磁盘引导代码",
+        lead: "完整自举程序不放在 ROM 中，主要是为了便于更新。ROM 程序只需要知道如何从启动设备的固定位置读取第一段代码。",
+        points: ["启动设备通常是某个磁盘。", "ROM 程序把磁盘第一块的 MBR 读入主存。", "控制权随后交给 MBR 中的磁盘引导程序。"],
+        hot: ["rom", "ram", "mbr"],
+        arrows: ["a2", "a3"]
+      },
+      {
+        title: "3. MBR 扫描分区表，定位活动分区",
+        lead: "MBR 所在位置固定，内部既有一小段引导代码，也有分区表信息。",
+        points: ["磁盘引导程序检查分区表。", "被标记为活动分区的分区通常就是安装操作系统的分区。", "如果没有可用活动分区，引导链无法继续。"],
+        hot: ["mbr", "ptable"],
+        arrows: ["a4"]
+      },
+      {
+        title: "4. 读入活动分区的分区引导记录",
+        lead: "找到活动分区后，系统继续读取该分区开头的分区引导记录，也可理解为该分区的启动块。",
+        points: ["分区引导记录属于具体分区。", "它知道如何在该分区的文件系统中继续寻找启动程序。", "此时引导已经从磁盘级进入分区级。"],
+        hot: ["ptable", "pbr"],
+        arrows: ["a5"]
+      },
+      {
+        title: "5. 启动管理器找到内核和初始化程序",
+        lead: "分区引导程序或启动管理器开始依赖文件系统结构，找到后续需要装入的系统文件。",
+        points: ["常见目标包括启动管理器、内核映像、初始化程序和必要配置。", "这些文件通常位于根目录或约定目录下。", "引导程序把内核装入主存，并准备启动参数。"],
+        hot: ["pbr", "fs", "ram"],
+        arrows: ["a6", "a7"]
+      },
+      {
+        title: "6. 内核接管 CPU",
+        lead: "内核开始执行后，引导程序的主要任务结束。系统进入内核初始化阶段。",
+        points: ["建立中断和异常处理入口。", "初始化内存管理、进程管理和设备管理。", "挂载根文件系统，启动第一个用户态服务或登录程序。"],
+        hot: ["ram", "kernel"],
+        arrows: ["a7"]
+      },
+      {
+        title: "7. 从开机链条看控制权转移",
+        lead: "整个过程的核心是控制权逐级转移：每一段程序只需要能找到下一段程序。",
+        points: ["CPU 固定入口 → ROM 自举装入程序。", "ROM → MBR。", "MBR → 活动分区引导记录。", "分区引导记录/启动管理器 → 内核。", "内核 → 用户态服务与普通程序。"],
+        hot: ["cpu", "rom", "mbr", "ptable", "pbr", "fs", "kernel"],
+        arrows: ["a1", "a2", "a3", "a4", "a5", "a6", "a7"]
+      }
+    ];
+
+    let index = 0;
+    const title = document.querySelector(".step-title");
+    const lead = document.querySelector(".lead");
+    const points = document.querySelector(".points");
+    const counter = document.querySelector(".counter");
+    const progress = document.querySelector(".progress");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const boxes = ["cpu", "rom", "ram", "disk", "mbr", "ptable", "pbr", "fs", "kernel"];
+    const arrows = ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"];
+
+    steps.forEach((_, i) => {
+      const button = document.createElement("button");
+      button.className = "dot";
+      button.type = "button";
+      button.textContent = String(i);
+      button.addEventListener("click", () => show(i));
+      progress.appendChild(button);
+    });
+
+    function show(nextIndex) {
+      index = Math.max(0, Math.min(steps.length - 1, nextIndex));
+      const step = steps[index];
+      title.textContent = step.title;
+      lead.textContent = step.lead;
+      points.innerHTML = "";
+      step.points.forEach((text) => {
+        const li = document.createElement("li");
+        li.textContent = text;
+        points.appendChild(li);
+      });
+
+      boxes.forEach((id) => {
+        const el = document.getElementById(id);
+        el.setAttribute("class", "box");
+      });
+      arrows.forEach((id) => {
+        const el = document.getElementById(id);
+        el.setAttribute("class", "line");
+      });
+      (step.hot || []).forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute("class", id === "kernel" ? "box-ok" : "box-hot");
+      });
+      (step.arrows || []).forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute("class", id === "a7" ? "arrow-ok" : "arrow");
+      });
+
+      document.querySelectorAll(".dot").forEach((button, i) => {
+        button.classList.toggle("active", i === index);
+      });
+      counter.textContent = `${index + 1} / ${steps.length}`;
+      prev.disabled = index === 0;
+      next.disabled = index === steps.length - 1;
+    }
+
+    prev.addEventListener("click", () => show(index - 1));
+    next.addEventListener("click", () => show(index + 1));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") show(index - 1);
+      if (event.key === "ArrowRight") show(index + 1);
+    });
+    show(0);
+  </script>
+</body>
+</html>

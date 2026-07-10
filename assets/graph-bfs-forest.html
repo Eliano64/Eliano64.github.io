@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BFS Forest</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --panel: #f7f8fb;
+    --text: #162033;
+    --muted: #5d687a;
+    --line: #d8dee9;
+    --edge: #9ba6b4;
+    --tree: #16a34a;
+    --active: #f59e0b;
+    --seen: #3b82f6;
+    --node: #ffffff;
+    --code: #f3f4f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f14;
+      --panel: #121923;
+      --text: #e7edf6;
+      --muted: #a6b0c0;
+      --line: #2a3444;
+      --edge: #657287;
+      --tree: #4ade80;
+      --active: #fbbf24;
+      --seen: #60a5fa;
+      --node: #172033;
+      --code: #111827;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", Arial, sans-serif; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 18px; }
+  .top { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 12px; }
+  h1 { margin: 0; font-size: 22px; }
+  .hint { color: var(--muted); font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  svg { width: 100%; height: 430px; display: block; }
+  .edge { stroke: var(--edge); stroke-width: 3; fill: none; }
+  .tree { stroke: var(--tree); stroke-width: 5; fill: none; }
+  .node { fill: var(--node); stroke: var(--edge); stroke-width: 3; }
+  .seen { stroke: var(--seen); }
+  .active { fill: var(--active); stroke: var(--active); }
+  text { fill: var(--text); font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+  .caption { fill: var(--muted); font-size: 15px; font-weight: 500; }
+  .explain { line-height: 1.65; font-size: 15px; }
+  pre { margin: 10px 0 0; padding: 12px; overflow: auto; border-radius: 8px; background: var(--code); border: 1px solid var(--line); font-size: 13px; line-height: 1.5; }
+  .controls { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  button:hover { border-color: var(--seen); }
+  .counter { color: var(--muted); font-family: Consolas, monospace; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } svg { height: 360px; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div>
+      <h1>非连通图的 BFS 生成森林</h1>
+      <div class="hint">一次 BFS 只能覆盖起点所在连通分量；外层循环负责启动下一棵树。</div>
+    </div>
+    <div class="counter" id="counter"></div>
+  </div>
+  <section class="grid">
+    <div class="panel" id="stage"></div>
+    <div class="panel">
+      <div class="explain" id="explain"></div>
+      <pre id="code"></pre>
+    </div>
+  </section>
+  <div class="controls">
+    <button id="prev" type="button">上一页</button>
+    <button id="next" type="button">下一页</button>
+  </div>
+</main>
+<script>
+const nodes = {
+  1:[80,110],2:[190,110],3:[330,110],4:[450,110],
+  5:[80,230],6:[190,230],7:[330,230],8:[450,230],
+  9:[175,340],10:[300,340],11:[235,400]
+};
+const edges = [[1,2],[1,5],[2,6],[6,3],[6,7],[3,4],[3,7],[4,7],[4,8],[7,8],[9,11],[11,10]];
+const slides = [
+  {
+    title: "外层循环从 1 开始",
+    active: 1,
+    seen: [1],
+    tree: [],
+    explain: "若只调用 BFS(G, 1)，算法只能在 1 所在的连通分量里扩展。非连通图必须用外层循环检查所有顶点。",
+    code: "for (int i = 0; i < G->vertexCount; ++i) {\n    if (!visited[i]) {\n        BFS(G, i);\n    }\n}"
+  },
+  {
+    title: "第一棵 BFS 树覆盖 1-8",
+    active: 8,
+    seen: [1,2,3,4,5,6,7,8],
+    tree: [[1,2],[1,5],[2,6],[6,3],[6,7],[3,4],[7,8]],
+    explain: "从 1 所在分量出发，BFS 最终访问 1 到 8。但 9、10、11 与这一分量不连通，仍保持未访问。",
+    code: "BFS(G, 1);\n// visited: 1..8 为 true\n// visited: 9,10,11 仍为 false"
+  },
+  {
+    title: "外层循环发现 9 未访问",
+    active: 9,
+    seen: [1,2,3,4,5,6,7,8,9],
+    tree: [[1,2],[1,5],[2,6],[6,3],[6,7],[3,4],[7,8]],
+    explain: "循环继续扫描顶点表，遇到第一个未访问顶点 9，于是再次调用 BFS。这会启动生成森林中的第二棵树。",
+    code: "if (!visited[9]) {\n    BFS(G, 9);\n}"
+  },
+  {
+    title: "第二棵 BFS 树覆盖 9-11-10",
+    active: 10,
+    seen: [1,2,3,4,5,6,7,8,9,10,11],
+    tree: [[1,2],[1,5],[2,6],[6,3],[6,7],[3,4],[7,8],[9,11],[11,10]],
+    explain: "第二次 BFS 访问 9、11、10。所有顶点访问完毕，得到的是广度优先生成森林，而不是单棵生成树。",
+    code: "// 无向图中：BFS 调用次数 = 连通分量数\n// 本例有 2 个连通分量，所以调用 2 次 BFS。"
+  }
+];
+let index = 0;
+function hasEdge(list, a, b) {
+  return list.some(([x,y]) => (x === a && y === b) || (x === b && y === a));
+}
+function render() {
+  const s = slides[index];
+  const edgeMarkup = edges.map(([a,b]) => {
+    const [x1,y1] = nodes[a], [x2,y2] = nodes[b];
+    return `<line class="${hasEdge(s.tree,a,b) ? "tree" : "edge"}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  }).join("");
+  const nodeMarkup = Object.entries(nodes).map(([id,pos]) => {
+    const v = Number(id);
+    const cls = ["node", s.seen.includes(v) ? "seen" : "", s.active === v ? "active" : ""].join(" ");
+    return `<circle class="${cls}" cx="${pos[0]}" cy="${pos[1]}" r="23"/><text x="${pos[0]}" y="${pos[1]}">${id}</text>`;
+  }).join("");
+  document.getElementById("stage").innerHTML = `<svg viewBox="0 0 560 450" aria-label="${s.title}">${edgeMarkup}${nodeMarkup}<text class="caption" x="155" y="35">分量 1</text><text class="caption" x="250" y="315">分量 2</text></svg>`;
+  document.getElementById("explain").innerHTML = `<strong>${s.title}</strong><br>${s.explain}`;
+  document.getElementById("code").textContent = s.code;
+  document.getElementById("counter").textContent = `${index + 1} / ${slides.length}`;
+}
+function step(delta) {
+  index = (index + delta + slides.length) % slides.length;
+  render();
+}
+document.getElementById("prev").addEventListener("click", event => { event.stopPropagation(); step(-1); });
+document.getElementById("next").addEventListener("click", event => { event.stopPropagation(); step(1); });
+document.body.addEventListener("click", () => step(1));
+document.addEventListener("keydown", event => {
+  if (event.key === "ArrowLeft") step(-1);
+  if (event.key === "ArrowRight" || event.key === " ") step(1);
+});
+render();
+</script>
+</body>
+</html>

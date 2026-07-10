@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600" role="img">
+  <title>TCP congestion control overview</title>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .t{font-size:22px;font-weight:700;fill:#111827}
+    .sh{font-size:16px;font-weight:700;fill:#111827}
+    .ss{font-size:12px;fill:#4b5563}
+    .sm{font-size:14px;font-weight:700;fill:#111827}
+    .sw{font-size:13px;font-weight:700;fill:#fff}
+    .box{fill:#fff;stroke:#d1d5db;stroke-width:1.5}
+    .f-blue{fill:#eff6ff;stroke:#2563eb;stroke-width:2}
+    .f-green{fill:#ecfdf5;stroke:#059669;stroke-width:2}
+    .f-red{fill:#fef2f2;stroke:#dc2626;stroke-width:2}
+    .f-amber{fill:#fff7ed;stroke:#d97706;stroke-width:2}
+    .tag-b{fill:#2563eb}
+    .tag-g{fill:#059669}
+    .tag-r{fill:#dc2626}
+    .tag-a{fill:#d97706}
+    @media(prefers-color-scheme:dark){
+      .t,.sh,.sm{fill:#e5e7eb}
+      .ss{fill:#9ca3af}
+      .box{fill:#111827;stroke:#374151}
+      .f-blue{fill:#0f1d33;stroke:#1e40af}
+      .f-green{fill:#0a1e14;stroke:#047857}
+      .f-red{fill:#2e0a0a;stroke:#991b1b}
+      .f-amber{fill:#2a1f06;stroke:#92400e}
+      .tag-b{fill:#1d4ed8}
+      .tag-g{fill:#047857}
+      .tag-r{fill:#b91c1c}
+      .tag-a{fill:#b45309}
+    }
+  </style>
+
+  <text x="520" y="36" text-anchor="middle" class="t">TCP 拥塞控制 — 核心变量与四算法总览</text>
+
+  <!-- Top row: three core variables -->
+  <rect x="20" y="60" width="320" height="145" rx="6" class="f-blue"/>
+  <text x="180" y="88" text-anchor="middle" class="sh" fill="#1e40af">拥塞窗口 cwnd</text>
+  <text x="180" y="112" text-anchor="middle" class="sm">Congestion Window</text>
+  <text x="180" y="134" text-anchor="middle" class="ss">发送方根据网络拥塞程度</text>
+  <text x="180" y="154" text-anchor="middle" class="ss">动态维护的窗口变量</text>
+  <text x="180" y="174" text-anchor="middle" class="ss">单位：字节（讨论时常用 MSS）</text>
+  <text x="180" y="196" text-anchor="middle" class="ss">初始值：1 MSS</text>
+
+  <rect x="360" y="60" width="320" height="145" rx="6" class="f-green"/>
+  <text x="520" y="88" text-anchor="middle" class="sh" fill="#065f46">接收窗口 rwnd</text>
+  <text x="520" y="112" text-anchor="middle" class="sm">Receiver Window</text>
+  <text x="520" y="134" text-anchor="middle" class="ss">接收方通告的可用缓存大小</text>
+  <text x="520" y="154" text-anchor="middle" class="ss">通过 TCP 首部窗口字段传递</text>
+  <text x="520" y="174" text-anchor="middle" class="ss">流量控制的核心变量</text>
+  <text x="520" y="196" text-anchor="middle" class="ss">最大 65535 B（无窗口扩大选项）</text>
+
+  <rect x="700" y="60" width="320" height="145" rx="6" class="f-amber"/>
+  <text x="860" y="88" text-anchor="middle" class="sh" fill="#92400e">慢开始门限 ssthresh</text>
+  <text x="860" y="112" text-anchor="middle" class="sm">Slow Start Threshold</text>
+  <text x="860" y="134" text-anchor="middle" class="ss">cwnd &lt; ssthresh → 慢开始</text>
+  <text x="860" y="154" text-anchor="middle" class="ss">cwnd &gt;= ssthresh → 拥塞避免</text>
+  <text x="860" y="174" text-anchor="middle" class="ss">发生拥塞后：ssthresh ← cwnd/2</text>
+  <text x="860" y="196" text-anchor="middle" class="ss">初始值通常设为较大值（如 16 MSS）</text>
+
+  <!-- Center: send window formula -->
+  <rect x="120" y="225" width="800" height="50" rx="8" class="box" stroke="#2563eb" stroke-width="3"/>
+  <text x="520" y="256" text-anchor="middle" class="t" style="font-size:26px;fill:#2563eb;">swnd = min(cwnd,  rwnd)</text>
+
+  <!-- Arrows from three variables to formula -->
+  <line x1="180" y1="205" x2="330" y2="228" stroke="#6b7280" stroke-width="1.5"/>
+  <line x1="520" y1="205" x2="520" y2="224" stroke="#6b7280" stroke-width="1.5"/>
+  <line x1="860" y1="205" x2="710" y2="228" stroke="#6b7280" stroke-width="1.5"/>
+
+  <!-- Bottom section: four algorithms -->
+  <text x="520" y="305" text-anchor="middle" class="t">TCP 四种拥塞控制算法</text>
+
+  <!-- Algorithm 1: Slow Start -->
+  <rect x="20" y="325" width="490" height="115" rx="6" class="box"/>
+  <rect x="35" y="340" width="110" height="28" rx="4" class="tag-g"/>
+  <text x="90" y="359" text-anchor="middle" class="sw">① 慢开始</text>
+  <text x="165" y="358" text-anchor="middle" class="sm">Slow Start</text>
+  <text x="45" y="385" class="ss" style="font-size:13px;" text-anchor="start">触发：cwnd &lt; ssthresh（连接建立时、超时后）</text>
+  <text x="45" y="405" class="ss" style="font-size:13px;" text-anchor="start">规则：每收到 1 个新 ACK → cwnd += 1 MSS</text>
+  <text x="45" y="425" class="ss" style="font-size:13px;" text-anchor="start">效果：每经过 1 个 RTT → cwnd 翻倍（指数增长）</text>
+
+  <!-- Algorithm 2: Congestion Avoidance -->
+  <rect x="530" y="325" width="490" height="115" rx="6" class="box"/>
+  <rect x="545" y="340" width="110" height="28" rx="4" class="tag-b"/>
+  <text x="600" y="359" text-anchor="middle" class="sw">② 拥塞避免</text>
+  <text x="675" y="358" text-anchor="middle" class="sm">Congestion Avoidance</text>
+  <text x="555" y="385" class="ss" style="font-size:13px;" text-anchor="start">触发：cwnd &gt;= ssthresh</text>
+  <text x="555" y="405" class="ss" style="font-size:13px;" text-anchor="start">规则：每经过 1 个 RTT → cwnd += 1 MSS</text>
+  <text x="555" y="425" class="ss" style="font-size:13px;" text-anchor="start">效果：cwnd 线性缓慢增长，避免过快注入网络</text>
+
+  <!-- Algorithm 3: Fast Retransmit -->
+  <rect x="20" y="458" width="490" height="115" rx="6" class="box"/>
+  <rect x="35" y="473" width="110" height="28" rx="4" class="tag-r"/>
+  <text x="90" y="492" text-anchor="middle" class="sw">③ 快重传</text>
+  <text x="165" y="491" text-anchor="middle" class="sm">Fast Retransmit</text>
+  <text x="45" y="518" class="ss" style="font-size:13px;" text-anchor="start">触发：发送方连续收到 3 个重复 ACK</text>
+  <text x="45" y="538" class="ss" style="font-size:13px;" text-anchor="start">动作：立即重传缺失报文段，不等超时计时器</text>
+  <text x="45" y="558" class="ss" style="font-size:13px;" text-anchor="start">意义：避免误判拥塞 → 不必把 cwnd 降为 1</text>
+
+  <!-- Algorithm 4: Fast Recovery -->
+  <rect x="530" y="458" width="490" height="115" rx="6" class="box"/>
+  <rect x="545" y="473" width="110" height="28" rx="4" class="tag-a"/>
+  <text x="600" y="492" text-anchor="middle" class="sw">④ 快恢复</text>
+  <text x="675" y="491" text-anchor="middle" class="sm">Fast Recovery</text>
+  <text x="555" y="518" class="ss" style="font-size:13px;" text-anchor="start">触发：快重传之后（配合使用，Reno 版本）</text>
+  <text x="555" y="538" class="ss" style="font-size:13px;" text-anchor="start">动作：ssthresh ← cwnd/2, cwnd ← ssthresh（不降为 1）</text>
+  <text x="555" y="558" class="ss" style="font-size:13px;" text-anchor="start">然后直接进入拥塞避免，跳过慢开始</text>
+</svg>

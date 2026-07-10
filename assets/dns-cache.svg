@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">DNS 高速缓存的作用</title><desc id="desc">首次查询逐级解析并把结果存入本地域名服务器缓存；后续查询直接命中缓存。</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker><marker id="hitArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#059669"/></marker></defs>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+:root{color-scheme:light dark}.title{font:700 24px "Microsoft YaHei",sans-serif;fill:#172033}.head{font:700 19px "Microsoft YaHei",sans-serif}.label{font:700 16px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:14px "Microsoft YaHei",sans-serif;fill:#526174}.box{fill:#fff;stroke:#64748b;stroke-width:2}.host{fill:#ecfdf5;stroke:#059669}.local{fill:#eff6ff;stroke:#2563eb}.cache{fill:#fef3c7;stroke:#d97706}.remote{fill:#f8fafc;stroke:#64748b}.line{fill:none;stroke:#2563eb;stroke-width:2.5;marker-end:url(#arrow)}.hit{fill:none;stroke:#059669;stroke-width:3;marker-end:url(#hitArrow)}.divider{stroke:#cbd5e1;stroke-dasharray:7 7}.blue{fill:#2563eb}.green{fill:#059669}.amber{fill:#b45309}@media(prefers-color-scheme:dark){.title,.label{fill:#e5edf5}.sub{fill:#a9b7c6}.box{fill:#121b25}.host{fill:#123d2d}.local{fill:#17345a}.cache{fill:#3c2d0d}.remote{fill:#16212c}.divider{stroke:#344354}.blue{fill:#93c5fd}.green{fill:#6ee7b7}.amber{fill:#fcd34d}}</style>
+  <text x="480" y="38" text-anchor="middle" class="title">DNS 高速缓存：第一次查询换来后续快速命中</text>
+  <text x="240" y="76" text-anchor="middle" class="head blue">首次查询：缓存未命中</text><text x="720" y="76" text-anchor="middle" class="head green">后续查询：缓存命中</text><line x1="480" y1="58" x2="480" y2="392" class="divider"/>
+  <rect x="34" y="116" width="118" height="58" rx="7" class="box host"/><text x="93" y="142" text-anchor="middle" class="label">用户主机</text><text x="93" y="162" text-anchor="middle" class="sub">查询 y.abc.com</text>
+  <rect x="192" y="104" width="158" height="82" rx="7" class="box local"/><text x="271" y="132" text-anchor="middle" class="label">本地域名服务器</text><rect x="213" y="145" width="116" height="27" rx="4" class="box cache"/><text x="271" y="164" text-anchor="middle" class="sub amber">缓存：无记录</text>
+  <rect x="382" y="104" width="72" height="82" rx="7" class="box remote"/><text x="418" y="133" text-anchor="middle" class="label">逐级</text><text x="418" y="157" text-anchor="middle" class="label">查询</text>
+  <path d="M152 145H192" class="line"/><path d="M350 145H382" class="line"/><path d="M418 186V232H271V186" class="line"/><text x="346" y="222" text-anchor="middle" class="sub">得到 IP 1.2.3.4</text>
+  <rect x="192" y="258" width="158" height="82" rx="7" class="box local"/><text x="271" y="286" text-anchor="middle" class="label">写入缓存</text><rect x="213" y="299" width="116" height="27" rx="4" class="box cache"/><text x="271" y="318" text-anchor="middle" class="sub amber">y.abc.com → 1.2.3.4</text>
+  <text x="240" y="374" text-anchor="middle" class="sub">记录带有有效期；超时后删除或重新查询</text>
+
+  <rect x="526" y="132" width="118" height="58" rx="7" class="box host"/><text x="585" y="158" text-anchor="middle" class="label">另一主机</text><text x="585" y="178" text-anchor="middle" class="sub">同一域名</text>
+  <rect x="708" y="112" width="196" height="98" rx="7" class="box local"/><text x="806" y="140" text-anchor="middle" class="label">本地域名服务器</text><rect x="735" y="157" width="142" height="34" rx="4" class="box cache"/><text x="806" y="180" text-anchor="middle" class="sub amber">缓存已有 1.2.3.4</text>
+  <path d="M644 150H708" class="hit"/><path d="M708 184H644" class="hit"/><text x="676" y="137" text-anchor="middle" class="sub green">查询</text><text x="676" y="207" text-anchor="middle" class="sub green">直接返回</text>
+  <rect x="557" y="258" width="316" height="82" rx="7" class="box host"/><text x="715" y="289" text-anchor="middle" class="label">不再访问根、TLD 和权限域名服务器</text><text x="715" y="316" text-anchor="middle" class="sub">降低查询时延、减少 DNS 报文、减轻上级服务器负担</text>
+</svg>

@@ -1,0 +1,447 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Transport Layer Overview | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="运输层解决什么问题网络层把 IP 数据报从一台主机送到另一台主机，运输层则把数据交给正确的应用进程。换句话说：    层次 通信范围 标识对象    网络层 主机到主机 IP 地址   运输层 进程到进程 端口号    进程到进程通信是逻辑通信。两端运输层看起来像是在水平通信，但数据实际仍要向下交给网络层、数据链路层和物理层，再在接收端逐层向上交付。 在 TCP&#x2F;IP 体系中，运输层最重">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transport Layer Overview">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/09/Transport-Layer/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="运输层解决什么问题网络层把 IP 数据报从一台主机送到另一台主机，运输层则把数据交给正确的应用进程。换句话说：    层次 通信范围 标识对象    网络层 主机到主机 IP 地址   运输层 进程到进程 端口号    进程到进程通信是逻辑通信。两端运输层看起来像是在水平通信，但数据实际仍要向下交给网络层、数据链路层和物理层，再在接收端逐层向上交付。 在 TCP&#x2F;IP 体系中，运输层最重">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-09T03:37:07.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="TransportLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Transport Layer Overview",
+  "url": "https://eliano64.github.io/2026/07/09/Transport-Layer/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-09T03:37:07.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/09/Transport-Layer/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Transport Layer Overview',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Transport Layer Overview</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Transport Layer Overview</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-09T03:37:07.000Z" title="发表于 2026-07-09 11:37:07">2026-07-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">766</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="运输层解决什么问题"><a href="#运输层解决什么问题" class="headerlink" title="运输层解决什么问题"></a>运输层解决什么问题</h1><p>网络层把 IP 数据报从一台主机送到另一台主机，运输层则把数据交给正确的应用进程。换句话说：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>通信范围</th>
+<th>标识对象</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>网络层</td>
+<td>主机到主机</td>
+<td>IP 地址</td>
+</tr>
+<tr>
+<td>运输层</td>
+<td>进程到进程</td>
+<td>端口号</td>
+</tr>
+</tbody></table>
+<p><img src="/assets/transport-layer-scope.svg" alt="900"></p>
+<p>进程到进程通信是逻辑通信。两端运输层看起来像是在水平通信，但数据实际仍要向下交给网络层、数据链路层和物理层，再在接收端逐层向上交付。</p>
+<p>在 TCP&#x2F;IP 体系中，运输层最重要的两个协议是 UDP 和 TCP：</p>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>运输层数据单元</th>
+<th>基本服务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UDP</td>
+<td>UDP 用户数据报</td>
+<td>无连接、不可靠、首部小</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>TCP 报文段</td>
+<td>面向连接、可靠、面向字节流</td>
+</tr>
+</tbody></table>
+<h1 id="端口号"><a href="#端口号" class="headerlink" title="端口号"></a>端口号</h1><p>一台主机上可能同时运行很多网络应用。运输层用端口号区分这些应用进程。</p>
+<p>端口号长度为 16 bit，取值范围是 <code>0-65535</code>。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th align="right">范围</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>熟知端口号</td>
+<td align="right"><code>0-1023</code></td>
+<td>分配给重要服务器程序</td>
+</tr>
+<tr>
+<td>登记端口号</td>
+<td align="right"><code>1024-49151</code></td>
+<td>给一般服务器程序登记使用</td>
+</tr>
+<tr>
+<td>短暂端口号</td>
+<td align="right"><code>49152-65535</code></td>
+<td>客户端运行时临时选择</td>
+</tr>
+</tbody></table>
+<p>常见熟知端口号：</p>
+<table>
+<thead>
+<tr>
+<th>应用层协议</th>
+<th>运输层协议</th>
+<th align="right">端口号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FTP</td>
+<td>TCP</td>
+<td align="right"><code>21/20</code></td>
+</tr>
+<tr>
+<td>DNS</td>
+<td>UDP</td>
+<td align="right"><code>53</code></td>
+</tr>
+<tr>
+<td>DHCP</td>
+<td>UDP</td>
+<td align="right"><code>67/68</code></td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>TCP</td>
+<td align="right"><code>80</code></td>
+</tr>
+<tr>
+<td>HTTPS</td>
+<td>TCP</td>
+<td align="right"><code>443</code></td>
+</tr>
+<tr>
+<td>SMTP</td>
+<td>TCP</td>
+<td align="right"><code>25</code></td>
+</tr>
+<tr>
+<td>BGP</td>
+<td>TCP</td>
+<td align="right"><code>179</code></td>
+</tr>
+<tr>
+<td>RIP</td>
+<td>UDP</td>
+<td align="right"><code>520</code></td>
+</tr>
+</tbody></table>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">端口号的本地意义</span></div>
+<div class="callout-content"><p>端口号只在本机运输层协议栈内用来标识应用进程。不同主机上的同一端口号没有必然关系；TCP 的 <code>53</code> 端口和 UDP 的 <code>53</code> 端口也属于不同的端口空间。</p>
+</div>
+</div>
+# 复用与分用
+
+<p>发送方的多个应用进程把数据交给运输层，运输层根据应用选择 UDP 或 TCP 封装，这叫复用。接收方收到 UDP 用户数据报或 TCP 报文段后，根据协议类型和目的端口号把数据交给对应应用进程，这叫分用。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/transport-port-mux-demux-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+
+<p><img src="/assets/transport-port-demux-examples.svg" alt="900"></p>
+<h1 id="UDP-与-TCP-的服务模型"><a href="#UDP-与-TCP-的服务模型" class="headerlink" title="UDP 与 TCP 的服务模型"></a>UDP 与 TCP 的服务模型</h1><p>UDP 和 TCP 都运行在 IP 之上。IP 本身不保证可靠交付，UDP 基本保留这种简单模型，只增加端口分用和检验和；TCP 则在运输层补上连接管理、确认、重传、流量控制和拥塞控制等机制。</p>
+<p><img src="/assets/udp-tcp-service-model.svg" alt="900"></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>UDP</th>
+<th>TCP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>连接</td>
+<td>无连接，发送前不握手</td>
+<td>面向连接，通信前建立连接</td>
+</tr>
+<tr>
+<td>可靠性</td>
+<td>不确认、不重传、不保证有序</td>
+<td>确认、重传、有序交付</td>
+</tr>
+<tr>
+<td>数据形态</td>
+<td>保留应用报文边界</td>
+<td>面向字节流</td>
+</tr>
+<tr>
+<td>通信方式</td>
+<td>可单播、多播、广播</td>
+<td>点对点单播连接</td>
+</tr>
+<tr>
+<td>首部开销</td>
+<td>固定 8 B</td>
+<td>最小 20 B，最大 60 B</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>DNS、DHCP、RIP、实时音视频、简单请求响应</td>
+<td>HTTP、HTTPS、SMTP、FTP、BGP</td>
+</tr>
+</tbody></table>
+<p>实时语音、视频会议这类应用通常更怕等待重传造成时延抖动；文件传输、网页访问、邮件传送更需要可靠、有序的字节流。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/09/Transport-Layer/">https://eliano64.github.io/2026/07/09/Transport-Layer/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/09/UDP-Datagram/" title="UDP Datagram"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">UDP Datagram</div></div><div class="info-2"><div class="info-item-1">UDP 的位置UDP 是运输层协议。它在 IP 提供的主机到主机交付之上，增加了两件事：  用端口号把数据交给正确的应用进程。 用检验和检查 UDP 用户数据报是否出现误码。  UDP 不建立连接，不维护可靠传输状态。发送方把应用报文交给 UDP 后，UDP 封装成一个 UDP 用户数据报并交给 IP；接收方若检出误码就丢弃，不确认、不重传、不排序。 UDP 用户数据报UDP 用户数据报由 UDP 首部和数据载荷组成。首部固定 8 B，包含 4 个字段，每个字段 2 B。     字段 长度 含义    源端口 16 bit 发送进程使用的端口号；接收方回送响应时作为目的端口   目的端口 16 bit 接收进程使用的端口号；接收方据此分用   长度 16 bit UDP 首部和 UDP 数据载荷的总长度   检验和 16 bit 检查 UDP 首部、数据载荷和伪首部是否出错   UDP 长度字段是整个 UDP 用户数据报的长度。因为 UDP 首部固定 8 B，所以： $$\text{UDP 数据载荷长度}&#x3D;\text{UDP 长度字段表示长度}-8\text{...</div></div></div></a><a class="pagination-related" href="/2026/07/09/TCP-Segment/" title="TCP Segment"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">TCP Segment</div></div><div class="info-2"><div class="info-item-1">TCP 报文段TCP 为应用层提供面向连接、可靠、全双工的字节流服务。应用进程交给 TCP 的数据会先进入发送缓存，TCP 再按当前发送策略取出一段字节，加上 TCP 首部，形成 TCP 报文段。 TCP 报文段由两部分构成：  TCP 首部：承载端口、序号、确认、窗口、标志位、检验和、选项等控制信息。 数据载荷：从 TCP 字节流中取出的若干字节。  TCP 的连接管理、可靠传输、流量控制和拥塞控制都依赖首部字段。先把首部字段读懂，才能读懂 TCP 的过程。 首部格式TCP 首部最小 20 B，最大 60 B。前 20 B 是固定首部，后面最多 40 B 是选项和填充。     字段 长度 含义    源端口、目的端口 各 16 bit 标识通信双方应用进程   序号 seq 32 bit 本报文段数据载荷第一个字节的序号   确认号 ack 32 bit 期望收到对方下一个字节的序号   数据偏移 4 bit TCP 首部长度，单位是 4 B   保留 6 bit 保留，通常置 0   标志位 6 bit URG ACK PSH RST SYN FIN   窗口 16...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%90%E8%BE%93%E5%B1%82%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="toc-text">运输层解决什么问题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AB%AF%E5%8F%A3%E5%8F%B7"><span class="toc-text">端口号</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#UDP-%E4%B8%8E-TCP-%E7%9A%84%E6%9C%8D%E5%8A%A1%E6%A8%A1%E5%9E%8B"><span class="toc-text">UDP 与 TCP 的服务模型</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

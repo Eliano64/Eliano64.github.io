@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TLB Address Translation</title>
+<style>
+  :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#111827;--muted:#4b5563;--line:#cbd5e1;--accent:#2563eb;--hit:#16a34a;--miss:#dc2626;--active:#fef3c7}
+  @media(prefers-color-scheme:dark){:root{--bg:#111827;--panel:#1f2937;--text:#e5e7eb;--muted:#cbd5e1;--line:#475569;--accent:#93c5fd;--hit:#86efac;--miss:#fca5a5;--active:#713f12}}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,sans-serif}.wrap{max-width:1080px;margin:0 auto;padding:20px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}h1{margin:0;font-size:22px}.controls{display:flex;gap:8px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}button:hover{border-color:var(--accent)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}.title{font-weight:750;font-size:18px}.muted{color:var(--muted)}
+  .flow{display:grid;gap:8px;margin-top:12px}.node{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg)}.node.active{background:var(--active);outline:2px solid var(--accent)}.hit{color:var(--hit);font-weight:750}.miss{color:var(--miss);font-weight:750}
+  table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left}th{color:var(--muted);font-weight:650}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>TLB 地址转换：命中与未命中</h1>
+    <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button><button id="reset">重置</button></div>
+  </header>
+  <div class="grid">
+    <section class="panel">
+      <div id="title" class="title"></div>
+      <p id="explain" class="muted"></p>
+      <div id="flow" class="flow"></div>
+    </section>
+    <section class="panel">
+      <div class="title">访存次数模型</div>
+      <table>
+        <thead><tr><th>情况</th><th>过程</th><th>访存次数</th></tr></thead>
+        <tbody>
+          <tr><td>无 TLB</td><td>查内存页表 + 访问目标单元</td><td>2 次</td></tr>
+          <tr><td>TLB 命中</td><td>查 TLB + 访问目标单元</td><td>1 次主存访问</td></tr>
+          <tr><td>TLB 未命中</td><td>查 TLB + 查内存页表 + 回填 TLB + 访问目标单元</td><td>2 次主存访问</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">TLB 查询本身很快，常在平均访问时间中单独计入。</p>
+    </section>
+  </div>
+</div>
+<script>
+const steps=[
+  {title:"1. CPU 给出逻辑地址",explain:"硬件先从逻辑地址中得到页号 P 和页内偏移 W。",active:0},
+  {title:"2. 查 TLB",explain:"TLB 保存最近访问过的页表项副本，用页号 P 作为查找关键字。",active:1},
+  {title:"3A. TLB 命中",explain:"若 TLB 中有 P 对应的页表项，直接得到页框号 b，再拼接页内偏移 W。",active:2,kind:"hit"},
+  {title:"3B. TLB 未命中",explain:"若 TLB 中没有目标页表项，需要访问主存中的页表，找到页框号后再回填 TLB。",active:3,kind:"miss"},
+  {title:"4. 访问目标物理地址",explain:"得到物理地址后，再访问目标内存单元。",active:4}
+];
+const nodes=["逻辑地址：页号 P + 页内偏移 W","TLB：查找 P","命中：得到页框号 b","未命中：查主存页表并回填 TLB","物理地址：页框号 b + 页内偏移 W"];
+let step=0;
+function render(){
+ const s=steps[step];
+ document.getElementById("title").innerHTML=`${s.title} ${s.kind==="hit"?"<span class='hit'>命中路径</span>":s.kind==="miss"?"<span class='miss'>未命中路径</span>":""}`;
+ document.getElementById("explain").textContent=s.explain;
+ document.getElementById("flow").innerHTML=nodes.map((n,i)=>`<div class="node ${i===s.active?"active":""}">${n}</div>`).join("");
+}
+document.getElementById("prev").onclick=()=>{step=Math.max(0,step-1);render()};
+document.getElementById("next").onclick=()=>{step=Math.min(steps.length-1,step+1);render()};
+document.getElementById("reset").onclick=()=>{step=0;render()};
+render();
+</script>
+</body>
+</html>

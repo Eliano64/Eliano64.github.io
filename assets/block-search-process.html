@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block Search</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--red:#dc2626;--green:#16a34a;--yellow:#f59e0b;--cell:#e0f2fe}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--red:#f87171;--green:#4ade80;--yellow:#fbbf24;--cell:#172554}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}
+.wrap{max-width:1050px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}
+h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px}
+button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px}
+.index{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.idx{border:1px solid var(--line);border-radius:7px;padding:10px;text-align:center;background:rgba(148,163,184,.1)}
+.idx b{display:block;font-size:18px}.idx span{font-size:13px;color:var(--muted)}
+.data{display:grid;grid-template-columns:repeat(14,1fr);gap:6px}.cell{height:54px;border:1px solid var(--line);border-radius:7px;background:var(--cell);display:flex;align-items:center;justify-content:center;font-weight:700;position:relative}
+.pos{position:absolute;bottom:3px;right:5px;font-size:10px;color:var(--muted);font-weight:400}
+.active{outline:3px solid var(--blue);outline-offset:2px}.block{outline:3px solid var(--yellow);outline-offset:2px}.found{outline:3px solid var(--green);outline-offset:2px}.miss{outline:3px solid var(--red);outline-offset:2px}
+.explain{font-size:18px;line-height:1.65;min-height:90px;margin-top:16px}
+.code{background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-family:Consolas,monospace;font-size:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>分块查找：先定块，再块内顺序查找</h1><div class="hint">目标 key = 19；索引表保存每块最大关键字。</div></div>
+    <div><button id="prev">上一步</button> <button id="next">下一步</button></div>
+  </div>
+  <div class="card">
+    <div class="index" id="index"></div>
+    <div class="data" id="data"></div>
+    <div class="explain" id="explain"></div>
+    <pre class="code">int block_search(const int a[], const IndexBlock idx[], int block_count, int key) {
+    int block = lower_bound_block(idx, block_count, key);
+    if (block == block_count) return -1;
+
+    for (int i = idx[block].start; i &lt;= idx[block].end; ++i) {
+        if (a[i] == key) return i;
+    }
+    return -1;
+}</pre>
+  </div>
+</div>
+<script>
+const idx=[{m:10,r:"0..1"},{m:20,r:"2..5"},{m:30,r:"6..8"},{m:40,r:"9..10"},{m:50,r:"11..13"}];
+const a=[7,10,13,19,16,20,27,22,30,40,36,43,50,48];
+const steps=[
+ {kind:"index",i:2,t:"折半查索引：mid 指向最大关键字 30。因为 19 <= 30，候选块在左侧或当前块。"},
+ {kind:"index",i:0,t:"继续查索引：最大关键字 10 小于 19，说明第 0 块不可能包含 19，low 右移。"},
+ {kind:"index",i:1,t:"最大关键字 20 大于等于 19，索引查找结束。目标只可能在第 1 块。"},
+ {kind:"block",b:1,t:"进入第 1 块，范围是下标 2..5。块内不要求有序，所以只能顺序查找。"},
+ {kind:"data",i:2,t:"比较 a[2]=13 与 19，不相等。"},
+ {kind:"data",i:3,found:true,t:"比较 a[3]=19 与 19，相等，查找成功。总查找长度 = 索引比较次数 + 块内比较次数。"}
+];
+let k=0;
+const ie=document.getElementById("index"), de=document.getElementById("data");
+idx.forEach((x,i)=>{const d=document.createElement("div");d.className="idx";d.innerHTML=`<b>${x.m}</b><span>${x.r} / block ${i}</span>`;ie.appendChild(d)});
+a.forEach((v,i)=>{const d=document.createElement("div");d.className="cell";d.innerHTML=`${v}<span class="pos">${i}</span>`;de.appendChild(d)});
+function render(){[...ie.children].forEach(x=>x.className="idx");[...de.children].forEach(x=>x.className="cell");const s=steps[k];if(s.kind==="index")ie.children[s.i].classList.add("active");if(s.kind==="block"){for(let i=idx[s.b].r.split("..")[0]*1;i<=idx[s.b].r.split("..")[1]*1;i++)de.children[i].classList.add("block");ie.children[s.b].classList.add("block")}if(s.kind==="data")de.children[s.i].classList.add(s.found?"found":"active");document.getElementById("explain").textContent=s.t}
+document.getElementById("prev").onclick=()=>{k=Math.max(0,k-1);render()};
+document.getElementById("next").onclick=()=>{k=Math.min(steps.length-1,k+1);render()};
+render();
+</script>
+</body>
+</html>

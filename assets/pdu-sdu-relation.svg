@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430" role="img" aria-labelledby="title desc">
+  <title id="title">PDU 与 SDU 关系</title>
+  <desc id="desc">展示上一层交给本层的数据作为 SDU，本层添加首部后成为本层 PDU。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#cbd5e1;--blue:#dbeafe;--bl:#2563eb;--green:#dcfce7;--gl:#16a34a;--amber:#fef3c7;--al:#d97706;--arrow:#475569}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#334155;--blue:#1e3a8a;--bl:#60a5fa;--green:#14532d;--gl:#4ade80;--amber:#713f12;--al:#fbbf24;--arrow:#cbd5e1}}
+    .bg{fill:var(--bg)}.card{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.sdu{fill:var(--green);stroke:var(--gl);stroke-width:2}.hdr{fill:var(--amber);stroke:var(--al);stroke-width:2}.pdu{fill:none;stroke:var(--bl);stroke-width:3}.arrow{stroke:var(--arrow);stroke-width:3;fill:none;marker-end:url(#arrow)}
+    text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:26px;font-weight:700}.label{font-size:17px;font-weight:700;text-anchor:middle;dominant-baseline:middle}.small{font-size:15px;fill:var(--muted);text-anchor:middle}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 Z" fill="var(--arrow)"/></marker></defs>
+  <rect class="bg" width="900" height="430"/><rect class="card" x="28" y="26" width="844" height="344" rx="16"/>
+  <text class="title" x="58" y="70">SDU 是层间交付的数据，PDU 是对等层交互的数据</text>
+  <rect class="sdu" x="288" y="112" width="280" height="66" rx="10"/><text class="label" x="428" y="146">第 n 层 SDU</text><text class="small" x="428" y="202">来自第 n+1 层，作为第 n 层要承载的数据</text>
+  <path class="arrow" d="M428 220 V258"/>
+  <rect class="hdr" x="198" y="270" width="120" height="66" rx="10"/><text class="label" x="258" y="304">首部</text>
+  <rect class="sdu" x="318" y="270" width="280" height="66" rx="10"/><text class="label" x="458" y="304">SDU</text>
+  <rect class="pdu" x="188" y="260" width="420" height="86" rx="14"/><text class="small" x="398" y="374">第 n 层 PDU = 第 n 层控制信息 + 第 n 层 SDU</text>
+  <text class="small" x="690" y="148">多个 SDU 可以合成一个 PDU；</text><text class="small" x="690" y="174">一个 SDU 也可拆成多个 PDU。</text>
+</svg>

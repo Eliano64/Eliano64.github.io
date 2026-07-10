@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-labelledby="title desc">
+  <title id="title">C/S 与 P2P 应用模型对比</title>
+  <desc id="desc">左侧为客户请求、服务器响应的集中式模型；右侧为对等方彼此提供和请求服务的分散式模型。</desc>
+  <defs>
+    <marker id="blueArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker>
+    <marker id="greenArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#059669"/></marker>
+  </defs>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark}.title{font:700 24px "Microsoft YaHei",sans-serif;fill:#172033}.head{font:700 21px "Microsoft YaHei",sans-serif}.label{font:700 17px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:14px "Microsoft YaHei",sans-serif;fill:#526174}.note{font:15px "Microsoft YaHei",sans-serif;fill:#172033}.box{fill:#fff;stroke:#64748b;stroke-width:2}.server{fill:#dbeafe;stroke:#2563eb}.client{fill:#f8fafc;stroke:#2563eb}.peer{fill:#dcfce7;stroke:#059669}.panel{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.5}.divider{stroke:#94a3b8;stroke-dasharray:7 7}.blue{fill:#2563eb}.green{fill:#059669}.link{fill:none;stroke:#94a3b8;stroke-width:2}.request{fill:none;stroke:#2563eb;stroke-width:2.5;marker-end:url(#blueArrow)}.response{fill:none;stroke:#059669;stroke-width:2.5;marker-end:url(#greenArrow)}.peerlink{fill:none;stroke:#059669;stroke-width:2;marker-start:url(#greenArrow);marker-end:url(#greenArrow)}
+    @media(prefers-color-scheme:dark){.title,.label,.note{fill:#e5edf5}.sub{fill:#a9b7c6}.box{fill:#121b25;stroke:#64748b}.server{fill:#17345a}.client{fill:#16212c}.peer{fill:#123d2d}.panel{fill:#121b25;stroke:#344354}.divider{stroke:#526174}}
+  </style>
+  <text x="240" y="42" text-anchor="middle" class="head blue">客户/服务器方式 C/S</text>
+  <text x="720" y="42" text-anchor="middle" class="head green">对等方式 P2P</text>
+  <line x1="480" y1="28" x2="480" y2="470" class="divider"/>
+
+  <rect x="160" y="78" width="160" height="70" rx="7" class="box server"/>
+  <text x="240" y="107" text-anchor="middle" class="label">服务器</text><text x="240" y="131" text-anchor="middle" class="sub">固定端口，持续等待</text>
+  <rect x="40" y="258" width="130" height="62" rx="7" class="box client"/><text x="105" y="286" text-anchor="middle" class="label">客户 A</text><text x="105" y="307" text-anchor="middle" class="sub">请求服务</text>
+  <rect x="175" y="340" width="130" height="62" rx="7" class="box client"/><text x="240" y="368" text-anchor="middle" class="label">客户 B</text><text x="240" y="389" text-anchor="middle" class="sub">请求服务</text>
+  <rect x="310" y="258" width="130" height="62" rx="7" class="box client"/><text x="375" y="286" text-anchor="middle" class="label">客户 C</text><text x="375" y="307" text-anchor="middle" class="sub">请求服务</text>
+  <path d="M104 258 L195 148" class="request"/><text x="119" y="196" class="sub blue">请求</text>
+  <path d="M220 151 L128 260" class="response"/><text x="188" y="215" class="sub green">响应</text>
+  <line x1="240" y1="148" x2="240" y2="340" class="link"/><line x1="285" y1="148" x2="375" y2="258" class="link"/>
+  <rect x="38" y="424" width="404" height="52" rx="7" class="panel"/><text x="240" y="448" text-anchor="middle" class="note">服务集中在服务器；客户只请求，不向其他客户提供服务</text><text x="240" y="468" text-anchor="middle" class="sub">扩容依赖服务器群集与带宽</text>
+
+  <rect x="548" y="90" width="145" height="64" rx="7" class="box peer"/><text x="620" y="118" text-anchor="middle" class="label">对等方 A</text><text x="620" y="140" text-anchor="middle" class="sub">请求 + 提供</text>
+  <rect x="748" y="90" width="145" height="64" rx="7" class="box peer"/><text x="820" y="118" text-anchor="middle" class="label">对等方 B</text><text x="820" y="140" text-anchor="middle" class="sub">请求 + 提供</text>
+  <rect x="548" y="286" width="145" height="64" rx="7" class="box peer"/><text x="620" y="314" text-anchor="middle" class="label">对等方 D</text><text x="620" y="336" text-anchor="middle" class="sub">请求 + 提供</text>
+  <rect x="748" y="286" width="145" height="64" rx="7" class="box peer"/><text x="820" y="314" text-anchor="middle" class="label">对等方 C</text><text x="820" y="336" text-anchor="middle" class="sub">请求 + 提供</text>
+  <line x1="693" y1="122" x2="748" y2="122" class="peerlink"/><line x1="620" y1="154" x2="620" y2="286" class="peerlink"/><line x1="693" y1="318" x2="748" y2="318" class="peerlink"/><line x1="670" y1="154" x2="782" y2="286" class="peerlink"/>
+  <rect x="518" y="384" width="404" height="92" rx="7" class="panel"/><text x="720" y="412" text-anchor="middle" class="note">服务分散在各对等方；同一节点可同时请求和提供服务</text><text x="720" y="438" text-anchor="middle" class="sub">新增对等方同时增加负载与服务能力</text><text x="720" y="461" text-anchor="middle" class="sub">实际应用可以与 C/S 混合使用</text>
+</svg>

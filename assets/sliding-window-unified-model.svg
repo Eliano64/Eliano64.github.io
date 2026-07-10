@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="360" viewBox="0 0 980 360" role="img" aria-labelledby="title desc">
+  <title id="title">滑动窗口统一模型</title>
+  <desc id="desc">发送窗口和接收窗口在循环序号空间中移动。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--text:#172033;--muted:#64748b;--line:#334155;--panel:#f8fafc;--blue:#2563eb;--green:#16a34a;--amber:#d97706}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--panel:#111827;--blue:#60a5fa;--green:#4ade80;--amber:#fbbf24}}
+    .bg{fill:var(--bg)}.t{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-size:18px}.h{font-size:24px;font-weight:800}.cell{fill:var(--panel);stroke:var(--line);stroke-width:2}.send{fill:color-mix(in srgb,var(--blue) 18%,transparent);stroke:var(--blue);stroke-width:3}.recv{fill:color-mix(in srgb,var(--green) 18%,transparent);stroke:var(--green);stroke-width:3}.arrow{stroke:var(--amber);stroke-width:3;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="var(--amber)"/></marker></defs>
+  <rect class="bg" width="980" height="360"/>
+  <text x="64" y="56" class="t h">发送窗口</text>
+  <text x="64" y="210" class="t h">接收窗口</text>
+  <g transform="translate(190 32)">
+    <rect x="0" y="0" width="74" height="56" class="cell"/><text x="37" y="36" text-anchor="middle" class="t h">0</text>
+    <rect x="74" y="0" width="74" height="56" class="cell"/><text x="111" y="36" text-anchor="middle" class="t h">1</text>
+    <rect x="148" y="0" width="74" height="56" class="send"/><text x="185" y="36" text-anchor="middle" class="t h">2</text>
+    <rect x="222" y="0" width="74" height="56" class="send"/><text x="259" y="36" text-anchor="middle" class="t h">3</text>
+    <rect x="296" y="0" width="74" height="56" class="send"/><text x="333" y="36" text-anchor="middle" class="t h">4</text>
+    <rect x="370" y="0" width="74" height="56" class="cell"/><text x="407" y="36" text-anchor="middle" class="t h">5</text>
+    <rect x="444" y="0" width="74" height="56" class="cell"/><text x="481" y="36" text-anchor="middle" class="t h">6</text>
+    <rect x="518" y="0" width="74" height="56" class="cell"/><text x="555" y="36" text-anchor="middle" class="t h">7</text>
+    <text x="259" y="86" text-anchor="middle" class="t m">已发送但尚未确认，或允许立即发送</text>
+  </g>
+  <g transform="translate(190 186)">
+    <rect x="0" y="0" width="74" height="56" class="cell"/><text x="37" y="36" text-anchor="middle" class="t h">0</text>
+    <rect x="74" y="0" width="74" height="56" class="cell"/><text x="111" y="36" text-anchor="middle" class="t h">1</text>
+    <rect x="148" y="0" width="74" height="56" class="recv"/><text x="185" y="36" text-anchor="middle" class="t h">2</text>
+    <rect x="222" y="0" width="74" height="56" class="recv"/><text x="259" y="36" text-anchor="middle" class="t h">3</text>
+    <rect x="296" y="0" width="74" height="56" class="cell"/><text x="333" y="36" text-anchor="middle" class="t h">4</text>
+    <rect x="370" y="0" width="74" height="56" class="cell"/><text x="407" y="36" text-anchor="middle" class="t h">5</text>
+    <rect x="444" y="0" width="74" height="56" class="cell"/><text x="481" y="36" text-anchor="middle" class="t h">6</text>
+    <rect x="518" y="0" width="74" height="56" class="cell"/><text x="555" y="36" text-anchor="middle" class="t h">7</text>
+    <text x="222" y="86" text-anchor="middle" class="t m">允许接收的序号范围</text>
+  </g>
+  <line x1="770" y1="64" x2="850" y2="64" class="arrow"/><text x="808" y="100" text-anchor="middle" class="t m">收到 ACK 后右移</text>
+  <line x1="770" y1="218" x2="850" y2="218" class="arrow"/><text x="810" y="254" text-anchor="middle" class="t m">按序收到后右移</text>
+</svg>

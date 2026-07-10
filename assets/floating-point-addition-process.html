@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Floating Point Addition Process</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8f6;
+      --panel: #fff;
+      --text: #20242a;
+      --muted: #5b6570;
+      --line: #20242a;
+      --soft: #cbd4dd;
+      --active: #d98600;
+      --data: #2d6f9f;
+      --warn: #b64b4b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #151719;
+        --panel: #20252a;
+        --text: #edf0f2;
+        --muted: #aeb7c0;
+        --line: #edf0f2;
+        --soft: #3a424b;
+        --active: #ffb84d;
+        --data: #82bee8;
+        --warn: #ff8c8c;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+    main { max-width: 1120px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    .sub { margin: 0 0 16px; color: var(--muted); }
+    .stage { background: var(--panel); border: 1px solid var(--soft); border-radius: 8px; padding: 14px; }
+    svg { width: 100%; height: auto; display: block; }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 2.2; }
+    .arrow { stroke: var(--line); stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+    .active { stroke: var(--active) !important; stroke-width: 4 !important; }
+    .label { fill: var(--text); font: 700 20px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .small { fill: var(--muted); font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .value { fill: var(--data); font: 700 19px Consolas, monospace; }
+    .warn { fill: var(--warn); font: 700 18px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .caption { margin-top: 14px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 14px; }
+    .panel { background: var(--panel); border: 1px solid var(--soft); border-radius: 8px; padding: 14px; }
+    .hint { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .mono { font: 20px/1.6 Consolas, "Microsoft YaHei", monospace; white-space: pre-wrap; }
+    .controls { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+    button { border: 1px solid var(--soft); background: var(--panel); color: var(--text); border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; }
+    button:hover { border-color: var(--data); }
+    .status { color: var(--muted); }
+    @media (max-width: 760px) { main { padding: 14px; } .caption { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>浮点加法过程</h1>
+  <p class="sub">例：1.5 + 0.25。先对阶，再做尾数加法、规格化、舍入和异常检查。</p>
+  <section class="stage">
+    <svg viewBox="0 0 1080 520" role="img" aria-label="浮点加法过程">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+      <rect id="node-a" class="box" x="52" y="58" width="272" height="96" rx="8"/>
+      <text class="label" x="86" y="94">操作数 A</text>
+      <text id="val-a" class="value" x="86" y="128">+1.100₂ × 2⁰</text>
+
+      <rect id="node-b" class="box" x="52" y="190" width="272" height="96" rx="8"/>
+      <text class="label" x="86" y="226">操作数 B</text>
+      <text id="val-b" class="value" x="86" y="260">+1.000₂ × 2⁻²</text>
+
+      <rect id="node-align" class="box" x="402" y="86" width="286" height="88" rx="8"/>
+      <text class="label" x="456" y="122">对阶</text>
+      <text id="val-align" class="value" x="432" y="154">B 右移 2 位</text>
+
+      <rect id="node-add" class="box" x="402" y="220" width="286" height="88" rx="8"/>
+      <text class="label" x="450" y="256">尾数运算</text>
+      <text id="val-add" class="value" x="432" y="288">1.100 + 0.010</text>
+
+      <rect id="node-norm" class="box" x="762" y="86" width="266" height="88" rx="8"/>
+      <text class="label" x="824" y="122">规格化</text>
+      <text id="val-norm" class="value" x="796" y="154">1.110₂ × 2⁰</text>
+
+      <rect id="node-round" class="box" x="762" y="220" width="266" height="88" rx="8"/>
+      <text class="label" x="824" y="256">舍入检查</text>
+      <text id="val-round" class="value" x="796" y="288">无额外舍入</text>
+
+      <rect id="node-result" class="box" x="402" y="370" width="626" height="86" rx="8"/>
+      <text class="label" x="452" y="406">结果</text>
+      <text id="val-result" class="value" x="552" y="406">1.110₂ × 2⁰ = 1.75</text>
+      <text id="val-warn" class="warn" x="552" y="436"></text>
+
+      <path id="w-a-align" class="arrow" d="M324 106 H402"/>
+      <path id="w-b-align" class="arrow" d="M324 238 C358 238 364 130 402 130"/>
+      <path id="w-align-add" class="arrow" d="M545 174 V220"/>
+      <path id="w-add-norm" class="arrow" d="M688 264 C730 264 724 130 762 130"/>
+      <path id="w-norm-round" class="arrow" d="M895 174 V220"/>
+      <path id="w-round-result" class="arrow" d="M895 308 V370"/>
+    </svg>
+  </section>
+
+  <section class="caption">
+    <div class="panel">
+      <div class="hint">当前步骤</div>
+      <div id="step" class="mono"></div>
+    </div>
+    <div class="panel">
+      <div class="hint">观察</div>
+      <div id="state" class="mono"></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button id="prev">上一步</button>
+    <button id="next">下一步</button>
+    <span id="status" class="status"></span>
+  </div>
+</main>
+<script>
+  const steps = [
+    { active:["node-a","node-b"], step:"准备两个规格化操作数。", state:"A = +1.100₂ × 2⁰ = 1.5\nB = +1.000₂ × 2⁻² = 0.25", align:"等待对阶", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { active:["node-b","node-align","w-b-align"], step:"比较阶码：A 的阶码为 0，B 的阶码为 -2。", state:"B 的阶码小 2\n需要把 B 的尾数右移 2 位", align:"B 右移 2 位", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { active:["node-align"], step:"对阶：把 B 改写到阶码 0。", state:"1.000₂ × 2⁻²\n= 0.010₂ × 2⁰", align:"B: 1.000 -> 0.010", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { active:["node-a","node-align","node-add","w-align-add"], step:"尾数相加。", state:"1.100₂\n+0.010₂\n=1.110₂", align:"阶码统一为 0", add:"1.100 + 0.010", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { active:["node-add","node-norm","w-add-norm"], step:"规格化：结果已经是 1.x 形式，不需要移动尾数。", state:"1.110₂ × 2⁰", align:"阶码统一为 0", add:"1.110", norm:"1.110₂ × 2⁰", round:"等待舍入", result:"", warn:"" },
+    { active:["node-norm","node-round","w-norm-round"], step:"舍入检查：本例结果能被当前尾数精确保存。", state:"没有额外低位被丢弃\n不需要改变尾数", align:"阶码统一为 0", add:"1.110", norm:"1.110₂ × 2⁰", round:"无额外舍入", result:"", warn:"" },
+    { active:["node-result","w-round-result"], step:"写回结果。", state:"1.110₂ × 2⁰ = 1.75", align:"完成", add:"完成", norm:"完成", round:"完成", result:"1.110₂ × 2⁰ = 1.75", warn:"" },
+    { active:["node-b","node-align","node-result"], step:"大数吃小数：若两个数阶码差太大，小数在对阶右移时可能完全消失。", state:"例：1.0e20 + 1.0\n1.0 对阶后无法影响 1.0e20 的有效位\n结果仍可能是 1.0e20", align:"小数尾数右移很多位", add:"有效位被移出", norm:"结果仍由大数决定", round:"小数贡献为 0", result:"A + B = A", warn:"大数吃小数" }
+  ];
+  const ids = ["node-a","node-b","node-align","node-add","node-norm","node-round","node-result","w-a-align","w-b-align","w-align-add","w-add-norm","w-norm-round","w-round-result"];
+  let pos = 0;
+  function render() {
+    const s = steps[pos];
+    document.getElementById("val-align").textContent = s.align;
+    document.getElementById("val-add").textContent = s.add;
+    document.getElementById("val-norm").textContent = s.norm;
+    document.getElementById("val-round").textContent = s.round;
+    document.getElementById("val-result").textContent = s.result || " ";
+    document.getElementById("val-warn").textContent = s.warn || "";
+    document.getElementById("step").textContent = s.step;
+    document.getElementById("state").textContent = s.state;
+    document.getElementById("status").textContent = `${pos + 1} / ${steps.length}`;
+    ids.forEach(id => document.getElementById(id)?.classList.remove("active"));
+    s.active.forEach(id => document.getElementById(id)?.classList.add("active"));
+  }
+  document.getElementById("prev").addEventListener("click", () => { pos = Math.max(0, pos - 1); render(); });
+  document.getElementById("next").addEventListener("click", () => { pos = Math.min(steps.length - 1, pos + 1); render(); });
+  render();
+</script>
+</body>
+</html>

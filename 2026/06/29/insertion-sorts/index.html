@@ -1,0 +1,506 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Insertion Sorts | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="Insertion Sorts插入排序的共同思想插入类排序的核心是：  把一部分元素看作已经有序。 每次取出一个待排序元素。 在已有序部分中找到它应该插入的位置。 移动元素，腾出位置，把该元素放进去。  直接插入、折半插入、希尔排序都属于这个思路，但“已有序部分”的定义和“插入位置”的查找方式不同。  直接插入排序直接插入排序每一趟都把 $A[i]$ 插入到前面已经有序的子序列 $A[0..i-1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Insertion Sorts">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/29/insertion-sorts/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="Insertion Sorts插入排序的共同思想插入类排序的核心是：  把一部分元素看作已经有序。 每次取出一个待排序元素。 在已有序部分中找到它应该插入的位置。 移动元素，腾出位置，把该元素放进去。  直接插入、折半插入、希尔排序都属于这个思路，但“已有序部分”的定义和“插入位置”的查找方式不同。  直接插入排序直接插入排序每一趟都把 $A[i]$ 插入到前面已经有序的子序列 $A[0..i-1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-28T22:08:23.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.061Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Sort">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Insertion Sorts",
+  "url": "https://eliano64.github.io/2026/06/29/insertion-sorts/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-28T22:08:23.000Z",
+  "dateModified": "2026-07-10T07:16:51.061Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/29/insertion-sorts/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Insertion Sorts',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Insertion Sorts</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Insertion Sorts</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-28T22:08:23.000Z" title="发表于 2026-06-29 06:08:23">2026-06-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.061Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Insertion-Sorts"><a href="#Insertion-Sorts" class="headerlink" title="Insertion Sorts"></a>Insertion Sorts</h1><h2 id="插入排序的共同思想"><a href="#插入排序的共同思想" class="headerlink" title="插入排序的共同思想"></a>插入排序的共同思想</h2><p>插入类排序的核心是：</p>
+<ol>
+<li>把一部分元素看作已经有序。</li>
+<li>每次取出一个待排序元素。</li>
+<li>在已有序部分中找到它应该插入的位置。</li>
+<li>移动元素，腾出位置，把该元素放进去。</li>
+</ol>
+<p>直接插入、折半插入、希尔排序都属于这个思路，但“已有序部分”的定义和“插入位置”的查找方式不同。</p>
+<p><img src="/assets/insertion-sort-overview.svg" alt="1000"></p>
+<h2 id="直接插入排序"><a href="#直接插入排序" class="headerlink" title="直接插入排序"></a>直接插入排序</h2><p><strong>直接插入排序</strong>每一趟都把 $A[i]$ 插入到前面已经有序的子序列 $A[0..i-1]$ 中。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/direct-insertion-sort.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="直接插入排序的-C-写法"><a href="#直接插入排序的-C-写法" class="headerlink" title="直接插入排序的 C 写法"></a>直接插入排序的 C 写法</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Sorts an integer array in nondecreasing order using direct insertion sort.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Array to sort in place.</span></span><br><span class="line"><span class="comment"> *   n: Number of elements in the array.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   The prefix a[0..i-1] is already sorted before each outer-loop iteration.</span></span><br><span class="line"><span class="comment"> *   The algorithm is stable because equal elements are not moved past temp.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">insertion_sort</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="type">int</span> temp = a[i];      <span class="comment">// 待插入元素</span></span><br><span class="line">        <span class="type">int</span> j = i - <span class="number">1</span>;        <span class="comment">// 从有序前缀的最右端开始比较</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (j &gt;= <span class="number">0</span> &amp;&amp; a[j] &gt; temp) &#123;</span><br><span class="line">            a[j + <span class="number">1</span>] = a[j];  <span class="comment">// 较大元素后移，给 temp 腾位置</span></span><br><span class="line">            j--;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        a[j + <span class="number">1</span>] = temp;      <span class="comment">// j 停在第一个 &lt;= temp 的位置</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里的稳定性来自条件 <code>a[j] &gt; temp</code>，而不是 <code>a[j] &gt;= temp</code>。</p>
+<ul>
+<li>若 <code>a[j] &gt; temp</code>，较大元素后移。</li>
+<li>若 <code>a[j] == temp</code>，停止移动，新的相等元素会插在旧的相等元素之后。</li>
+</ul>
+<h3 id="带哨兵的直接插入排序"><a href="#带哨兵的直接插入排序" class="headerlink" title="带哨兵的直接插入排序"></a>带哨兵的直接插入排序</h3><p>有些教材使用 <code>A[0]</code> 存放临时变量，真正元素从 <code>A[1]</code> 到 <code>A[n]</code>。这样可以少写一次 <code>j &gt;= 0</code> 或 <code>j &gt;= 1</code> 的边界判断。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Sorts a[1..n] using insertion sort with a sentinel at a[0].</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Array where a[1..n] stores records and a[0] is temporary storage.</span></span><br><span class="line"><span class="comment"> *   n: Number of actual records.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">insertion_sort_with_sentinel</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">2</span>; i &lt;= n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (a[i] &lt; a[i - <span class="number">1</span>]) &#123;</span><br><span class="line">            a[<span class="number">0</span>] = a[i];      <span class="comment">// 哨兵位保存待插入元素</span></span><br><span class="line">            <span class="type">int</span> j = i - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (a[j] &gt; a[<span class="number">0</span>]) &#123;</span><br><span class="line">                a[j + <span class="number">1</span>] = a[j];</span><br><span class="line">                j--;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            a[j + <span class="number">1</span>] = a[<span class="number">0</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>A[0]</code> 的作用是临时保存待插入元素，并让循环不用每次检查是否越界。但这种写法要求数组额外保留 0 号位置。</p>
+<h3 id="直接插入排序的效率"><a href="#直接插入排序的效率" class="headerlink" title="直接插入排序的效率"></a>直接插入排序的效率</h3><table>
+<thead>
+<tr>
+<th>情况</th>
+<th>输入特点</th>
+<th>比较与移动</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>最好</td>
+<td>原本有序</td>
+<td>每趟只比较一次，不移动元素</td>
+<td>$O(n)$</td>
+</tr>
+<tr>
+<td>最坏</td>
+<td>原本逆序</td>
+<td>第 $i$ 趟要向前比较并移动很多元素</td>
+<td>$O(n^2)$</td>
+</tr>
+<tr>
+<td>平均</td>
+<td>一般随机输入</td>
+<td>比较和移动数量级均为平方级</td>
+<td>$O(n^2)$</td>
+</tr>
+</tbody></table>
+<p>直接插入排序的空间复杂度为 $O(1)$，稳定。</p>
+<p>若采用带哨兵的一基下标写法，在逆序的最坏情况下，第 $i$ 趟常按如下方式估算：</p>
+<ul>
+<li>关键字比较约为 $i-1$ 次。</li>
+<li>元素移动约为 $i-1$ 次。</li>
+</ul>
+<p>求总量时对 $i&#x3D;1,2,\dots,n-1$ 累加，所以数量级为 $O(n^2)$。</p>
+<p>对于链表，插入时不需要像顺序表那样整体移动元素，但查找插入位置仍要从前向后比较，整体时间复杂度仍是 $O(n^2)$。</p>
+<h2 id="折半插入排序"><a href="#折半插入排序" class="headerlink" title="折半插入排序"></a>折半插入排序</h2><p><strong>折半插入排序</strong>是对直接插入排序的改进：在前面有序子序列中，用折半查找先确定插入位置，再统一移动元素。</p>
+<p>它只优化了“找位置”的比较次数，没有优化“移动元素”的次数。因此整体时间复杂度仍是 $O(n^2)$。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/binary-insertion-sort.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="折半插入排序的-C-写法"><a href="#折半插入排序的-C-写法" class="headerlink" title="折半插入排序的 C 写法"></a>折半插入排序的 C 写法</h3><p>查找实现的详细解释见<span class="wikilink-unresolved" title="Unresolved: binary-search">binary-search</span></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Sorts an integer array using binary insertion sort.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Array to sort in place.</span></span><br><span class="line"><span class="comment"> *   n: Number of elements in the array.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   Binary search reduces key comparisons, but elements still need shifting.</span></span><br><span class="line"><span class="comment"> *   Equal keys are inserted after existing equal keys to keep stability.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">binary_insertion_sort</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="type">int</span> temp = a[i];</span><br><span class="line">        <span class="type">int</span> low = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> high = i;</span><br><span class="line">        <span class="type">int</span> ins = i;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (low &lt; high) &#123;</span><br><span class="line">            <span class="type">int</span> mid = low + (high - low) / <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (a[mid] &gt; temp) &#123; <span class="comment">//为了稳定性，规定插入位置是在有序表中第一个**大于**新元素的元素的位置，所以相等时mid不是我们期望的解，不取等号</span></span><br><span class="line">                ins = mid;   </span><br><span class="line">                high = mid;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                low = mid + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j = i - <span class="number">1</span>; j &gt;= low; j--) &#123;</span><br><span class="line">            a[j + <span class="number">1</span>] = a[j];     <span class="comment">// 移动次数没有减少</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        a[ins] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="折半插入排序与直接插入排序"><a href="#折半插入排序与直接插入排序" class="headerlink" title="折半插入排序与直接插入排序"></a>折半插入排序与直接插入排序</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>直接插入排序</th>
+<th>折半插入排序</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>查找插入位置</td>
+<td>顺序向前比较</td>
+<td>折半查找</td>
+</tr>
+<tr>
+<td>关键字比较次数</td>
+<td>较多</td>
+<td>较少</td>
+</tr>
+<tr>
+<td>元素移动次数</td>
+<td>取决于插入位置</td>
+<td>没有减少</td>
+</tr>
+<tr>
+<td>整体时间复杂度</td>
+<td>平均、最坏为 $O(n^2)$</td>
+<td>平均、最坏仍为 $O(n^2)$</td>
+</tr>
+<tr>
+<td>空间复杂度</td>
+<td>$O(1)$</td>
+<td>$O(1)$</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>稳定</td>
+<td>稳定，前提是相等时向右找</td>
+</tr>
+</tbody></table>
+<p>折半插入排序要把“比较次数”和“移动次数”分开看：</p>
+<ul>
+<li>比较次数：每趟用折半查找，数量级约为 $O(\log i)$，总比较次数约为 $O(n\log n)$。</li>
+<li>移动次数：插入位置之后的元素仍要整体右移，最坏和平均情况下仍是 $O(n^2)$。</li>
+<li>原表有序时，移动很少，但仍要做折半定位，因此不能把它简单理解为直接插入排序那种 $O(n)$ 最好情况。</li>
+</ul>
+<h2 id="希尔排序"><a href="#希尔排序" class="headerlink" title="希尔排序"></a>希尔排序</h2><p><strong>希尔排序</strong>又叫缩小增量排序。它不是直接对整个表做一次插入排序，而是先按增量 $d$ 把表分成若干个子表：</p>
+<p>$$<br>L[i], L[i+d], L[i+2d], \dots<br>$$</p>
+<p>每个子表内部做直接插入排序。然后缩小增量 $d$，重复这一过程，直到 $d&#x3D;1$。最后一趟 $d&#x3D;1$ 时，整个表就是一个子表，相当于对全表做直接插入排序。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||610)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||610)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/shell-sort.html" style="width:100%;height:610px;border:0" loading="lazy"></iframe>
+</div>
+
+<h3 id="希尔排序的理解"><a href="#希尔排序的理解" class="headerlink" title="希尔排序的理解"></a>希尔排序的理解</h3><p>直接插入排序在“基本有序”的序列上效率较高。希尔排序利用这一点：</p>
+<ol>
+<li>先用较大的增量让远距离元素提前移动。</li>
+<li>每一趟都让表更接近整体有序。</li>
+<li>最后一趟增量为 1 时，直接插入排序面对的是一个比较接近有序的表。</li>
+</ol>
+<p>例如初始序列：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">49 38 65 97 76 13 27 49</span><br></pre></td></tr></table></figure>
+
+<p>若增量序列为 $4,2,1$：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">d = 4: 49 13 27 49 76 38 65 97</span><br><span class="line">d = 2: 27 13 49 38 65 49 76 97</span><br><span class="line">d = 1: 13 27 38 49 49 65 76 97</span><br></pre></td></tr></table></figure>
+
+<p>考试中可能给出不同增量序列。只要最后一个增量是 1，就能保证最终整体有序。</p>
+<h3 id="希尔排序的-C-写法"><a href="#希尔排序的-C-写法" class="headerlink" title="希尔排序的 C 写法"></a>希尔排序的 C 写法</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Sorts an integer array using Shell sort with gap halving.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Args:</span></span><br><span class="line"><span class="comment"> *   a: Array to sort in place.</span></span><br><span class="line"><span class="comment"> *   n: Number of elements in the array.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Notes:</span></span><br><span class="line"><span class="comment"> *   For a fixed gap, this is insertion sort on gap-separated subsequences.</span></span><br><span class="line"><span class="comment"> *   This implementation uses n/2, n/4, ..., 1 as the gap sequence.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">shell_sort</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> gap = n / <span class="number">2</span>; gap &gt; <span class="number">0</span>; gap /= <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = gap; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> temp = a[i];</span><br><span class="line">            <span class="type">int</span> j = i - gap;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (j &gt;= <span class="number">0</span> &amp;&amp; a[j] &gt; temp) &#123;</span><br><span class="line">                a[j + gap] = a[j];  <span class="comment">// 同一子表内后移 gap 个位置</span></span><br><span class="line">                j -= gap;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            a[j + gap] = temp;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码可以看作直接插入排序的“跨步版本”：</p>
+<ul>
+<li>直接插入排序：比较 <code>a[j]</code> 与 <code>temp</code>，移动到 <code>a[j+1]</code>。</li>
+<li>希尔排序：比较 <code>a[j]</code> 与 <code>temp</code>，移动到 <code>a[j+gap]</code>。</li>
+</ul>
+<h3 id="希尔排序的性质"><a href="#希尔排序的性质" class="headerlink" title="希尔排序的性质"></a>希尔排序的性质</h3><table>
+<thead>
+<tr>
+<th>性质</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>空间复杂度</td>
+<td>$O(1)$</td>
+</tr>
+<tr>
+<td>时间复杂度</td>
+<td>与增量序列有关；最坏可为 $O(n^2)$</td>
+</tr>
+<tr>
+<td>常见经验复杂度</td>
+<td>某些规模和增量下可接近 $O(n^{1.3})$</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>不稳定</td>
+</tr>
+<tr>
+<td>适用结构</td>
+<td>仅适合顺序表，不适合链表</td>
+</tr>
+</tbody></table>
+<p>希尔排序不稳定的原因是：相同关键字可能被分到不同子表中，跨组移动时可能改变相对次序。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">65 49a 49b</span><br></pre></td></tr></table></figure>
+
+<p>若第一趟增量为 2，<code>65</code> 与 <code>49b</code> 同组，排序后可能得到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">49b 49a 65</span><br></pre></td></tr></table></figure>
+
+<p>相同关键字 <code>49a</code>、<code>49b</code> 的相对位置改变，所以希尔排序不稳定。</p>
+<p>希尔排序不适合链表，是因为它依赖按下标快速访问 <code>i, i+d, i+2d</code> 这些位置；链表虽然插入方便，但无法高效地按增量跳到指定结点。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><table>
+<thead>
+<tr>
+<th>算法</th>
+<th>核心动作</th>
+<th align="right">最好情况</th>
+<th align="right">平均情况</th>
+<th align="right">最坏情况</th>
+<th align="right">空间</th>
+<th>稳定性</th>
+<th>适用性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接插入排序</td>
+<td>顺序找位置，元素后移</td>
+<td align="right">$O(n)$</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(1)$</td>
+<td>稳定</td>
+<td>线性表</td>
+</tr>
+<tr>
+<td>折半插入排序</td>
+<td>折半找位置，元素后移</td>
+<td align="right">比较 $O(n\log n)$，移动少</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(1)$</td>
+<td>稳定</td>
+<td>仅顺序表</td>
+</tr>
+<tr>
+<td>希尔排序</td>
+<td>增量分组，多趟插入</td>
+<td align="right">与增量有关</td>
+<td align="right">与增量有关</td>
+<td align="right">$O(n^2)$</td>
+<td align="right">$O(1)$</td>
+<td>不稳定</td>
+<td>仅顺序表</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/29/insertion-sorts/">https://eliano64.github.io/2026/06/29/insertion-sorts/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/28/AOE-network-and-critical-path/" title="AOE Network And Critical Path"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">AOE Network And Critical Path</div></div><div class="info-2"><div class="info-item-1">AOE Network And Critical PathAOE 网用于分析工程项目中“活动耗时”与“工程最短完成时间”。它和 AOV 都依赖有向无环结构，但含义不同：  AOV 网：顶点表示活动，边表示活动先后约束，主要用于 拓扑排序。 AOE 网：顶点表示事件，边表示活动，边权表示活动耗时，主要用于求关键路径。  AOE 网在带权有向图中：  顶点表示事件。 有向边表示活动。 边上的权值表示完成该活动的开销，常见含义是活动所需时间。  这样的网络称为 AOE 网，即 Activity On Edge Network。 AOE 网有两个基本性质：  只有某顶点所代表的事件发生后，从该顶点出发的活动才能开始。 只有进入某顶点的各活动都已经结束时，该顶点所代表的事件才能发生。  AOE 网中通常只有一个入度为 0 的顶点，称为源点或开始顶点；只有一个出度为 0 的顶点，称为汇点或结束顶点。 关键路径从源点到汇点的有向路径可能有多条。所有路径中，路径长度最大的路径称为关键路径，关键路径上的活动称为关键活动。 这里的路径长度是路径上活动耗时之和。  为什么是最长路径 AOE...</div></div></div></a><a class="pagination-related" href="/2026/06/29/internal-sorting-basics/" title="Internal Sorting Basics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Internal Sorting Basics</div></div><div class="info-2"><div class="info-item-1">排序的基本概念排序：重新排列一组记录，使记录按照关键字递增或递减。 设输入记录为 $R_1,R_2,\dots,R_n$，对应关键字为 $k_1,k_2,\dots,k_n$。若按递增排序，输出应是输入记录的一个重排 $R’_1,R’_2,\dots,R’_n$，并满足： $$k’_1 \le k’_2 \le \dots \le...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Insertion-Sorts"><span class="toc-text">Insertion Sorts</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F%E7%9A%84%E5%85%B1%E5%90%8C%E6%80%9D%E6%83%B3"><span class="toc-text">插入排序的共同思想</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F"><span class="toc-text">直接插入排序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F%E7%9A%84-C-%E5%86%99%E6%B3%95"><span class="toc-text">直接插入排序的 C 写法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%A6%E5%93%A8%E5%85%B5%E7%9A%84%E7%9B%B4%E6%8E%A5%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F"><span class="toc-text">带哨兵的直接插入排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F%E7%9A%84%E6%95%88%E7%8E%87"><span class="toc-text">直接插入排序的效率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%98%E5%8D%8A%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F"><span class="toc-text">折半插入排序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%98%E5%8D%8A%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F%E7%9A%84-C-%E5%86%99%E6%B3%95"><span class="toc-text">折半插入排序的 C 写法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%98%E5%8D%8A%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F%E4%B8%8E%E7%9B%B4%E6%8E%A5%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F"><span class="toc-text">折半插入排序与直接插入排序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F"><span class="toc-text">希尔排序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F%E7%9A%84%E7%90%86%E8%A7%A3"><span class="toc-text">希尔排序的理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F%E7%9A%84-C-%E5%86%99%E6%B3%95"><span class="toc-text">希尔排序的 C 写法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="toc-text">希尔排序的性质</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

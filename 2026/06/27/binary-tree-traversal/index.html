@@ -1,0 +1,399 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Binary Tree Traversal | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="二叉树遍历遍历是按照某种次序把二叉树中所有结点访问一遍，且每个结点只访问一次。   ↻ + −     三种递归遍历三种深度优先遍历只改变“访问根”的时机：    遍历 缩写 次序    先序遍历 NLR 根、左、右   中序遍历 LNR 左、根、右   后序遍历 LRN 左、右、根   手算时可以把递归遍历理解为沿树的外轮廓走一圈，每个结点会被路过三次：  第一次路过结点时访问，是先序遍历。 第">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Binary Tree Traversal">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/27/binary-tree-traversal/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="二叉树遍历遍历是按照某种次序把二叉树中所有结点访问一遍，且每个结点只访问一次。   ↻ + −     三种递归遍历三种深度优先遍历只改变“访问根”的时机：    遍历 缩写 次序    先序遍历 NLR 根、左、右   中序遍历 LNR 左、根、右   后序遍历 LRN 左、右、根   手算时可以把递归遍历理解为沿树的外轮廓走一圈，每个结点会被路过三次：  第一次路过结点时访问，是先序遍历。 第">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-27T10:40:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.051Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Binary Tree Traversal",
+  "url": "https://eliano64.github.io/2026/06/27/binary-tree-traversal/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-27T10:40:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.051Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/27/binary-tree-traversal/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Binary Tree Traversal',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Binary Tree Traversal</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Binary Tree Traversal</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-27T10:40:00.000Z" title="发表于 2026-06-27 18:40:00">2026-06-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.051Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.8k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="二叉树遍历"><a href="#二叉树遍历" class="headerlink" title="二叉树遍历"></a>二叉树遍历</h1><p>遍历是按照某种次序把二叉树中所有结点访问一遍，且每个结点只访问一次。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||840)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||840)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/binary-tree-traversal.html" style="width:100%;height:840px;border:0" loading="lazy"></iframe>
+</div>
+
+<h2 id="三种递归遍历"><a href="#三种递归遍历" class="headerlink" title="三种递归遍历"></a>三种递归遍历</h2><p>三种深度优先遍历只改变“访问根”的时机：</p>
+<table>
+<thead>
+<tr>
+<th>遍历</th>
+<th>缩写</th>
+<th>次序</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>先序遍历</td>
+<td>NLR</td>
+<td>根、左、右</td>
+</tr>
+<tr>
+<td>中序遍历</td>
+<td>LNR</td>
+<td>左、根、右</td>
+</tr>
+<tr>
+<td>后序遍历</td>
+<td>LRN</td>
+<td>左、右、根</td>
+</tr>
+</tbody></table>
+<p>手算时可以把递归遍历理解为沿树的外轮廓走一圈，每个结点会被路过三次：</p>
+<ul>
+<li>第一次路过结点时访问，是先序遍历。</li>
+<li>第二次路过结点时访问，是中序遍历。</li>
+<li>第三次路过结点时访问，是后序遍历。</li>
+</ul>
+<p>这个技巧适合快速检查手算序列，尤其是左右子树不完整时。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">PreOrder</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line">    visit(root);</span><br><span class="line">    PreOrder(root-&gt;lchild);</span><br><span class="line">    PreOrder(root-&gt;rchild);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">InOrder</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line">    InOrder(root-&gt;lchild);</span><br><span class="line">    visit(root);</span><br><span class="line">    InOrder(root-&gt;rchild);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">PostOrder</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line">    PostOrder(root-&gt;lchild);</span><br><span class="line">    PostOrder(root-&gt;rchild);</span><br><span class="line">    visit(root);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>递归遍历的时间复杂度都是 $O(n)$，因为每个结点访问一次。递归调用栈的空间复杂度与树高有关，最坏为 $O(n)$，若树比较平衡则为 $O(\log_2 n)$。</p>
+<h2 id="层次遍历"><a href="#层次遍历" class="headerlink" title="层次遍历"></a>层次遍历</h2><p>层次遍历从上到下、从左到右访问结点，依赖<a href="/2026/06/27/queue-definition-and-operations/" class="wikilink">队列</a>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">LevelOrder</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    InitQueue(&amp;q);</span><br><span class="line">    EnQueue(&amp;q, root);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (!QueueEmpty(q)) &#123;</span><br><span class="line">        BiTNode *node;</span><br><span class="line">        DeQueue(&amp;q, &amp;node);</span><br><span class="line">        visit(node);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (node-&gt;lchild != <span class="literal">NULL</span>) EnQueue(&amp;q, node-&gt;lchild);</span><br><span class="line">        <span class="keyword">if</span> (node-&gt;rchild != <span class="literal">NULL</span>) EnQueue(&amp;q, node-&gt;rchild);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="非递归遍历"><a href="#非递归遍历" class="headerlink" title="非递归遍历"></a>非递归遍历</h2><p>递归遍历依赖函数调用栈。手写非递归算法时，需要显式使用<a href="/2026/06/27/stack-definition-and-operations/" class="wikilink">栈</a>模拟函数调用过程。</p>
+<p>更一般的递归转循环思路见<a href="/2026/04/15/recursion-to-loop/" class="wikilink">recursion-to-loop</a>：栈中保存的不是单纯的结点指针，而是一个“栈帧”，其中至少包含当前结点和执行位置 <code>ip</code>。</p>
+<p>对二叉树递归遍历来说，一个非空结点的递归函数大致有两个递归点：左子树、右子树。因此可以用 <code>ip</code> 表示当前栈帧执行到哪一步：</p>
+<table>
+<thead>
+<tr>
+<th align="right"><code>ip</code></th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right"><code>0</code></td>
+<td>还没进入左子树</td>
+</tr>
+<tr>
+<td align="right"><code>1</code></td>
+<td>左子树已经处理完，还没进入右子树</td>
+</tr>
+<tr>
+<td align="right"><code>2</code></td>
+<td>右子树已经处理完，当前结点即将结束</td>
+</tr>
+</tbody></table>
+<p>这种写法最接近真实递归调用栈。</p>
+<h3 id="用栈帧模拟先序遍历"><a href="#用栈帧模拟先序遍历" class="headerlink" title="用栈帧模拟先序遍历"></a>用栈帧模拟先序遍历</h3><p>先序遍历是“根、左、右”，所以在 <code>ip == 0</code> 时访问当前结点，然后压入左子树。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    BiTNode *node;</span><br><span class="line">    <span class="type">int</span> ip;</span><br><span class="line">&#125; TraversalFrame;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">PreOrderByFrame</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    TraversalFrame <span class="built_in">stack</span>[<span class="number">128</span>];</span><br><span class="line">    <span class="type">int</span> top = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;root, <span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (top != <span class="number">-1</span>) &#123;</span><br><span class="line">        TraversalFrame *cur = &amp;<span class="built_in">stack</span>[top];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;node == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            --top;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;ip == <span class="number">0</span>) &#123;</span><br><span class="line">            visit(cur-&gt;node);</span><br><span class="line">            cur-&gt;ip = <span class="number">1</span>;</span><br><span class="line">            <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;cur-&gt;node-&gt;lchild, <span class="number">0</span>&#125;;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;ip == <span class="number">1</span>) &#123;</span><br><span class="line">            cur-&gt;ip = <span class="number">2</span>;</span><br><span class="line">            <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;cur-&gt;node-&gt;rchild, <span class="number">0</span>&#125;;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        --top;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="用栈帧模拟中序遍历"><a href="#用栈帧模拟中序遍历" class="headerlink" title="用栈帧模拟中序遍历"></a>用栈帧模拟中序遍历</h3><p>中序遍历是“左、根、右”，所以访问当前结点的位置在左子树返回之后，也就是 <code>ip == 1</code> 时。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">InOrderByFrame</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    TraversalFrame <span class="built_in">stack</span>[<span class="number">128</span>];</span><br><span class="line">    <span class="type">int</span> top = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;root, <span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (top != <span class="number">-1</span>) &#123;</span><br><span class="line">        TraversalFrame *cur = &amp;<span class="built_in">stack</span>[top];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;node == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            --top;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;ip == <span class="number">0</span>) &#123;</span><br><span class="line">            cur-&gt;ip = <span class="number">1</span>;</span><br><span class="line">            <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;cur-&gt;node-&gt;lchild, <span class="number">0</span>&#125;;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;ip == <span class="number">1</span>) &#123;</span><br><span class="line">            visit(cur-&gt;node);</span><br><span class="line">            cur-&gt;ip = <span class="number">2</span>;</span><br><span class="line">            <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;cur-&gt;node-&gt;rchild, <span class="number">0</span>&#125;;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        --top;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="用栈帧模拟后序遍历"><a href="#用栈帧模拟后序遍历" class="headerlink" title="用栈帧模拟后序遍历"></a>用栈帧模拟后序遍历</h3><p>后序遍历是“左、右、根”，所以必须等左右子树都返回后才能访问当前结点，也就是 <code>ip == 2</code> 时。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">PostOrderByFrame</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    TraversalFrame <span class="built_in">stack</span>[<span class="number">128</span>];</span><br><span class="line">    <span class="type">int</span> top = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;root, <span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (top != <span class="number">-1</span>) &#123;</span><br><span class="line">        TraversalFrame *cur = &amp;<span class="built_in">stack</span>[top];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;node == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            --top;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;ip == <span class="number">0</span>) &#123;</span><br><span class="line">            cur-&gt;ip = <span class="number">1</span>;</span><br><span class="line">            <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;cur-&gt;node-&gt;lchild, <span class="number">0</span>&#125;;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (cur-&gt;ip == <span class="number">1</span>) &#123;</span><br><span class="line">            cur-&gt;ip = <span class="number">2</span>;</span><br><span class="line">            <span class="built_in">stack</span>[++top] = (TraversalFrame)&#123;cur-&gt;node-&gt;rchild, <span class="number">0</span>&#125;;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        visit(cur-&gt;node);</span><br><span class="line">        --top;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这三段代码的差异只在 <code>visit(cur-&gt;node)</code> 放在 <code>ip == 0</code>、<code>ip == 1</code> 还是 <code>ip == 2</code>。这正对应先序、中序、后序中“访问根”的时机。</p>
+<h2 id="由遍历序列构造二叉树"><a href="#由遍历序列构造二叉树" class="headerlink" title="由遍历序列构造二叉树"></a>由遍历序列构造二叉树</h2><p>只知道一种遍历序列通常无法唯一确定二叉树。常见可唯一确定的组合：</p>
+<ul>
+<li>先序 + 中序。</li>
+<li>后序 + 中序。</li>
+<li>层序 + 中序。</li>
+</ul>
+<p>不能唯一确定的组合：</p>
+<ul>
+<li>先序 + 后序，通常不能唯一确定二叉树。</li>
+<li>先序 + 后序 + 层序，通常也不能唯一确定二叉树，因为仍缺少中序序列给出的左右子树边界。</li>
+</ul>
+<p>原因：中序序列能把左右子树分开；先序、后序、层序可确定根的位置。没有中序时，左右子树边界通常不确定。</p>
+<p>构造步骤：</p>
+<ul>
+<li>先序 + 中序：先序第一个结点是根；用根在中序序列中划分左、右子树；再递归处理。</li>
+<li>后序 + 中序：后序最后一个结点是根；用根在中序序列中划分左、右子树；再递归处理。</li>
+<li>层序 + 中序：层序中第一个结点是根；用中序划分左右子树；再从层序序列中筛出属于左、右子树的结点，递归处理。</li>
+</ul>
+<p>例如先序 <code>A D B C E</code>、中序 <code>B D C A E</code>：</p>
+<ol>
+<li>先序首元素 <code>A</code> 是根。</li>
+<li>中序中 <code>A</code> 左侧 <code>B D C</code> 是左子树，右侧 <code>E</code> 是右子树。</li>
+<li>左子树先序为 <code>D B C</code>，中序为 <code>B D C</code>，所以左子树根为 <code>D</code>。</li>
+<li><code>D</code> 的中序左侧为 <code>B</code>，右侧为 <code>C</code>，构造完成。</li>
+</ol>
+<p>后序 <code>E F A H C I G B D</code>、中序 <code>E A F D H C B G I</code>：</p>
+<ol>
+<li>后序末元素 <code>D</code> 是根。</li>
+<li>中序中 <code>D</code> 左侧 <code>E A F</code> 是左子树，右侧 <code>H C B G I</code> 是右子树。</li>
+<li>左子树后序为 <code>E F A</code>，根为 <code>A</code>；右子树后序为 <code>H C I G B</code>，根为 <code>B</code>。</li>
+<li>继续按“后序末尾找根、中序划分左右子树”的规则递归。</li>
+</ol>
+<p>层序 <code>D A B E F C G H I</code>、中序 <code>E A F D H C B G I</code>：</p>
+<ol>
+<li>层序首元素 <code>D</code> 是根。</li>
+<li>中序中 <code>D</code> 左侧 <code>E A F</code> 是左子树，右侧 <code>H C B G I</code> 是右子树。</li>
+<li>从剩余层序中筛出左子树结点，得到 <code>A E F</code>；筛出右子树结点，得到 <code>B C G H I</code>。</li>
+<li>左子树根为 <code>A</code>，右子树根为 <code>B</code>，再递归处理各子树。</li>
+</ol>
+<p>层序 + 中序构造时要注意验证：每次划分后，层序序列中属于某一子树的结点必须全部能在该子树的中序范围内找到。</p>
+<h2 id="遍历的应用"><a href="#遍历的应用" class="headerlink" title="遍历的应用"></a>遍历的应用</h2><ul>
+<li>先序遍历：复制二叉树、前缀表达式。</li>
+<li>中序遍历：二叉排序树得到递增序列；表达式树对应中缀表达式，通常需要补括号或界限符。</li>
+<li>后序遍历：释放二叉树、后缀表达式。</li>
+<li>层次遍历：按层处理、判断完全二叉树等。</li>
+</ul>
+<h2 id="求二叉树深度"><a href="#求二叉树深度" class="headerlink" title="求二叉树深度"></a>求二叉树深度</h2><p>求深度是后序思想的典型应用：先得到左子树深度和右子树深度，再回到根结点取较大值加 1。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">TreeDepth</span><span class="params">(BiTree root)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> leftDepth = TreeDepth(root-&gt;lchild);</span><br><span class="line">    <span class="type">int</span> rightDepth = TreeDepth(root-&gt;rchild);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (leftDepth &gt; rightDepth ? leftDepth : rightDepth) + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里必须先算左右子树，再计算当前树的深度，所以它的递归结构和后序遍历一致。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/27/binary-tree-traversal/">https://eliano64.github.io/2026/06/27/binary-tree-traversal/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/27/binary-tree-storage/" title="Binary Tree Storage"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Binary Tree Storage</div></div><div class="info-2"><div class="info-item-1">二叉树的存储结构顺序存储二叉树顺序存储时，必须把二叉树结点编号与完全二叉树的层序编号对应起来。 若编号从 1 开始：  结点 i 的左孩子编号为 2i。 结点 i 的右孩子编号为 2i+1。 结点 i 的双亲编号为 ⌊i/2⌋。  顺序存储适合完全二叉树。若普通二叉树也强行按完全二叉树位置存储，需要为缺失结点保留空位，可能造成严重浪费。 若编号从 0 开始：  结点 i 的左孩子编号为 2i+1。 结点 i 的右孩子编号为 2i+2。 结点 i 的双亲编号为 (i-1)/2。  链式存储二叉树最常用二叉链表： 12345typedef struct BiTNode &#123;    ElemType data;    struct BiTNode *lchild;    struct BiTNode *rchild;&#125; BiTNode, *BiTree;  含 n 个结点的二叉链表有 2n 个孩子指针域。由于二叉树中实际边数为...</div></div></div></a><a class="pagination-related" href="/2026/06/27/threaded-binary-tree/" title="Threaded Binary Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Threaded Binary Tree</div></div><div class="info-2"><div class="info-item-1">线索二叉树为什么需要线索在含 n 个结点的二叉链表中，有 n+1 个空指针域，即 n+1 个空指针域 是可被利用的冗余链域。普通二叉链表只能方便地找到某结点的左右孩子；若要找遍历序列中的前驱或后继，通常还要重新遍历。 线索二叉树利用空指针域保存遍历序列中的前驱或后继。 结点结构1234567typedef struct ThreadNode &#123;    ElemType data;    struct ThreadNode *lchild;    struct ThreadNode *rchild;    int ltag;    int rtag;&#125; ThreadNode, *ThreadTree;  标志位含义：    标志 值 含义    ltag 0 lchild 指向左孩子   ltag 1 lchild 指向遍历前驱   rtag 0 rchild 指向右孩子   rtag 1 rchild 指向遍历后继   中序线索化线索化时用 pre 记录刚访问过的结点。 12345678910111213141516171819ThreadNode *pre...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E5%8F%89%E6%A0%91%E9%81%8D%E5%8E%86"><span class="toc-text">二叉树遍历</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E9%80%92%E5%BD%92%E9%81%8D%E5%8E%86"><span class="toc-text">三种递归遍历</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%82%E6%AC%A1%E9%81%8D%E5%8E%86"><span class="toc-text">层次遍历</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E9%80%92%E5%BD%92%E9%81%8D%E5%8E%86"><span class="toc-text">非递归遍历</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%A0%88%E5%B8%A7%E6%A8%A1%E6%8B%9F%E5%85%88%E5%BA%8F%E9%81%8D%E5%8E%86"><span class="toc-text">用栈帧模拟先序遍历</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%A0%88%E5%B8%A7%E6%A8%A1%E6%8B%9F%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86"><span class="toc-text">用栈帧模拟中序遍历</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%A0%88%E5%B8%A7%E6%A8%A1%E6%8B%9F%E5%90%8E%E5%BA%8F%E9%81%8D%E5%8E%86"><span class="toc-text">用栈帧模拟后序遍历</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%B1%E9%81%8D%E5%8E%86%E5%BA%8F%E5%88%97%E6%9E%84%E9%80%A0%E4%BA%8C%E5%8F%89%E6%A0%91"><span class="toc-text">由遍历序列构造二叉树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%81%8D%E5%8E%86%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-text">遍历的应用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%82%E4%BA%8C%E5%8F%89%E6%A0%91%E6%B7%B1%E5%BA%A6"><span class="toc-text">求二叉树深度</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

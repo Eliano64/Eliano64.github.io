@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">Privileged instructions and CPU states</title>
+  <desc id="desc">User mode can execute non-privileged instructions; kernel mode can execute privileged instructions.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--text:#111827;--muted:#4b5563;--line:#111827;--user:#dbeafe;--kernel:#dcfce7;--trap:#fee2e2;--psw:#fef3c7}
+    @media(prefers-color-scheme:dark){:root{--bg:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#e5e7eb;--user:#1e3a8a;--kernel:#14532d;--trap:#7f1d1d;--psw:#713f12}}
+    .bg{fill:var(--bg)}.text{fill:var(--text);font-family:"Segoe UI",Arial,sans-serif}.muted{fill:var(--muted);font-family:"Segoe UI",Arial,sans-serif}
+    .box{stroke:var(--line);stroke-width:2;rx:10}.user{fill:var(--user)}.kernel{fill:var(--kernel)}.trap{fill:var(--trap)}.psw{fill:var(--psw)}
+    .line{stroke:var(--line);stroke-width:2;fill:none;marker-end:url(#arrow)}.dash{stroke-dasharray:7 7}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="960" height="420"/>
+  <text class="text" x="40" y="44" font-size="28" font-weight="700">CPU 状态与特权指令</text>
+  <text class="muted" x="40" y="76" font-size="18">CPU 根据当前状态判断某条指令是否允许执行。</text>
+
+  <rect class="box user" x="70" y="125" width="330" height="150"/>
+  <text class="text" x="235" y="160" font-size="24" font-weight="700" text-anchor="middle">用户态</text>
+  <text class="text" x="235" y="198" font-size="19" text-anchor="middle">普通应用程序运行</text>
+  <text class="text" x="235" y="232" font-size="19" text-anchor="middle">只能执行非特权指令</text>
+
+  <rect class="box kernel" x="560" y="125" width="330" height="150"/>
+  <text class="text" x="725" y="160" font-size="24" font-weight="700" text-anchor="middle">内核态</text>
+  <text class="text" x="725" y="198" font-size="19" text-anchor="middle">操作系统内核运行</text>
+  <text class="text" x="725" y="232" font-size="19" text-anchor="middle">可以执行特权指令</text>
+
+  <rect class="box psw" x="368" y="308" width="224" height="62"/>
+  <text class="text" x="480" y="333" font-size="19" font-weight="700" text-anchor="middle">PSW 状态位</text>
+  <text class="muted" x="480" y="358" font-size="16" text-anchor="middle">记录当前 CPU 状态</text>
+
+  <path class="line" d="M400 190 H545"/>
+  <text class="text" x="480" y="176" font-size="17" text-anchor="middle">异常 / 中断处理</text>
+  <path class="line dash" d="M560 245 C470 285 400 285 315 245"/>
+  <text class="muted" x="480" y="286" font-size="16" text-anchor="middle">内核设置状态位后返回用户态</text>
+
+  <rect class="box trap" x="90" y="310" width="235" height="70"/>
+  <text class="text" x="207" y="338" font-size="18" font-weight="700" text-anchor="middle">用户态误执行特权指令</text>
+  <text class="muted" x="207" y="364" font-size="16" text-anchor="middle">触发异常，由操作系统处理</text>
+  <path class="line" d="M325 345 H360"/>
+  <path class="line" d="M592 345 H720 V283"/>
+</svg>

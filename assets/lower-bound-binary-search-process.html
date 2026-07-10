@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lower Bound Binary Search</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--cell:#e0f2fe;--shade:rgba(148,163,184,.18)}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--cell:#172554;--shade:rgba(148,163,184,.22)}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1060px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:16px}h1{font-size:22px;margin:0}.hint{color:var(--muted);font-size:14px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px}.array{display:grid;grid-template-columns:repeat(11,1fr);gap:7px;margin:18px 0}.cell{height:62px;border:1px solid var(--line);border-radius:7px;background:var(--cell);display:flex;align-items:center;justify-content:center;font-weight:700;position:relative}.pos{position:absolute;bottom:3px;right:5px;font-size:10px;color:var(--muted);font-weight:400}.out{opacity:.28}.range{box-shadow:inset 0 -5px 0 var(--blue)}.mid{outline:3px solid var(--blue);outline-offset:2px}.ans{outline:3px solid var(--green);outline-offset:2px}.explain{font-size:18px;line-height:1.65;min-height:116px}.state{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.pill{background:var(--shade);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:14px}.code{background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-family:Consolas,monospace;font-size:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><h1>半开区间二分：找第一个 nums[i] >= target</h1><div class="hint">target = 33；搜索范围始终是 [left, right)，循环条件是 left &lt; right。</div></div><div><button id="prev">上一步</button> <button id="next">下一步</button></div></div>
+  <div class="card">
+    <div class="state"><span class="pill" id="lo"></span><span class="pill" id="hi"></span><span class="pill" id="ans"></span></div>
+    <div class="array" id="array"></div>
+    <div class="explain" id="explain"></div>
+    <pre class="code">int search_insert(const int nums[], int n, int target) {
+    int left = 0;
+    int right = n;
+    int ans = n;
+
+    while (left &lt; right) {
+        int mid = left + (right - left) / 2;
+
+        if (nums[mid] &gt;= target) {
+            ans = mid;
+            right = mid;
+        } else {
+            left = mid + 1;
+        }
+    }
+
+    return ans;
+}</pre>
+  </div>
+</div>
+<script>
+const a=[7,10,13,16,19,29,32,33,37,41,43];
+const steps=[
+ {l:0,r:11,mid:5,ans:"n",t:"初始定义域为 [0, 11)。mid = left + (right-left)/2 = 0 + 11/2 = 5。nums[5] = 29，29 >= 33 为假，更新 left = mid + 1 = 6。"},
+ {l:6,r:11,mid:8,ans:"n",t:"当前区间为 [6, 11)。mid = 6 + (11-6)/2 = 8。nums[8] = 37，37 >= 33 为真，记录 ans = 8，并令 right = mid = 8。"},
+ {l:6,r:8,mid:7,ans:8,t:"当前区间为 [6, 8)。mid = 6 + (8-6)/2 = 7。nums[7] = 33，33 >= 33 为真，记录 ans = 7，并令 right = mid = 7。"},
+ {l:6,r:7,mid:6,ans:7,t:"当前区间为 [6, 7)。mid = 6 + (7-6)/2 = 6。nums[6] = 32，32 >= 33 为假，更新 left = mid + 1 = 7。"},
+ {l:7,r:7,mid:null,ans:7,done:true,t:"left == right，搜索区间为空，循环结束。返回 ans = 7，也就是第一个 nums[i] >= 33 的位置。若用于查找指定关键字，再检查 nums[7] 是否等于 33。"}
+];
+let k=0;const ar=document.getElementById("array");a.forEach((v,i)=>{const d=document.createElement("div");d.className="cell";d.innerHTML=`${v}<span class="pos">${i}</span>`;ar.appendChild(d)});
+function render(){const s=steps[k];[...ar.children].forEach((c,i)=>{c.className="cell";if(i<s.l||i>=s.r)c.classList.add("out");else c.classList.add("range");if(i===s.mid)c.classList.add("mid");if(s.done&&i===s.ans)c.classList.add("ans")});document.getElementById("lo").textContent=`left = ${s.l}`;document.getElementById("hi").textContent=`right = ${s.r}`;document.getElementById("ans").textContent=`ans = ${s.ans}`;document.getElementById("explain").textContent=s.t}
+document.getElementById("prev").onclick=()=>{k=Math.max(0,k-1);render()};
+document.getElementById("next").onclick=()=>{k=Math.min(steps.length-1,k+1);render()};
+render();
+</script>
+</body>
+</html>

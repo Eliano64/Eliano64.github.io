@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="520" viewBox="0 0 1080 520" role="img" aria-labelledby="title desc">
+  <title id="title">Instruction addressing flow</title>
+  <desc id="desc">Instruction addressing determines the next instruction address through PC sequential increment or jump.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{--bg:#fff;--text:#111827;--muted:#4b5563;--line:#111827;--pc:#dbeafe;--mem:#dcfce7;--jump:#fee2e2;--seq:#fef3c7}
+    @media(prefers-color-scheme:dark){:root{--bg:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#e5e7eb;--pc:#1e3a8a;--mem:#14532d;--jump:#7f1d1d;--seq:#713f12}}
+    .bg{fill:var(--bg)}.text{fill:var(--text);font-family:"Segoe UI",Arial,sans-serif}.muted{fill:var(--muted);font-family:"Segoe UI",Arial,sans-serif}
+    .box{stroke:var(--line);stroke-width:1.8;rx:8}.pc{fill:var(--pc)}.mem{fill:var(--mem)}.jump{fill:var(--jump)}.seq{fill:var(--seq)}
+    .line{stroke:var(--line);stroke-width:2;fill:none;marker-end:url(#arrow)}.thin{stroke:var(--line);stroke-width:1.2}
+  </style>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="var(--line)"/></marker></defs>
+  <rect class="bg" width="1080" height="520"/>
+  <text class="text" x="42" y="44" font-size="28" font-weight="700">指令寻址：下一条指令由 PC 给出</text>
+  <text class="muted" x="42" y="76" font-size="18">顺序执行时 PC 增加一个指令长度；执行转移指令时 PC 被转移目标改写。</text>
+
+  <rect class="box pc" x="70" y="130" width="160" height="76"/>
+  <text class="text" x="150" y="160" font-size="22" font-weight="700" text-anchor="middle">PC</text>
+  <text class="text" x="150" y="188" font-size="18" text-anchor="middle">当前取指地址</text>
+
+  <rect class="box mem" x="310" y="112" width="320" height="250"/>
+  <text class="text" x="470" y="145" font-size="22" font-weight="700" text-anchor="middle">主存中的指令序列</text>
+  <line class="thin" x1="330" y1="170" x2="610" y2="170"/>
+  <text class="text" x="350" y="202" font-size="18">0：LDA 1000</text>
+  <text class="text" x="350" y="238" font-size="18">1：ADD 1001</text>
+  <text class="text" x="350" y="274" font-size="18">2：DEC 1200</text>
+  <text class="text" x="350" y="310" font-size="18">3：JMP 7</text>
+  <text class="text" x="350" y="346" font-size="18">7：LDA 1100</text>
+
+  <path class="line" d="M230 168 H300"/>
+  <text class="muted" x="265" y="150" font-size="16" text-anchor="middle">取指</text>
+
+  <rect class="box seq" x="710" y="125" width="280" height="90"/>
+  <text class="text" x="850" y="160" font-size="21" font-weight="700" text-anchor="middle">顺序寻址</text>
+  <text class="text" x="850" y="190" font-size="18" text-anchor="middle">PC = PC + 指令长度</text>
+
+  <rect class="box jump" x="710" y="285" width="280" height="90"/>
+  <text class="text" x="850" y="320" font-size="21" font-weight="700" text-anchor="middle">跳跃寻址</text>
+  <text class="text" x="850" y="350" font-size="18" text-anchor="middle">PC = 转移目标</text>
+
+  <path class="line" d="M630 230 C680 210 690 175 705 170"/>
+  <path class="line" d="M630 310 C680 315 690 330 705 330"/>
+  <path class="line" d="M850 215 C850 245 230 250 155 210"/>
+  <path class="line" d="M850 375 C850 430 150 430 150 212"/>
+  <text class="muted" x="545" y="458" font-size="17" text-anchor="middle">转移指令执行前，PC 也会先形成顺序地址；真正转移发生在执行阶段改写 PC。</text>
+</svg>

@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620" role="img" aria-labelledby="title desc">
+  <title id="title">虚拟存储的透明性与软硬件分工</title>
+  <desc id="desc">展示进程只看到虚拟地址空间，硬件完成地址变换与缺页检测，操作系统负责调页、分配、置换和页表维护。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --panel2: #eef6ff;
+      --ink: #172033;
+      --muted: #5a667a;
+      --line: #40516b;
+      --blue: #2563eb;
+      --orange: #c2410c;
+      --green: #15803d;
+      --red: #b91c1c;
+      --purple: #7c3aed;
+      --chip: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #172033;
+        --panel2: #10243a;
+        --ink: #e5e7eb;
+        --muted: #aab6c8;
+        --line: #b6c2d3;
+        --blue: #60a5fa;
+        --orange: #fb923c;
+        --green: #4ade80;
+        --red: #f87171;
+        --purple: #a78bfa;
+        --chip: #111827;
+      }
+    }
+    svg { background: var(--bg); color: var(--ink); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    text { fill: var(--ink); font-size: 18px; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .tiny { font-size: 13px; fill: var(--muted); }
+    .title { font-size: 28px; font-weight: 700; }
+    .section { font-size: 20px; font-weight: 700; }
+    .box { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 8; }
+    .soft { fill: var(--panel2); stroke: var(--blue); stroke-width: 2; rx: 8; }
+    .chip { fill: var(--chip); stroke: var(--line); stroke-width: 1.6; rx: 6; }
+    .arrow { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+    .dashed { stroke-dasharray: 7 6; }
+    .blue { stroke: var(--blue); }
+    .orange { stroke: var(--orange); }
+    .green { stroke: var(--green); }
+    .red { stroke: var(--red); }
+    .purple { stroke: var(--purple); }
+    .label { font-size: 16px; font-weight: 700; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--line)" />
+    </marker>
+  </defs>
+
+  <text x="40" y="48" class="title">虚拟存储：对进程透明，但对操作系统不透明</text>
+  <text x="42" y="78" class="small">进程使用虚拟地址；硬件负责快速判断和转换；OS 负责缺页后的慢路径处理。</text>
+
+  <rect x="40" y="115" width="235" height="390" class="box" />
+  <text x="70" y="152" class="section">进程视角</text>
+  <rect x="70" y="185" width="175" height="52" class="chip" />
+  <text x="92" y="218">虚拟地址空间</text>
+  <rect x="70" y="260" width="175" height="52" class="chip" />
+  <text x="101" y="293">逻辑连续</text>
+  <rect x="70" y="335" width="175" height="52" class="chip" />
+  <text x="87" y="368">不关心页在哪</text>
+  <text x="70" y="430" class="small">透明对象：</text>
+  <text x="70" y="458" class="small">物理内存位置、是否已调入、</text>
+  <text x="70" y="484" class="small">是否发生换入换出。</text>
+
+  <rect x="335" y="115" width="310" height="390" class="soft" />
+  <text x="365" y="152" class="section">硬件快路径</text>
+  <rect x="370" y="182" width="240" height="48" class="chip" />
+  <text x="397" y="212">MMU / 地址变换</text>
+  <rect x="370" y="255" width="240" height="48" class="chip" />
+  <text x="398" y="285">查 TLB / 查页表</text>
+  <rect x="370" y="328" width="240" height="48" class="chip" />
+  <text x="395" y="358">检查状态位、权限</text>
+  <rect x="370" y="401" width="240" height="48" class="chip" />
+  <text x="398" y="431">命中则形成物理地址</text>
+  <text x="365" y="478" class="small">硬件过程对进程透明，</text>
+  <text x="365" y="502" class="small">正常命中时不需要 OS 介入。</text>
+
+  <rect x="705" y="115" width="355" height="390" class="box" />
+  <text x="735" y="152" class="section">OS 慢路径</text>
+  <rect x="742" y="182" width="280" height="48" class="chip" />
+  <text x="775" y="212">缺页故障处理程序</text>
+  <rect x="742" y="255" width="280" height="48" class="chip" />
+  <text x="766" y="285">分配页框 / 选择换出页</text>
+  <rect x="742" y="328" width="280" height="48" class="chip" />
+  <text x="773" y="358">从文件区或对换区读入</text>
+  <rect x="742" y="401" width="280" height="48" class="chip" />
+  <text x="773" y="431">更新页表、TLB、进程状态</text>
+  <text x="735" y="478" class="small">对 OS 不透明：OS 必须知道</text>
+  <text x="735" y="502" class="small">页面位置、状态位、修改位和外存地址。</text>
+
+  <path d="M 275 210 H 365" class="arrow blue" />
+  <text x="292" y="198" class="tiny">虚拟地址</text>
+  <path d="M 610 425 C 660 470, 700 470, 742 425" class="arrow green" />
+  <text x="650" y="487" class="tiny">命中：直接访存</text>
+  <path d="M 610 352 C 665 332, 690 245, 742 210" class="arrow red dashed" />
+  <text x="646" y="305" class="tiny">缺页/越权：异常</text>
+  <path d="M 742 445 C 670 555, 485 555, 455 450" class="arrow purple dashed" />
+  <text x="520" y="574" class="tiny">调页完成后重试原指令</text>
+
+  <rect x="90" y="540" width="940" height="46" class="chip" />
+  <text x="115" y="569" class="label">一句话：</text>
+  <text x="190" y="569">进程以为自己在访问一片连续大内存；硬件负责发现和转换；OS 在缺页时把缺失页面补进来。</text>
+</svg>

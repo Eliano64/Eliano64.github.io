@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="600" viewBox="0 0 1160 600" role="img" aria-labelledby="title desc">
+  <title id="title">Memory access purposes in instruction cycles</title>
+  <desc id="desc">Fetch, indirect, execute, and interrupt cycles may all access memory, but their purposes are different.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --ink: #172033;
+      --muted: #5d6980;
+      --line: #526174;
+      --cpu: #e8f1ff;
+      --mem: #eef7ee;
+      --a: #fff2d8;
+      --b: #f6eafe;
+      --chip: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1420;
+        --ink: #e7edf7;
+        --muted: #aab6c8;
+        --line: #91a0b5;
+        --cpu: #17243a;
+        --mem: #18291d;
+        --a: #302417;
+        --b: #2b1c35;
+        --chip: #151c2a;
+      }
+    }
+    svg { background: var(--bg); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    text { fill: var(--ink); }
+    .title { font-size: 30px; font-weight: 700; }
+    .label { font-size: 22px; font-weight: 700; }
+    .note { font-size: 16px; fill: var(--muted); }
+    .box { fill: var(--chip); stroke: var(--line); stroke-width: 2; rx: 12; }
+    .cpu { fill: var(--cpu); }
+    .mem { fill: var(--mem); }
+    .a { fill: var(--a); }
+    .b { fill: var(--b); }
+    .arrow { stroke: var(--line); stroke-width: 2.4; fill: none; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+
+  <text x="580" y="46" text-anchor="middle" class="title">四个工作周期都可能访存，但目的不同</text>
+  <rect x="434" y="86" width="292" height="86" class="box mem"/>
+  <text x="580" y="124" text-anchor="middle" class="label">主存</text>
+  <text x="580" y="150" text-anchor="middle" class="note">存放指令、地址、操作数、断点</text>
+
+  <rect x="70" y="230" width="230" height="250" class="box cpu"/>
+  <text x="185" y="268" text-anchor="middle" class="label">取指周期</text>
+  <text x="185" y="308" text-anchor="middle" class="note">目的：取指令</text>
+  <text x="185" y="350" text-anchor="middle" class="note">(PC) -> MAR</text>
+  <text x="185" y="378" text-anchor="middle" class="note">M(MAR) -> MDR</text>
+  <text x="185" y="406" text-anchor="middle" class="note">(MDR) -> IR</text>
+
+  <rect x="338" y="230" width="230" height="250" class="box a"/>
+  <text x="453" y="268" text-anchor="middle" class="label">间址周期</text>
+  <text x="453" y="308" text-anchor="middle" class="note">目的：取有效地址</text>
+  <text x="453" y="350" text-anchor="middle" class="note">Ad(IR) -> MAR</text>
+  <text x="453" y="378" text-anchor="middle" class="note">M(MAR) -> MDR</text>
+  <text x="453" y="406" text-anchor="middle" class="note">(MDR) -> Ad(IR)</text>
+
+  <rect x="606" y="230" width="230" height="250" class="box cpu"/>
+  <text x="721" y="268" text-anchor="middle" class="label">执行周期</text>
+  <text x="721" y="308" text-anchor="middle" class="note">目的：取/存操作数或结果</text>
+  <text x="721" y="350" text-anchor="middle" class="note">不同指令不统一</text>
+  <text x="721" y="378" text-anchor="middle" class="note">可能读主存</text>
+  <text x="721" y="406" text-anchor="middle" class="note">也可能写主存</text>
+
+  <rect x="874" y="230" width="230" height="250" class="box b"/>
+  <text x="989" y="268" text-anchor="middle" class="label">中断周期</text>
+  <text x="989" y="308" text-anchor="middle" class="note">目的：保存断点</text>
+  <text x="989" y="350" text-anchor="middle" class="note">(SP)-1 -> SP</text>
+  <text x="989" y="378" text-anchor="middle" class="note">(PC) -> MDR</text>
+  <text x="989" y="406" text-anchor="middle" class="note">MDR -> M(MAR)</text>
+
+  <path d="M185 230 C250 170 360 134 434 128" class="arrow"/>
+  <path d="M453 230 C478 184 520 164 552 172" class="arrow"/>
+  <path d="M721 230 C697 184 654 164 618 172" class="arrow"/>
+  <path d="M989 230 C920 170 800 134 726 128" class="arrow"/>
+
+  <text x="580" y="540" text-anchor="middle" class="note">同样是访存，判断题常考“访存目的”：取指令、取有效地址、取/存操作数或保存程序断点。</text>
+</svg>

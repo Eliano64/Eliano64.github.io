@@ -1,0 +1,477 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>B Tree And B Plus Tree | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="B 树的定位B 树又称多路平衡查找树。它可以理解为把 二叉排序树 推广为多叉查找树，并额外要求结点尽量“满”、整棵树保持“绝对平衡”。 这里的“绝对平衡”是指：所有叶结点，也就是查找失败的外部结点，都在同一层。 B 树常用于外存索引。一个结点可以存放多个关键字，查找时一次读入一个结点，可以减少访问层数。  m 阶 B 树定义B 树的阶是一个结点允许拥有的最大孩子数，通常记为 $m$。 一棵 $m$">
+<meta property="og:type" content="article">
+<meta property="og:title" content="B Tree And B Plus Tree">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/29/b-tree-and-b-plus-tree/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="B 树的定位B 树又称多路平衡查找树。它可以理解为把 二叉排序树 推广为多叉查找树，并额外要求结点尽量“满”、整棵树保持“绝对平衡”。 这里的“绝对平衡”是指：所有叶结点，也就是查找失败的外部结点，都在同一层。 B 树常用于外存索引。一个结点可以存放多个关键字，查找时一次读入一个结点，可以减少访问层数。  m 阶 B 树定义B 树的阶是一个结点允许拥有的最大孩子数，通常记为 $m$。 一棵 $m$">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-29T14:10:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="Tree">
+<meta property="article:tag" content="Search">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "B Tree And B Plus Tree",
+  "url": "https://eliano64.github.io/2026/06/29/b-tree-and-b-plus-tree/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-29T14:10:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/29/b-tree-and-b-plus-tree/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'B Tree And B Plus Tree',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">B Tree And B Plus Tree</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">B Tree And B Plus Tree</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-29T14:10:00.000Z" title="发表于 2026-06-29 22:10:00">2026-06-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Data-Structure-Algorithm/">Data Structure &amp; Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="B-树的定位"><a href="#B-树的定位" class="headerlink" title="B 树的定位"></a>B 树的定位</h1><p><strong>B 树</strong>又称多路平衡查找树。它可以理解为把 <a href="/2026/06/29/binary-search-tree/" class="wikilink">二叉排序树</a> 推广为多叉查找树，并额外要求结点尽量“满”、整棵树保持“绝对平衡”。</p>
+<p>这里的“绝对平衡”是指：所有叶结点，也就是查找失败的外部结点，都在同一层。</p>
+<p>B 树常用于外存索引。一个结点可以存放多个关键字，查找时一次读入一个结点，可以减少访问层数。</p>
+<p><img src="/assets/b-tree-overview.svg"></p>
+<h1 id="m-阶-B-树定义"><a href="#m-阶-B-树定义" class="headerlink" title="m 阶 B 树定义"></a>m 阶 B 树定义</h1><p>B 树的<strong>阶</strong>是一个结点允许拥有的最大孩子数，通常记为 $m$。</p>
+<p>一棵 $m$ 阶 B 树，或为空树，或满足：</p>
+<ol>
+<li>每个结点至多有 $m$ 棵子树，即至多有 $m-1$ 个关键字。</li>
+<li>若根结点不是终端结点，则根至少有 <code>2</code> 棵子树，即至少有 <code>1</code> 个关键字。</li>
+<li>除根结点外，所有非叶结点至少有 $\lceil m&#x2F;2\rceil$ 棵子树，即至少有 $\lceil m&#x2F;2\rceil-1$ 个关键字。</li>
+<li>非叶结点内部关键字有序：$K_1&lt;K_2&lt;\cdots&lt;K_n$。</li>
+<li>若结点有 $n$ 个关键字，则有 $n+1$ 个孩子指针：$P_0,P_1,\cdots,P_n$。</li>
+<li>子树区间有序：$P_0&lt;K_1&lt;P_1&lt;K_2&lt;P_2&lt;\cdots&lt;K_n&lt;P_n$。</li>
+<li>所有叶结点都在同一层。这里的叶结点可看作外部失败结点，实际存储中常为空指针，画图时通常省略。</li>
+</ol>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>B 树中“终端结点”和“叶结点”容易混淆。教材里常把最底层含关键字的结点称为终端结点；真正的叶结点是它们下面的失败结点，通常不画。</p>
+</div>
+</div>
+对 $m$ 阶 B 树：
+
+<table>
+<thead>
+<tr>
+<th>结点类型</th>
+<th align="right">孩子数范围</th>
+<th align="right">关键字数范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>根结点，非终端</td>
+<td align="right">$[2,m]$</td>
+<td align="right">$[1,m-1]$</td>
+</tr>
+<tr>
+<td>其他非叶结点</td>
+<td align="right">$[\lceil m&#x2F;2\rceil,m]$</td>
+<td align="right">$[\lceil m&#x2F;2\rceil-1,m-1]$</td>
+</tr>
+</tbody></table>
+<p>例如 5 阶 B 树中，除根外每个结点关键字数范围是：</p>
+<p>$$<br>\lceil 5&#x2F;2\rceil-1 \le n \le 5-1<br>$$</p>
+<p>即：</p>
+<p>$$<br>2 \le n \le 4<br>$$</p>
+<h1 id="查找"><a href="#查找" class="headerlink" title="查找"></a>查找</h1><p>B 树查找类似多叉查找：</p>
+<ol>
+<li>在当前结点内部查找关键字。结点内关键字有序，可以顺序查找，也可以折半查找。</li>
+<li>若命中某个关键字，查找成功。</li>
+<li>若未命中，根据关键字所在区间选择对应孩子指针继续向下。</li>
+<li>若走到失败结点，查找失败。</li>
+</ol>
+<p>B 树查找成功可能停在任意一层，不一定到最底层。</p>
+<h1 id="高度"><a href="#高度" class="headerlink" title="高度"></a>高度</h1><p>多数教材计算 B 树高度时，不把外部失败结点计入高度。</p>
+<p>设 B 树有 $n$ 个关键字，阶为 $m$，高度为 $h$。</p>
+<h2 id="最小高度"><a href="#最小高度" class="headerlink" title="最小高度"></a>最小高度</h2><p>要让高度尽量小，就让每个结点尽可能满：</p>
+<ul>
+<li>每个结点最多 $m-1$ 个关键字。</li>
+<li>每个非叶结点最多 $m$ 个孩子。</li>
+</ul>
+<p>高度为 $h$ 时，最多关键字数为：</p>
+<p>$$<br>(m-1)(1+m+m^2+\cdots+m^{h-1})&#x3D;m^h-1<br>$$</p>
+<p>因此：</p>
+<p>$$<br>n\le m^h-1<br>$$</p>
+<p>推出：</p>
+<p>$$<br>h\ge \log_m(n+1)<br>$$</p>
+<h2 id="最大高度"><a href="#最大高度" class="headerlink" title="最大高度"></a>最大高度</h2><p>要让高度尽量大，就让每个结点尽可能少：</p>
+<ul>
+<li>根结点最少 <code>2</code> 个孩子。</li>
+<li>其他非根结点最少 $k&#x3D;\lceil m&#x2F;2\rceil$ 个孩子。</li>
+</ul>
+<p>高度为 $h$ 时，第 $h+1$ 层失败结点至少有：</p>
+<p>$$<br>2k^{h-1}<br>$$</p>
+<p>个。又因为 $n$ 个关键字会把数域切分成 $n+1$ 个失败区间，所以：</p>
+<p>$$<br>n+1\ge 2k^{h-1}<br>$$</p>
+<p>推出：</p>
+<p>$$<br>h\le \log_{\lceil m&#x2F;2\rceil}\frac{n+1}{2}+1<br>$$</p>
+<p>综合：</p>
+<p>$$<br>\log_m(n+1)\le h\le \log_{\lceil m&#x2F;2\rceil}\frac{n+1}{2}+1<br>$$</p>
+<h1 id="B-树建立与插入"><a href="#B-树建立与插入" class="headerlink" title="B 树建立与插入"></a>B 树建立与插入</h1><p>B 树建立就是不断插入关键字。</p>
+<p>插入的核心规则：</p>
+<ol>
+<li>新关键字一定插入到最底层终端结点。</li>
+<li>先按 B 树查找规则找到插入位置。</li>
+<li>插入后保持结点内关键字有序。</li>
+<li>若该结点关键字数不超过 $m-1$，插入结束。</li>
+<li>若超过 $m-1$，结点溢出，需要分裂。</li>
+</ol>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||720)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||720)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/b-tree-insert.html" style="width:100%;height:720px;border:0" loading="lazy"></iframe>
+</div>
+
+<h2 id="分裂规则"><a href="#分裂规则" class="headerlink" title="分裂规则"></a>分裂规则</h2><p>对 $m$ 阶 B 树，插入后若某结点有 $m$ 个关键字，超过上限 $m-1$：</p>
+<ol>
+<li>找到第 $\lceil m&#x2F;2\rceil$ 个关键字。</li>
+<li>该关键字上提到父结点。</li>
+<li>它左边的关键字留在原结点。</li>
+<li>它右边的关键字放入新结点。</li>
+<li>若父结点也因此溢出，继续向上分裂。</li>
+<li>若根结点溢出，则产生新根，树高增加 <code>1</code>。</li>
+</ol>
+<p>以 5 阶 B 树为例，结点最多 <code>4</code> 个关键字。若插入后得到：</p>
+<p>$$<br>25,\ 38,\ 49,\ 60,\ 80<br>$$</p>
+<p>第 $\lceil 5&#x2F;2\rceil&#x3D;3$ 个关键字 <code>49</code> 上提：</p>
+<ul>
+<li>左结点：<code>25 38</code></li>
+<li>上提：<code>49</code></li>
+<li>右结点：<code>60 80</code></li>
+</ul>
+<p>这就是 B 树插入最重要的画图动作。</p>
+<h1 id="B-树删除"><a href="#B-树删除" class="headerlink" title="B 树删除"></a>B 树删除</h1><p>B 树删除先按查找规则定位目标关键字，再分情况处理。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||740)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||740)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/b-tree-delete.html" style="width:100%;height:740px;border:0" loading="lazy"></iframe>
+</div>
+
+<h2 id="删除终端结点中的关键字"><a href="#删除终端结点中的关键字" class="headerlink" title="删除终端结点中的关键字"></a>删除终端结点中的关键字</h2><p>若目标关键字在最底层终端结点中：</p>
+<ol>
+<li>直接删除该关键字。</li>
+<li>若删除后该结点关键字数仍不少于下限 $\lceil m&#x2F;2\rceil-1$，结束。</li>
+<li>若低于下限，需要向相邻兄弟借，或与兄弟合并。</li>
+</ol>
+<h2 id="删除非终端结点中的关键字"><a href="#删除非终端结点中的关键字" class="headerlink" title="删除非终端结点中的关键字"></a>删除非终端结点中的关键字</h2><p>若目标关键字在非终端结点中，不能直接挖空内部关键字。常用处理：</p>
+<ol>
+<li>找到该关键字的直接前驱或直接后继。</li>
+<li>用前驱或后继替代该关键字。</li>
+<li>再到最底层终端结点中删除原来的前驱或后继。</li>
+</ol>
+<p>这样可以把“删除非终端结点关键字”转化为“删除终端结点关键字”。</p>
+<p>直接前驱：当前关键字左侧指针所指子树中最右下的关键字。<br>直接后继：当前关键字右侧指针所指子树中最左下的关键字。</p>
+<h2 id="兄弟够借"><a href="#兄弟够借" class="headerlink" title="兄弟够借"></a>兄弟够借</h2><p>若删除后某结点低于下限，并且相邻兄弟结点的关键字数大于下限，则可以借。</p>
+<p>借关键字不是简单把兄弟关键字平移过来，而是经过父结点旋转：</p>
+<ul>
+<li>从右兄弟借：父结点中的分隔关键字下移到缺少结点，右兄弟最小关键字上移到父结点。</li>
+<li>从左兄弟借：父结点中的分隔关键字下移到缺少结点，左兄弟最大关键字上移到父结点。</li>
+</ul>
+<p>这样才能保持各子树区间顺序。</p>
+<h2 id="兄弟不够借"><a href="#兄弟不够借" class="headerlink" title="兄弟不够借"></a>兄弟不够借</h2><p>若删除后某结点低于下限，且相邻兄弟也只有下限个关键字，就不能借，只能合并。</p>
+<p>合并规则：</p>
+<ol>
+<li>将缺少结点、父结点中的分隔关键字、相邻兄弟合并为一个结点。</li>
+<li>父结点失去一个关键字和一个孩子。</li>
+<li>若父结点因此低于下限，继续向上借或合并。</li>
+<li>若父结点是根，并且关键字数变为 <code>0</code>，删除旧根，合并后的结点成为新根，树高减少 <code>1</code>。</li>
+</ol>
+<h1 id="B-树基本概念"><a href="#B-树基本概念" class="headerlink" title="B+ 树基本概念"></a>B+ 树基本概念</h1><p><strong>B+ 树</strong>也是多路平衡查找结构，但它把“索引”和“记录”分得更清楚。</p>
+<p><img src="/assets/b-plus-tree-overview.svg"></p>
+<p>一棵 $m$ 阶 B+ 树通常满足：</p>
+<ol>
+<li>每个分支结点最多有 $m$ 棵子树。</li>
+<li>非叶根结点至少有 <code>2</code> 棵子树；其他分支结点至少有 $\lceil m&#x2F;2\rceil$ 棵子树。</li>
+<li>分支结点中，关键字个数等于子树个数。</li>
+<li>所有叶结点包含全部关键字及对应记录指针。</li>
+<li>叶结点按关键字大小有序排列，并且相邻叶结点互相链接。</li>
+<li>分支结点只保存各子结点中的最大关键字及孩子指针，只起索引作用。</li>
+</ol>
+<h2 id="B-树查找特点"><a href="#B-树查找特点" class="headerlink" title="B+ 树查找特点"></a>B+ 树查找特点</h2><p>B+ 树查找可以从根开始多路查找，也可以从叶结点链表顺序查找。</p>
+<p>与 B 树不同：B+ 树中无论查找成功还是失败，最终都要走到最底层叶结点。</p>
+<p>原因是：只有叶结点保存全部关键字及记录指针；分支结点中的关键字只是索引副本。</p>
+<h1 id="B-树与-B-树对比"><a href="#B-树与-B-树对比" class="headerlink" title="B 树与 B+ 树对比"></a>B 树与 B+ 树对比</h1><p>约定都是$m$阶。</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>B 树</th>
+<th>B+ 树</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>关键字与孩子数</td>
+<td>$n$ 个关键字对应 $n+1$ 棵子树</td>
+<td>$n$ 个关键字对应 $n$ 棵子树</td>
+</tr>
+<tr>
+<td>每节点关键字数量</td>
+<td>$\lceil m&#x2F;2\rceil-1 \sim m-1$</td>
+<td>$\lceil m&#x2F;2\rceil \sim m$</td>
+</tr>
+<tr>
+<td>关键字是否重复出现</td>
+<td>各结点关键字不重复</td>
+<td>分支结点关键字会在叶结点中再次出现</td>
+</tr>
+<tr>
+<td>记录存放位置</td>
+<td>每个关键字所在结点都可存记录地址</td>
+<td>只有叶结点存记录地址</td>
+</tr>
+<tr>
+<td>查找成功位置</td>
+<td>可能停在任意一层</td>
+<td>必须到叶结点</td>
+</tr>
+<tr>
+<td>顺序查找</td>
+<td>不支持</td>
+<td>叶结点链表支持顺序查找和范围查找</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/29/b-tree-and-b-plus-tree/">https://eliano64.github.io/2026/06/29/b-tree-and-b-plus-tree/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/29/red-black-tree/" title="Red Black Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Red Black Tree</div></div><div class="info-2"><div class="info-item-1">定义红黑树是一种自平衡的二叉排序树。它比 AVL 树 的平衡条件更宽松，但仍能保证树高为 $O(\log_2 n)$。 红黑树必须同时满足：  它是一棵二叉排序树。 每个结点要么是红色，要么是黑色。 根结点是黑色。 叶结点是黑色。这里的叶结点通常指外部空结点，也就是 NULL、失败结点或 NIL 结点。 不存在两个相邻的红结点，即红结点的父结点和孩子结点都必须是黑色。 对任一结点，从该结点到任一叶结点的简单路径上，黑结点数相同。  可以把判断口诀记为：  Important 左根右，根叶黑，不红红，黑路同。     判断一棵树是不是红黑树时，应按以下顺序查：  先看是否满足 BST 的左小右大关系。 再看根是否为黑，外部空叶是否按黑结点处理。 检查是否存在红父红子。 对每个结点检查到各 NIL 叶结点的黑结点数是否相同。  黑高结点 x 的黑高 bh(x) 定义为：  从 x 出发，不含 x 本身，到达任一 NIL 叶结点的路径上黑结点总数。  因为红黑树要求“黑路同”，所以对同一个结点 x，无论走向哪个 NIL...</div></div></div></a><a class="pagination-related" href="/2026/06/29/hash-table/" title="Hash Table"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hash Table</div></div><div class="info-2"><div class="info-item-1">基本概念散列表也叫哈希表，英文是 Hash Table。它的特点是：可以根据数据元素的关键字直接计算出它在表中的存储地址。 散列函数也叫哈希函数，记作： $$Addr&#x3D;H(key)$$ 它建立了“关键字 $\rightarrow$ 存储地址”的映射关系。 理想情况下，查找一个关键字只需要：  用散列函数计算地址。 到该地址检查关键字是否匹配。  因此理想时间复杂度可达到 $O(1)$。 冲突与同义词冲突：插入一个数据元素时，根据关键字算出的地址已经存放了其他元素。 同义词：不同关键字通过同一个散列函数映射到同一个地址。 例如表长为 13，散列函数为： $$H(key)&#x3D;key\bmod 13$$ 则： $$1\bmod 13&#x3D;1,\quad 14\bmod 13&#x3D;1$$ 所以 1 和 14 是同义词。若地址 1 已存 14，再插入 1 就发生冲突。 装填因子散列表查找效率不是只由散列函数决定，而主要由三类因素共同决定：  散列函数是否让关键字均匀分布。 处理冲突的方法。 装填因子。   装填因子 $\alpha$...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#B-%E6%A0%91%E7%9A%84%E5%AE%9A%E4%BD%8D"><span class="toc-text">B 树的定位</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#m-%E9%98%B6-B-%E6%A0%91%E5%AE%9A%E4%B9%89"><span class="toc-text">m 阶 B 树定义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE"><span class="toc-text">查找</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AB%98%E5%BA%A6"><span class="toc-text">高度</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%B0%8F%E9%AB%98%E5%BA%A6"><span class="toc-text">最小高度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%A4%A7%E9%AB%98%E5%BA%A6"><span class="toc-text">最大高度</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#B-%E6%A0%91%E5%BB%BA%E7%AB%8B%E4%B8%8E%E6%8F%92%E5%85%A5"><span class="toc-text">B 树建立与插入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E8%A3%82%E8%A7%84%E5%88%99"><span class="toc-text">分裂规则</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#B-%E6%A0%91%E5%88%A0%E9%99%A4"><span class="toc-text">B 树删除</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E7%BB%88%E7%AB%AF%E7%BB%93%E7%82%B9%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-text">删除终端结点中的关键字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E9%9D%9E%E7%BB%88%E7%AB%AF%E7%BB%93%E7%82%B9%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-text">删除非终端结点中的关键字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%84%E5%BC%9F%E5%A4%9F%E5%80%9F"><span class="toc-text">兄弟够借</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%84%E5%BC%9F%E4%B8%8D%E5%A4%9F%E5%80%9F"><span class="toc-text">兄弟不够借</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#B-%E6%A0%91%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text">B+ 树基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#B-%E6%A0%91%E6%9F%A5%E6%89%BE%E7%89%B9%E7%82%B9"><span class="toc-text">B+ 树查找特点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#B-%E6%A0%91%E4%B8%8E-B-%E6%A0%91%E5%AF%B9%E6%AF%94"><span class="toc-text">B 树与 B+ 树对比</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

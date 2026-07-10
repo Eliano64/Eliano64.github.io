@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="540" viewBox="0 0 1040 540" role="img" aria-labelledby="title desc">
+  <title id="title">流水线性能时空图</title>
+  <desc id="desc">用四段流水线处理五个任务，展示装入、稳定输出和排空过程，以及总时间 k+n-1 个周期。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #1f2937;
+      --muted: #64748b;
+      --grid: #cbd5e1;
+      --head: #e2e8f0;
+      --fill1: #dbeafe;
+      --fill2: #dcfce7;
+      --fill3: #fef3c7;
+      --fill4: #fee2e2;
+      --accent: #2563eb;
+      --warn: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --grid: #475569;
+        --head: #1e293b;
+        --fill1: #1d4ed8;
+        --fill2: #166534;
+        --fill3: #92400e;
+        --fill4: #991b1b;
+        --accent: #60a5fa;
+        --warn: #f87171;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .title { font: 700 24px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); }
+    .note { font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .axis { font: 700 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; }
+    .label { font: 700 14px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: var(--fg); dominant-baseline: middle; }
+    .cell { font: 700 14px ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; }
+    .small { font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: var(--muted); }
+    .grid { fill: none; stroke: var(--grid); stroke-width: 1; }
+    .head { fill: var(--head); stroke: var(--grid); stroke-width: 1; }
+    .s1 { fill: var(--fill1); }
+    .s2 { fill: var(--fill2); }
+    .s3 { fill: var(--fill3); }
+    .s4 { fill: var(--fill4); }
+    .bracket { fill: none; stroke: var(--accent); stroke-width: 3; }
+    .mark { fill: none; stroke: var(--warn); stroke-width: 3; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--warn)" />
+    </marker>
+  </defs>
+  <rect class="bg" width="1040" height="540" />
+  <text class="title" x="48" y="44">用时空图理解流水线性能公式</text>
+  <text class="note" x="48" y="72">示例：4 段流水线处理 5 个任务。横向是时钟周期，纵向是流水段。</text>
+
+  <g transform="translate(48 104)">
+    <rect class="head" x="0" y="0" width="130" height="38" />
+    <text class="axis" x="65" y="19">流水段</text>
+    <g>
+      <rect class="head" x="130" y="0" width="86" height="38" /><text class="axis" x="173" y="19">1</text>
+      <rect class="head" x="216" y="0" width="86" height="38" /><text class="axis" x="259" y="19">2</text>
+      <rect class="head" x="302" y="0" width="86" height="38" /><text class="axis" x="345" y="19">3</text>
+      <rect class="head" x="388" y="0" width="86" height="38" /><text class="axis" x="431" y="19">4</text>
+      <rect class="head" x="474" y="0" width="86" height="38" /><text class="axis" x="517" y="19">5</text>
+      <rect class="head" x="560" y="0" width="86" height="38" /><text class="axis" x="603" y="19">6</text>
+      <rect class="head" x="646" y="0" width="86" height="38" /><text class="axis" x="689" y="19">7</text>
+      <rect class="head" x="732" y="0" width="86" height="38" /><text class="axis" x="775" y="19">8</text>
+    </g>
+    <text class="small" x="474" y="-18" text-anchor="middle">时钟周期</text>
+
+    <g>
+      <rect class="grid" x="0" y="38" width="818" height="48" /><text class="label" x="16" y="62">S1</text>
+      <rect class="grid" x="0" y="86" width="818" height="48" /><text class="label" x="16" y="110">S2</text>
+      <rect class="grid" x="0" y="134" width="818" height="48" /><text class="label" x="16" y="158">S3</text>
+      <rect class="grid" x="0" y="182" width="818" height="48" /><text class="label" x="16" y="206">S4</text>
+    </g>
+
+    <g>
+      <rect class="s1" x="130" y="38" width="86" height="48" /><text class="cell" x="173" y="62">T1</text>
+      <rect class="s2" x="216" y="86" width="86" height="48" /><text class="cell" x="259" y="110">T1</text>
+      <rect class="s3" x="302" y="134" width="86" height="48" /><text class="cell" x="345" y="158">T1</text>
+      <rect class="s4" x="388" y="182" width="86" height="48" /><text class="cell" x="431" y="206">T1</text>
+
+      <rect class="s1" x="216" y="38" width="86" height="48" /><text class="cell" x="259" y="62">T2</text>
+      <rect class="s2" x="302" y="86" width="86" height="48" /><text class="cell" x="345" y="110">T2</text>
+      <rect class="s3" x="388" y="134" width="86" height="48" /><text class="cell" x="431" y="158">T2</text>
+      <rect class="s4" x="474" y="182" width="86" height="48" /><text class="cell" x="517" y="206">T2</text>
+
+      <rect class="s1" x="302" y="38" width="86" height="48" /><text class="cell" x="345" y="62">T3</text>
+      <rect class="s2" x="388" y="86" width="86" height="48" /><text class="cell" x="431" y="110">T3</text>
+      <rect class="s3" x="474" y="134" width="86" height="48" /><text class="cell" x="517" y="158">T3</text>
+      <rect class="s4" x="560" y="182" width="86" height="48" /><text class="cell" x="603" y="206">T3</text>
+
+      <rect class="s1" x="388" y="38" width="86" height="48" /><text class="cell" x="431" y="62">T4</text>
+      <rect class="s2" x="474" y="86" width="86" height="48" /><text class="cell" x="517" y="110">T4</text>
+      <rect class="s3" x="560" y="134" width="86" height="48" /><text class="cell" x="603" y="158">T4</text>
+      <rect class="s4" x="646" y="182" width="86" height="48" /><text class="cell" x="689" y="206">T4</text>
+
+      <rect class="s1" x="474" y="38" width="86" height="48" /><text class="cell" x="517" y="62">T5</text>
+      <rect class="s2" x="560" y="86" width="86" height="48" /><text class="cell" x="603" y="110">T5</text>
+      <rect class="s3" x="646" y="134" width="86" height="48" /><text class="cell" x="689" y="158">T5</text>
+      <rect class="s4" x="732" y="182" width="86" height="48" /><text class="cell" x="775" y="206">T5</text>
+    </g>
+
+    <path class="bracket" d="M 130 258 L 130 246 L 818 246 L 818 258" />
+    <text class="axis" x="474" y="276">总时间 = k+n-1 = 4+5-1 = 8 个机器周期</text>
+    <path class="mark" d="M 426 230 C 440 262, 455 294, 474 322" />
+    <text class="small" x="500" y="326">第 4 周期后，每个周期完成一个任务</text>
+  </g>
+
+  <g transform="translate(48 420)">
+    <text class="note" x="0" y="0">
+      <tspan x="0" dy="0">装入阶段：前 k-1 个周期还不能每拍输出。</tspan>
+      <tspan x="0" dy="26">稳定阶段：流水线装满后，理想情况下每个周期完成一个任务。</tspan>
+      <tspan x="0" dy="26">排空阶段：最后一个任务还要继续走完剩余流水段。</tspan>
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 440">
+  <defs>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      text { font-family: Arial, "Microsoft YaHei", sans-serif; }
+      .title { font-size: 16px; font-weight: 700; fill: #1e293b; }
+      .label { font-size: 13px; }
+      .small { font-size: 11px; }
+      .box-ua { fill: #f0fdf4; stroke: #059669; stroke-width: 1.5; }
+      .box-srv { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.5; }
+      .box-srv2 { fill: #fefce8; stroke: #ca8a04; stroke-width: 1.5; }
+      .edge-http { stroke: #059669; stroke-width: 1.5; fill: none; marker-end: url(#arrG); }
+      .edge-smtp { stroke: #2563eb; stroke-width: 1.5; fill: none; marker-end: url(#arrB); }
+      @media (prefers-color-scheme: dark) {
+        .title { fill: #e6edf3; }
+        .box-ua { fill: #1a2e1f; stroke: #10b981; }
+        .box-srv { fill: #1e293b; stroke: #3b82f6; }
+        .box-srv2 { fill: #2a2410; stroke: #fbbf24; }
+        .edge-http { stroke: #10b981; }
+        .edge-smtp { stroke: #3b82f6; }
+        text { fill: #e6edf3; }
+      }
+    </style>
+    <marker id="arrG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrB" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- ===== Top: Same provider ===== -->
+  <text x="450" y="24" text-anchor="middle" class="title">基于万维网的电子邮件</text>
+
+  <text x="350" y="52" text-anchor="middle" class="label" font-weight="700" fill="#059669">情况一：同一邮件服务商（如网易 → 网易）</text>
+
+  <rect x="30" y="62" width="170" height="50" rx="6" class="box-ua"/>
+  <text x="115" y="84" text-anchor="middle" class="label" font-weight="700" fill="#059669">用户 A</text>
+  <text x="115" y="101" text-anchor="middle" class="small" fill="#64748b">浏览器</text>
+
+  <rect x="270" y="62" width="220" height="50" rx="6" class="box-srv"/>
+  <text x="380" y="84" text-anchor="middle" class="label" font-weight="700" fill="#2563eb">网易邮件服务器</text>
+  <text x="380" y="101" text-anchor="middle" class="small" fill="#64748b">（A 和 B 的邮箱都在此服务器上）</text>
+
+  <rect x="560" y="62" width="170" height="50" rx="6" class="box-ua"/>
+  <text x="645" y="84" text-anchor="middle" class="label" font-weight="700" fill="#059669">用户 B</text>
+  <text x="645" y="101" text-anchor="middle" class="small" fill="#64748b">浏览器</text>
+
+  <path d="M200,85 L270,85" class="edge-http"/>
+  <text x="235" y="78" text-anchor="middle" class="small" fill="#059669">HTTP 发送</text>
+
+  <path d="M490,85 L560,85" class="edge-http"/>
+  <text x="525" y="78" text-anchor="middle" class="small" fill="#059669">HTTP 读取</text>
+
+  <text x="380" y="130" text-anchor="middle" class="small" fill="#64748b">全程只使用 HTTP，不需要 SMTP 和 POP3</text>
+
+  <!-- Divider -->
+  <line x1="30" y1="148" x2="870" y2="148" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="6,4"/>
+  <style>
+    @media (prefers-color-scheme: dark) { line[x1="30"] { stroke: #334155; } }
+  </style>
+
+  <!-- ===== Bottom: Different providers ===== -->
+  <text x="450" y="170" text-anchor="middle" class="label" font-weight="700" fill="#d97706">情况二：不同邮件服务商（如网易 → Gmail）</text>
+
+  <rect x="30" y="180" width="170" height="55" rx="6" class="box-ua"/>
+  <text x="115" y="202" text-anchor="middle" class="label" font-weight="700" fill="#059669">用户 A</text>
+  <text x="115" y="219" text-anchor="middle" class="small" fill="#64748b">浏览器 @ 网易</text>
+
+  <rect x="260" y="180" width="220" height="55" rx="6" class="box-srv"/>
+  <text x="370" y="202" text-anchor="middle" class="label" font-weight="700" fill="#2563eb">网易邮件服务器</text>
+  <text x="370" y="219" text-anchor="middle" class="small" fill="#64748b">SMTP 服务器</text>
+
+  <rect x="540" y="180" width="220" height="55" rx="6" class="box-srv2"/>
+  <text x="650" y="202" text-anchor="middle" class="label" font-weight="700" fill="#a16207">Gmail 邮件服务器</text>
+  <text x="650" y="219" text-anchor="middle" class="small" fill="#64748b">SMTP + POP3/IMAP 服务器</text>
+
+  <rect x="810" y="180" width="70" height="55" rx="6" class="box-ua"/>
+  <text x="845" y="204" text-anchor="middle" class="label" font-weight="700" fill="#059669">用户 B</text>
+  <text x="845" y="219" text-anchor="middle" class="small" fill="#64748b">Gmail</text>
+
+  <!-- HTTP A to netease -->
+  <path d="M200,205 L260,205" class="edge-http"/>
+  <text x="230" y="198" text-anchor="middle" class="small" fill="#059669">HTTP</text>
+
+  <!-- SMTP between servers -->
+  <path d="M480,205 L540,205" class="edge-smtp"/>
+  <text x="510" y="198" text-anchor="middle" class="small" fill="#2563eb">SMTP</text>
+
+  <!-- HTTP gmail to B -->
+  <path d="M760,207 L810,207" class="edge-http"/>
+  <text x="785" y="200" text-anchor="middle" class="small" fill="#059669">HTTP</text>
+
+  <text x="540" y="255" text-anchor="middle" class="small" fill="#64748b">浏览器与邮件服务器之间使用 HTTP，不同邮件服务器之间仍使用 SMTP</text>
+
+  <!-- Bottom: Protocol summary table -->
+  <rect x="30" y="275" width="840" height="155" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <style>
+    @media (prefers-color-scheme: dark) { rect[fill="#f8fafc"] { fill: #16212c; stroke: #334155; } }
+  </style>
+  <text x="450" y="300" text-anchor="middle" class="label" font-weight="700" fill="#1e293b">万维网邮件与传统邮件客户端对比</text>
+
+  <!-- Mini table -->
+  <line x1="50" y1="312" x2="850" y2="312" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="50" y1="330" x2="850" y2="330" stroke="#e2e8f0" stroke-width="0.5"/>
+  <line x1="50" y1="348" x2="850" y2="348" stroke="#e2e8f0" stroke-width="0.5"/>
+  <line x1="50" y1="366" x2="850" y2="366" stroke="#e2e8f0" stroke-width="0.5"/>
+  <line x1="316" y1="312" x2="316" y2="420" stroke="#cbd5e1" stroke-width="0.8"/>
+  <line x1="583" y1="312" x2="583" y2="420" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="183" y="325" text-anchor="middle" class="small" font-weight="700" fill="#1e293b">传统邮件客户端</text>
+  <text x="450" y="325" text-anchor="middle" class="small" font-weight="700" fill="#1e293b">万维网邮件（同服务商）</text>
+  <text x="716" y="325" text-anchor="middle" class="small" font-weight="700" fill="#1e293b">万维网邮件（不同服务商）</text>
+
+  <text x="183" y="345" text-anchor="middle" class="small" fill="#334155">UA→服务器：SMTP</text>
+  <text x="183" y="362" text-anchor="middle" class="small" fill="#334155">服务器→服务器：SMTP</text>
+  <text x="183" y="380" text-anchor="middle" class="small" fill="#334155">服务器→UA：POP3/IMAP</text>
+
+  <text x="450" y="345" text-anchor="middle" class="small" fill="#334155">UA→服务器：HTTP</text>
+  <text x="450" y="362" text-anchor="middle" class="small" fill="#334155">服务器→服务器：无（同服务器）</text>
+  <text x="450" y="380" text-anchor="middle" class="small" fill="#334155">服务器→UA：HTTP</text>
+
+  <text x="716" y="345" text-anchor="middle" class="small" fill="#334155">UA→服务器：HTTP</text>
+  <text x="716" y="362" text-anchor="middle" class="small" fill="#334155">服务器→服务器：SMTP</text>
+  <text x="716" y="380" text-anchor="middle" class="small" fill="#334155">服务器→UA：HTTP</text>
+
+  <text x="450" y="405" text-anchor="middle" class="small" fill="#dc2626">核心区别：万维网邮件在 UA 与服务器之间用 HTTP 替代了 SMTP/POP3/IMAP</text>
+</svg>

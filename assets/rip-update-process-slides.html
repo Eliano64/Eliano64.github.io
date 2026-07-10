@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RIP Update Process</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--green:#16a34a;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.wrap{max-width:960px;margin:auto;padding:22px}.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}.stage{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}table{width:100%;border-collapse:collapse;font-size:15px}th,td{border:1px solid var(--border);padding:8px;text-align:center}th{background:color-mix(in srgb,var(--panel),var(--bg) 45%)}.active{outline:2px solid var(--blue)}.note{margin-top:14px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--muted);line-height:1.55}.controls{text-align:center;margin-top:14px}button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">RIP 路由条目更新规则</div>
+  <div class="stage">
+    <div class="card">
+      <b>路由器 D 的原路由表</b>
+      <table id="old"></table>
+    </div>
+    <div class="card">
+      <b>邻居 C 发来的更新</b>
+      <table id="adv"></table>
+    </div>
+  </div>
+  <div class="note" id="note"></div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const oldRows=[["目的网络","距离","下一跳"],["N1","1","直连"],["N2","2","C"],["N4","3","B"]];
+const advRows=[["C 宣告目的","C 的距离","D 经 C 的距离"],["N2","4","5"],["N3","2","3"],["N4","1","2"]];
+const notes=[
+"先把邻居 C 宣告的每条距离都加 1，因为 D 到 C 还要经过一跳。",
+"N2 原下一跳就是 C，因此无论距离从 2 变成 5 是好是坏，都要更新。这表示同一路径的最新消息。",
+"N3 原来不存在，D 发现一个新网络，于是添加条目：目的 N3，距离 3，下一跳 C。",
+"N4 原来经 B 距离 3；现在经 C 距离 2，更短，因此改用 C。若经 C 不更短且下一跳不同，则保持原条目。"
+];
+let i=0;
+function table(el,rows,hi){el.innerHTML=rows.map((r,idx)=>`<tr class="${idx===hi?'active':''}">${r.map((c,j)=>idx===0?`<th>${c}</th>`:`<td>${c}</td>`).join("")}</tr>`).join("")}
+function render(){table(old,oldRows,i===1?2:i===3?3:-1);table(adv,advRows,i===1?1:i===2?2:i===3?3:-1);note.textContent=notes[i]}
+prev.onclick=()=>{i=(i+3)%4;render()};next.onclick=()=>{i=(i+1)%4;render()};render();
+</script>
+</body>
+</html>

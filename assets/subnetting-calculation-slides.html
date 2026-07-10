@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subnetting Calculation</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--border:#cbd5e1;--blue:#2563eb;--green:#16a34a;--orange:#f97316;--yellow:#fef3c7}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#0f172a;--text:#e5e7eb;--muted:#cbd5e1;--border:#334155;--blue:#60a5fa;--green:#4ade80;--orange:#fb923c;--yellow:#422006}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif}.wrap{max-width:1100px;margin:0 auto;padding:22px 24px}.title{text-align:center;font-size:28px;font-weight:750;margin-bottom:16px}.stage{display:grid;grid-template-columns:280px 1fr;gap:18px}.steps{display:flex;flex-direction:column;gap:10px}.step{border:1.5px solid var(--border);background:var(--panel);border-radius:8px;padding:12px 14px;font-size:15px;line-height:1.45}.step.active{outline:2px solid var(--blue)}.step b{display:block;font-size:17px;margin-bottom:4px}.canvas{border:1.5px solid var(--border);background:var(--panel);border-radius:10px;padding:16px;min-height:410px}.row{display:flex;align-items:center;gap:8px;margin:18px 0}.label{width:120px;color:var(--muted)}.bits{display:flex;gap:4px;flex-wrap:wrap}.bit{width:28px;height:34px;border:1.5px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:Consolas,monospace}.net{background:rgba(37,99,235,.18)}.sub{background:rgba(249,115,22,.25)}.host{background:rgba(22,163,74,.2)}.formula{font-size:20px;line-height:1.8;margin-top:20px}.result{background:var(--yellow);border:1.5px solid var(--orange);border-radius:8px;padding:12px 14px;margin-top:16px}.controls{display:flex;justify-content:center;gap:12px;margin-top:16px}button{border:1.5px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:8px 18px;font-size:16px}.mono{font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">子网划分计算：218.75.230.0/24 使用 255.255.255.224</div>
+  <div class="stage">
+    <div class="steps" id="steps"></div>
+    <div>
+      <div class="canvas" id="canvas"></div>
+      <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+    </div>
+  </div>
+</div>
+<script>
+const steps=[
+ {t:"1. 判断原网络",d:"218 在 192-223 范围内，是 C 类地址；默认网络号 24 bit。",html:()=>bits("原 C 类网络",24,0,8)+formula("原网络：218.75.230.0/24，主机号有 8 bit。")},
+ {t:"2. 读出新掩码",d:"255.255.255.224 等价于 /27。",html:()=>bits("新子网掩码",24,3,5)+formula("224 = 11100000，所以新前缀长度是 24+3 = 27。")},
+ {t:"3. 计算子网数",d:"从原主机号借 3 bit 做子网号。",html:()=>bits("借位结果",24,3,5)+formula("可划分子网数：2^3 = 8。")},
+ {t:"4. 计算块大小",d:"剩余 5 bit 作为主机号。",html:()=>bits("剩余主机号",24,3,5)+formula("每个子网包含地址数：2^5 = 32；可分配主机地址数：32 - 2 = 30。")},
+ {t:"5. 列出子网范围",d:"块大小是 32，所以最后一段按 0,32,64... 递增。",html:()=>`<div class="formula"><div>子网网络地址：</div><div class="mono">218.75.230.0/27</div><div class="mono">218.75.230.32/27</div><div class="mono">218.75.230.64/27</div><div class="mono">...</div><div class="mono">218.75.230.224/27</div></div><div class="result">例如 218.75.230.64/27 的可分配主机地址是 218.75.230.65 - 218.75.230.94，广播地址是 218.75.230.95。</div>`}
+];
+let i=0;const stepEl=document.getElementById("steps"),canvas=document.getElementById("canvas");
+function bits(label,net,sub,host){let html=`<div class="row"><div class="label">${label}</div><div class="bits">`;for(let k=0;k<32;k++){let cls=k<net?"net":k<net+sub?"sub":"host";html+=`<div class="bit ${cls}">${k<net+sub?1:0}</div>`}return html+`</div></div><div class="row"><div class="label"></div><div class="bits"><span style="color:var(--blue)">蓝色：原网络号</span><span style="color:var(--orange);margin-left:16px">橙色：借出的子网号</span><span style="color:var(--green);margin-left:16px">绿色：剩余主机号</span></div></div>`}
+function formula(s){return `<div class="formula">${s}</div>`}
+function render(){stepEl.innerHTML=steps.map((s,k)=>`<div class="step ${k===i?'active':''}"><b>${s.t}</b>${s.d}</div>`).join("");canvas.innerHTML=steps[i].html()}
+document.getElementById("prev").onclick=()=>{i=Math.max(0,i-1);render()};document.getElementById("next").onclick=()=>{i=Math.min(steps.length-1,i+1);render()};render();
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>阶乘递归的调用栈</title>
+  <style>
+    :root{--ink:#17212b;--muted:#5b6876;--line:#334e68;--accent:#0f766e;--warn:#b45309;--bg:#f8fafc;--panel:#fff;--cell:#eef6ff;--base:#fff7e6;--code:#111827;--codeText:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header,footer{padding:18px 28px;background:var(--panel);border-bottom:1px solid #dbe3ea}footer{border-top:1px solid #dbe3ea;border-bottom:0;display:flex;justify-content:space-between;align-items:center}.slide{display:none;padding:28px;gap:24px;grid-template-columns:1fr 1fr;align-items:start}.slide.active{display:grid}h1{font-size:24px;margin:0}h2{font-size:27px;margin:0 0 12px}p{font-size:18px;line-height:1.62}.panel{background:var(--panel);border:1px solid #d8e1e8;border-radius:8px;padding:20px}.stack{width:260px;margin:10px auto 0;border-left:3px solid var(--line);border-right:3px solid var(--line);border-bottom:3px solid var(--line);padding:12px 16px 16px;display:flex;flex-direction:column-reverse;gap:8px;min-height:310px}.frame{height:42px;border:2px solid var(--line);border-radius:8px;background:var(--cell);display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-weight:700}.base{background:var(--base);border-color:var(--warn)}.muted{color:var(--muted);font-size:15px}.arrow{color:var(--accent);font-weight:700}.return{color:var(--warn);font-weight:700}.expr{font-family:Consolas,monospace;font-weight:700}pre{margin:0;background:var(--code);color:var(--codeText);border-radius:8px;padding:18px;overflow:auto;font-size:16px;line-height:1.55}code{font-family:Consolas,monospace}.count{color:var(--muted)}button{border:1px solid #a7b4c2;background:var(--panel);color:var(--ink);border-radius:6px;padding:9px 14px;font-size:15px;cursor:pointer}
+    @media (max-width:760px){.slide.active{grid-template-columns:1fr}.stack{width:min(260px,100%)}}
+    @media (prefers-color-scheme:dark){:root{--ink:#e6edf3;--muted:#b8c4cf;--line:#9ccfd8;--accent:#5eead4;--warn:#f6c177;--bg:#0f1720;--panel:#16212c;--cell:#16212c;--base:#2a2113;--code:#080d13;--codeText:#e6edf3}header,footer,.panel{border-color:#2c3a47}button{border-color:#52616b}}
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>阶乘递归的调用栈：Factorial(4)</h1></header>
+
+  <section class="slide active">
+    <div class="panel">
+      <h2>1. 第一次调用入栈</h2>
+      <p>执行 <code>Factorial(4)</code> 时，系统为本次调用建立栈帧，保存参数 <code>n=4</code>、返回地址和现场信息。</p>
+      <div class="stack"><div class="frame"><span>Factorial(4)</span><span>n=4</span></div></div>
+      <p class="muted">当前递归深度为 1。</p>
+    </div>
+    <pre><code>int Factorial(int n) {
+    if (n == 0) return 1;
+    return n * Factorial(n - 1);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>2. 递归体继续调用</h2>
+      <p><code>n != 0</code>，当前调用还不能返回；它要等待 <code>Factorial(3)</code> 的结果，所以新调用继续压栈。</p>
+      <div class="stack"><div class="frame"><span>Factorial(4)</span><span>wait 4 *</span></div><div class="frame"><span>Factorial(3)</span><span>n=3</span></div></div>
+      <p class="muted">外层调用被挂起，控制权交给内层调用。</p>
+    </div>
+    <pre><code>return 4 * Factorial(3);</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>3. 一直压到递归出口</h2>
+      <p>每进入一层递归，就压入一个新的栈帧。到 <code>n=0</code> 时命中递归出口。</p>
+      <div class="stack"><div class="frame"><span>Factorial(4)</span><span>wait</span></div><div class="frame"><span>Factorial(3)</span><span>wait</span></div><div class="frame"><span>Factorial(2)</span><span>wait</span></div><div class="frame"><span>Factorial(1)</span><span>wait</span></div><div class="frame base"><span>Factorial(0)</span><span>return 1</span></div></div>
+      <p class="muted">栈顶是最后进入的调用。</p>
+    </div>
+    <pre><code>if (n == 0) {
+    return 1;
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>4. 出口返回，栈顶弹出</h2>
+      <p><code>Factorial(0)</code> 返回 <code>1</code> 后，它的栈帧被弹出，上一层 <code>Factorial(1)</code> 才能继续计算。</p>
+      <div class="stack"><div class="frame"><span>Factorial(4)</span><span>wait</span></div><div class="frame"><span>Factorial(3)</span><span>wait</span></div><div class="frame"><span>Factorial(2)</span><span>wait</span></div><div class="frame"><span>Factorial(1)</span><span>1 * 1</span></div></div>
+      <p class="return">返回顺序与调用顺序相反。</p>
+    </div>
+    <pre><code>Factorial(1)
+= 1 * Factorial(0)
+= 1 * 1</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>5. 逐层恢复现场</h2>
+      <p>每一层拿到内层返回值后，完成自己的乘法，再返回给更外层。</p>
+      <div class="stack"><div class="frame"><span>Factorial(4)</span><span>wait</span></div><div class="frame"><span>Factorial(3)</span><span>wait</span></div><div class="frame"><span>Factorial(2)</span><span>2 * 1</span></div></div>
+      <p class="muted"><span class="expr">Factorial(2)</span> 返回后，<span class="expr">Factorial(3)</span> 才能继续。</p>
+    </div>
+    <pre><code>Factorial(2) = 2 * 1 = 2
+Factorial(3) = 3 * 2 = 6
+Factorial(4) = 4 * 6 = 24</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="panel">
+      <h2>6. 最外层返回，调用栈清空</h2>
+      <p><code>Factorial(4)</code> 返回 <code>24</code> 后，最初的栈帧也被弹出，本次递归过程结束。</p>
+      <div class="stack"></div>
+      <p class="arrow">递归深度决定同时存在的栈帧数量。</p>
+    </div>
+    <pre><code>// If each frame uses O(1) space:
+space = O(recursion depth)</code></pre>
+  </section>
+
+  <footer><button id="prev">上一页</button><span class="count" id="count"></span><button id="next">下一页</button></footer>
+</main>
+<script>
+const slides=[...document.querySelectorAll(".slide")];let index=0;const count=document.getElementById("count");function show(i){index=(i+slides.length)%slides.length;slides.forEach((s,n)=>s.classList.toggle("active",n===index));count.textContent=`${index+1} / ${slides.length}`;}document.getElementById("prev").onclick=()=>show(index-1);document.getElementById("next").onclick=()=>show(index+1);addEventListener("keydown",e=>{if(e.key==="ArrowRight")show(index+1);if(e.key==="ArrowLeft")show(index-1);});show(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,971 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Cpp STL Containers | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="Cpp STL Containers Notes1. vectorvector 是一个顺序表，内存空间连续，支持自动扩容和自动内存管理。 1.1 初始化   写法 含义 示例    vector&lt;T&gt; v; 声明一个空向量，元素类型为 T vector&lt;double&gt; v;   vector&lt;int&gt; v; 声明一个存储 int 的空向量 []   vector">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cpp STL Containers">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/24/Cpp-STL-Containers/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="Cpp STL Containers Notes1. vectorvector 是一个顺序表，内存空间连续，支持自动扩容和自动内存管理。 1.1 初始化   写法 含义 示例    vector&lt;T&gt; v; 声明一个空向量，元素类型为 T vector&lt;double&gt; v;   vector&lt;int&gt; v; 声明一个存储 int 的空向量 []   vector">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.010Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DataStructureAndAlgorithm">
+<meta property="article:tag" content="STL">
+<meta property="article:tag" content="Container">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cpp STL Containers",
+  "url": "https://eliano64.github.io/2026/06/24/Cpp-STL-Containers/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-23T16:00:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.010Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/24/Cpp-STL-Containers/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Cpp STL Containers',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Cpp STL Containers</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Cpp STL Containers</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T16:00:00.000Z" title="发表于 2026-06-24 00:00:00">2026-06-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.010Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Cpp/">Cpp</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Cpp-STL-Containers-Notes"><a href="#Cpp-STL-Containers-Notes" class="headerlink" title="Cpp STL Containers Notes"></a>Cpp STL Containers Notes</h1><h2 id="1-vector"><a href="#1-vector" class="headerlink" title="1. vector"></a>1. vector</h2><p><code>vector</code> 是一个顺序表，内存空间连续，支持自动扩容和自动内存管理。</p>
+<h3 id="1-1-初始化"><a href="#1-1-初始化" class="headerlink" title="1.1 初始化"></a>1.1 初始化</h3><table>
+<thead>
+<tr>
+<th>写法</th>
+<th>含义</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>vector&lt;T&gt; v;</code></td>
+<td>声明一个空向量，元素类型为 <code>T</code></td>
+<td><code>vector&lt;double&gt; v;</code></td>
+</tr>
+<tr>
+<td><code>vector&lt;int&gt; v;</code></td>
+<td>声明一个存储 <code>int</code> 的空向量</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>vector&lt;int&gt; v(n);</code></td>
+<td>声明大小为 <code>n</code> 的向量，默认初值为 0</td>
+<td><code>n=5</code> 时 <code>[0,0,0,0,0]</code></td>
+</tr>
+<tr>
+<td><code>vector&lt;int&gt; v(n, x);</code></td>
+<td>声明大小为 <code>n</code>、初值为 <code>x</code> 的向量</td>
+<td><code>n=5,x=3</code> 时 <code>[3,3,3,3,3]</code></td>
+</tr>
+<tr>
+<td><code>vector&lt;int&gt; v = &#123;1,2,3&#125;;</code></td>
+<td>列表初始化</td>
+<td><code>[1,2,3]</code></td>
+</tr>
+</tbody></table>
+<p>同一个向量中的元素类型必须一致。如果已确定所需数组大小，建议在声明时设定大小或使用 <code>reserve()</code>，避免频繁动态扩容。</p>
+<h3 id="1-2-常用操作表"><a href="#1-2-常用操作表" class="headerlink" title="1.2 常用操作表"></a>1.2 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>push_back(x)</code></td>
+<td>将元素 <code>x</code> 插入向量末尾</td>
+<td><code>O(1)</code> 均摊</td>
+</tr>
+<tr>
+<td><code>pop_back()</code></td>
+<td>删除尾部元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>operator[idx]</code></td>
+<td>中括号操作符，返回下标 <code>idx</code> 所指元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>front()</code></td>
+<td>返回向量中第一个元素，即下标为 0 的元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>back()</code></td>
+<td>返回向量中的最后一个元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回向量中的元素个数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断向量是否为空</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>resize(n)</code></td>
+<td>将向量大小调整为 <code>n</code>，多删少补</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>将向量清空</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>erase(it)</code></td>
+<td>删除迭代器 <code>it</code> 所指元素</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>insert(it, val)</code></td>
+<td>在迭代器 <code>it</code> 前插入 <code>val</code></td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>begin()</code></td>
+<td>返回指向向量中第一个元素的迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>end()</code></td>
+<td>返回指向向量中最后一个元素的下一个位置的迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+</tbody></table>
+<h2 id="2-stack"><a href="#2-stack" class="headerlink" title="2. stack"></a>2. stack</h2><p><code>stack</code> 是遵循 FILO &#x2F; LIFO（先进后出、后进先出）原则的数据结构。</p>
+<h3 id="2-1-初始化"><a href="#2-1-初始化" class="headerlink" title="2.1 初始化"></a>2.1 初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">stack&lt;T&gt; stk;</span><br><span class="line">stack&lt;<span class="type">int</span>&gt; stk_int;</span><br></pre></td></tr></table></figure>
+
+<p><code>T</code> 可以是 <code>int</code>、<code>double</code>、<code>char</code>，也可以是自定义结构体。同一个栈内元素类型必须一致。</p>
+<h3 id="2-2-常用操作表"><a href="#2-2-常用操作表" class="headerlink" title="2.2 常用操作表"></a>2.2 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>push(x)</code></td>
+<td>将元素 <code>x</code> 推入栈顶</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>pop()</code></td>
+<td>弹出栈顶元素，但不会返回该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>top()</code></td>
+<td>返回栈顶元素，但不会弹出该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回栈中的元素个数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断栈是否为空</td>
+<td><code>O(1)</code></td>
+</tr>
+</tbody></table>
+<p>调用 <code>top()</code> 或 <code>pop()</code> 前应确保栈非空。</p>
+<h2 id="3-queue"><a href="#3-queue" class="headerlink" title="3. queue"></a>3. queue</h2><p><code>queue</code> 遵循先进先出（FIFO）原则，元素按照被添加的顺序移除。</p>
+<h3 id="3-1-初始化"><a href="#3-1-初始化" class="headerlink" title="3.1 初始化"></a>3.1 初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">queue&lt;T&gt; q;</span><br><span class="line">queue&lt;<span class="type">int</span>&gt; qint;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-常用操作表"><a href="#3-2-常用操作表" class="headerlink" title="3.2 常用操作表"></a>3.2 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>push(x)</code></td>
+<td>将元素 <code>x</code> 从队尾推入</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>pop()</code></td>
+<td>将队头元素弹出，但不返回该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回队列大小，即队列中的元素个数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断队列是否为空，若为空返回 <code>true</code>，否则返回 <code>false</code></td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>front()</code></td>
+<td>返回队头元素，但不删除该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>back()</code></td>
+<td>返回队尾元素</td>
+<td><code>O(1)</code></td>
+</tr>
+</tbody></table>
+<p>如果想清空队列，可以重新赋值为空队列：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">q = <span class="built_in">queue</span>&lt;<span class="type">int</span>&gt;();</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-deque"><a href="#4-deque" class="headerlink" title="4. deque"></a>4. deque</h2><p><code>deque</code> 是双端队列（double-ended queue），允许在队列两端添加和移除元素。把普通队列换成双端队列时，很多代码只需要把 <code>queue</code> 换成 <code>deque</code>。</p>
+<h3 id="4-1-常用操作表"><a href="#4-1-常用操作表" class="headerlink" title="4.1 常用操作表"></a>4.1 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>push_front(x)</code></td>
+<td>将元素 <code>x</code> 从队头推入</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>push_back(x)</code></td>
+<td>将元素 <code>x</code> 从队尾推入</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>pop_front()</code></td>
+<td>将队头元素弹出（删除），但不返回该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>pop_back()</code></td>
+<td>将队尾元素弹出（删除），但不返回该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回双端队列大小，即元素个数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断双端队列是否为空，若为空返回 <code>true</code>，否则返回 <code>false</code></td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>front()</code></td>
+<td>返回队头元素，但不会删除该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>back()</code></td>
+<td>返回队尾元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>清空双端队列，使大小变为 0</td>
+<td><code>O(n)</code></td>
+</tr>
+</tbody></table>
+<h2 id="5-priority-queue"><a href="#5-priority-queue" class="headerlink" title="5. priority_queue"></a>5. priority_queue</h2><p><code>priority_queue</code> 是优先队列，用于存储具有不同优先级的元素。默认情况下，它使用<strong>最大堆</strong>，即数值最大的元素优先出队。</p>
+<p>它只维护堆顶元素 <code>top()</code>，队列中其他元素不保证整体有序。</p>
+<h3 id="5-1-初始化与自定义比较"><a href="#5-1-初始化与自定义比较" class="headerlink" title="5.1 初始化与自定义比较"></a>5.1 初始化与自定义比较</h3><p>默认大根堆：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">priority_queue&lt;<span class="type">int</span>&gt; pq;</span><br></pre></td></tr></table></figure>
+
+<p>小根堆：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">priority_queue&lt;<span class="type">int</span>, vector&lt;<span class="type">int</span>&gt;, greater&lt;<span class="type">int</span>&gt;&gt; pq;</span><br></pre></td></tr></table></figure>
+
+<p>lambda 比较器示例：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> cmp = [](<span class="type">const</span> <span class="type">int</span>&amp; lhs, <span class="type">const</span> <span class="type">int</span>&amp; rhs) &#123;</span><br><span class="line">    <span class="keyword">return</span> lhs &gt; rhs;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">priority_queue&lt;<span class="type">int</span>, vector&lt;<span class="type">int</span>&gt;, <span class="keyword">decltype</span>(cmp)&gt; <span class="built_in">pq</span>(cmp);</span><br></pre></td></tr></table></figure>
+
+<p>对于 <code>priority_queue</code>，比较器的语义容易绕：上面这种 <code>lhs &gt; rhs</code> 会让较小元素优先，即小根堆效果。</p>
+<h3 id="5-2-常用操作表"><a href="#5-2-常用操作表" class="headerlink" title="5.2 常用操作表"></a>5.2 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>push(x)</code></td>
+<td>将元素 <code>x</code> 推入队列中</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>pop()</code></td>
+<td>移除队列中优先级最高的元素，这个函数不会返回被删除的元素</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>top()</code></td>
+<td>返回队列中优先级最高的元素，但不删除该元素</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回队列中的元素个数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断队列是否为空，若为空返回 <code>true</code>，否则返回 <code>false</code></td>
+<td><code>O(1)</code></td>
+</tr>
+</tbody></table>
+<h3 id="5-3-注意事项"><a href="#5-3-注意事项" class="headerlink" title="5.3 注意事项"></a>5.3 注意事项</h3><ul>
+<li><code>priority_queue</code> 不提供迭代器，无法用 <code>begin()</code> &#x2F; <code>end()</code> 或范围 for 遍历。</li>
+<li>不能直接修改优先队列中的元素。</li>
+<li>大多数情况下，调用 <code>top()</code> 后会紧接着调用 <code>pop()</code>。</li>
+<li>调用 <code>top()</code> 或 <code>pop()</code> 前，应确保优先队列非空。</li>
+</ul>
+<h2 id="6-map-与-unordered-map"><a href="#6-map-与-unordered-map" class="headerlink" title="6. map 与 unordered_map"></a>6. map 与 unordered_map</h2><p><code>map</code> 是基于红黑树的关联容器，支持快速插入、查找、删除，并保持内部元素按 key 有序。每个元素由一个键和一个值组成。</p>
+<h3 id="6-1-初始化"><a href="#6-1-初始化" class="headerlink" title="6.1 初始化"></a>6.1 初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">map&lt;T_key, T_value&gt; mp;</span><br><span class="line">map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; mp_int;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>map</code> 中，每个 key 唯一，对应一个 value。不同 key 可以对应相同 value。</p>
+<p>如果使用自定义结构体作为 key，需要重载小于号 <code>&lt;</code> 或提供比较器。</p>
+<h3 id="6-2-常用操作表"><a href="#6-2-常用操作表" class="headerlink" title="6.2 常用操作表"></a>6.2 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>insert(&#123;key, value&#125;)</code></td>
+<td>向 <code>map</code> 中插入一个键值对 <code>&lt;key, value&gt;</code></td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>erase(key)</code></td>
+<td>删除 <code>map</code> 中指定的键值对</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>find(key)</code></td>
+<td>查找 <code>map</code> 中指定键对应的键值对的迭代器</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>operator[key]</code></td>
+<td>查找 <code>map</code> 中指定键对应的值</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>count(key)</code></td>
+<td>查找 <code>map</code> 中键的数量，由于键唯一，故只返回 0 或 1</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回 <code>map</code> 中键值对的数量</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>清空 <code>map</code> 中的所有键值对</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断 <code>map</code> 是否为空</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>begin()</code></td>
+<td>返回 <code>map</code> 中第一个键值对的迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>end()</code></td>
+<td>返回 <code>map</code> 中最后一个键值对的下一个迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+</tbody></table>
+<h3 id="6-3-运算符注意事项"><a href="#6-3-运算符注意事项" class="headerlink" title="6.3 [] 运算符注意事项"></a>6.3 <code>[]</code> 运算符注意事项</h3><p>注意：执行取值运算时要确保键存在。更准确地说：<code>mp[key]</code> 在 key 不存在时会自动插入一个默认值。</p>
+<p>如果只是想判断是否存在，建议使用：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (mp.<span class="built_in">find</span>(key) != mp.<span class="built_in">end</span>()) &#123;</span><br><span class="line">    cout &lt;&lt; mp[key] &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-unordered-map"><a href="#6-4-unordered-map" class="headerlink" title="6.4 unordered_map"></a>6.4 unordered_map</h3><p><code>unordered_map</code> 基于哈希表而不是红黑树。平均复杂度接近 <code>O(1)</code>，但特殊情况下可能退化到 <code>O(n)</code>。除非题目明确要求或性能瓶颈明显，普通 <code>map</code> 通常也足够；需要频繁计数&#x2F;查找时，<code>unordered_map</code> 很常用。</p>
+<h2 id="7-set、multiset-与-unordered-set"><a href="#7-set、multiset-与-unordered-set" class="headerlink" title="7. set、multiset 与 unordered_set"></a>7. set、multiset 与 unordered_set</h2><h3 id="7-1-set"><a href="#7-1-set" class="headerlink" title="7.1 set"></a>7.1 set</h3><p><code>set</code> 是关联容器，底层通常是红黑树。集合中的元素唯一，并按一定顺序存储。默认升序。</p>
+<p>初始化：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set&lt;T&gt; mySet;</span><br></pre></td></tr></table></figure>
+
+<p>自定义比较器示例：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">cmp</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">operator</span><span class="params">()</span> <span class="params">(<span class="type">const</span> <span class="type">int</span>&amp; u, <span class="type">const</span> <span class="type">int</span>&amp; v)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> u &gt; v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">set&lt;<span class="type">int</span>, cmp&gt; st;</span><br></pre></td></tr></table></figure>
+
+<p>注意：<code>set</code> 的比较器应该返回 <code>bool</code>，用于定义严格弱序。把比较器理解为“映射到一个能直接比大小的类型”更接近哈希；如果要用哈希集合，应使用 <code>unordered_set</code> 并自定义 hash。</p>
+<h4 id="set-常用操作表"><a href="#set-常用操作表" class="headerlink" title="set 常用操作表"></a>set 常用操作表</h4><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>insert(x)</code></td>
+<td>将元素插入集合中</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>erase(it or val)</code></td>
+<td>从集合中删除指定元素，可以传入一个迭代器或一个值</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>清空集合中的所有元素</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>find(x)</code></td>
+<td>返回 <code>x</code> 在集合中的位置（迭代器），如果 <code>x</code> 不存在，则返回 <code>end()</code></td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>count(x)</code></td>
+<td>返回 <code>x</code> 在集合中出现的次数，返回值仅为 0 或 1</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回集合中的元素个数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断集合是否为空，若为空返回 <code>true</code>，否则返回 <code>false</code></td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>begin()</code></td>
+<td>返回指向集合中第一个元素的迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>end()</code></td>
+<td>返回指向集合中最后一个元素的下一个位置的迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+</tbody></table>
+<p>调用 <code>erase(it)</code> 时，必须确保迭代器有效。</p>
+<h3 id="7-2-unordered-set"><a href="#7-2-unordered-set" class="headerlink" title="7.2 unordered_set"></a>7.2 unordered_set</h3><p><code>unordered_set</code> 与 <code>unordered_map</code> 类似，基于哈希表，不保持有序，平均复杂度接近 <code>O(1)</code>。</p>
+<h3 id="7-3-multiset"><a href="#7-3-multiset" class="headerlink" title="7.3 multiset"></a>7.3 multiset</h3><p><code>multiset</code> 是允许存储重复元素的 <code>set</code>。</p>
+<h4 id="multiset-常用操作表"><a href="#multiset-常用操作表" class="headerlink" title="multiset 常用操作表"></a>multiset 常用操作表</h4><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>insert(x)</code></td>
+<td>将元素 <code>x</code> 插入多重集合</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>erase(it or val)</code></td>
+<td>从多重集合中删除一个或多个元素</td>
+<td><code>O(k + log n)</code>，其中 <code>k</code> 为删除的元素个数</td>
+</tr>
+<tr>
+<td><code>find(x)</code></td>
+<td>在多重集合中查找元素 <code>x</code>，返回迭代器</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>count(x)</code></td>
+<td>返回 <code>x</code> 在多重集合中出现的次数</td>
+<td><code>O(log n)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回多重集合中元素个数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断多重集合是否为空</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>清空多重集合中的所有元素</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>begin()</code></td>
+<td>返回指向多重集合中第一个元素位置的迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>end()</code></td>
+<td>返回指向多重集合中最后一个元素的下一个位置的迭代器</td>
+<td><code>O(1)</code></td>
+</tr>
+</tbody></table>
+<p>删除时注意：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ms.<span class="built_in">erase</span>(x); <span class="comment">// 删除所有等于 x 的元素</span></span><br></pre></td></tr></table></figure>
+
+<p>如果只想删除一个：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> it = ms.<span class="built_in">find</span>(x);</span><br><span class="line"><span class="keyword">if</span> (it != ms.<span class="built_in">end</span>()) ms.<span class="built_in">erase</span>(it);</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-bitset"><a href="#8-bitset" class="headerlink" title="8. bitset"></a>8. bitset</h2><p><code>bitset</code> 用于处理固定大小的位序列，即一串二进制位。可以把它看作一个长度可观的二进制数。初始化后各位默认均为 0。</p>
+<p>注意：<code>bitset</code> 的索引从右向左计算，以保证与二进制表达方式一致。</p>
+<h3 id="8-1-初始化"><a href="#8-1-初始化" class="headerlink" title="8.1 初始化"></a>8.1 初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bitset&lt;8&gt; b1;                  <span class="comment">// 00000000</span></span><br><span class="line"><span class="function">bitset&lt;8&gt; <span class="title">b2</span><span class="params">(<span class="number">5</span>)</span></span>;               <span class="comment">// 00000101</span></span><br><span class="line"><span class="function">bitset&lt;8&gt; <span class="title">b3</span><span class="params">(string(<span class="string">&quot;101&quot;</span>))</span></span>;   <span class="comment">// 00000101</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-常用操作表"><a href="#8-2-常用操作表" class="headerlink" title="8.2 常用操作表"></a>8.2 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法&#x2F;运算</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>operator[idx]</code></td>
+<td>返回 <code>bitset</code> 中第 <code>idx</code> 位的引用</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>reset()</code></td>
+<td>将 <code>bitset</code> 中所有位都设置为 0</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>返回 <code>bitset</code> 的大小，即位数</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>count()</code></td>
+<td>返回 <code>bitset</code> 中 1 的个数</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>&amp;</code>、&#96;</td>
+<td><code>、</code>~&#96;、<code>&lt;&lt;</code>、<code>&gt;&gt;</code></td>
+<td>整体位运算</td>
+</tr>
+</tbody></table>
+<p>常用方法：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>set()</code></td>
+<td>全部置 1</td>
+</tr>
+<tr>
+<td><code>set(i)</code></td>
+<td>第 <code>i</code> 位置 1</td>
+</tr>
+<tr>
+<td><code>reset(i)</code></td>
+<td>第 <code>i</code> 位置 0</td>
+</tr>
+<tr>
+<td><code>flip()</code></td>
+<td>全部翻转</td>
+</tr>
+<tr>
+<td><code>flip(i)</code></td>
+<td>第 <code>i</code> 位翻转</td>
+</tr>
+<tr>
+<td><code>any()</code></td>
+<td>是否存在 1</td>
+</tr>
+<tr>
+<td><code>none()</code></td>
+<td>是否全为 0</td>
+</tr>
+<tr>
+<td><code>all()</code></td>
+<td>是否全为 1</td>
+</tr>
+<tr>
+<td><code>to_string()</code></td>
+<td>转为字符串</td>
+</tr>
+</tbody></table>
+<p>虽然部分操作理论复杂度为 <code>O(n)</code>，但由于 <code>bitset</code> 内部优化及固定小常数，实际很快，可近似理解为 <code>O(n / w)</code>，其中 <code>w</code> 是机器字长。</p>
+<h2 id="9-string"><a href="#9-string" class="headerlink" title="9. string"></a>9. string</h2><p><code>string</code> 用于表示和处理字符串，提供连接、查找、替换、插入、删除、子串等操作。可以把它想象成动态字符数组。</p>
+<h3 id="9-1-初始化"><a href="#9-1-初始化" class="headerlink" title="9.1 初始化"></a>9.1 初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">string str = <span class="string">&quot;Hello World&quot;</span>;</span><br><span class="line">string str1 = <span class="string">&quot;Hello&quot;</span>;</span><br><span class="line">string str2 = str1;</span><br><span class="line"><span class="type">char</span> arr[] = <span class="string">&quot;Hello&quot;</span>;</span><br><span class="line"><span class="function">string <span class="title">str3</span><span class="params">(arr)</span></span>;</span><br><span class="line"><span class="function">string <span class="title">str4</span><span class="params">(<span class="number">5</span>, <span class="string">&#x27;A&#x27;</span>)</span></span>; <span class="comment">// &quot;AAAAA&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-常用操作表"><a href="#9-2-常用操作表" class="headerlink" title="9.2 常用操作表"></a>9.2 常用操作表</h3><table>
+<thead>
+<tr>
+<th>方法&#x2F;运算</th>
+<th>作用</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>length()</code></td>
+<td>返回字符串长度</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>empty()</code></td>
+<td>判断字符串是否为空</td>
+<td><code>O(1)</code></td>
+</tr>
+<tr>
+<td><code>substr(pos, len)</code></td>
+<td>返回从 <code>pos</code> 开始、长度为 <code>len</code> 的子串；若省略 <code>len</code>，截取到末尾</td>
+<td><code>O(len)</code></td>
+</tr>
+<tr>
+<td><code>erase(pos, len)</code></td>
+<td>删除从 <code>pos</code> 开始、长度为 <code>len</code> 的子串</td>
+<td><code>O(len)</code></td>
+</tr>
+<tr>
+<td><code>operator + char/str</code></td>
+<td>将字符或字符串拼接到当前字符串后面</td>
+<td><code>O(len)</code></td>
+</tr>
+<tr>
+<td><code>operator &lt;, &lt;=, &gt;, &gt;=, ==</code></td>
+<td>按字典顺序比较字符串</td>
+<td><code>O(n)</code></td>
+</tr>
+<tr>
+<td><code>find(str)</code></td>
+<td>返回指定字符串或字符在当前字符串中第一次出现的位置</td>
+<td><code>O(nm)</code></td>
+</tr>
+</tbody></table>
+<p>常用方法：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>size()</code></td>
+<td>返回字符串长度，常与 <code>length()</code> 等价</td>
+</tr>
+<tr>
+<td><code>push_back(c)</code></td>
+<td>尾部加入字符</td>
+</tr>
+<tr>
+<td><code>pop_back()</code></td>
+<td>删除尾部字符</td>
+</tr>
+<tr>
+<td><code>front()</code> &#x2F; <code>back()</code></td>
+<td>访问首尾字符</td>
+</tr>
+<tr>
+<td><code>insert(pos, str)</code></td>
+<td>在指定位置插入字符串</td>
+</tr>
+<tr>
+<td><code>replace(pos, len, str)</code></td>
+<td>替换指定区间</td>
+</tr>
+<tr>
+<td><code>c_str()</code></td>
+<td>获取 C 风格字符串指针</td>
+</tr>
+</tbody></table>
+<p>实践上，若需频繁修改或构造字符串，可考虑字符数组或预留容量，因为某些操作会更高效。现代 C++ 中也可使用：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s.<span class="built_in">reserve</span>(n);</span><br></pre></td></tr></table></figure>
+
+<p>减少扩容次数。</p>
+<h2 id="10-pair"><a href="#10-pair" class="headerlink" title="10. pair"></a>10. pair</h2><p><code>pair</code> 是模板类，用于存储一对值，包含两个公有成员变量：<code>first</code> 和 <code>second</code>。</p>
+<table>
+<thead>
+<tr>
+<th>用法</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定义有序对</td>
+<td><code>pair&lt;int, string&gt; p;</code></td>
+</tr>
+<tr>
+<td>初始化</td>
+<td><code>pair&lt;int, int&gt; p = make_pair(1, 2);</code></td>
+</tr>
+<tr>
+<td>访问值</td>
+<td><code>int x = p.first; string s = p.second;</code></td>
+</tr>
+<tr>
+<td>比较有序对</td>
+<td>默认先比较 <code>first</code>，相等再比较 <code>second</code></td>
+</tr>
+<tr>
+<td>作为返回值</td>
+<td><code>pair&lt;int, int&gt; findMaxMin(...)</code></td>
+</tr>
+<tr>
+<td>作为容器元素</td>
+<td><code>vector&lt;pair&lt;int, int&gt;&gt; v;</code></td>
+</tr>
+</tbody></table>
+<p>也可以使用列表初始化：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pair&lt;<span class="type">int</span>, <span class="type">int</span>&gt; p = &#123;<span class="number">1</span>, <span class="number">2</span>&#125;;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/24/Cpp-STL-Containers/">https://eliano64.github.io/2026/06/24/Cpp-STL-Containers/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/24/Cpp-STL-Algorithms/" title="Cpp STL Algorithms"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Cpp STL Algorithms</div></div><div class="info-2"><div class="info-item-1">Cpp STL Algorithms Notes1. sort()sort() 是 C++ STL 中常用的排序函数，定义于 &lt;algorithm&gt;。它可以高效地对数组、vector、deque 等支持随机访问迭代器的范围排序。 1.1 基本用法默认从小到大： 1sort(vec.begin(), vec.end());  自定义比较函数，例如降序： 123sort(vec.begin(), vec.end(), [](int a, int b) &#123;    return a &gt; b;&#125;);  1.2 复杂度、稳定性与适用容器 时间复杂度：O(n log n)。 sort() 不是稳定排序，相等元素的原始顺序可能改变。 如果需要稳定排序，使用 stable_sort()。 sort() 需要随机访问迭代器，适合数组、vector、deque，不适合 list 或 forward_list。  比较函数应满足严格弱序，不要写成 &lt;=。 2. lower_bound() 与 upper_bound()lower_bound() 和...</div></div></div></a><a class="pagination-related" href="/2026/06/24/Dynamic-Programming/" title="Dynamic Programming"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Dynamic Programming</div></div><div class="info-2"><div class="info-item-1">Dynamic Programming Notes1. 动规五部曲做动态规划题时，可以按下面五步检查：  找 dp[i] 或 dp[i][j] 的含义。 先用一句话说清楚状态表示什么。 状态没定义清楚时，不要急着写递推。   初始化，并思考 dp[0]、dp[1] 等边缘情况。 注意题目数组长度的最小值。 尤其要考虑边界越界的情况。   找中间状态的递推公式。 当前状态从哪些更小或更早的状态转移过来？ 是取最大值、最小值、累加方案数，还是维护真假？   根据递推公式和思路，确定遍历顺序。 0-1 背包容量倒序。 完全背包容量正序。 区间 DP 按区间长度从小到大。 树形 DP 常用 DFS 回溯。   检查：必要时打印 DP 数组。 dp 可以是一维数组，也可以是二维数组 dp[i][j]。 调试时打印小样例的 DP 表，往往能发现初始化或遍历顺序问题。    2. 0-1 背包2.1 状态定义1dp[i][j]：表示装第 i 件物品为止，在总容量不超过 j 的情况下，物品的最大总价值。  二维转移： 1dp[i][j] = max(dp[i-1][j],...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Cpp-STL-Containers-Notes"><span class="toc-text">Cpp STL Containers Notes</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-vector"><span class="toc-text">1. vector</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">1.1 初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">1.2 常用操作表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-stack"><span class="toc-text">2. stack</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">2.1 初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">2.2 常用操作表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-queue"><span class="toc-text">3. queue</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">3.1 初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">3.2 常用操作表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-deque"><span class="toc-text">4. deque</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">4.1 常用操作表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-priority-queue"><span class="toc-text">5. priority_queue</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%8E%E8%87%AA%E5%AE%9A%E4%B9%89%E6%AF%94%E8%BE%83"><span class="toc-text">5.1 初始化与自定义比较</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">5.2 常用操作表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">5.3 注意事项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-map-%E4%B8%8E-unordered-map"><span class="toc-text">6. map 与 unordered_map</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">6.1 初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">6.2 常用操作表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E8%BF%90%E7%AE%97%E7%AC%A6%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">6.3 [] 运算符注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-unordered-map"><span class="toc-text">6.4 unordered_map</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-set%E3%80%81multiset-%E4%B8%8E-unordered-set"><span class="toc-text">7. set、multiset 与 unordered_set</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-set"><span class="toc-text">7.1 set</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#set-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">set 常用操作表</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-unordered-set"><span class="toc-text">7.2 unordered_set</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-multiset"><span class="toc-text">7.3 multiset</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#multiset-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">multiset 常用操作表</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-bitset"><span class="toc-text">8. bitset</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">8.1 初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">8.2 常用操作表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-string"><span class="toc-text">9. string</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">9.1 初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E8%A1%A8"><span class="toc-text">9.2 常用操作表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-pair"><span class="toc-text">10. pair</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

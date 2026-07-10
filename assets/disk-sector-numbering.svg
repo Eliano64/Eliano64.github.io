@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="500" viewBox="0 0 1080 500" role="img" aria-labelledby="title desc">
+  <title id="title">扇区编号优化</title>
+  <desc id="desc">展示交替编号和错位命名减少连续读取时的旋转等待。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--text:#172033;--muted:#536171;--line:#8090a3;--b:#2563eb;--o:#d97706;--soft:#f8fafc}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--text:#e5e7eb;--muted:#aab4c3;--line:#687386;--b:#60a5fa;--o:#fbbf24;--soft:#111827}}
+    .bg{fill:var(--bg)}.title{fill:var(--text);font:700 27px "Microsoft YaHei",sans-serif}.h{fill:var(--text);font:700 18px "Microsoft YaHei",sans-serif}.body{fill:var(--muted);font:15px "Microsoft YaHei",sans-serif}.panel{fill:var(--soft);stroke:var(--line);stroke-width:1.5;rx:14}.ring{fill:none;stroke:var(--b);stroke-width:3}.slice{fill:var(--o);opacity:.22;stroke:var(--o)}
+  </style>
+  <rect class="bg" width="1080" height="500"/>
+  <text class="title" x="54" y="55">减少旋转延迟：编号让连续访问“刚好赶上”</text>
+  <g transform="translate(120 110)">
+    <rect class="panel" x="0" y="0" width="400" height="300"/>
+    <text class="h" x="200" y="38" text-anchor="middle">交替编号</text>
+    <circle class="ring" cx="200" cy="160" r="88"/>
+    <g class="body" text-anchor="middle">
+      <text x="200" y="67">0</text><text x="266" y="96">4</text><text x="293" y="165">1</text><text x="265" y="234">5</text><text x="200" y="262">2</text><text x="135" y="234">6</text><text x="107" y="165">3</text><text x="134" y="96">7</text>
+    </g>
+    <text class="body" x="200" y="275" text-anchor="middle">逻辑相邻扇区在物理上隔开</text>
+  </g>
+  <g transform="translate(560 110)">
+    <rect class="panel" x="0" y="0" width="400" height="300"/>
+    <text class="h" x="200" y="38" text-anchor="middle">错位命名</text>
+    <circle class="ring" cx="140" cy="160" r="76"/><circle class="ring" cx="260" cy="160" r="76"/>
+    <g class="body" text-anchor="middle">
+      <text x="140" y="90">0</text><text x="194" y="160">2</text><text x="140" y="238">4</text><text x="84" y="160">6</text>
+      <text x="260" y="90">1</text><text x="314" y="160">3</text><text x="260" y="238">5</text><text x="204" y="160">7</text>
+    </g>
+    <text class="body" x="200" y="275" text-anchor="middle">相邻盘面编号错开，补偿处理时间</text>
+  </g>
+  <text class="body" x="540" y="455" text-anchor="middle">这些方法不改变磁盘转速，而是让连续逻辑块的物理位置更适合顺序读取。</text>
+</svg>

@@ -1,0 +1,377 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>TCP Flow Control | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="TCP 流量控制TCP 流量控制的目标是：防止发送方发送太快，导致接收方接收缓存溢出而丢包。它不是解决网络拥塞，而是解决接收方的处理能力瓶颈——应用程序一时来不及从接收缓存中取走数据。 流量控制与TCP 可靠传输以及滑动窗口机制紧密配合，但解决的问题不同。可靠传输关注确认、重传和按序交付；流量控制关注接收方的缓存水位。 rwnd：接收窗口通告流量控制的基本方法是：接收方通过 TCP 首部的窗口字段">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP Flow Control">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/09/TCP-Flow-Control/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="TCP 流量控制TCP 流量控制的目标是：防止发送方发送太快，导致接收方接收缓存溢出而丢包。它不是解决网络拥塞，而是解决接收方的处理能力瓶颈——应用程序一时来不及从接收缓存中取走数据。 流量控制与TCP 可靠传输以及滑动窗口机制紧密配合，但解决的问题不同。可靠传输关注确认、重传和按序交付；流量控制关注接收方的缓存水位。 rwnd：接收窗口通告流量控制的基本方法是：接收方通过 TCP 首部的窗口字段">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-09T11:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:16:51.040Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="ComputerNetwork">
+<meta property="article:tag" content="TransportLayer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TCP Flow Control",
+  "url": "https://eliano64.github.io/2026/07/09/TCP-Flow-Control/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-09T11:00:00.000Z",
+  "dateModified": "2026-07-10T07:16:51.040Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/09/TCP-Flow-Control/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'TCP Flow Control',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">TCP Flow Control</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">TCP Flow Control</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-09T11:00:00.000Z" title="发表于 2026-07-09 19:00:00">2026-07-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:16:51.040Z" title="更新于 2026-07-10 15:16:51">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.3k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="TCP-流量控制"><a href="#TCP-流量控制" class="headerlink" title="TCP 流量控制"></a>TCP 流量控制</h1><p>TCP 流量控制的目标是：<strong>防止发送方发送太快，导致接收方接收缓存溢出而丢包</strong>。它不是解决网络拥塞，而是解决接收方的处理能力瓶颈——应用程序一时来不及从接收缓存中取走数据。</p>
+<p>流量控制与<a href="/2026/07/09/TCP-Reliable-Transmission/" class="wikilink">TCP 可靠传输</a>以及<a href="/2026/07/07/Sliding-Window/" class="wikilink">滑动窗口</a>机制紧密配合，但解决的问题不同。可靠传输关注确认、重传和按序交付；流量控制关注接收方的缓存水位。</p>
+<h1 id="rwnd：接收窗口通告"><a href="#rwnd：接收窗口通告" class="headerlink" title="rwnd：接收窗口通告"></a>rwnd：接收窗口通告</h1><p>流量控制的基本方法是：<strong>接收方通过 TCP 首部的窗口字段，把自己接收缓存的可用空间大小通告给发送方。</strong> 这个值记为 <code>rwnd</code>（receiver window）。</p>
+<p>发送方收到报文段后，从中取出确认号 <code>ack</code> 和窗口值 <code>rwnd</code>，结合拥塞窗口 <code>cwnd</code> 构造发送窗口：</p>
+<p>$$<br>\text{swnd} &#x3D; \min(\text{rwnd}, \text{cwnd})<br>$$</p>
+<p>在仅讨论流量控制时，通常暂不考虑 <code>cwnd</code>，令 $\text{swnd} &#x3D; \text{rwnd}$。</p>
+<p>窗口字段为 16 bit，所以 <code>rwnd</code> 最大为 $2^{16}-1 &#x3D; 65535$ 字节。启用窗口扩大选项后，实际窗口可达更大值。</p>
+<h1 id="流量控制过程"><a href="#流量控制过程" class="headerlink" title="流量控制过程"></a>流量控制过程</h1><p>以一个完整的过程为例说明接收方如何动态调整 <code>rwnd</code>。</p>
+<p><img src="/assets/tcp-flow-control-process.svg" alt="900"></p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||520)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||520)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/tcp-flow-control-slides.html" style="width:100%;height:520px;border:0" loading="lazy"></iframe>
+</div>
+
+<p><strong>初始状态</strong>：主机 A 要发送 600 字节数据，接收方 B 的初始接收缓存可用空间为 400 字节，B 通告 <code>rwnd=400</code>。A 据此将 <code>swnd</code> 设为 400。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>A 的操作</th>
+<th>B 的反馈</th>
+<th>swnd 变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>①</td>
+<td>连续发送 <code>1-100</code>、<code>101-200</code>、<code>201-300</code></td>
+<td>—</td>
+<td><code>400→300→200→100</code>（已发未确认逐渐填满窗口）</td>
+</tr>
+<tr>
+<td>②</td>
+<td>—</td>
+<td>ACK&#x3D;201, rwnd&#x3D;300（第一次流量控制：B 的应用进程读取较慢，缓存可用空间从 400 缩到 300）</td>
+<td><code>swnd → 300</code>，窗口覆盖 <code>201-500</code>。其中 <code>201-300</code> 已发未确认，<code>301-500</code> 可发</td>
+</tr>
+<tr>
+<td>③</td>
+<td>发送 <code>301-400</code>、<code>401-500</code></td>
+<td>—</td>
+<td>可用窗口归零，A 暂停发送</td>
+</tr>
+<tr>
+<td>④</td>
+<td><code>201-300</code> 超时重传</td>
+<td>ACK&#x3D;501, rwnd&#x3D;100（第二次流量控制：B 的应用进程仍未取走足够数据）</td>
+<td><code>swnd → 100</code>，窗口覆盖 <code>501-600</code></td>
+</tr>
+<tr>
+<td>⑤</td>
+<td>发送 <code>501-600</code></td>
+<td>ACK&#x3D;601, rwnd&#x3D;0（第三次流量控制：B 的接收缓存已满）</td>
+<td><code>swnd → 0</code>，A 必须停止发送</td>
+</tr>
+</tbody></table>
+<p><strong>核心规律</strong>：接收方每次 ACK 都可能携带新的 <code>rwnd</code> 值。<code>rwnd</code> 变小 → 发送窗口收紧；<code>rwnd</code> 变大 → 发送窗口扩大。发送方不主动决定窗口，而是被动地根据接收方的反馈来调整。</p>
+<h1 id="零窗口与持续计时器"><a href="#零窗口与持续计时器" class="headerlink" title="零窗口与持续计时器"></a>零窗口与持续计时器</h1><h2 id="零窗口死锁"><a href="#零窗口死锁" class="headerlink" title="零窗口死锁"></a>零窗口死锁</h2><p>当 <code>rwnd=0</code> 时，发送方停止发送数据。问题在于：如果接收方后来有了可用空间，通过一个新的 ACK 通告 <code>rwnd &gt; 0</code>，但这个 ACK <strong>丢失了</strong>：</p>
+<p><img src="/assets/tcp-zero-window-persist.svg" alt="900"></p>
+<p>发送方在等接收方通知窗口打开，接收方在等发送方发数据——双方都在等对方，形成<strong>死锁</strong>。</p>
+<h2 id="持续计时器"><a href="#持续计时器" class="headerlink" title="持续计时器"></a>持续计时器</h2><p>TCP 用<strong>持续计时器</strong>解决零窗口死锁：</p>
+<ol>
+<li>发送方收到 <code>rwnd=0</code> 后启动持续计时器。</li>
+<li>计时器超时 → 发送方发送一个<strong>零窗口探测报文段</strong>（携带 1 字节数据，这是 TCP 允许的最少数据量）。</li>
+<li>接收方收到探测报文段后回复 ACK，其中包含<strong>当前的 <code>rwnd</code> 值</strong>。</li>
+<li>如果 <code>rwnd</code> 仍为 0，重新启动持续计时器；如果 <code>rwnd &gt; 0</code>，发送方恢复发送。</li>
+</ol>
+<p>持续计时器的时间通常比 RTO 长，但不固定。探测报文段可能多次发送，直到窗口打开或连接超时。</p>
+<h1 id="窗口不建议向后收缩"><a href="#窗口不建议向后收缩" class="headerlink" title="窗口不建议向后收缩"></a>窗口不建议向后收缩</h1><p>TCP 标准<strong>强烈不推荐</strong>接收方缩小已经通告过的窗口。原因：发送方可能在收到收缩通知之前，已经发出了窗口内靠后的数据。如果此时强行收缩窗口，会导致”已发送但被禁止”的冲突——数据已在网络中，但按新规则变成了违规发送。</p>
+<p>接收方只应在应用进程取走数据后<strong>扩大</strong>窗口，或在数据堆积时<strong>不扩大</strong>窗口。如果需要”缩小”窗口（缓存被其他用途挤占），正确做法是<strong>不扩大</strong>而非<strong>回缩</strong>——即保持当前通告的 <code>rwnd</code> 不变，等旧数据被确认自然消耗掉旧窗口，再通告更小的新窗口。</p>
+<h1 id="流量控制-vs-拥塞控制"><a href="#流量控制-vs-拥塞控制" class="headerlink" title="流量控制 vs 拥塞控制"></a>流量控制 vs 拥塞控制</h1><p>流量控制经常与拥塞控制目标完全不同：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>流量控制</th>
+<th>拥塞控制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>要解决的问题</td>
+<td>接收方来不及处理</td>
+<td>网络来不及转发</td>
+</tr>
+<tr>
+<td>作用范围</td>
+<td>点对点（发送方 ↔ 接收方）</td>
+<td>全局（涉及所有主机和路由器）</td>
+</tr>
+<tr>
+<td>控制变量</td>
+<td><code>rwnd</code>（接收方通告）</td>
+<td><code>cwnd</code>（发送方根据网络反馈估算）</td>
+</tr>
+<tr>
+<td>反馈来源</td>
+<td>接收方直接告诉发送方</td>
+<td>发送方通过超时、重复 ACK 等隐式推断</td>
+</tr>
+<tr>
+<td>最终约束</td>
+<td>$\text{swnd} &#x3D; \min(\text{rwnd}, \text{cwnd})$</td>
+<td>同上——两者同时约束发送窗口</td>
+</tr>
+</tbody></table>
+<p>流量控制怕<strong>接收方撑死</strong>，拥塞控制怕<strong>网络堵死</strong>。TCP 发送窗口取二者最小值，既不能发得比接收方能收的快，也不能发得比网络能转发的快。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/09/TCP-Flow-Control/">https://eliano64.github.io/2026/07/09/TCP-Flow-Control/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/09/TCP-Reliable-Transmission/" title="TCP Reliable Transmission"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">TCP Reliable Transmission</div></div><div class="info-2"><div class="info-item-1">TCP 可靠传输TCP 可靠传输的目标是：无差错、无丢失、无重复、按序交付。为实现这一目标，TCP 采用基于字节序号的滑动窗口、累积确认、超时重传和选择确认等机制。 字节编号与累积确认字节流编号TCP 面向字节流，对发送缓存中的每一个字节分配一个 32 bit 序号。序号字段 seq 的值是本报文段数据载荷第一个字节的序号。 确认号 ACK_n 是累积确认：它表明序号 $n-1$ 及之前的所有字节都已正确按序收到，接收方期望下一个收到的是序号 $n$ 的字节。只有 ACK=1 时确认号字段才有效。  上图展示了 TCP 可靠传输的基本单位：发送方按字节序号维护发送窗口，接收方用累积确认号说明“下一个期望字节”，窗口由确认号和接收窗口共同推动。 发送窗口与三个指针TCP 的发送窗口不是固定大小，它取决于接收方通告的接收窗口 rwnd 和发送方估算的拥塞窗口 cwnd： $$\text{swnd} &#x3D; \min(\text{rwnd}, \text{cwnd})$$ 为了方便描述发送窗口内各字节的状态，TCP...</div></div></div></a><a class="pagination-related" href="/2026/07/09/TCP-Congestion-Control/" title="TCP Congestion Control"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">TCP Congestion Control</div></div><div class="info-2"><div class="info-item-1">拥塞控制要解决的问题拥塞是网络内部的问题——路由器缓存、链路带宽、处理能力等资源不足以承载当前的通信量，导致队列溢出和大量丢包。 拥塞控制与流量控制的目标不同：    维度 流量控制 拥塞控制    要解决的问题 接收方来不及处理 网络来不及转发   范围 点对点 全局   反馈来源 接收方直接通告 rwnd 发送方通过超时、重复 ACK 等推断   拥塞控制的核心思想：试探着增加发送窗口，丢包了就减小，但不应一次砍过头。 开环控制与闭环控制从控制论的角度，拥塞控制分为两类：     开环控制 闭环控制    思路 设计阶段就保证问题不发生 运行时根据反馈动态调整   适用条件 流量特征可准确规定、性能要求可事先获得 流量特征不可准确描述、网络不提供资源预留   因特网选择 — ✅ 因特网采用闭环控制   闭环控制包含三个环节：监测拥塞（何时何地发生）→ 传递拥塞信息（传送到能采取行动的地方）→...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">283</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">21</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#TCP-%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6"><span class="toc-text">TCP 流量控制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#rwnd%EF%BC%9A%E6%8E%A5%E6%94%B6%E7%AA%97%E5%8F%A3%E9%80%9A%E5%91%8A"><span class="toc-text">rwnd：接收窗口通告</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6%E8%BF%87%E7%A8%8B"><span class="toc-text">流量控制过程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%B6%E7%AA%97%E5%8F%A3%E4%B8%8E%E6%8C%81%E7%BB%AD%E8%AE%A1%E6%97%B6%E5%99%A8"><span class="toc-text">零窗口与持续计时器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6%E7%AA%97%E5%8F%A3%E6%AD%BB%E9%94%81"><span class="toc-text">零窗口死锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%81%E7%BB%AD%E8%AE%A1%E6%97%B6%E5%99%A8"><span class="toc-text">持续计时器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AA%97%E5%8F%A3%E4%B8%8D%E5%BB%BA%E8%AE%AE%E5%90%91%E5%90%8E%E6%94%B6%E7%BC%A9"><span class="toc-text">窗口不建议向后收缩</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6-vs-%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6"><span class="toc-text">流量控制 vs 拥塞控制</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Domain-Name-System/" title="Domain Name System">Domain Name System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Email-System/" title="Email System">Email System</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/File-Transfer-Protocol/" title="File Transfer Protocol">File Transfer Protocol</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/Network-Application-Models/" title="Network-Application-Models">Network-Application-Models</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/10/World-Wide-Web/" title="World Wide Web">World Wide Web</a><time datetime="2026-07-10T01:59:13.000Z" title="发表于 2026-07-10 09:59:13">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script></div></body></html>

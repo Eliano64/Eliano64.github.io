@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transport Port Multiplexing</title>
+<style>
+:root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#172033;--muted:#526174;--line:#64748b;--blue:#2563eb;--green:#16a34a;--orange:#d97706;--border:#cbd5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#020617;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--orange:#fbbf24;--border:#334155}}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+.wrap{max-width:980px;margin:auto;padding:22px}
+.title{text-align:center;font-size:24px;font-weight:800;margin-bottom:16px}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:18px}
+.step{border:1px solid var(--border);border-radius:8px;background:var(--panel);padding:10px;margin-bottom:10px;cursor:pointer}
+.step b{display:block;margin-bottom:5px}.step span{font-size:14px;color:var(--muted);line-height:1.45}.step.active{outline:2px solid var(--blue)}
+.stage{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:12px}
+.note{color:var(--muted);line-height:1.6;margin-top:6px}
+.controls{text-align:center;margin-top:14px}
+button{border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 14px;margin:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">运输层复用与分用</div>
+  <div class="layout">
+    <div id="steps"></div>
+    <div class="stage">
+      <svg viewBox="0 0 680 360" role="img" aria-label="运输层复用和分用过程">
+        <defs>
+          <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--blue)"/></marker>
+        </defs>
+        <g font-size="14" text-anchor="middle">
+          <rect x="50" y="55" width="150" height="55" rx="8" fill="var(--panel)" stroke="var(--orange)" stroke-width="2"/><text x="125" y="88" fill="var(--text)">DNS 客户进程</text>
+          <rect x="50" y="135" width="150" height="55" rx="8" fill="var(--panel)" stroke="var(--orange)" stroke-width="2"/><text x="125" y="168" fill="var(--text)">HTTP 客户进程</text>
+          <rect x="245" y="75" width="165" height="96" rx="10" fill="var(--panel)" stroke="var(--blue)" stroke-width="2"/><text x="327" y="112" fill="var(--text)" font-weight="700">运输层</text><text id="transportText" x="327" y="140" fill="var(--muted)">选择 UDP/TCP</text>
+          <rect x="245" y="220" width="165" height="55" rx="10" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/><text x="327" y="253" fill="var(--text)">IP 层</text>
+          <rect x="485" y="55" width="150" height="55" rx="8" fill="var(--panel)" stroke="var(--orange)" stroke-width="2"/><text x="560" y="88" fill="var(--text)">DNS 服务器</text>
+          <rect x="485" y="135" width="150" height="55" rx="8" fill="var(--panel)" stroke="var(--orange)" stroke-width="2"/><text x="560" y="168" fill="var(--text)">HTTP 服务器</text>
+        </g>
+        <path id="p1" d="M200 82 L245 105" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path id="p2" d="M200 162 L245 140" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path id="p3" d="M327 171 L327 220" fill="none" stroke="var(--green)" stroke-width="4" marker-end="url(#arr)"/>
+        <path id="p4" d="M410 105 L485 82" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <path id="p5" d="M410 140 L485 162" fill="none" stroke="var(--blue)" stroke-width="4" marker-end="url(#arr)"/>
+        <text id="packet" x="327" y="315" text-anchor="middle" fill="var(--text)" font-size="18"></text>
+      </svg>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+  <div class="controls"><button id="prev">上一步</button><button id="next">下一步</button></div>
+</div>
+<script>
+const data=[
+  ["应用交付报文","不同应用进程把报文交给运输层。","DNS 查询可交给 UDP，HTTP 请求可交给 TCP。端口号用于标识应用进程。","应用报文进入运输层"],
+  ["发送方复用","运输层封装 UDP 用户数据报或 TCP 报文段。","源端口通常是客户端临时端口，目的端口通常是服务器熟知端口。","UDP: 49152 -> 53；TCP: 49152 -> 80"],
+  ["交给 IP 层","UDP 和 TCP 都要再封装进 IP 数据报。","IP 首部负责主机到主机；运输层首部负责进程到进程。","IP 数据报携带 UDP/TCP 数据"],
+  ["接收方分用","接收端根据协议类型和目的端口号选择应用进程。","UDP 目的端口 53 交给 DNS；TCP 目的端口 80 交给 HTTP。","协议类型 + 目的端口决定交付对象"]
+];
+let i=0;
+const steps=document.getElementById("steps");
+data.forEach((d,idx)=>{const e=document.createElement("div");e.className="step";e.innerHTML=`<b>${idx+1}. ${d[0]}</b><span>${d[1]}</span>`;e.onclick=()=>{i=idx;render()};steps.appendChild(e)});
+function show(id,on){document.getElementById(id).style.opacity=on?1:.16}
+function render(){
+  [...steps.children].forEach((e,idx)=>e.classList.toggle("active",idx===i));
+  p1.style.opacity=i>=0?1:.16;p2.style.opacity=i>=0?1:.16;
+  show("p3",i>=2);show("p4",i===3);show("p5",i===3);
+  transportText.textContent=i<2?"选择 UDP/TCP":(i===2?"封装后交给 IP":"按端口分用");
+  packet.textContent=data[i][3];
+  note.textContent=data[i][2];
+}
+prev.onclick=()=>{i=(i+data.length-1)%data.length;render()};
+next.onclick=()=>{i=(i+1)%data.length;render()};
+render();
+</script>
+</body>
+</html>

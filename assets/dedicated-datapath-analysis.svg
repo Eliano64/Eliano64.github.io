@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="620" viewBox="0 0 1180 620" role="img" aria-labelledby="title desc">
+  <title id="title">Dedicated datapath analysis</title>
+  <desc id="desc">A simplified dedicated datapath with named control lines for fetch, load, add, and store data paths.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--ink:#172033;--muted:#5f6c80;--line:#526174;--path:#2f6fbd;--ctl:#8d5ab8;--box:#fff;--alu:#eef7ee;--mem:#fff2d8;--cu:#f6eafe}
+    @media (prefers-color-scheme:dark){:root{--bg:#0f1420;--ink:#e7edf7;--muted:#aab6c8;--line:#91a0b5;--path:#8ab8ff;--ctl:#d2a5ff;--box:#151c2a;--alu:#18291d;--mem:#302417;--cu:#2b1c35}}
+    svg{background:var(--bg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    text{fill:var(--ink)} .title{font-size:30px;font-weight:700}.h{font-size:20px;font-weight:700}.small{font-size:15px;fill:var(--muted)}.sig{font-size:14px;font-weight:700;fill:var(--ctl)}
+    .box{fill:var(--box);stroke:var(--line);stroke-width:2;rx:8}.alu{fill:var(--alu);stroke:var(--line);stroke-width:2}.mem{fill:var(--mem);stroke:var(--line);stroke-width:2;rx:10}.cu{fill:var(--cu);stroke:var(--line);stroke-width:2;rx:12}
+    .path{stroke:var(--path);stroke-width:3;fill:none;marker-end:url(#arrow)}.ctl{stroke:var(--ctl);stroke-width:2;fill:none;stroke-dasharray:7 6;marker-end:url(#ctlArrow)}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="var(--path)"/></marker>
+    <marker id="ctlArrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="var(--ctl)"/></marker>
+  </defs>
+  <text x="590" y="44" text-anchor="middle" class="title">专用结构数据通路：沿箭头找路径，按控制线接通</text>
+
+  <rect x="90" y="112" width="92" height="54" class="box"/><text x="136" y="146" text-anchor="middle" class="h">PC</text>
+  <rect x="285" y="112" width="92" height="54" class="mem"/><text x="331" y="146" text-anchor="middle" class="h">MAR</text>
+  <rect x="285" y="270" width="92" height="54" class="mem"/><text x="331" y="304" text-anchor="middle" class="h">MDR</text>
+  <rect x="90" y="270" width="92" height="54" class="box"/><text x="136" y="304" text-anchor="middle" class="h">IR</text>
+  <rect x="480" y="198" width="160" height="120" class="mem"/><text x="560" y="264" text-anchor="middle" class="h">主存</text>
+  <polygon points="735,210 900,210 870,320 765,320" class="alu"/>
+  <text x="818" y="272" text-anchor="middle" class="h">ALU</text>
+  <rect x="970" y="225" width="92" height="54" class="box"/><text x="1016" y="259" text-anchor="middle" class="h">ACC</text>
+  <rect x="970" y="360" width="92" height="54" class="cu"/><text x="1016" y="394" text-anchor="middle" class="h">CU</text>
+
+  <path d="M182 139 H285" class="path"/><text x="228" y="129" class="sig">C0</text>
+  <path d="M377 139 C450 138 480 186 506 198" class="path"/><text x="425" y="128" class="sig">C1</text>
+  <path d="M560 318 C510 390 395 370 331 324" class="path"/><text x="444" y="384" class="sig">C2</text>
+  <path d="M285 297 H182" class="path"/><text x="226" y="288" class="sig">C3</text>
+  <path d="M136 324 C180 438 870 438 970 392" class="ctl"/><text x="516" y="456" class="sig">C4: Op(IR) -> CU</text>
+
+  <path d="M377 297 H735" class="path"/><text x="555" y="288" class="sig">C5</text>
+  <path d="M1016 225 C990 180 920 185 878 214" class="path"/><text x="938" y="184" class="sig">C6</text>
+  <path d="M818 320 C850 368 930 390 970 387" class="path"/><text x="885" y="376" class="sig">C7</text>
+  <path d="M970 252 H900" class="path"/><text x="930" y="242" class="sig">C8</text>
+  <path d="M1016 279 C1010 330 430 356 377 305" class="path"/><text x="742" y="354" class="sig">C9</text>
+
+  <path d="M970 382 C930 354 888 322 858 302" class="ctl"/>
+  <path d="M970 392 C900 440 520 446 362 324" class="ctl"/>
+  <path d="M970 402 C840 508 218 470 148 324" class="ctl"/>
+
+  <text x="136" y="84" text-anchor="middle" class="small">取指起点</text>
+  <text x="560" y="184" text-anchor="middle" class="small">MAR 给地址，MDR 收/发数据</text>
+  <text x="818" y="196" text-anchor="middle" class="small">运算路径由 MUX/控制线选择</text>
+  <text x="590" y="570" text-anchor="middle" class="small">专用结构题的关键：不要套 Bus 写法；只沿图中存在的箭头写数据流，并标出让该路径有效的控制信号。</text>
+</svg>

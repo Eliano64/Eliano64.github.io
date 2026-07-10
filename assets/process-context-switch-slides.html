@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Process Context Switch Slides</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#fff;
+  --fg:#111827;
+  --muted:#64748b;
+  --line:#94a3b8;
+  --panel:#f8fafc;
+  --accent:#2563eb;
+  --hot:#dc2626;
+  --a:#dbeafe;
+  --b:#dcfce7;
+  --cpu:#fef3c7;
+  --queue:#fee2e2;
+  --cell:#fff;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0f172a;
+    --fg:#e5e7eb;
+    --muted:#94a3b8;
+    --line:#64748b;
+    --panel:#111827;
+    --accent:#60a5fa;
+    --hot:#f87171;
+    --a:#1e3a8a;
+    --b:#14532d;
+    --cpu:#713f12;
+    --queue:#7f1d1d;
+    --cell:#0f172a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;
+}
+.deck{
+  min-height:760px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.slide{display:none}
+.slide.active{display:block}
+.titlebar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:10px;
+}
+h1{font-size:24px;margin:0}
+.summary{color:var(--muted);line-height:1.55;margin:6px 0 0}
+.badge{
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:6px 12px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.board{
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel);
+  padding:14px;
+  display:grid;
+  gap:12px;
+}
+.top{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+.unit{
+  border:2px solid var(--line);
+  border-radius:12px;
+  padding:13px;
+  min-width:0;
+}
+.unit.active-unit{outline:4px solid var(--accent);outline-offset:3px}
+.unit h2{font-size:19px;margin:0 0 8px}
+.unit .caption{font-size:13px;color:var(--muted);margin-bottom:8px}
+.a{background:var(--a)}
+.b{background:var(--b)}
+.cpu{background:var(--cpu)}
+.queue{background:var(--queue)}
+.state{
+  background:var(--cell);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:9px;
+  font-family:Consolas,monospace;
+  font-size:13px;
+  line-height:1.55;
+  min-height:92px;
+  white-space:pre-wrap;
+}
+.queue-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.pcb-pill{
+  background:var(--cell);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:7px 12px;
+}
+.action{
+  border:2px solid var(--hot);
+  background:var(--bg);
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  font-weight:700;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.arrow{color:var(--hot);font-size:22px}
+.note{
+  border-left:4px solid var(--accent);
+  background:var(--bg);
+  border-radius:8px;
+  padding:10px 12px;
+  line-height:1.55;
+}
+.foot{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+}
+.count{color:var(--muted);font-size:13px}
+.controls{display:flex;gap:10px}
+button{
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--fg);
+  border-radius:8px;
+  padding:8px 14px;
+  cursor:pointer;
+}
+button:hover{border-color:var(--accent)}
+@media(max-width:860px){
+  .deck{padding:14px}
+  .titlebar{display:block}
+  h1{font-size:22px}
+  .summary{font-size:14px}
+  .badge{display:inline-block;margin-top:8px}
+  .top{grid-template-columns:1fr}
+  .unit{padding:11px}
+  .unit h2{font-size:18px}
+  .state{min-height:auto}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+  <section class="slide active">
+    <div class="titlebar">
+      <div>
+        <h1>1. A 正在 CPU 上运行</h1>
+        <p class="summary">当前 CPU 寄存器现场属于进程 A；B 在就绪队列中等待。</p>
+      </div>
+      <div class="badge">切换前</div>
+    </div>
+    <div class="board" data-step="0"></div>
+  </section>
+
+  <section class="slide">
+    <div class="titlebar">
+      <div>
+        <h1>2. 保存 A 的运行现场</h1>
+        <p class="summary">先把 CPU 中的 PC、PSW、通用寄存器保存到 PCB A。</p>
+      </div>
+      <div class="badge">CPU -> PCB A</div>
+    </div>
+    <div class="board" data-step="1"></div>
+  </section>
+
+  <section class="slide">
+    <div class="titlebar">
+      <div>
+        <h1>3. A 离开 CPU 并进入队列</h1>
+        <p class="summary">保存现场后，修改 PCB A 的状态和队列位置。</p>
+      </div>
+      <div class="badge">PCB A 入队</div>
+    </div>
+    <div class="board" data-step="2"></div>
+  </section>
+
+  <section class="slide">
+    <div class="titlebar">
+      <div>
+        <h1>4. 调度程序选择 B</h1>
+        <p class="summary">从就绪队列中选中 B，准备把 B 的现场装入 CPU。</p>
+      </div>
+      <div class="badge">选择 PCB B</div>
+    </div>
+    <div class="board" data-step="3"></div>
+  </section>
+
+  <section class="slide">
+    <div class="titlebar">
+      <div>
+        <h1>5. 恢复 B 的运行现场</h1>
+        <p class="summary">把 PCB B 中保存的 PC、PSW、通用寄存器写回 CPU，B 从上次停下的位置继续执行。</p>
+      </div>
+      <div class="badge">PCB B -> CPU</div>
+    </div>
+    <div class="board" data-step="4"></div>
+  </section>
+
+  <div class="foot">
+    <div class="count" id="count"></div>
+    <div class="controls">
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    active:["cpu","a"],
+    action:["CPU 现场", "属于", "进程 A"],
+    note:"A 的最新执行位置和中间结果还在 CPU 中。若直接装入 B 的现场，A 的现场会丢失。",
+    cpu:"owner = A\nPC = A.next\nPSW = A.psw\nR = A.regs",
+    a:"state = 运行\ncontext = 旧值\nqueue = 无",
+    b:"state = 就绪\ncontext = B.saved\nqueue = 就绪队列",
+    queue:["PCB B"]
+  },
+  {
+    active:["cpu","a"],
+    action:["CPU.PC / PSW / R", "写入", "PCB A.context"],
+    note:"保存的是旧进程 A 的运行现场。保存完成后，A 将来才能从断点继续执行。",
+    cpu:"owner = A\nPC = A.next\nPSW = A.psw\nR = A.regs",
+    a:"state = 运行\ncontext = A.next / A.psw / A.regs\nqueue = 无",
+    b:"state = 就绪\ncontext = B.saved\nqueue = 就绪队列",
+    queue:["PCB B"]
+  },
+  {
+    active:["a","queue"],
+    action:["PCB A.state = 就绪", "插入", "就绪队列"],
+    note:"如果 A 是因为时间片到或被抢占而离开 CPU，它仍具备运行条件，所以回到就绪队列。",
+    cpu:"owner = 内核调度\nPC = -\nPSW = -\nR = -",
+    a:"state = 就绪\ncontext = A.saved\nqueue = 就绪队列",
+    b:"state = 就绪\ncontext = B.saved\nqueue = 就绪队列",
+    queue:["PCB B","PCB A"]
+  },
+  {
+    active:["b","queue"],
+    action:["调度程序", "选择", "PCB B"],
+    note:"调度程序决定下一个运行的进程。被选中的是 PCB B，因此下一步要恢复 B 的现场。",
+    cpu:"owner = 内核调度\nPC = -\nPSW = -\nR = -",
+    a:"state = 就绪\ncontext = A.saved\nqueue = 就绪队列",
+    b:"state = 将运行\ncontext = B.saved\nqueue = 已出队",
+    queue:["PCB A"]
+  },
+  {
+    active:["b","cpu"],
+    action:["PCB B.context", "写回", "CPU.PC / PSW / R"],
+    note:"恢复完成后，CPU 中的寄存器现场属于 B。上下文切换到此完成。",
+    cpu:"owner = B\nPC = B.next\nPSW = B.psw\nR = B.regs",
+    a:"state = 就绪\ncontext = A.saved\nqueue = 就绪队列",
+    b:"state = 运行\ncontext = B.saved\nqueue = 无",
+    queue:["PCB A"]
+  }
+];
+
+function card(kind, title, caption, text, active) {
+  return `<div class="unit ${kind} ${active ? "active-unit" : ""}">
+    <h2>${title}</h2>
+    <div class="caption">${caption}</div>
+    <div class="state">${text}</div>
+  </div>`;
+}
+
+function renderBoard(el, step) {
+  const q = step.queue.map(x => `<span class="pcb-pill">${x}</span>`).join("");
+  el.innerHTML = `
+    <div class="action"><span>${step.action[0]}</span><span class="arrow">-></span><span>${step.action[2]}</span></div>
+    <div class="top">
+      ${card("a", "进程 A 的 PCB", "A 的状态、队列位置和运行现场", step.a, step.active.includes("a"))}
+      ${card("cpu", "CPU", "当前装入寄存器的现场", step.cpu, step.active.includes("cpu"))}
+      ${card("b", "进程 B 的 PCB", "B 的状态、队列位置和运行现场", step.b, step.active.includes("b"))}
+    </div>
+    <div class="unit queue ${step.active.includes("queue") ? "active-unit" : ""}">
+      <h2>就绪队列</h2>
+      <div class="caption">等待调度的 PCB</div>
+      <div class="queue-row">${q || '<span class="pcb-pill">空</span>'}</div>
+    </div>
+    <div class="note">${step.note}</div>
+  `;
+}
+
+const slides = [...document.querySelectorAll(".slide")];
+slides.forEach((slide, i) => renderBoard(slide.querySelector(".board"), steps[i]));
+
+let idx = 0;
+function render() {
+  slides.forEach((s, i) => s.classList.toggle("active", i === idx));
+  document.getElementById("count").textContent = `${idx + 1} / ${slides.length}`;
+}
+document.getElementById("prev").onclick = () => { idx = (idx + slides.length - 1) % slides.length; render(); };
+document.getElementById("next").onclick = () => { idx = (idx + 1) % slides.length; render(); };
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") document.getElementById("next").click();
+  if (e.key === "ArrowLeft") document.getElementById("prev").click();
+});
+render();
+</script>
+</body>
+</html>

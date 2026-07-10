@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">读者优先与公平闸门</title>
+  <desc id="desc">对比没有等待闸门时写者可能饥饿，以及增加 w 信号量后读者和写者按到达顺序通过闸门。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="var(--arrow)"/>
+    </marker>
+    <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+      :root {
+        --bg: #ffffff;
+        --panel: #f8fafc;
+        --line: #cbd5e1;
+        --text: #172033;
+        --muted: #64748b;
+        --blue: #dbeafe;
+        --blue-line: #2563eb;
+        --red: #fee2e2;
+        --red-line: #dc2626;
+        --green: #dcfce7;
+        --green-line: #16a34a;
+        --yellow: #fef3c7;
+        --yellow-line: #d97706;
+        --arrow: #475569;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f172a;
+          --panel: #111827;
+          --line: #334155;
+          --text: #e5e7eb;
+          --muted: #94a3b8;
+          --blue: #1e3a8a;
+          --blue-line: #60a5fa;
+          --red: #7f1d1d;
+          --red-line: #f87171;
+          --green: #14532d;
+          --green-line: #4ade80;
+          --yellow: #713f12;
+          --yellow-line: #fbbf24;
+          --arrow: #cbd5e1;
+        }
+      }
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: var(--text); }
+      .title { font-size: 32px; font-weight: 700; }
+      .head { font-size: 24px; font-weight: 700; }
+      .body { font-size: 20px; }
+      .small { font-size: 18px; fill: var(--muted); }
+      .panel { fill: var(--panel); stroke: var(--line); stroke-width: 2; rx: 18; }
+      .reader { fill: var(--blue); stroke: var(--blue-line); stroke-width: 2; rx: 12; }
+      .writer { fill: var(--red); stroke: var(--red-line); stroke-width: 2; rx: 12; }
+      .file { fill: var(--green); stroke: var(--green-line); stroke-width: 2; rx: 14; }
+      .gate { fill: var(--yellow); stroke: var(--yellow-line); stroke-width: 2; rx: 14; }
+      .line { stroke: var(--arrow); stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: var(--arrow); stroke-width: 3; stroke-dasharray: 8 8; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="980" height="560" fill="var(--bg)"/>
+  <text x="48" y="58" class="title">读者优先与公平闸门</text>
+
+  <rect x="48" y="92" width="412" height="402" class="panel"/>
+  <text x="76" y="132" class="head">没有等待闸门：读者优先</text>
+  <rect x="86" y="174" width="80" height="52" class="reader"/><text x="110" y="207" class="body">R1</text>
+  <rect x="186" y="174" width="80" height="52" class="reader"/><text x="210" y="207" class="body">R2</text>
+  <rect x="286" y="174" width="80" height="52" class="reader"/><text x="310" y="207" class="body">R3</text>
+  <rect x="164" y="306" width="180" height="72" class="file"/><text x="204" y="350" class="body">共享文件</text>
+  <rect x="82" y="414" width="100" height="52" class="writer"/><text x="108" y="447" class="body">W1</text>
+  <path d="M126 226 L206 306" class="line"/>
+  <path d="M226 226 L244 306" class="line"/>
+  <path d="M326 226 L284 306" class="line"/>
+  <path d="M182 440 C250 440 300 420 344 378" class="dash"/>
+  <rect x="74" y="252" width="272" height="54" fill="var(--panel)" opacity="0.94" rx="8"/>
+  <text x="80" y="272" class="small">只要还有读者不断进入，</text>
+  <text x="80" y="298" class="small">写者就可能一直等不到 rw。</text>
+
+  <rect x="520" y="92" width="412" height="402" class="panel"/>
+  <text x="548" y="132" class="head">增加 w：先经过同一个闸门</text>
+  <rect x="548" y="176" width="78" height="50" class="reader"/><text x="572" y="208" class="body">R1</text>
+  <rect x="548" y="246" width="78" height="50" class="writer"/><text x="573" y="278" class="body">W1</text>
+  <rect x="548" y="316" width="78" height="50" class="reader"/><text x="572" y="348" class="body">R2</text>
+  <rect x="684" y="234" width="92" height="72" class="gate"/><text x="720" y="278" class="body">w</text>
+  <rect x="824" y="234" width="82" height="72" class="file"/><text x="849" y="278" class="body">rw</text>
+  <path d="M626 201 L684 250" class="line"/>
+  <path d="M626 271 L684 271" class="line"/>
+  <path d="M626 341 L684 292" class="line"/>
+  <path d="M776 270 L824 270" class="line"/>
+  <text x="548" y="414" class="small">w 不保护文件内容，它保护“排队入口”。</text>
+  <text x="548" y="442" class="small">写者到达后，后续读者不能无限插队。</text>
+  <text x="548" y="470" class="small">连续已进入的一批读者仍然可以共同读。</text>
+</svg>

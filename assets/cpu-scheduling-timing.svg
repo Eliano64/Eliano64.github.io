@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="640" viewBox="0 0 1120 640" role="img" aria-labelledby="title desc">
+  <title id="title">进程调度的时机</title>
+  <desc id="desc">展示主动放弃处理机、被动放弃处理机以及不能进行调度切换的情况。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --panel2:#eef6ff; --text:#172033; --muted:#526174;
+      --line:#536273; --blue:#2563eb; --green:#0f766e; --red:#b42318; --amber:#b45309;
+      --chip:#e6eef9; --shadow:rgba(15,23,42,.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#111318; --panel:#1b2029; --panel2:#172232; --text:#e8edf5; --muted:#aab5c4;
+        --line:#9aa8ba; --blue:#7aa2ff; --green:#62d4c5; --red:#ff8a80; --amber:#f6b85f;
+        --chip:#263142; --shadow:rgba(0,0,0,.38);
+      }
+    }
+    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
+    .title { fill:var(--text); font-size:26px; font-weight:700; }
+    .h { fill:var(--text); font-size:20px; font-weight:700; }
+    .t { fill:var(--text); font-size:16px; }
+    .s { fill:var(--muted); font-size:14px; }
+    .panel { fill:var(--panel); stroke:var(--line); stroke-width:1.6; rx:14; filter:drop-shadow(0 6px 12px var(--shadow)); }
+    .box { fill:var(--chip); stroke:var(--line); stroke-width:1.2; rx:9; }
+    .line { stroke:var(--line); stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+    .blue { stroke:var(--blue); }
+    .green { stroke:var(--green); }
+    .red { stroke:var(--red); }
+    .amber { stroke:var(--amber); }
+    .blueText { fill:var(--blue); font-size:17px; font-weight:700; }
+    .greenText { fill:var(--green); font-size:17px; font-weight:700; }
+    .redText { fill:var(--red); font-size:17px; font-weight:700; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" style="fill:var(--line)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="560" y="42" text-anchor="middle">进程调度的时机</text>
+
+  <rect class="panel" x="70" y="88" width="300" height="390"/>
+  <text class="greenText" x="220" y="124" text-anchor="middle">需要调度：主动放弃 CPU</text>
+  <rect class="box" x="105" y="162" width="230" height="58"/>
+  <text class="h" x="220" y="197" text-anchor="middle">正常终止</text>
+  <rect class="box" x="105" y="248" width="230" height="58"/>
+  <text class="h" x="220" y="283" text-anchor="middle">异常终止</text>
+  <rect class="box" x="105" y="334" width="230" height="74"/>
+  <text class="h" x="220" y="368" text-anchor="middle">主动阻塞</text>
+  <text class="s" x="220" y="392" text-anchor="middle">如等待 I/O、资源、事件</text>
+
+  <rect class="panel" x="410" y="88" width="300" height="390"/>
+  <text class="blueText" x="560" y="124" text-anchor="middle">需要调度：被动放弃 CPU</text>
+  <rect class="box" x="445" y="162" width="230" height="58"/>
+  <text class="h" x="560" y="197" text-anchor="middle">时间片用完</text>
+  <rect class="box" x="445" y="248" width="230" height="74"/>
+  <text class="h" x="560" y="282" text-anchor="middle">更紧急事件</text>
+  <text class="s" x="560" y="306" text-anchor="middle">如 I/O 中断</text>
+  <rect class="box" x="445" y="350" width="230" height="74"/>
+  <text class="h" x="560" y="384" text-anchor="middle">更高优先级进程就绪</text>
+  <text class="s" x="560" y="408" text-anchor="middle">抢占式策略下有效</text>
+
+  <rect class="panel" x="750" y="88" width="300" height="390"/>
+  <text class="redText" x="900" y="124" text-anchor="middle">不能立刻调度/切换</text>
+  <rect class="box" x="785" y="162" width="230" height="66"/>
+  <text class="h" x="900" y="192" text-anchor="middle">正在处理中断</text>
+  <text class="s" x="900" y="214" text-anchor="middle">先完成中断处理</text>
+  <rect class="box" x="785" y="254" width="230" height="82"/>
+  <text class="h" x="900" y="286" text-anchor="middle">内核临界区</text>
+  <text class="s" x="900" y="310" text-anchor="middle">正在访问内核数据结构</text>
+  <rect class="box" x="785" y="362" width="230" height="66"/>
+  <text class="h" x="900" y="392" text-anchor="middle">原语执行中</text>
+  <text class="s" x="900" y="414" text-anchor="middle">必须原子完成</text>
+
+  <rect class="panel" x="114" y="520" width="892" height="66"/>
+  <text class="t" x="560" y="548" text-anchor="middle">普通临界区不等于内核临界区。普通进程访问打印机等临界资源时，仍可以发生调度。</text>
+  <text class="s" x="560" y="574" text-anchor="middle">不能调度的是可能破坏内核管理数据一致性的区段，例如就绪队列、PCB 队列等内核结构仍被锁住时。</text>
+</svg>

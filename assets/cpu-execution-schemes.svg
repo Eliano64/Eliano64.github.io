@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="600" viewBox="0 0 1180 600" role="img" aria-labelledby="title desc">
+  <title id="title">CPU execution schemes</title>
+  <desc id="desc">Comparison of single-cycle, multi-cycle, and pipelined execution schemes.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root{color-scheme:light dark;--bg:#fff;--ink:#172033;--muted:#5d6980;--line:#526174;--a:#e8f1ff;--b:#fff2d8;--c:#eef7ee;--seg:#fff}
+    @media (prefers-color-scheme:dark){:root{--bg:#0f1420;--ink:#e7edf7;--muted:#aab6c8;--line:#91a0b5;--a:#17243a;--b:#302417;--c:#18291d;--seg:#151c2a}}
+    svg{background:var(--bg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif} text{fill:var(--ink)}
+    .title{font-size:30px;font-weight:700}.h{font-size:22px;font-weight:700}.note{font-size:16px;fill:var(--muted)}.small{font-size:14px;fill:var(--muted)}
+    .panel{stroke:var(--line);stroke-width:2.1;rx:16}.seg{fill:var(--seg);stroke:var(--line);stroke-width:1.7;rx:8}.axis{stroke:var(--line);stroke-width:2;marker-end:url(#arrow)}
+    .a{fill:var(--a)}.b{fill:var(--b)}.c{fill:var(--c)}
+  </style>
+  <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="var(--line)"/></marker></defs>
+  <text x="590" y="46" text-anchor="middle" class="title">三种指令执行方案影响数据通路设计</text>
+
+  <rect x="50" y="92" width="330" height="408" class="panel a"/>
+  <text x="215" y="130" text-anchor="middle" class="h">单周期处理器</text>
+  <text x="215" y="160" text-anchor="middle" class="note">一条指令在一个长周期内完成</text>
+  <line x1="92" y1="225" x2="330" y2="225" class="axis"/>
+  <rect x="96" y="188" width="220" height="58" class="seg"/><text x="206" y="224" text-anchor="middle" class="h">IF ID EX MEM WB</text>
+  <text x="80" y="312" class="note">特点：</text>
+  <text x="100" y="344" class="small">周期由最慢指令决定</text>
+  <text x="100" y="372" class="small">部件复用少，可能硬件较多</text>
+  <text x="100" y="400" class="small">控制信号可一次性组合产生</text>
+  <text x="100" y="428" class="small">简单指令也被迫等完整长周期</text>
+
+  <rect x="425" y="92" width="330" height="408" class="panel b"/>
+  <text x="590" y="130" text-anchor="middle" class="h">多周期处理器</text>
+  <text x="590" y="160" text-anchor="middle" class="note">一条指令拆成多个短阶段</text>
+  <line x1="470" y1="225" x2="705" y2="225" class="axis"/>
+  <rect x="470" y="188" width="44" height="58" class="seg"/><text x="492" y="224" text-anchor="middle" class="small">IF</text>
+  <rect x="520" y="188" width="44" height="58" class="seg"/><text x="542" y="224" text-anchor="middle" class="small">ID</text>
+  <rect x="570" y="188" width="44" height="58" class="seg"/><text x="592" y="224" text-anchor="middle" class="small">EX</text>
+  <rect x="620" y="188" width="44" height="58" class="seg"/><text x="642" y="224" text-anchor="middle" class="small">MEM</text>
+  <rect x="670" y="188" width="44" height="58" class="seg"/><text x="692" y="224" text-anchor="middle" class="small">WB</text>
+  <text x="455" y="312" class="note">特点：</text>
+  <text x="475" y="344" class="small">不同指令可用不同周期数</text>
+  <text x="475" y="372" class="small">同一 ALU 或存储器可分时复用</text>
+  <text x="475" y="400" class="small">需要中间寄存器保存阶段结果</text>
+  <text x="475" y="428" class="small">控制信号必须按节拍安排</text>
+
+  <rect x="800" y="92" width="330" height="408" class="panel c"/>
+  <text x="965" y="130" text-anchor="middle" class="h">流水线处理器</text>
+  <text x="965" y="160" text-anchor="middle" class="note">多条指令在不同阶段重叠</text>
+  <line x1="840" y1="250" x2="1082" y2="250" class="axis"/>
+  <g transform="translate(840 184)">
+    <rect x="0" y="0" width="44" height="32" class="seg"/><text x="22" y="22" text-anchor="middle" class="small">IF</text>
+    <rect x="50" y="0" width="44" height="32" class="seg"/><text x="72" y="22" text-anchor="middle" class="small">ID</text>
+    <rect x="100" y="0" width="44" height="32" class="seg"/><text x="122" y="22" text-anchor="middle" class="small">EX</text>
+    <rect x="150" y="0" width="44" height="32" class="seg"/><text x="172" y="22" text-anchor="middle" class="small">M</text>
+    <rect x="200" y="0" width="44" height="32" class="seg"/><text x="222" y="22" text-anchor="middle" class="small">WB</text>
+    <rect x="50" y="42" width="44" height="32" class="seg"/><text x="72" y="64" text-anchor="middle" class="small">IF</text>
+    <rect x="100" y="42" width="44" height="32" class="seg"/><text x="122" y="64" text-anchor="middle" class="small">ID</text>
+    <rect x="150" y="42" width="44" height="32" class="seg"/><text x="172" y="64" text-anchor="middle" class="small">EX</text>
+    <rect x="200" y="42" width="44" height="32" class="seg"/><text x="222" y="64" text-anchor="middle" class="small">M</text>
+  </g>
+  <text x="830" y="312" class="note">特点：</text>
+  <text x="850" y="344" class="small">阶段间必须有流水段寄存器</text>
+  <text x="850" y="372" class="small">理想情况下每周期启动一条指令</text>
+  <text x="850" y="400" class="small">吞吐率提高，但会出现冲突</text>
+  <text x="850" y="428" class="small">性能分析单独展开</text>
+</svg>

@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="760" viewBox="0 0 1180 760" role="img" aria-labelledby="title desc">
+  <title id="title">Extended opcode calculation example</title>
+  <desc id="desc">A concrete example of extended opcode calculation with a 16-bit instruction word and 4-bit address fields.</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #111827;
+      --op: #dbeafe;
+      --addr: #dcfce7;
+      --used: #fee2e2;
+      --free: #fef3c7;
+      --next: #ede9fe;
+      --panel: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --text: #e5e7eb;
+        --muted: #cbd5e1;
+        --line: #e5e7eb;
+        --op: #1e3a8a;
+        --addr: #14532d;
+        --used: #7f1d1d;
+        --free: #713f12;
+        --next: #4c1d95;
+        --panel: #1f2937;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; rx: 10; }
+    .text { fill: var(--text); font-family: "Segoe UI", Arial, sans-serif; }
+    .muted { fill: var(--muted); font-family: "Segoe UI", Arial, sans-serif; }
+    .box { stroke: var(--line); stroke-width: 1.6; rx: 6; }
+    .op { fill: var(--op); }
+    .addr { fill: var(--addr); }
+    .used { fill: var(--used); }
+    .free { fill: var(--free); }
+    .next { fill: var(--next); }
+    .line { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .thin { stroke: var(--line); stroke-width: 1.2; fill: none; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--line)" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1180" height="760"/>
+  <text class="text" x="42" y="44" font-size="28" font-weight="700">扩展操作码怎么计算</text>
+  <text class="muted" x="42" y="76" font-size="18">例：指令字长 16 位，每个地址码 4 位。已定义 15 条三地址指令，问二地址指令最多多少条。</text>
+
+  <rect class="panel" x="42" y="105" width="1096" height="150"/>
+  <text class="text" x="70" y="136" font-size="21" font-weight="700">1. 先看三地址指令的格式</text>
+  <text class="muted" x="70" y="165" font-size="17">16 位被分成 4 段，每段 4 位。三地址指令需要 3 个地址码，所以只剩前 4 位作为操作码。</text>
+  <rect class="box op" x="210" y="188" width="190" height="42"/>
+  <rect class="box addr" x="400" y="188" width="190" height="42"/>
+  <rect class="box addr" x="590" y="188" width="190" height="42"/>
+  <rect class="box addr" x="780" y="188" width="190" height="42"/>
+  <text class="text" x="305" y="215" font-size="18" font-weight="700" text-anchor="middle">OP：4 位</text>
+  <text class="text" x="495" y="215" font-size="18" text-anchor="middle">A1：4 位</text>
+  <text class="text" x="685" y="215" font-size="18" text-anchor="middle">A2：4 位</text>
+  <text class="text" x="875" y="215" font-size="18" text-anchor="middle">A3：4 位</text>
+
+  <rect class="panel" x="42" y="280" width="1096" height="205"/>
+  <text class="text" x="70" y="312" font-size="21" font-weight="700">2. 三地址层一共有 2^4 = 16 个短操作码</text>
+  <text class="muted" x="70" y="341" font-size="17">其中 15 个已经分给三地址指令。被分掉的短码不能再向下扩展。</text>
+
+  <g transform="translate(70,365)">
+    <rect class="box used" x="0" y="0" width="58" height="44"/><text class="text" x="29" y="28" font-size="14" text-anchor="middle">0000</text>
+    <rect class="box used" x="64" y="0" width="58" height="44"/><text class="text" x="93" y="28" font-size="14" text-anchor="middle">0001</text>
+    <rect class="box used" x="128" y="0" width="58" height="44"/><text class="text" x="157" y="28" font-size="14" text-anchor="middle">0010</text>
+    <rect class="box used" x="192" y="0" width="58" height="44"/><text class="text" x="221" y="28" font-size="14" text-anchor="middle">0011</text>
+    <rect class="box used" x="256" y="0" width="58" height="44"/><text class="text" x="285" y="28" font-size="14" text-anchor="middle">0100</text>
+    <rect class="box used" x="320" y="0" width="58" height="44"/><text class="text" x="349" y="28" font-size="14" text-anchor="middle">0101</text>
+    <rect class="box used" x="384" y="0" width="58" height="44"/><text class="text" x="413" y="28" font-size="14" text-anchor="middle">0110</text>
+    <rect class="box used" x="448" y="0" width="58" height="44"/><text class="text" x="477" y="28" font-size="14" text-anchor="middle">0111</text>
+    <rect class="box used" x="512" y="0" width="58" height="44"/><text class="text" x="541" y="28" font-size="14" text-anchor="middle">1000</text>
+    <rect class="box used" x="576" y="0" width="58" height="44"/><text class="text" x="605" y="28" font-size="14" text-anchor="middle">1001</text>
+    <rect class="box used" x="640" y="0" width="58" height="44"/><text class="text" x="669" y="28" font-size="14" text-anchor="middle">1010</text>
+    <rect class="box used" x="704" y="0" width="58" height="44"/><text class="text" x="733" y="28" font-size="14" text-anchor="middle">1011</text>
+    <rect class="box used" x="768" y="0" width="58" height="44"/><text class="text" x="797" y="28" font-size="14" text-anchor="middle">1100</text>
+    <rect class="box used" x="832" y="0" width="58" height="44"/><text class="text" x="861" y="28" font-size="14" text-anchor="middle">1101</text>
+    <rect class="box used" x="896" y="0" width="58" height="44"/><text class="text" x="925" y="28" font-size="14" text-anchor="middle">1110</text>
+    <rect class="box free" x="960" y="0" width="76" height="44"/><text class="text" x="998" y="28" font-size="15" font-weight="700" text-anchor="middle">1111</text>
+
+    <text class="muted" x="477" y="75" font-size="17" text-anchor="middle">15 个已用：表示 15 条三地址指令</text>
+    <text class="text" x="998" y="75" font-size="17" font-weight="700" text-anchor="middle">剩 1 个</text>
+  </g>
+
+  <rect class="panel" x="42" y="510" width="1096" height="205"/>
+  <text class="text" x="70" y="542" font-size="21" font-weight="700">3. 剩下的 1111 不再表示三地址指令，而是作为二地址指令的扩展入口</text>
+  <text class="muted" x="70" y="571" font-size="17">二地址指令只需要 2 个地址码，格式变成 OP(8) + A1(4) + A2(4)。所以 1111 后面还能接 4 位操作码。</text>
+
+  <rect class="box op" x="130" y="603" width="160" height="44"/>
+  <rect class="box op" x="290" y="603" width="160" height="44"/>
+  <rect class="box addr" x="450" y="603" width="160" height="44"/>
+  <rect class="box addr" x="610" y="603" width="160" height="44"/>
+  <text class="text" x="210" y="631" font-size="18" font-weight="700" text-anchor="middle">1111</text>
+  <text class="text" x="370" y="631" font-size="18" font-weight="700" text-anchor="middle">xxxx</text>
+  <text class="text" x="530" y="631" font-size="18" text-anchor="middle">A1</text>
+  <text class="text" x="690" y="631" font-size="18" text-anchor="middle">A2</text>
+  <text class="muted" x="370" y="670" font-size="17" text-anchor="middle">xxxx 有 2^4 种取值</text>
+
+  <path class="line" d="M995 410 C1035 455 1015 560 790 624"/>
+
+  <rect class="box next" x="830" y="600" width="260" height="86"/>
+  <text class="text" x="960" y="630" font-size="20" font-weight="700" text-anchor="middle">最多二地址指令数</text>
+  <text class="text" x="960" y="662" font-size="24" font-weight="700" text-anchor="middle">1 × 2^4 = 16 条</text>
+
+  <text class="muted" x="70" y="735" font-size="17">一句话：上层剩几个未用短码，就有几个扩展入口；每个入口再接一个地址码长度的操作码字段。</text>
+</svg>

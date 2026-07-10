@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" role="img" aria-labelledby="title desc">
+  <title id="title">RTT 往返时间</title>
+  <desc id="desc">客户端发出请求到收到服务端响应的往返时序图。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+
+    :root {
+      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#64748b; --line:#cbd5e1;
+      --req:#dbeafe; --req-line:#2563eb; --resp:#dcfce7; --resp-line:#16a34a; --rtt:#fef3c7; --rtt-line:#d97706;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#0f172a; --panel:#111827; --text:#e5e7eb; --muted:#94a3b8; --line:#334155;
+        --req:#1e3a8a; --req-line:#60a5fa; --resp:#14532d; --resp-line:#4ade80; --rtt:#713f12; --rtt-line:#fbbf24;
+      }
+    }
+    .bg{fill:var(--bg)} .panel{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+    .life{stroke:var(--line);stroke-width:3}.axis{stroke:var(--muted);stroke-width:2;marker-end:url(#arrow)}
+    .req{fill:var(--req);stroke:var(--req-line);stroke-width:2.4}.resp{fill:var(--resp);stroke:var(--resp-line);stroke-width:2.4}
+    .rtt{fill:var(--rtt);stroke:var(--rtt-line);stroke-width:2}.brace{stroke:var(--rtt-line);stroke-width:3;marker-start:url(#bar);marker-end:url(#bar)}
+    text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:26px;font-weight:700}
+    .label{font-size:18px;font-weight:700;text-anchor:middle}.small{font-size:15px;fill:var(--muted)}.note{font-size:17px}.tag{font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:middle}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 Z" fill="var(--muted)"/></marker>
+    <marker id="bar" markerWidth="8" markerHeight="12" refX="4" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M4,0 V12" stroke="var(--rtt-line)" stroke-width="2"/></marker>
+  </defs>
+  <rect class="bg" width="960" height="430"/>
+  <rect class="panel" x="32" y="28" width="896" height="362" rx="14"/>
+  <text class="title" x="64" y="70">RTT：一次往返交互的时间</text>
+  <line class="axis" x1="88" y1="96" x2="88" y2="350"/><text class="small" x="106" y="118">时间向下</text>
+  <line class="life" x1="250" y1="110" x2="250" y2="342"/>
+  <line class="life" x1="710" y1="110" x2="710" y2="342"/>
+  <text class="label" x="250" y="98">发送端</text>
+  <text class="label" x="710" y="98">接收端</text>
+  <polygon class="req" points="250,134 710,216 710,252 250,170"/>
+  <text class="tag" x="480" y="194">请求、探测报文或数据</text>
+  <polygon class="resp" points="710,254 250,322 250,354 710,286"/>
+  <text class="tag" x="480" y="302">确认或响应</text>
+  <line class="brace" x1="198" y1="134" x2="198" y2="354"/>
+  <text class="note" x="122" y="242" text-anchor="middle">RTT</text>
+</svg>
