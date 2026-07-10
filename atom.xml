@@ -6,7 +6,7 @@
   <link href="https://eliano64.github.io/atom.xml" rel="self"/>
   
   <link href="https://eliano64.github.io/"/>
-  <updated>2026-07-10T07:16:51.012Z</updated>
+  <updated>2026-07-10T13:04:09.997Z</updated>
   <id>https://eliano64.github.io/</id>
   
   <author>
@@ -17,11 +17,233 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>CPU Structure</title>
+    <link href="https://eliano64.github.io/2026/07/10/CPU-Structure/"/>
+    <id>https://eliano64.github.io/2026/07/10/CPU-Structure/</id>
+    <published>2026-07-10T13:02:24.000Z</published>
+    <updated>2026-07-10T13:04:09.997Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="CPU-的功能"><a href="#CPU-的功能" class="headerlink" title="CPU 的功能"></a>CPU 的功能</h1><table><thead><tr><th>功能</th><th>含义</th></tr></thead><tbody><tr><td>指令控制</td><td>完成取指令、分析指令、执行指令，实现程序的顺序控制</td></tr><tr><td>操作控制</td><td>产生并发出完成指令所需的操作信号，控制相关部件动作</td></tr><tr><td>时间控制</td><td>按时间顺序提供控制信号，使各操作在正确节拍发生</td></tr><tr><td>数据加工</td><td>对数据进行算术运算和逻辑运算</td></tr><tr><td>中断处理</td><td>处理运行中的异常情况和特殊请求</td></tr></tbody></table><div class="callout callout-abstract"><div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">Summary</span></div><div class="callout-content"><p><strong>控制器协调指令序列，运算器加工数据。</strong></p></div></div>![CPU 基本结构](/assets/cpu-basic-structure.svg)<h1 id="运算器"><a href="#运算器" class="headerlink" title="运算器"></a>运算器</h1><p>运算器负责对数据进行加工。</p><table><thead><tr><th>部件</th><th>作用</th></tr></thead><tbody><tr><td>ALU</td><td>执行算术运算和逻辑运算</td></tr><tr><td>通用寄存器组</td><td>保存操作数、目的操作数、中间结果和各种地址信息</td></tr><tr><td>暂存寄存器</td><td>暂存从主存读来的数据，避免破坏通用寄存器原有内容</td></tr><tr><td>ACC</td><td>累加寄存器，用于暂时保存 ALU 运算结果</td></tr><tr><td>PSW</td><td>程序状态字，保存运算或测试形成的状态信息</td></tr><tr><td>移位器</td><td>对运算结果执行移位</td></tr><tr><td>计数器</td><td>控制乘除运算等操作的步数</td></tr></tbody></table><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">机器字长</span></div><div class="callout-content"><p>机器字长通常指 CPU 一次能直接处理的二进制数据位数，常与通用寄存器位数、ALU 位数、CPU 内部数据通路宽度相关。它不同于指令字长、存储字长和主存地址位数。</p></div></div># 控制器<p>控制器协调并控制计算机各部件执行程序的指令序列，基本功能包括取指令、分析指令、执行指令和中断处理。</p><table><thead><tr><th>部件</th><th>作用</th></tr></thead><tbody><tr><td>PC</td><td>程序计数器，指出下一条指令在主存中的地址，通常具有自增功能</td></tr><tr><td>IR</td><td>指令寄存器，保存当前正在执行的指令</td></tr><tr><td>指令译码器</td><td>对操作码字段译码，向控制器提供特定操作信号</td></tr><tr><td>微操作信号发生器</td><td>根据 IR、PSW 和时序信号产生控制信号</td></tr><tr><td>时序系统</td><td>产生时序信号，控制各微操作出现的时间</td></tr><tr><td>MAR</td><td>主存地址寄存器，保存要访问的主存单元地址</td></tr><tr><td>MDR</td><td>主存数据寄存器，保存要写入主存或从主存读出的信息</td></tr></tbody></table><p>MAR 和 MDR 是 CPU 与主存交换信息时的关键接口：MAR 给出地址，MDR 暂存数据。</p><h1 id="CPU-内部总线"><a href="#CPU-内部总线" class="headerlink" title="CPU 内部总线"></a>CPU 内部总线</h1><p>CPU 内部各寄存器、ALU、MAR、MDR 等部件之间需要交换信息。若采用内部总线结构，这些部件通过一条公共通路传送数据。</p><p><img src="/assets/cpu-internal-bus-overview.svg" alt="CPU 内部总线"></p><p>内部总线的关键不是“线连在一起”本身，而是控制器在某个节拍发出控制信号：</p><table><thead><tr><th>控制对象</th><th>含义</th><th>例子</th></tr></thead><tbody><tr><td>输出控制</td><td>允许某个源部件把内容送到总线</td><td><code>PCout</code> 表示 PC 驱动总线</td></tr><tr><td>输入控制</td><td>允许某个目的部件从总线接收内容</td><td><code>MARin</code> 表示 MAR 接收总线内容</td></tr><tr><td>运算控制</td><td>指定 ALU 做哪种运算</td><td>加、减、与、或、移位</td></tr><tr><td>存储控制</td><td>指定主存读或写</td><td><code>R</code> 读命令，<code>W</code> 写命令</td></tr></tbody></table><p>例如 <code>(PC) -&gt; MAR</code> 在单总线结构中通常表示为：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PCout, MARin 有效</span><br><span class="line">PC -&gt; Bus -&gt; MAR</span><br></pre></td></tr></table></figure><p>同一时刻通常只能有一个部件驱动总线，否则多个输出会冲突；但可以有一个源部件输出，并让一个或多个目的部件接收。数据通路结构和逐节拍分析见 <a href="/2026/07/02/CPU-Datapath/" class="wikilink">CPU-Datapath</a>。</p><h1 id="关键寄存器"><a href="#关键寄存器" class="headerlink" title="关键寄存器"></a>关键寄存器</h1><p><img src="/assets/cpu-register-roles.svg" alt="关键寄存器职责"></p><table><thead><tr><th>寄存器</th><th>保存什么</th><th>典型作用</th><th>对普通程序</th><th>对操作系统</th></tr></thead><tbody><tr><td>PC</td><td>下一条指令地址</td><td>取指时送入 MAR；顺序执行时自动形成下一条指令地址</td><td>不透明。程序的顺序、分支、调用和返回都会改变 PC</td><td>透明度较低。OS 在进程切换、中断和异常处理时必须保存、恢复或修改 PC</td></tr><tr><td>IR</td><td>当前指令</td><td>保存取出的指令，供译码和后续执行使用</td><td>透明。普通程序通常不能直接读写 IR</td><td>基本透明。OS 也通常不直接操作 IR</td></tr><tr><td>MAR</td><td>主存地址</td><td>保存本次访存要访问的主存单元地址</td><td>透明。由硬件在访存过程中使用</td><td>基本透明。OS 关心地址转换和访问权限，但通常不直接读写 MAR</td></tr><tr><td>MDR</td><td>主存数据</td><td>读主存时接收数据；写主存时暂存待写数据</td><td>透明。由硬件在访存过程中使用</td><td>基本透明。OS 关心访存结果，但通常不直接读写 MDR</td></tr><tr><td>ACC</td><td>运算结果或隐含操作数</td><td>保存 ALU 运算结果，常作为累加器使用</td><td>不透明。可作为程序可见寄存器或隐含操作数</td><td>不透明。上下文切换时需要保存和恢复</td></tr><tr><td>GPR</td><td>通用数据、地址或中间结果</td><td>保存操作数、运算结果和地址信息</td><td>不透明。程序可直接使用</td><td>不透明。上下文切换时需要保存和恢复</td></tr><tr><td>PSW</td><td>状态标志和控制信息</td><td>保存溢出、符号、零、进位等状态信息，参与控制判断</td><td>部分不透明。条件码影响分支，但特权控制位不可由普通程序任意修改</td><td>不透明。OS 需要保存、恢复并控制其中的特权状态</td></tr><tr><td>BR</td><td>基址</td><td>形成基址寻址中的有效地址，也可用于重定位</td><td>通常不透明。程序是否可见取决于体系结构</td><td>不透明。OS 可能用它配合存储保护或地址重定位</td></tr><tr><td>IX</td><td>变址值</td><td>形成变址寻址中的有效地址，常用于数组、表格访问</td><td>不透明。程序可通过变址寄存器表达下标变化</td><td>不透明。上下文切换时需要保存和恢复</td></tr><tr><td>SP</td><td>栈顶地址</td><td>指向当前栈顶，支持调用、返回、中断和局部数据保存</td><td>不透明。过程调用、压栈、出栈会改变 SP</td><td>不透明。OS 在中断、异常和进程切换时必须处理栈指针</td></tr><tr><td>BP&#x2F;FP</td><td>栈帧基准地址</td><td>指向当前函数栈帧的固定位置，便于访问参数和局部变量</td><td>不透明。编译器常用它组织函数调用栈</td><td>不透明。调试、异常处理和上下文保存可能依赖它</td></tr></tbody></table><div class="callout callout-tip"><div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">Tip</span></div><div class="callout-content"><p><code>PC/IR</code> 面向指令流，<code>MAR/MDR</code> 面向主存访问，<code>ACC/GPR/PSW</code> 面向运算结果和状态，<code>BR/IX/SP/BP</code> 面向地址形成和程序运行环境。</p></div></div># 程序执行小例<p>设主存中有一段程序，用来计算：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">y = a * b + c</span><br></pre></td></tr></table></figure><p>可以把 CPU 的工作过程理解为：<code>PC</code> 不断指出下一条指令地址，指令进入 <code>IR</code> 后由控制器译码，操作数通过 <code>MAR/MDR</code> 从主存取入 CPU，最后由运算器加工并把结果写回。</p><table><thead><tr><th>指令</th><th>主要动作</th><th>关键寄存器变化</th></tr></thead><tbody><tr><td><code>LOAD a</code></td><td>从主存取出 <code>a</code>，送入累加器</td><td><code>PC -&gt; MAR</code> 取指；<code>IR</code> 保存指令；<code>Ad(IR) -&gt; MAR</code> 取操作数；<code>MDR -&gt; ACC</code></td></tr><tr><td><code>MUL b</code></td><td>从主存取出 <code>b</code>，与 <code>ACC</code> 中的 <code>a</code> 相乘</td><td><code>MDR -&gt; MQ</code>，<code>ACC -&gt; X</code>，<code>MQ * X -&gt; ACC</code></td></tr><tr><td><code>ADD c</code></td><td>从主存取出 <code>c</code>，与 <code>ACC</code> 相加</td><td><code>MDR -&gt; X</code>，<code>ACC + X -&gt; ACC</code></td></tr><tr><td><code>STORE y</code></td><td>将 <code>ACC</code> 中的结果写回主存</td><td><code>Ad(IR) -&gt; MAR</code>，<code>ACC -&gt; MDR</code>，<code>MDR -&gt; M(MAR)</code></td></tr></tbody></table><p>这个例子强调的是部件职责：<code>PC/IR</code> 负责指令流，<code>MAR/MDR</code> 负责访存接口，<code>ACC/MQ/X/ALU</code> 负责数据加工，控制器负责在正确节拍接通相应通路。完整的取指、间址、执行和中断流程见 <a href="/2026/07/10/Instruction-Cycle/" class="wikilink">Instruction-Cycle</a>。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;CPU-的功能&quot;&gt;&lt;a href=&quot;#CPU-的功能&quot; class=&quot;headerlink&quot; title=&quot;CPU 的功能&quot;&gt;&lt;/a&gt;CPU 的功能&lt;/h1&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;功能&lt;/th&gt;
+&lt;th&gt;含义&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/</summary>
+      
+    
+    
+    
+    <category term="Computer Organization" scheme="https://eliano64.github.io/categories/Computer-Organization/"/>
+    
+    
+    <category term="ComputerOrganization" scheme="https://eliano64.github.io/tags/ComputerOrganization/"/>
+    
+    <category term="CPU" scheme="https://eliano64.github.io/tags/CPU/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Instruction Cycle</title>
+    <link href="https://eliano64.github.io/2026/07/10/Instruction-Cycle/"/>
+    <id>https://eliano64.github.io/2026/07/10/Instruction-Cycle/</id>
+    <published>2026-07-10T13:02:24.000Z</published>
+    <updated>2026-07-10T13:05:15.060Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="指令周期、机器周期与时钟周期"><a href="#指令周期、机器周期与时钟周期" class="headerlink" title="指令周期、机器周期与时钟周期"></a>指令周期、机器周期与时钟周期</h1><p><img src="/assets/instruction-cycle-hierarchy.svg" alt="指令周期层级"></p><table><thead><tr><th>概念</th><th>含义</th></tr></thead><tbody><tr><td>指令周期</td><td>CPU 从主存取出并执行一条指令所需的全部时间</td></tr><tr><td>机器周期</td><td>又称 CPU 周期，一个指令周期通常由若干机器周期组成</td></tr><tr><td>时钟周期</td><td>又称节拍、T 周期，是 CPU 操作的基本时间单位</td></tr></tbody></table><p>一个指令周期内的机器周期数可以不等，每个机器周期内的节拍数也可以不等。不同指令需要的阶段不同：</p><table><thead><tr><th>指令情况</th><th>可能的周期组成</th></tr></thead><tbody><tr><td>空指令 <code>NOP</code></td><td>取指周期</td></tr><tr><td>普通运算指令</td><td>取指周期、执行周期</td></tr><tr><td>间接寻址指令</td><td>取指周期、间址周期、执行周期</td></tr><tr><td>响应中断的指令</td><td>取指周期、间址周期、执行周期、中断周期</td></tr></tbody></table><h1 id="单周期、多周期与流水线处理器"><a href="#单周期、多周期与流水线处理器" class="headerlink" title="单周期、多周期与流水线处理器"></a>单周期、多周期与流水线处理器</h1><p><img src="/assets/cpu-execution-schemes.svg" alt="指令执行方案"></p><table><thead><tr><th>处理器组织方式</th><th>基本做法</th><th>主要特点</th></tr></thead><tbody><tr><td>单周期处理器</td><td>每条指令都在一个时钟周期内完成</td><td>所有指令使用相同周期长度；时钟周期必须按最慢指令设置，硬件控制相对直接，但短指令也要等待这个长周期结束</td></tr><tr><td>多周期处理器</td><td>一条指令拆成多个阶段，不同指令可使用不同数量的时钟周期</td><td>每个时钟周期完成一部分操作；不同指令只经历自己需要的阶段；同一硬件部件可以在不同周期复用</td></tr><tr><td>流水线处理器</td><td>把指令执行过程分成若干级，多条指令在不同级中重叠执行</td><td>单条指令仍要经过多个阶段，但理想情况下每个周期都能完成一条指令；重点问题变成流水线相关、冲突和性能分析</td></tr></tbody></table><p>三者的差别是<strong>同样的取指、译码、执行、访存、写回等工作如何占用时钟周期</strong>。</p><div class="callout callout-abstract"><div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">直观区分</span></div><div class="callout-content"><p>设一条指令大致需要取指、译码、执行、访存、写回五类工作。</p><ul><li>单周期处理器：五类工作压进一个很长的时钟周期。</li><li>多周期处理器：五类工作拆到多个较短时钟周期，不需要的阶段可以跳过。</li><li>流水线处理器：一条指令分阶段前进，同时让后续指令进入前面的阶段。</li></ul></div></div>分析数据通路和控制信号时，要同时看两层：<ol><li><strong>功能层</strong>：当前阶段要完成什么微操作。</li><li><strong>时序层</strong>：这些微操作安排在哪个时钟周期或流水线级中。</li></ol><p>三种时序组织对应的数据通路特点见 <a href="/2026/07/02/CPU-Datapath/#按时序组织方式分类" class="wikilink">按时序组织方式分类</a>，流水线的阶段、冲突与性能分析见 <a href="/2026/07/03/CPU-Pipeline/" class="wikilink">CPU-Pipeline</a>。</p><h1 id="指令周期流程"><a href="#指令周期流程" class="headerlink" title="指令周期流程"></a>指令周期流程</h1><p><img src="/assets/instruction-cycle-flow.svg" alt="指令周期流程"></p><p>指令执行的一般流程是：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">取指周期 -&gt; 是否需要间址 -&gt; 执行周期 -&gt; 是否响应中断 -&gt; 下一条指令</span><br></pre></td></tr></table></figure><p>四个工作周期都可能访问主存，但访存目的不同。</p><p><img src="/assets/instruction-cycle-memory-purpose.svg" alt="工作周期访存目的"></p><table><thead><tr><th>工作周期</th><th>访存目的</th></tr></thead><tbody><tr><td>取指周期</td><td>取指令</td></tr><tr><td>间址周期</td><td>取有效地址</td></tr><tr><td>执行周期</td><td>取操作数或保存执行结果，具体取决于指令</td></tr><tr><td>中断周期</td><td>保存程序断点</td></tr></tbody></table><h1 id="取指周期"><a href="#取指周期" class="headerlink" title="取指周期"></a>取指周期</h1><p>取指周期的任务是从主存中取出当前指令，并形成下一条指令地址。</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(PC) -&gt; MAR</span><br><span class="line">1 -&gt; R</span><br><span class="line">M(MAR) -&gt; MDR</span><br><span class="line">(MDR) -&gt; IR</span><br><span class="line">(PC) + 1 -&gt; PC</span><br></pre></td></tr></table></figure><p>其中 <code>1 -&gt; R</code> 表示控制器向主存发出读命令。</p><h1 id="间址周期"><a href="#间址周期" class="headerlink" title="间址周期"></a>间址周期</h1><p>间址周期的任务是根据指令中的地址码访问主存，取出有效地址。</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Ad(IR) -&gt; MAR</span><br><span class="line">1 -&gt; R</span><br><span class="line">M(MAR) -&gt; MDR</span><br><span class="line">(MDR) -&gt; Ad(IR)</span><br></pre></td></tr></table></figure><p>这里主存读出的不是操作数，而是有效地址。</p><h1 id="执行周期"><a href="#执行周期" class="headerlink" title="执行周期"></a>执行周期</h1><p>执行周期根据 IR 中指令字的操作码和操作数，通过 ALU 操作产生执行结果。</p><p>不同指令的执行周期操作不同，因此没有统一的数据流向。分析执行周期时，应根据具体指令判断数据从哪里来、经过哪些部件、最后写到哪里。</p><h1 id="中断周期"><a href="#中断周期" class="headerlink" title="中断周期"></a>中断周期</h1><p>中断周期的任务是保存断点并转入中断服务程序。若用栈保存断点，且进栈采用“先修改指针，后写入数据”，可表示为：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(SP) - 1 -&gt; SP</span><br><span class="line">(SP) -&gt; MAR</span><br><span class="line">1 -&gt; W</span><br><span class="line">(PC) -&gt; MDR</span><br><span class="line">(MDR) -&gt; M(MAR)</span><br><span class="line">向量地址 -&gt; PC</span><br></pre></td></tr></table></figure><p><code>1 -&gt; W</code> 表示控制器向主存发出写命令。异常与中断的完整响应和处理流程见 <a href="/2026/07/03/Exception-And-Interrupt-Handling/" class="wikilink">Exception-And-Interrupt-Handling</a>。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;指令周期、机器周期与时钟周期&quot;&gt;&lt;a href=&quot;#指令周期、机器周期与时钟周期&quot; class=&quot;headerlink&quot; title=&quot;指令周期、机器周期与时钟周期&quot;&gt;&lt;/a&gt;指令周期、机器周期与时钟周期&lt;/h1&gt;&lt;p&gt;&lt;img src=&quot;/assets/inst</summary>
+      
+    
+    
+    
+    <category term="Computer Organization" scheme="https://eliano64.github.io/categories/Computer-Organization/"/>
+    
+    
+    <category term="ComputerOrganization" scheme="https://eliano64.github.io/tags/ComputerOrganization/"/>
+    
+    <category term="CPU" scheme="https://eliano64.github.io/tags/CPU/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Network Performance Metrics</title>
+    <link href="https://eliano64.github.io/2026/07/10/Network-Performance-Metrics/"/>
+    <id>https://eliano64.github.io/2026/07/10/Network-Performance-Metrics/</id>
+    <published>2026-07-10T12:46:39.000Z</published>
+    <updated>2026-07-10T12:48:12.030Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="性能指标总览"><a href="#性能指标总览" class="headerlink" title="性能指标总览"></a>性能指标总览</h1><table><thead><tr><th>指标</th><th>关注的问题</th></tr></thead><tbody><tr><td>速率</td><td>数据传送有多快</td></tr><tr><td>带宽</td><td>链路理论上能传多快</td></tr><tr><td>吞吐量</td><td>实际通过了多少数据</td></tr><tr><td>时延</td><td>一个分组从发送到到达要多久</td></tr><tr><td>时延带宽积</td><td>链路中能同时“容纳”多少比特</td></tr><tr><td>RTT</td><td>一次往返交互要多久</td></tr><tr><td>利用率</td><td>链路或网络有多少时间处于忙碌状态</td></tr><tr><td>丢包率</td><td>有多少分组丢失</td></tr></tbody></table><h1 id="速率"><a href="#速率" class="headerlink" title="速率"></a>速率</h1><p>速率是数据的传送速率，也称数据率或比特率，基本单位是 <code>bit/s</code>。</p><table><thead><tr><th>单位</th><th>含义</th></tr></thead><tbody><tr><td><code>kb/s</code></td><td>$10^3$ bit&#x2F;s</td></tr><tr><td><code>Mb/s</code></td><td>$10^6$ bit&#x2F;s</td></tr><tr><td><code>Gb/s</code></td><td>$10^9$ bit&#x2F;s</td></tr><tr><td><code>Tb/s</code></td><td>$10^{12}$ bit&#x2F;s</td></tr></tbody></table><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">速率单位通常按 10 进制换算</span></div><div class="callout-content"><p>计算机组成原理、操作系统里讨论存储容量时，<code>KB</code>、<code>MB</code>、<code>GB</code> 常按 $2^{10}$ 进位理解；计算机网络里讨论速率时，<code>kb/s</code>、<code>Mb/s</code>、<code>Gb/s</code> 通常按 $10^3$ 进位理解。例如 $1\text{ Mb&#x2F;s}&#x3D;10^6\text{ bit&#x2F;s}$，不是 $2^{20}\text{ bit&#x2F;s}$。</p></div></div><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">b 和 B 不能混</span></div><div class="callout-content"><p><code>b</code> 是 bit，比特；<code>B</code> 是 Byte，字节。$1\text{ B}&#x3D;8\text{ b}$。网络速率通常用 <code>bit/s</code>，文件大小和存储容量常用 <code>B</code>、<code>KB</code>、<code>MB</code>、<code>GB</code>。</p></div></div># 带宽<p>带宽在不同语境下有不同含义：</p><ul><li>在模拟信号系统中，带宽表示信号占据的频率范围，单位是 Hz。</li><li>在计算机网络中，带宽表示通信线路传送数据的能力，单位通常是 bit&#x2F;s。</li></ul><p>网络中一次传输的实际速率会受到链路、接口、交换机、路由器等多个环节限制。瓶颈环节决定上限，也就是常说的“木桶效应”。</p><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">带宽不是吞吐量</span></div><div class="callout-content"><p>带宽像“道路最大通行能力”，吞吐量像“实际通过的车辆数”。带宽高不代表某一时刻实际数据量一定高。</p></div></div># 吞吐量<p>吞吐量是在单位时间内通过某个网络、链路或接口的实际数据量。</p><p>如果某用户同时有：</p><ul><li>视频下载：20 Mb&#x2F;s</li><li>网页下载：600 kb&#x2F;s，即 0.6 Mb&#x2F;s</li><li>文件上传：1 Mb&#x2F;s</li></ul><p>则该用户此时的吞吐量为：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">20 Mb/s + 0.6 Mb/s + 1 Mb/s = 21.6 Mb/s</span><br></pre></td></tr></table></figure><p>吞吐量通常不超过瓶颈带宽，但会受到协议开销、拥塞、设备性能、应用行为等影响。</p><h1 id="时延"><a href="#时延" class="headerlink" title="时延"></a>时延</h1><p>一个分组从源主机到目的主机，通常经历四类时延。</p><table><thead><tr><th>时延</th><th>含义</th><th>常用公式</th></tr></thead><tbody><tr><td>发送时延</td><td>把分组所有比特推上链路所需时间</td><td>$\dfrac{\text{分组长度}}{\text{发送速率}}$</td></tr><tr><td>传播时延</td><td>信号在链路上传播所需时间</td><td>$\dfrac{\text{链路长度}}{\text{传播速率}}$</td></tr><tr><td>排队时延</td><td>在路由器队列中等待处理或转发的时间</td><td>通常无法用固定公式计算</td></tr><tr><td>处理时延</td><td>检查首部、查表、差错检测等处理时间</td><td>通常无法用固定公式计算</td></tr></tbody></table><p><img src="/assets/transmission-vs-propagation-delay.svg" alt="900"></p><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">发送时延和传播时延是两个维度</span></div><div class="callout-content"><p>发送时延看“分组有多长、接口发得多快”；传播时延看“链路有多长、信号跑得多快”。把 1 bit 送上链路也需要传播时延，把 1 MB 数据推上链路也需要发送时延。</p></div></div>## 多跳存储转发时延<p>分组交换采用存储转发，其工作过程见 <a href="/2026/07/10/Network-Switching/#分组交换" class="wikilink">分组交换</a>。路由器通常要收到一个完整分组后，才能继续把该分组转发到下一段链路。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||760)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||760)-80))+'px'">−</button></div><iframe src="/assets/packet-store-forward-delay-slides.html" style="width:100%;height:760px;border:0" loading="lazy"></iframe></div><p>在不考虑排队时延和处理时延，且每段链路发送速率相同、传播时延相同的简化情况下：</p><ul><li>发送 $m$ 个分组。</li><li>经过 $n$ 个路由器。</li><li>每个分组的发送时延为 $d_t$。</li><li>每段链路传播时延为 $d_p$。</li></ul><p>总时间可理解为：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">m 个分组从源主机连续发送：m * d_t</span><br><span class="line">n 个路由器各补上一段转发发送时延：n * d_t</span><br><span class="line">n + 1 段链路传播时延：(n + 1) * d_p</span><br></pre></td></tr></table></figure><p>所以：</p><p>$$<br>D&#x3D;(m+n)d_t+(n+1)d_p<br>$$</p><p>这里的关键是不要把每个路由器转发 $m$ 个分组的发送时延都重复相加。流水线形成后，中间路由器转发前一个分组时，源主机可能已经在发送后一个分组。</p><h1 id="时延带宽积"><a href="#时延带宽积" class="headerlink" title="时延带宽积"></a>时延带宽积</h1><p>时延带宽积是传播时延与带宽的乘积：</p><p>$$<br>\text{时延带宽积}&#x3D;\text{传播时延}\times\text{带宽}<br>$$</p><p>它表示链路中正在传播、尚未到达接收端的比特数，也可以理解为第一个比特即将到达终点时，链路上正在传播的比特数。</p><p><img src="/assets/bandwidth-delay-product.svg" alt="900"></p><p>例如链路长度为 1 km，带宽为 1 Gb&#x2F;s，光在光纤中的传播速率约为 $2\times10^8$ m&#x2F;s：</p><p>$$<br>\text{传播时延}&#x3D;\frac{1000}{2\times10^8}&#x3D;5\times10^{-6}\text{ s}<br>$$</p><p>$$<br>\text{时延带宽积}&#x3D;5\times10^{-6}\times10^9&#x3D;5000\text{ b}<br>$$</p><p>这表示第一个比特即将到达终点时，链路上大约已经有 5000 个比特正在传播。</p><h1 id="RTT"><a href="#RTT" class="headerlink" title="RTT"></a>RTT</h1><p>RTT，Round-Trip Time，往返时间，是从发送端发送数据开始，到收到接收端确认所经历的时间。</p><p>许多网络应用都不是单向传输，而是请求-响应式交互。RTT 越大，用户感受到的响应越慢。<code>ping</code> 测量的就是一类往返时间。</p><p><img src="/assets/network-rtt-round-trip.svg" alt="850"></p><h1 id="利用率"><a href="#利用率" class="headerlink" title="利用率"></a>利用率</h1><p>利用率分为链路利用率和网络利用率：</p><ul><li>链路利用率：某条链路有多少比例的时间正在传送数据。</li><li>网络利用率：网络中各链路利用率的加权平均。</li></ul><p>利用率不是越高越好。利用率升高后，排队时延会迅速增大；当利用率接近 1 时，时延可能趋近无穷大。</p><div class="callout callout-important"><div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">利用率高不等于性能好</span></div><div class="callout-content"><p>一条链路长期接近满载，说明资源被充分使用，但也说明几乎没有余量吸收突发流量。此时稍有流量增加，就会排队、时延暴涨甚至丢包。</p></div></div># 丢包率<p>丢包率是在一定时间范围内，丢失分组数占总分组数的比例：</p><p>$$<br>\text{丢包率}&#x3D;\frac{\text{丢失分组数}}{\text{总分组数}}<br>$$</p><p>分组丢失常见原因：</p><ul><li>传输过程中出现误码，被中间结点或目的主机检测后丢弃。</li><li>路由器、交换机队列溢出，根据丢弃策略主动丢弃分组。</li></ul><p>丢包会影响吞吐量、时延和应用体验。实时音视频、网络游戏、交互式远程操作尤其敏感。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;性能指标总览&quot;&gt;&lt;a href=&quot;#性能指标总览&quot; class=&quot;headerlink&quot; title=&quot;性能指标总览&quot;&gt;&lt;/a&gt;性能指标总览&lt;/h1&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;指标&lt;/th&gt;
+&lt;th&gt;关注的问题&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/t</summary>
+      
+    
+    
+    
+    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
+    
+    
+    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
+    
+    <category term="Overview" scheme="https://eliano64.github.io/tags/Overview/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Network Switching</title>
+    <link href="https://eliano64.github.io/2026/07/10/Network-Switching/"/>
+    <id>https://eliano64.github.io/2026/07/10/Network-Switching/</id>
+    <published>2026-07-10T12:46:39.000Z</published>
+    <updated>2026-07-10T12:47:46.694Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="交换方式"><a href="#交换方式" class="headerlink" title="交换方式"></a>交换方式</h1><p>交换就是动态分配通信资源。计算机网络中常见三种交换方式：电路交换、报文交换、分组交换。</p><p><img src="/assets/network-switching-time-sequence.svg" alt="900"></p><h1 id="电路交换"><a href="#电路交换" class="headerlink" title="电路交换"></a>电路交换</h1><p>电路交换的过程分三步：</p><ol><li>建立连接：通信双方之间建立一条专用物理通路。</li><li>通信：通信双方独占这条通路上的通信资源。</li><li>释放连接：通信结束后释放资源。</li></ol><p>电路交换适合持续、稳定的数据传输。若数据传送时间远长于建立连接时间，它可以有较高效率。但计算机数据常常是突发式的，长时间独占链路会降低线路利用率。</p><h1 id="报文交换"><a href="#报文交换" class="headerlink" title="报文交换"></a>报文交换</h1><p>报文交换把整个报文作为一个单位进行存储转发。中间结点收到完整报文后，再决定下一跳并继续转发。</p><p>它不需要预先建立专用连接，但整个报文可能很长，会长时间占用结点缓存和链路，时延也较大。</p><h1 id="分组交换"><a href="#分组交换" class="headerlink" title="分组交换"></a>分组交换</h1><p>分组交换把较长报文拆成较小的分组。每个分组带有首部，中间路由器根据首部中的地址信息查表转发。</p><p>分组交换的核心动作是<strong>存储转发</strong>：</p><ol><li>路由器收到分组。</li><li>把分组暂存下来。</li><li>读取分组首部。</li><li>查转发表，确定转发接口或下一跳。</li><li>将分组发往下一段链路。</li></ol><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||720)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||720)-80))+'px'">−</button></div><iframe src="/assets/network-switching-process-slides.html" style="width:100%;height:720px;border:0" loading="lazy"></iframe></div><p>分组交换的优点：</p><ul><li>不需要建立和释放连接。</li><li>分组在哪段链路上传输，才占用哪段链路资源。</li><li>每个分组可以独立选择转发路径。</li><li>对突发式计算机数据更合适。</li></ul><p>分组交换的代价：</p><ul><li>分组首部带来额外开销。</li><li>路由器存储转发会产生时延。</li><li>网络拥塞时可能排队、丢包。</li><li>不同分组可能失序到达。</li></ul><h1 id="三种交换方式对比"><a href="#三种交换方式对比" class="headerlink" title="三种交换方式对比"></a>三种交换方式对比</h1><table><thead><tr><th>对比</th><th>电路交换</th><th>报文交换</th><th>分组交换</th></tr></thead><tbody><tr><td>是否建立连接</td><td>需要</td><td>不需要</td><td>不需要</td></tr><tr><td>传输单位</td><td>连续比特流</td><td>整个报文</td><td>分组</td></tr><tr><td>中间结点处理</td><td>建立并维持通路</td><td>存储整个报文后转发</td><td>存储分组后转发</td></tr><tr><td>线路利用率</td><td>突发数据下较低</td><td>较高</td><td>较高</td></tr><tr><td>时延特点</td><td>有建立连接时延</td><td>报文长时时延大</td><td>适合流水线式转发</td></tr></tbody></table>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;交换方式&quot;&gt;&lt;a href=&quot;#交换方式&quot; class=&quot;headerlink&quot; title=&quot;交换方式&quot;&gt;&lt;/a&gt;交换方式&lt;/h1&gt;&lt;p&gt;交换就是动态分配通信资源。计算机网络中常见三种交换方式：电路交换、报文交换、分组交换。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/</summary>
+      
+    
+    
+    
+    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
+    
+    
+    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
+    
+    <category term="NetworkSwitching" scheme="https://eliano64.github.io/tags/NetworkSwitching/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>CPU Modes</title>
+    <link href="https://eliano64.github.io/2026/07/10/CPU-Modes/"/>
+    <id>https://eliano64.github.io/2026/07/10/CPU-Modes/</id>
+    <published>2026-07-10T12:43:08.000Z</published>
+    <updated>2026-07-10T13:01:07.423Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="CPU-状态与特权级"><a href="#CPU-状态与特权级" class="headerlink" title="CPU 状态与特权级"></a>CPU 状态与特权级</h1><p>操作系统要保护系统资源，不能让普通应用程序随意执行影响全局状态的指令。因此 CPU 将指令分为两类：</p><table><thead><tr><th>类型</th><th>含义</th><th>例子</th></tr></thead><tbody><tr><td>非特权指令</td><td>普通应用程序可以执行</td><td>加法、减法、普通数据处理</td></tr><tr><td>特权指令</td><td>只能由操作系统内核执行</td><td>修改 PSW、开关中断、清内存、启动 I&#x2F;O</td></tr></tbody></table><p>CPU 也相应分为两种运行状态：</p><table><thead><tr><th>CPU 状态</th><th>运行内容</th><th>能否执行特权指令</th><th>别名</th></tr></thead><tbody><tr><td>用户态</td><td>应用程序</td><td>不能</td><td>目态</td></tr><tr><td>内核态</td><td>操作系统内核程序</td><td>可以</td><td>核心态、管态</td></tr></tbody></table><p>CPU 当前处于哪种状态通常由 <strong>PSW</strong> 中的状态位表示。用户态程序若试图执行特权指令，CPU 会发现权限不匹配，触发异常，转入内核态交给操作系统处理。</p><p><img src="/assets/os-mode-system-call-interrupt-flow.svg" alt="1000"></p><h1 id="CPU-状态切换"><a href="#CPU-状态切换" class="headerlink" title="CPU 状态切换"></a>CPU 状态切换</h1><h2 id="内核态到用户态"><a href="#内核态到用户态" class="headerlink" title="内核态到用户态"></a>内核态到用户态</h2><p>内核态到用户态通常由内核主动完成。操作系统准备让某个应用程序运行时，会通过特权指令修改 PSW 中的状态位，并恢复该程序的运行现场，使 CPU 回到用户态执行用户程序。</p><p>这个方向是“内核让出 CPU 控制权”。</p><h2 id="用户态到内核态"><a href="#用户态到内核态" class="headerlink" title="用户态到内核态"></a>用户态到内核态</h2><p>用户态程序不能直接把 CPU 改成内核态。用户态到内核态必须由硬件事件触发，常见来源包括：</p><table><thead><tr><th>来源</th><th>例子</th><th>本质</th></tr></thead><tbody><tr><td>系统调用</td><td>用户程序执行 trap &#x2F; 访管指令</td><td>程序主动请求内核服务，完整过程见 <a href="/2026/07/10/System-Calls/" class="wikilink">System-Calls</a></td></tr><tr><td>异常</td><td>缺页、除 0、非法特权指令</td><td>当前指令执行过程中出现特殊情况</td></tr><tr><td>外部中断</td><td>时钟中断、I&#x2F;O 完成中断</td><td>当前指令外部的设备或时钟事件</td></tr></tbody></table><p>这个方向是“操作系统夺回 CPU 控制权”。没有这种机制，应用程序一旦运行，就可能长期占用 CPU，操作系统无法重新获得控制。</p><h1 id="异常与中断在状态切换中的作用"><a href="#异常与中断在状态切换中的作用" class="headerlink" title="异常与中断在状态切换中的作用"></a>异常与中断在状态切换中的作用</h1><p>这里关心的是异常与中断如何改变 CPU 状态。其完整定义、分类和处理过程见 <a href="/2026/07/01/Exception-And-Interrupt-Brief/" class="wikilink">Exception-And-Interrupt-Brief</a> 与 <a href="/2026/07/03/Exception-And-Interrupt-Handling/" class="wikilink">Exception-And-Interrupt-Handling</a>。</p><p>它们在操作系统中的作用：</p><ol><li>让 CPU 从用户态转入内核态。</li><li>让操作系统在必要时重新获得 CPU 控制权。</li><li>为系统调用、I&#x2F;O 完成、时钟调度、错误处理提供统一入口。</li></ol><p>异常来自 CPU 内部，通常与当前正在执行的指令有关。异常发生后，CPU 转入内核态，使内核有机会处理当前指令引发的问题或请求。</p><p>系统调用使用 trap &#x2F; 访管指令主动触发自陷；缺页故障、除 0、用户态执行特权指令等也会触发异常。分类细节见 <a href="/2026/07/01/Exception-And-Interrupt-Brief/#异常" class="wikilink">异常</a>。</p><p><a href="/2026/07/01/Exception-And-Interrupt-Brief/#中断" class="wikilink">中断</a>来自 CPU 外部，通常与当前正在执行的指令无关。中断让操作系统可以在用户程序运行期间重新获得 CPU 控制权。</p><p>常见中断：</p><ul><li>时钟中断：让操作系统周期性获得控制权，可用于计时和调度。</li><li>I&#x2F;O 中断：设备完成输入输出后通知 CPU。</li><li>不可屏蔽中断：如电源故障等紧急事件。</li></ul><p>CPU 通常在一条指令执行结束后检查外部中断。若允许响应，就进入中断响应过程，转到内核中的中断处理程序。</p><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">时钟中断和并发</span></div><div class="callout-content"><p>时间片轮转、进程调度等机制需要操作系统周期性取回 CPU。时钟中断提供了这种机会，因此它是多道程序并发运行的重要硬件基础。</p></div></div>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;CPU-状态与特权级&quot;&gt;&lt;a href=&quot;#CPU-状态与特权级&quot; class=&quot;headerlink&quot; title=&quot;CPU 状态与特权级&quot;&gt;&lt;/a&gt;CPU 状态与特权级&lt;/h1&gt;&lt;p&gt;操作系统要保护系统资源，不能让普通应用程序随意执行影响全局状态的指令。因此 </summary>
+      
+    
+    
+    
+    <category term="Operating System" scheme="https://eliano64.github.io/categories/Operating-System/"/>
+    
+    
+    <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
+    
+    <category term="Overview" scheme="https://eliano64.github.io/tags/Overview/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>OS Overview</title>
+    <link href="https://eliano64.github.io/2026/07/10/OS-Overview/"/>
+    <id>https://eliano64.github.io/2026/07/10/OS-Overview/</id>
+    <published>2026-07-10T12:43:08.000Z</published>
+    <updated>2026-07-10T12:55:29.394Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="操作系统是什么"><a href="#操作系统是什么" class="headerlink" title="操作系统是什么"></a>操作系统是什么</h1><p><strong>操作系统</strong>是控制和管理整个计算机系统硬件与软件资源的系统软件。它组织调度计算机工作，分配系统资源，并向用户和应用程序提供接口和运行环境。</p><p>从层次上看：</p><p><img src="/assets/os-overview-layered-role.svg" alt="1000"></p><table><thead><tr><th>位置</th><th>作用</th></tr></thead><tbody><tr><td>向下</td><td>管理 CPU、内存、磁盘、I&#x2F;O 设备等硬件资源</td></tr><tr><td>向上</td><td>向用户和应用程序提供方便易用的接口</td></tr><tr><td>中间</td><td>把裸机扩展成更易用、更安全、更强的机器</td></tr></tbody></table><p>操作系统的三个核心定位：</p><ul><li><strong>系统资源的管理者</strong>：管理处理机、存储器、文件和设备。</li><li><strong>向上层提供服务</strong>：提供命令接口、程序接口、图形界面等。</li><li><strong>最接近硬件的软件层</strong>：直接处理时钟、中断、设备驱动、CPU 状态切换等底层机制。</li></ul><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">扩充机器</span></div><div class="callout-content"><p>裸机只提供硬件能力。操作系统把硬件能力组织起来，提供进程、文件、虚拟内存、设备抽象等机制，使用户看到的是一台更方便的“扩充机器”。</p></div></div># 操作系统管理哪些资源<table><thead><tr><th>资源</th><th>管理内容</th></tr></thead><tbody><tr><td>处理机</td><td>进程调度、CPU 分配、上下文切换</td></tr><tr><td>存储器</td><td>内存分配、地址转换、虚拟存储</td></tr><tr><td>文件</td><td>文件创建、删除、读写、目录、权限</td></tr><tr><td>设备</td><td>设备分配、I&#x2F;O 控制、缓冲、驱动、中断处理</td></tr></tbody></table><p>这些资源往往被多个进程共同使用，因此需要操作系统统一管理。否则，多个应用程序直接操作同一个硬件资源，容易导致混乱、数据破坏或安全问题。</p><h1 id="用户接口"><a href="#用户接口" class="headerlink" title="用户接口"></a>用户接口</h1><p>操作系统向上提供的接口可以分为三类。</p><table><thead><tr><th>接口</th><th>使用者</th><th>例子</th><th>特点</th></tr></thead><tbody><tr><td>联机命令接口</td><td>普通用户</td><td>shell、cmd 命令</td><td>用户输入一条命令，系统执行一条命令</td></tr><tr><td>脱机命令接口</td><td>普通用户或管理员</td><td>批处理脚本</td><td>用户提交一组命令，系统按批执行</td></tr><tr><td>程序接口</td><td>程序员和应用程序</td><td>系统调用</td><td>程序通过代码请求内核服务</td></tr></tbody></table><p>图形用户界面属于更直观的用户接口。它把许多命令操作包装成窗口、图标、菜单和按钮，但底层仍会转化为操作系统服务。</p><p>程序接口由一组<strong>系统调用</strong>组成，其作用和执行过程见 <a href="/2026/07/10/System-Calls/" class="wikilink">System-Calls</a>。系统调用引发的 CPU 状态切换见 <a href="/2026/07/10/CPU-Modes/" class="wikilink">CPU-Modes</a>。</p><h1 id="四个特征"><a href="#四个特征" class="headerlink" title="四个特征"></a>四个特征</h1><h2 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h2><p><strong>并发</strong>是指两个或多个事件在同一时间间隔内发生。宏观上看它们同时进行，微观上可能交替执行。</p><p><strong>并行</strong>是指两个或多个事件在同一时刻同时发生。</p><table><thead><tr><th>概念</th><th>关键点</th></tr></thead><tbody><tr><td>并发</td><td>同一时间段内都在推进，单核 CPU 上也能出现</td></tr><tr><td>并行</td><td>同一时刻真正同时执行，通常需要多核或多个处理单元</td></tr></tbody></table><p>单核 CPU 同一时刻只能执行一个程序，但可以通过快速切换让多个程序并发运行。多核 CPU 可以让多个程序并行执行，但只要运行程序数超过核心数，仍然需要并发调度。</p><p>操作系统与程序并发几乎是一起出现的。没有并发，现代操作系统的大部分资源管理问题都不会出现。</p><h2 id="共享"><a href="#共享" class="headerlink" title="共享"></a>共享</h2><p><strong>共享</strong>是指系统中的资源可供多个并发执行的进程共同使用。</p><p>共享方式有两类：</p><table><thead><tr><th>方式</th><th>含义</th><th>例子</th></tr></thead><tbody><tr><td>互斥共享</td><td>一个时间段内只允许一个进程访问</td><td>摄像头、普通打印机</td></tr><tr><td>同时共享</td><td>宏观上多个进程可同时访问</td><td>多个进程交替读写磁盘</td></tr></tbody></table><p>并发和共享互为存在条件。没有并发，系统中只有一个程序运行，共享失去意义；没有共享，多个进程无法共同使用资源，并发也难以展开。</p><h2 id="虚拟"><a href="#虚拟" class="headerlink" title="虚拟"></a>虚拟</h2><p><strong>虚拟</strong>是把一个物理实体变成若干逻辑上的对应物。物理实体是真实存在的，逻辑对应物是用户感受到的。</p><table><thead><tr><th>虚拟对象</th><th>技术</th><th>用户感受</th></tr></thead><tbody><tr><td>内存</td><td>虚拟存储器</td><td>每个进程仿佛拥有独立、连续、较大的地址空间</td></tr><tr><td>CPU</td><td>虚拟处理器</td><td>多个进程仿佛都在同时运行</td></tr><tr><td>设备</td><td>SPOOLing 等</td><td>独占设备可表现为逻辑共享设备</td></tr></tbody></table><p>虚拟离不开并发。若系统中始终只运行一个程序，就没有必要把一个 CPU 虚拟成多个处理器，也没有必要让多个进程共享一个逻辑上的大地址空间。</p><h2 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h2><p><strong>异步</strong>是指在多道程序环境下，进程并不是从头到尾一贯到底地运行，而是因为等待资源、I&#x2F;O、调度等原因走走停停，以不可预知的速度向前推进。</p><p>异步性来自并发和资源限制。多个进程争用有限资源时，谁先获得 CPU、谁先完成 I&#x2F;O、谁先被唤醒，都可能随系统状态变化。</p><h1 id="特征之间的关系"><a href="#特征之间的关系" class="headerlink" title="特征之间的关系"></a>特征之间的关系</h1><table><thead><tr><th>特征</th><th>关系</th></tr></thead><tbody><tr><td>并发</td><td>最基本特征之一，带来调度、同步、互斥等问题</td></tr><tr><td>共享</td><td>最基本特征之一，要求操作系统统一管理资源</td></tr><tr><td>虚拟</td><td>以并发和共享为基础，把物理资源抽象成逻辑资源</td></tr><tr><td>异步</td><td>并发程序争用资源后产生的执行不确定性</td></tr></tbody></table><p>并发和共享是操作系统最基本的两个特征。没有并发和共享，就谈不上虚拟和异步。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;操作系统是什么&quot;&gt;&lt;a href=&quot;#操作系统是什么&quot; class=&quot;headerlink&quot; title=&quot;操作系统是什么&quot;&gt;&lt;/a&gt;操作系统是什么&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;操作系统&lt;/strong&gt;是控制和管理整个计算机系统硬件与软件资源的系统软件。它组织</summary>
+      
+    
+    
+    
+    <category term="Operating System" scheme="https://eliano64.github.io/categories/Operating-System/"/>
+    
+    
+    <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
+    
+    <category term="Overview" scheme="https://eliano64.github.io/tags/Overview/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>System Calls</title>
+    <link href="https://eliano64.github.io/2026/07/10/System-Calls/"/>
+    <id>https://eliano64.github.io/2026/07/10/System-Calls/</id>
+    <published>2026-07-10T12:43:08.000Z</published>
+    <updated>2026-07-10T12:48:03.190Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h1><p><strong>系统调用</strong>是操作系统向应用程序提供的程序接口。用户程序不能直接执行特权指令，也不能直接访问内核数据结构；凡是涉及受保护资源或需要内核权限的操作，都必须通过系统调用请求内核完成。</p><table><thead><tr><th>类型</th><th>例子</th></tr></thead><tbody><tr><td>进程控制</td><td>创建进程、终止进程、等待子进程</td></tr><tr><td>文件管理</td><td>创建、打开、读写、关闭、删除文件</td></tr><tr><td>设备管理</td><td>请求 I&#x2F;O、释放设备、获取设备状态</td></tr><tr><td>内存管理</td><td>申请内存、映射文件、调整地址空间</td></tr></tbody></table><h1 id="调用过程"><a href="#调用过程" class="headerlink" title="调用过程"></a>调用过程</h1><p>一次系统调用跨越用户态与内核态：</p><ol><li>用户程序按照约定准备<strong>系统调用号</strong>和参数。</li><li>用户程序执行 trap 指令，也叫<strong>陷入指令</strong>或<strong>访管指令</strong>。</li><li>CPU 产生自陷。硬件保存必要现场、切换到内核态，并跳转到统一的系统调用入口。</li><li>系统调用入口检查系统调用号和参数，再分派到对应的内核处理程序。</li><li>内核处理程序执行所请求的服务，将结果或错误码写入约定位置。</li><li>内核执行返回操作，恢复用户程序现场和用户态，用户程序从 trap 后的指令继续运行。</li></ol><p>系统调用引发的自陷是程序<strong>主动</strong>进入内核的同步事件。它与外部设备异步产生的中断不同，但二者都会使 CPU 转入内核态。CPU 状态和切换条件见 <a href="/2026/07/10/CPU-Modes/" class="wikilink">CPU-Modes</a>，自陷的分类见 <a href="/2026/07/01/Exception-And-Interrupt-Brief/#异常" class="wikilink">异常</a>。</p><div class="callout callout-important"><div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">用户程序不能自行修改特权级</span></div><div class="callout-content"><p>trap 指令只负责发出受控请求。真正的状态切换、入口选择和现场保护由硬件按照预设规则完成，用户程序不能指定任意内核入口，也不能直接把 CPU 改为内核态。</p></div></div># 系统调用与库函数<p><strong>库函数不等于系统调用。</strong> 库函数是程序调用的普通函数接口，是否进入内核取决于其实现：</p><ul><li>数学计算、字符串处理等库函数通常完全在用户态执行。</li><li>文件创建、进程创建、网络读写等库函数通常封装一个或多个系统调用。</li><li>一个库函数可能在用户态完成部分工作，只在必要时进入内核。例如带缓冲的输出函数可以先把数据写入用户态缓冲区，缓冲区需要提交时才调用内核写接口。</li></ul><p>因此，调用库函数是语言或运行库层面的函数调用；执行系统调用则意味着通过受控入口请求操作系统服务，并发生用户态到内核态的切换。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;系统调用&quot;&gt;&lt;a href=&quot;#系统调用&quot; class=&quot;headerlink&quot; title=&quot;系统调用&quot;&gt;&lt;/a&gt;系统调用&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;系统调用&lt;/strong&gt;是操作系统向应用程序提供的程序接口。用户程序不能直接执行特权指令，也不能直接访问内</summary>
+      
+    
+    
+    
+    <category term="Operating System" scheme="https://eliano64.github.io/categories/Operating-System/"/>
+    
+    
+    <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
+    
+    <category term="Overview" scheme="https://eliano64.github.io/tags/Overview/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Application-Models</title>
+    <link href="https://eliano64.github.io/2026/07/10/Application-Models/"/>
+    <id>https://eliano64.github.io/2026/07/10/Application-Models/</id>
+    <published>2026-07-10T01:59:13.000Z</published>
+    <updated>2026-07-10T12:59:28.004Z</updated>
+    
+    <content type="html"><![CDATA[<p>应用进程之间的通信方式主要有两种：<strong>客户&#x2F;服务器（C&#x2F;S）方式</strong>和<strong>对等（P2P）方式</strong>。</p><h1 id="客户-服务器方式"><a href="#客户-服务器方式" class="headerlink" title="客户&#x2F;服务器方式"></a>客户&#x2F;服务器方式</h1><p>客户&#x2F;服务器（Client&#x2F;Server）方式中，通信双方的角色是不对等的：</p><ul><li><strong>客户</strong>是服务请求方，主动向服务器发起通信。</li><li><strong>服务器</strong>是服务提供方，被动等待客户请求。</li></ul><p><img src="/assets/cs-p2p-comparison.svg" alt="900"></p><p>C&#x2F;S 方式的特点：</p><ul><li><strong>服务器始终运行</strong>，等待客户的服务请求。</li><li>服务器具有<strong>固定的运输层端口号</strong>（如 Web 服务器端口 80），运行服务器程序的主机也有<strong>固定的 IP 地址</strong>。</li><li><strong>服务集中型</strong>：应用服务集中在少数服务器上。一台服务器要为大量客户提供服务，常出现性能瓶颈。</li><li>为此，C&#x2F;S 应用常用<strong>计算机群集</strong>（服务器场）来构建一个强大的虚拟服务器。</li></ul><p>因特网上许多传统网络应用采用 C&#x2F;S 方式：万维网、文件传送（FTP）、电子邮件等。</p><h1 id="对等方式"><a href="#对等方式" class="headerlink" title="对等方式"></a>对等方式</h1><p>对等（Peer-to-Peer，P2P）方式中，通信双方的角色是对等的——<strong>每个对等方既是服务请求者，也是服务提供者</strong>。</p><p>P2P 方式的特点：</p><ul><li><strong>服务分散型</strong>：服务不是集中在少数服务器中，而是分散在大量对等计算机中。这些计算机通常由个人控制，位于住宅、校园和办公室中。</li><li><strong>自扩展能力较强</strong>：系统每增加一个对等方，不仅增加请求负载，也增加可供利用的处理、存储或上传能力。因此它不像纯 C&#x2F;S 模型那样只依赖中心服务器扩容，但实际性能仍会受到节点在线率、上行带宽和资源分布的影响。</li><li><strong>成本优势</strong>：通常不需要庞大的服务器设施和服务器带宽。</li></ul><p>目前因特网上流行的 P2P 应用包括 P2P 文件共享、即时通信、P2P 流媒体和分布式存储等。</p><h1 id="C-S-与-P2P-对比"><a href="#C-S-与-P2P-对比" class="headerlink" title="C&#x2F;S 与 P2P 对比"></a>C&#x2F;S 与 P2P 对比</h1><table><thead><tr><th>维度</th><th>C&#x2F;S</th><th>P2P</th></tr></thead><tbody><tr><td>角色</td><td>客户请求，服务器提供，角色不对等</td><td>每个对等方同时是请求者和提供者</td></tr><tr><td>服务分布</td><td>集中在少数服务器</td><td>分散在大量对等方</td></tr><tr><td>服务器</td><td>需要专门的服务器（可能有群集）</td><td>不需要专门的服务器设施</td></tr><tr><td>可扩展性</td><td>受限于服务器能力</td><td>每增加一个节点，服务能力随之增加</td></tr><tr><td>成本</td><td>需要服务器带宽和运维</td><td>成本低</td></tr><tr><td>地址端口</td><td>服务器有固定 IP 和端口</td><td>对等方的 IP 地址可能变化</td></tr><tr><td>典型应用</td><td>Web、FTP、Email</td><td>文件共享、即时通信、流媒体、分布式存储</td></tr></tbody></table><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">混合使用</span></div><div class="callout-content"><p>许多实际的网络应用会将 C&#x2F;S 方式和 P2P 方式混合使用。例如，即时通信的用户登录和认证使用 C&#x2F;S 方式（连接服务器验证身份），但两个用户之间的文字消息传输可以采用 P2P 方式直接通信。</p></div></div>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;应用进程之间的通信方式主要有两种：&lt;strong&gt;客户&amp;#x2F;服务器（C&amp;#x2F;S）方式&lt;/strong&gt;和&lt;strong&gt;对等（P2P）方式&lt;/strong&gt;。&lt;/p&gt;
+&lt;h1 id=&quot;客户-服务器方式&quot;&gt;&lt;a href=&quot;#客户-服务器方式&quot; class=&quot;he</summary>
+      
+    
+    
+    
+    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
+    
+    
+    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
+    
+    <category term="ApplicationLayer" scheme="https://eliano64.github.io/tags/ApplicationLayer/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Domain Name System</title>
     <link href="https://eliano64.github.io/2026/07/10/Domain-Name-System/"/>
     <id>https://eliano64.github.io/2026/07/10/Domain-Name-System/</id>
     <published>2026-07-10T01:59:13.000Z</published>
-    <updated>2026-07-10T07:16:51.012Z</updated>
+    <updated>2026-07-10T12:42:06.665Z</updated>
     
     <content type="html"><![CDATA[<h1 id="为什么需要-DNS"><a href="#为什么需要-DNS" class="headerlink" title="为什么需要 DNS"></a>为什么需要 DNS</h1><p>因特网的网际层使用 IP 地址来寻址主机（如 <code>42.83.144.13</code>），但人很难记住一串数字。应用层使用<strong>域名</strong>（如 <code>cnnic.net.cn</code>）来标识主机，便于用户记忆和使用。</p><p><strong>域名系统</strong>（Domain Name System，DNS）的作用就是把域名转换为 IP 地址。它是分布在因特网上的一套命名和查询系统，使大多数域名能在本地解析，效率高且容错性好。</p><p>因特网不能只用一台 DNS 服务器：规模太大，单台服务器会超负荷；一旦故障，整个因特网就会瘫痪。因此 DNS 采用<strong>层次结构</strong>的命名方案和<strong>分布式</strong>的服务器体系。</p><h1 id="层次域名空间"><a href="#层次域名空间" class="headerlink" title="层次域名空间"></a>层次域名空间</h1><p>因特网的域名空间是一棵倒置的树——根在最上面，但没有对应的域名。</p><p><img src="/assets/dns-domain-name-space.svg" alt="900"></p><p>域名的结构由若干个分量组成，各分量之间用点 <code>.</code> 分隔：</p><p>$$<br>\text{…三级域名.二级域名.顶级域名}<br>$$</p><p>例如 <code>mail.cctv.com</code> 中，<code>com</code> 是顶级域名，<code>cctv</code> 是二级域名，<code>mail</code> 是三级域名。级别最低的写在最左边，级别最高的写在最右边。</p><h2 id="顶级域名-TLD"><a href="#顶级域名-TLD" class="headerlink" title="顶级域名 TLD"></a>顶级域名 TLD</h2><p>顶级域名（Top Level Domain）分为三类：</p><table><thead><tr><th>类型</th><th>缩写</th><th>说明</th><th>示例</th></tr></thead><tbody><tr><td>国家顶级域名</td><td>nTLD</td><td>按 ISO 3166 规定</td><td><code>cn</code>（中国）、<code>us</code>（美国）、<code>uk</code>（英国）</td></tr><tr><td>通用顶级域名</td><td>gTLD</td><td>最常见的七个</td><td><code>com</code>、<code>net</code>、<code>org</code>、<code>int</code>、<code>edu</code>、<code>gov</code>、<code>mil</code></td></tr><tr><td>反向域</td><td>arpa</td><td>用于 IP 地址反向解析为域名</td><td><code>arpa</code></td></tr></tbody></table><p>通用顶级域名含义：</p><table><thead><tr><th>域名</th><th>含义</th></tr></thead><tbody><tr><td><code>com</code></td><td>公司企业</td></tr><tr><td><code>net</code></td><td>网络服务机构</td></tr><tr><td><code>org</code></td><td>非营利性组织</td></tr><tr><td><code>int</code></td><td>国际组织</td></tr><tr><td><code>edu</code></td><td>美国教育机构</td></tr><tr><td><code>gov</code></td><td>美国政府部门</td></tr><tr><td><code>mil</code></td><td>美国军事部门</td></tr></tbody></table><h2 id="我国的二级域名"><a href="#我国的二级域名" class="headerlink" title="我国的二级域名"></a>我国的二级域名</h2><p>在国家顶级域名 <code>cn</code> 下，我国将二级域名分为两类：</p><p><strong>类别域名</strong>（7 个）：<code>ac</code>（科研）、<code>com</code>（工商金融企业）、<code>edu</code>（教育）、<code>gov</code>（政府）、<code>net</code>（网络服务）、<code>mil</code>（军事）、<code>org</code>（非营利组织）。</p><p><strong>行政区域名</strong>（34 个）：适用于各省、自治区、直辖市，如 <code>bj</code>（北京）、<code>sh</code>（上海）、<code>js</code>（江苏）。</p><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">同名但不同级</span></div><div class="callout-content"><p><code>com</code> 既是通用顶级域名，也是我国 <code>cn</code> 下的二级类别域名。名称相同的域名其等级未必相同。</p></div></div>域名只是逻辑概念，不代表计算机所在的物理地点。<h1 id="域名服务器"><a href="#域名服务器" class="headerlink" title="域名服务器"></a>域名服务器</h1><p>域名和 IP 地址的映射关系保存在域名服务器（DNS 服务器）中。DNS 使用分布在各地的域名服务器来实现域名到 IP 地址的转换。</p><p>域名服务器可以划分为四种类型：</p><p><img src="/assets/dns-server-types.svg" alt="900"></p><table><thead><tr><th>类型</th><th>角色</th><th>职责</th></tr></thead><tbody><tr><td><strong>根域名服务器</strong></td><td>最高层次</td><td>知道所有顶级域名服务器的域名和 IP 地址；通常不直接解析域名，而是返回应查询的顶级域名服务器 IP</td></tr><tr><td><strong>顶级域名服务器</strong></td><td>管理二级域名</td><td>管理在其下注册的所有二级域名；返回最终的 IP 或下一级权限域名服务器的 IP</td></tr><tr><td><strong>权限域名服务器</strong></td><td>负责具体域名</td><td>保存负责区域中主机的域名到 IP 地址的映射</td></tr><tr><td><strong>本地域名服务器</strong></td><td>离用户最近</td><td>用户主机发起 DNS 查询时首先被询问的服务器；通常由 ISP 提供</td></tr></tbody></table><p>根域名服务器共有 <strong>13 个不同 IP 地址</strong>（<code>a.root-servers.net</code> 到 <code>m.root-servers.net</code>）。每个”服务器”实际上是由许多分布在世界各地的计算机构成的<strong>服务器群集</strong>。当本地域名服务器向根域名服务器查询时，路由器会把查询请求转发到离 DNS 客户最近的一个根域名服务器。</p><h1 id="域名解析过程"><a href="#域名解析过程" class="headerlink" title="域名解析过程"></a>域名解析过程</h1><p>DNS 查询有两种基本方式：<strong>递归查询</strong>和<strong>迭代查询</strong>。</p><h2 id="递归查询"><a href="#递归查询" class="headerlink" title="递归查询"></a>递归查询</h2><p>递归查询中，收到查询请求的域名服务器<strong>代替查询者</strong>去完成后续的所有查询，最终把结果返回给查询者。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||520)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||520)-80))+'px'">−</button></div><iframe src="/assets/dns-recursive-query-slides.html" style="width:100%;height:520px;border:0" loading="lazy"></iframe></div><p>特点：</p><ul><li>查询者只需发出一次请求，等待最终结果。</li><li>被查询的服务器（特别是根域名服务器）负担很重。</li><li>DNS 中很少全程使用递归查询。</li></ul><h2 id="迭代查询"><a href="#迭代查询" class="headerlink" title="迭代查询"></a>迭代查询</h2><p>迭代查询中，收到查询请求的域名服务器<strong>告诉查询者下一步该问谁</strong>，由查询者自己去继续查询。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||520)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||520)-80))+'px'">−</button></div><iframe src="/assets/dns-iterative-query-slides.html" style="width:100%;height:520px;border:0" loading="lazy"></iframe></div><p>特点：</p><ul><li>查询者要多次发出请求，但每步都有进展。</li><li>服务器的负担较轻——只返回自己知道的信息。</li></ul><h2 id="实际使用的模式"><a href="#实际使用的模式" class="headerlink" title="实际使用的模式"></a>实际使用的模式</h2><p>因特网 DNS 实际采用的模式是<strong>二者结合</strong>：</p><ul><li>主机向<strong>本地域名服务器</strong>的查询采用<strong>递归查询</strong>。</li><li>本地域名服务器向后继服务器的查询采用<strong>迭代查询</strong>。</li></ul><p>这样既保证主机端的简单（一次请求等结果），又避免根域名服务器被递归查询压垮。</p><p>以查询 <code>y.abc.com</code> 的 IP 地址为例，完整过程如下：</p><ol><li>主机向本地域名服务器<strong>递归查询</strong>。</li><li>本地域名服务器向根域名服务器<strong>迭代查询</strong>，根服务器返回 <code>com</code> 顶级域名服务器的 IP。</li><li>本地域名服务器向 <code>com</code> 顶级域名服务器<strong>迭代查询</strong>，返回 <code>abc.com</code> 权限域名服务器的 IP。</li><li>本地域名服务器向 <code>abc.com</code> 权限域名服务器<strong>迭代查询</strong>，返回 <code>y.abc.com</code> 的 IP。</li><li>本地域名服务器将最终结果返回给主机。</li></ol><p>DNS 报文使用运输层的 <strong>UDP</strong> 进行封装，熟知端口号为 <strong>53</strong>。</p><h1 id="DNS-高速缓存"><a href="#DNS-高速缓存" class="headerlink" title="DNS 高速缓存"></a>DNS 高速缓存</h1><p>为了提高 DNS 的查询效率、减少因特网上的 DNS 查询报文数量，域名服务器和主机都广泛使用高速缓存。</p><p><img src="/assets/dns-cache.svg" alt="900"></p><ul><li><strong>域名服务器缓存</strong>：存放最近查询过的域名及映射信息。当其他主机查询同一域名时，直接返回缓存结果，不必再次迭代查询。</li><li><strong>主机缓存</strong>：用户主机维护最近解析过的域名记录。应用或操作系统在本机缓存中找不到有效记录时，才向本地域名服务器查询。</li></ul><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">缓存时效</span></div><div class="callout-content"><p>域名到 IP 地址的映射关系不是永久不变的。域名服务器应为每项缓存内容设置<strong>计时器</strong>，删除超过合理时间的项目（如每个项目只存放<strong>两天</strong>）。主机也需要保持缓存中内容的正确性。</p></div></div>]]></content>
     
@@ -47,7 +269,7 @@
     <link href="https://eliano64.github.io/2026/07/10/Email-System/"/>
     <id>https://eliano64.github.io/2026/07/10/Email-System/</id>
     <published>2026-07-10T01:59:13.000Z</published>
-    <updated>2026-07-10T07:16:51.012Z</updated>
+    <updated>2026-07-10T12:41:56.541Z</updated>
     
     <content type="html"><![CDATA[<h1 id="电子邮件系统的组成"><a href="#电子邮件系统的组成" class="headerlink" title="电子邮件系统的组成"></a>电子邮件系统的组成</h1><p>电子邮件（E-mail）是因特网上最早流行、目前仍最重要和最实用的应用之一。</p><p>电子邮件系统采用<strong>客户&#x2F;服务器</strong>方式，由三个主要构件组成：</p><p><img src="/assets/email-system-composition.svg" alt="900"></p><table><thead><tr><th>构件</th><th>角色</th><th>说明</th></tr></thead><tbody><tr><td><strong>用户代理</strong>（UA）</td><td>用户接口</td><td>用户与电子邮件系统的接口，即邮件客户端软件。用于撰写、发送、接收和阅读邮件</td></tr><tr><td><strong>邮件服务器</strong></td><td>基础设施</td><td>发送和接收邮件，维护用户邮箱。包含大量邮箱和待转发的邮件缓存</td></tr><tr><td><strong>协议</strong></td><td>通信规则</td><td>邮件发送协议（如 SMTP）和邮件读取协议（如 POP3、IMAP4）</td></tr></tbody></table><h2 id="电子邮件的基本收发过程"><a href="#电子邮件的基本收发过程" class="headerlink" title="电子邮件的基本收发过程"></a>电子邮件的基本收发过程</h2><p>电子邮件的传送不是发送方用户代理直接发送到接收方用户代理，而是经过邮件服务器的中转：</p><ol><li>发送方使用用户代理通过 <strong>SMTP</strong> 将邮件发送给<strong>发送方邮件服务器</strong>。</li><li>发送方邮件服务器通过 <strong>SMTP</strong> 将邮件发送给<strong>接收方邮件服务器</strong>。</li><li>接收方在方便的时候，使用用户代理通过 <strong>POP3</strong>（或 IMAP4）从接收方邮件服务器读取邮件。</li></ol><p>这个过程类似于传统邮政：发件人把信投入邮箱 → 邮局分拣转发 → 收件人到邮局取信。电子邮件的”取信”是由接收方主动进行的，不是被动等待。</p><h1 id="电子邮件的信息格式"><a href="#电子邮件的信息格式" class="headerlink" title="电子邮件的信息格式"></a>电子邮件的信息格式</h1><p>电子邮件的信息格式由 RFC 5322 定义（原 RFC 822），它规定一个电子邮件由<strong>信封</strong>和<strong>内容</strong>两部分构成，内容又由<strong>首部</strong>和<strong>主体</strong>两部分构成：</p><ul><li><strong>信封</strong>：包含收件人和发件人的电子邮件地址。用户填写好首部后，邮件系统自动提取信息写入信封。用户不需要手动填写信封。</li><li><strong>首部</strong>：包含一系列关键字，每行一个关键字加冒号：<ul><li><code>From</code>：发件人电子邮件地址（通常由邮件系统自动填入）。</li><li><code>To</code>：一个或多个收件人电子邮件地址。</li><li><code>Cc</code>：抄送人电子邮件地址。抄送人收到邮件后可看可不看、可回可不回。</li><li><code>Subject</code>：邮件主题，反映邮件的主要内容。</li></ul></li><li><strong>主体</strong>：邮件的正文内容，由用户自由撰写。</li></ul><p><code>To</code> 和 <code>Subject</code> 是最重要的两个关键字，往往是必填项。</p><h1 id="MIME：多用途因特网邮件扩展"><a href="#MIME：多用途因特网邮件扩展" class="headerlink" title="MIME：多用途因特网邮件扩展"></a>MIME：多用途因特网邮件扩展</h1><p>SMTP 有一个根本限制：只能传送 <strong>7 位 ASCII 码</strong>文本数据，不能传送：</p><ul><li>可执行文件或其他二进制对象。</li><li>带有图片、音频或视频数据的多媒体邮件。</li><li>非英语国家的文字（中文、俄文、带有重音符号的法文或德文等）。</li></ul><p><strong>多用途因特网邮件扩展</strong>（MIME）就是为解决这个问题而提出的。</p><p><img src="/assets/mime-role.svg" alt="900"></p><p>MIME 的核心作用：将<strong>非 ASCII 码数据转换为 ASCII 码数据</strong>后再用 SMTP 传送，接收方用 MIME 进行<strong>逆转换</strong>还原。</p><p>MIME 主要包括三方面的扩展：</p><ul><li><strong>新增 5 个邮件首部字段</strong>，提供有关邮件主体的信息（如 MIME 版本、内容类型、内容传送编码等）。</li><li><strong>定义了许多邮件内容的格式</strong>，对多媒体电子邮件的表示方法进行标准化。</li><li><strong>定义了传送编码</strong>，可对任何内容格式进行转换，而不会被邮件系统改变。</li></ul><blockquote><p>MIME 不仅用于 SMTP，也用于后来同样面向 ASCII 码字符的 HTTP。</p></blockquote><h1 id="SMTP：邮件发送协议"><a href="#SMTP：邮件发送协议" class="headerlink" title="SMTP：邮件发送协议"></a>SMTP：邮件发送协议</h1><p><strong>简单邮件传送协议</strong>（SMTP）是电子邮件系统中的<strong>发送</strong>协议，采用 C&#x2F;S 方式，使用 TCP 端口 <strong>25</strong>。</p><p>SMTP 的”推”（push）操作体现在：</p><ul><li>发送方用户代理 → 发送方邮件服务器（推）。</li><li>发送方邮件服务器 → 接收方邮件服务器（推）。</li></ul><h2 id="SMTP-基本工作过程"><a href="#SMTP-基本工作过程" class="headerlink" title="SMTP 基本工作过程"></a>SMTP 基本工作过程</h2><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||700)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||700)-80))+'px'">−</button></div><iframe src="/assets/smtp-process-slides.html" style="width:100%;height:700px;border:0" loading="lazy"></iframe></div><p>SMTP 客户与服务器建立 TCP 连接后，通过一系列<strong>命令-应答</strong>交互完成邮件发送：</p><table><thead><tr><th>步骤</th><th>命令（客户 → 服务器）</th><th>应答（服务器 → 客户）</th><th>含义</th></tr></thead><tbody><tr><td>1</td><td>—</td><td><code>220</code> 服务就绪</td><td>建立 TCP 连接后服务器主动推送</td></tr><tr><td>2</td><td><code>HELO</code> 客户域名</td><td><code>250</code> OK</td><td>客户表明身份</td></tr><tr><td>3</td><td><code>MAIL FROM: &lt;发件人地址&gt;</code></td><td><code>250</code> OK</td><td>告知邮件来自谁</td></tr><tr><td>4</td><td><code>RCPT TO: &lt;收件人地址&gt;</code></td><td><code>250</code> OK</td><td>告知邮件发给谁</td></tr><tr><td>5</td><td><code>DATA</code></td><td><code>354</code> 开始接收</td><td>客户准备发送邮件内容</td></tr><tr><td>6</td><td>邮件内容（含首部和主体）</td><td>—</td><td>客户发送邮件正文</td></tr><tr><td>7</td><td><code>&lt;CRLF&gt;.&lt;CRLF&gt;</code>（结束符）</td><td><code>250</code> OK</td><td>客户标记邮件结束</td></tr><tr><td>8</td><td><code>QUIT</code></td><td><code>221</code> 关闭连接</td><td>客户请求释放 TCP 连接</td></tr></tbody></table><h1 id="邮件读取协议：POP3-与-IMAP4"><a href="#邮件读取协议：POP3-与-IMAP4" class="headerlink" title="邮件读取协议：POP3 与 IMAP4"></a>邮件读取协议：POP3 与 IMAP4</h1><p>邮件发送用 SMTP（推），邮件读取用 POP3 或 IMAP4（拉）。这两个都是<strong>拉</strong>（pull）协议。</p><table><thead><tr><th>维度</th><th>POP3</th><th>IMAP4</th></tr></thead><tbody><tr><td>端口</td><td>TCP <strong>110</strong></td><td>TCP <strong>143</strong></td></tr><tr><td>标准状态</td><td>因特网正式标准</td><td>因特网建议标准</td></tr><tr><td>能力</td><td>简单、功能有限</td><td>功能强大</td></tr><tr><td>工作方式</td><td>下载到本地，有两种方式</td><td><strong>联机协议</strong>，在服务器端操作邮件</td></tr><tr><td>服务器端管理</td><td>不支持（下载后本地操作）</td><td>支持：创建文件夹、分类管理、搜索等</td></tr><tr><td>离线访问</td><td>下载后可在离线状态下阅读</td><td>需联网（联机操作）</td></tr></tbody></table><p><strong>POP3 的两种工作方式</strong>：</p><ul><li><strong>下载并删除</strong>：邮件下载到本地后，从服务器邮箱中删除。换一台计算机就无法看到已读邮件。</li><li><strong>下载并保留</strong>：邮件下载到本地后，在服务器上保留副本。多设备可反复获取同一封邮件。</li></ul><p><strong>IMAP4 的优势</strong>：用户在自己的计算机上就可以操控邮件服务器中的邮箱（创建文件夹、对邮件分类、移动邮件等），就像在本地操控一样。IMAP4 是联机协议——如果未联网，则不能操作服务器上的邮件。</p><h1 id="基于万维网的电子邮件"><a href="#基于万维网的电子邮件" class="headerlink" title="基于万维网的电子邮件"></a>基于万维网的电子邮件</h1><p>现在越来越多的用户使用基于万维网的电子邮件（如 Gmail、网易邮箱等）。</p><p><img src="/assets/web-email-flow.svg" alt="900"></p><p><strong>两个邮箱位于同一邮件服务器时</strong>（例如用户 A 和 B 的邮箱都由图中的同一台网易邮件服务器管理）：</p><ul><li>用户 A 使用浏览器登录，撰写并发送邮件 → HTTP。</li><li>用户 B 使用浏览器登录，读取收到的邮件 → HTTP。</li><li>用户与该邮件服务器之间使用 HTTP；邮件在服务器内部投递，不需要跨邮件服务器的 SMTP，也不需要浏览器使用 POP3。</li></ul><p>“同一服务商”不必然等于“同一邮件服务器”。若服务商内部由多台邮件服务器分工，服务器之间仍可能经过邮件传送过程；判断时应看两个邮箱是否由同一服务器直接管理。</p><p><strong>不同服务商之间的邮件收发</strong>（如网易用户向 Gmail 用户发邮件）：</p><ul><li>用户 A 使用浏览器登录，撰写并发送 → HTTP。</li><li>A 的邮件服务器使用 <strong>SMTP</strong> 将邮件发送给 B 的邮件服务器。</li><li>用户 B 使用浏览器登录，读取收到的邮件 → HTTP。</li></ul><blockquote><p>无论哪种方式，<strong>不同邮件服务器之间</strong>的中转始终使用 SMTP。万维网邮件只是把用户到服务器这一段从 SMTP&#x2F;POP3 替换成了 HTTP。</p></blockquote>]]></content>
     
@@ -95,32 +317,6 @@
   </entry>
   
   <entry>
-    <title>Network-Application-Models</title>
-    <link href="https://eliano64.github.io/2026/07/10/Network-Application-Models/"/>
-    <id>https://eliano64.github.io/2026/07/10/Network-Application-Models/</id>
-    <published>2026-07-10T01:59:13.000Z</published>
-    <updated>2026-07-10T08:53:26.859Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="应用层解决什么问题"><a href="#应用层解决什么问题" class="headerlink" title="应用层解决什么问题"></a>应用层解决什么问题</h1><p>应用层是 TCP&#x2F;IP 体系结构的顶层，离用户最近。它的任务是通过应用进程之间的交互来实现特定网络应用——浏览器访问网页、邮件客户端收发邮件、FTP 工具传文件，都是在应用层完成的。</p><p>网络应用程序只运行在端系统中。运输层已经为应用层提供了端到端的进程间逻辑通信，应用开发人员只需要关心应用协议和用户界面，不需要考虑路由器和交换机等核心网络设备。</p><p>应用层的内容不是一种通用的传输机制，而是几个具体的网络应用协议。在学这些协议之前，先看清楚它们采用什么样的网络应用架构。</p><p>应用进程之间的通信方式主要有两种：<strong>客户&#x2F;服务器（C&#x2F;S）方式</strong>和<strong>对等（P2P）方式</strong>。</p><h1 id="客户-服务器方式"><a href="#客户-服务器方式" class="headerlink" title="客户&#x2F;服务器方式"></a>客户&#x2F;服务器方式</h1><p>客户&#x2F;服务器（Client&#x2F;Server）方式中，通信双方的角色是不对等的：</p><ul><li><strong>客户</strong>是服务请求方，主动向服务器发起通信。</li><li><strong>服务器</strong>是服务提供方，被动等待客户请求。</li></ul><p><img src="/assets/cs-p2p-comparison.svg" alt="900"></p><p>C&#x2F;S 方式的特点：</p><ul><li><strong>服务器始终运行</strong>，等待客户的服务请求。</li><li>服务器具有<strong>固定的运输层端口号</strong>（如 Web 服务器端口 80），运行服务器程序的主机也有<strong>固定的 IP 地址</strong>。</li><li><strong>服务集中型</strong>：应用服务集中在少数服务器上。一台服务器要为大量客户提供服务，常出现性能瓶颈。</li><li>为此，C&#x2F;S 应用常用<strong>计算机群集</strong>（服务器场）来构建一个强大的虚拟服务器。</li></ul><p>因特网上许多传统网络应用采用 C&#x2F;S 方式：万维网、文件传送（FTP）、电子邮件等。</p><h1 id="对等方式"><a href="#对等方式" class="headerlink" title="对等方式"></a>对等方式</h1><p>对等（Peer-to-Peer，P2P）方式中，通信双方的角色是对等的——<strong>每个对等方既是服务请求者，也是服务提供者</strong>。</p><p>P2P 方式的特点：</p><ul><li><strong>服务分散型</strong>：服务不是集中在少数服务器中，而是分散在大量对等计算机中。这些计算机通常由个人控制，位于住宅、校园和办公室中。</li><li><strong>自扩展能力较强</strong>：系统每增加一个对等方，不仅增加请求负载，也增加可供利用的处理、存储或上传能力。因此它不像纯 C&#x2F;S 模型那样只依赖中心服务器扩容，但实际性能仍会受到节点在线率、上行带宽和资源分布的影响。</li><li><strong>成本优势</strong>：通常不需要庞大的服务器设施和服务器带宽。</li></ul><p>目前因特网上流行的 P2P 应用包括 P2P 文件共享、即时通信、P2P 流媒体和分布式存储等。</p><h1 id="C-S-与-P2P-对比"><a href="#C-S-与-P2P-对比" class="headerlink" title="C&#x2F;S 与 P2P 对比"></a>C&#x2F;S 与 P2P 对比</h1><table><thead><tr><th>维度</th><th>C&#x2F;S</th><th>P2P</th></tr></thead><tbody><tr><td>角色</td><td>客户请求，服务器提供，角色不对等</td><td>每个对等方同时是请求者和提供者</td></tr><tr><td>服务分布</td><td>集中在少数服务器</td><td>分散在大量对等方</td></tr><tr><td>服务器</td><td>需要专门的服务器（可能有群集）</td><td>不需要专门的服务器设施</td></tr><tr><td>可扩展性</td><td>受限于服务器能力</td><td>每增加一个节点，服务能力随之增加</td></tr><tr><td>成本</td><td>需要服务器带宽和运维</td><td>成本低</td></tr><tr><td>地址端口</td><td>服务器有固定 IP 和端口</td><td>对等方的 IP 地址可能变化</td></tr><tr><td>典型应用</td><td>Web、FTP、Email</td><td>文件共享、即时通信、流媒体、分布式存储</td></tr></tbody></table><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">混合使用</span></div><div class="callout-content"><p>许多实际的网络应用会将 C&#x2F;S 方式和 P2P 方式混合使用。例如，即时通信的用户登录和认证使用 C&#x2F;S 方式（连接服务器验证身份），但两个用户之间的文字消息传输可以采用 P2P 方式直接通信。</p></div></div>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;应用层解决什么问题&quot;&gt;&lt;a href=&quot;#应用层解决什么问题&quot; class=&quot;headerlink&quot; title=&quot;应用层解决什么问题&quot;&gt;&lt;/a&gt;应用层解决什么问题&lt;/h1&gt;&lt;p&gt;应用层是 TCP&amp;#x2F;IP 体系结构的顶层，离用户最近。它的任务是通过应用进程</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="ApplicationLayer" scheme="https://eliano64.github.io/tags/ApplicationLayer/"/>
-    
-  </entry>
-  
-  <entry>
     <title>World Wide Web</title>
     <link href="https://eliano64.github.io/2026/07/10/World-Wide-Web/"/>
     <id>https://eliano64.github.io/2026/07/10/World-Wide-Web/</id>
@@ -147,11 +343,37 @@
   </entry>
   
   <entry>
+    <title>OS Kernel</title>
+    <link href="https://eliano64.github.io/2026/07/10/OS-Kernel/"/>
+    <id>https://eliano64.github.io/2026/07/10/OS-Kernel/</id>
+    <published>2026-07-09T16:00:00.000Z</published>
+    <updated>2026-07-10T12:44:52.023Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="操作系统内核"><a href="#操作系统内核" class="headerlink" title="操作系统内核"></a>操作系统内核</h1><p><strong>内核</strong>是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行在<strong>内核态</strong>。</p><h2 id="内核态与用户态"><a href="#内核态与用户态" class="headerlink" title="内核态与用户态"></a>内核态与用户态</h2><p>CPU 至少提供两种执行状态：</p><table><thead><tr><th>状态</th><th>权限</th><th>运行内容</th></tr></thead><tbody><tr><td>内核态</td><td>可执行所有指令，访问所有内存和硬件</td><td>内核程序</td></tr><tr><td>用户态</td><td>只能执行非特权指令，访问受限地址空间</td><td>普通应用程序</td></tr></tbody></table><p>区分两种状态是为了<strong>保护</strong>。如果任意程序都能直接操作硬件或修改内核数据结构，一个用户程序的 bug 就可能破坏整个系统。CPU 在硬件层面强制执行这一隔离——用户态程序执行特权指令会触发异常，CPU 把控制权交还给内核处理。</p><h2 id="内核的典型功能"><a href="#内核的典型功能" class="headerlink" title="内核的典型功能"></a>内核的典型功能</h2><table><thead><tr><th>功能</th><th>说明</th></tr></thead><tbody><tr><td>时钟管理</td><td>利用时钟中断实现计时、进程调度</td></tr><tr><td>中断处理</td><td>响应外部中断和异常，转入对应处理程序</td></tr><tr><td>原语</td><td>完成不可被中断打断的关键操作</td></tr><tr><td>进程管理</td><td>进程创建、撤销、调度、切换</td></tr><tr><td>存储器管理</td><td>内存分配、地址转换、虚拟存储</td></tr><tr><td>设备管理</td><td>I&#x2F;O 控制、设备分配、驱动协作</td></tr></tbody></table><p>判断一个功能是否应放入内核的标准：是否必须直接访问硬件？是否执行特权指令？是否维护影响系统全局的关键数据结构？图形界面、部分系统工具、某些服务程序不满足这些条件，放在用户态更安全。</p><h2 id="大内核与微内核"><a href="#大内核与微内核" class="headerlink" title="大内核与微内核"></a>大内核与微内核</h2><p>内核设计的根本分歧在于：<strong>多少功能应该放在内核态？</strong></p><table><thead><tr><th>结构</th><th>做法</th><th>优点</th><th>代价</th></tr></thead><tbody><tr><td>大内核</td><td>进程管理、存储管理、设备管理等主要功能都放在内核态</td><td>模块之间直接调用，状态切换少，性能较高</td><td>内核庞大，任何模块的 bug 都可能影响整个系统</td></tr><tr><td>微内核</td><td>内核只保留中断处理、原语、进程通信、调度等最基本功能；文件系统、网络栈等作为用户态进程运行</td><td>内核小，可靠性高；单个服务崩溃不拖垮内核</td><td>服务之间需要频繁的用户态&#x2F;内核态切换，开销更大</td></tr></tbody></table><p>大内核也称宏内核、单内核，典型例子是 Linux、UNIX。微内核的代表是 Minix、QNX。</p><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">状态切换有成本</span></div><div class="callout-content"><p>用户态切到内核态需要保存现场、切换栈、修改 CPU 状态位，返回用户态时需要恢复。微内核结构中服务间通信更频繁，切换次数更多，性能开销更明显——这也是实际商用的微内核系统较少的原因：设计上的简洁往往需要为性能做出妥协。</p></div></div>## 常见 OS 结构<p>除了大内核与微内核的核心选择，操作系统在代码组织上还有多种形式。这些结构可以和上述内核架构组合使用。</p><table><thead><tr><th>结构</th><th>思路</th><th>特点</th></tr></thead><tbody><tr><td>分层结构</td><td>每层只能调用更低层</td><td>层次清晰，便于调试；但严格分层不易，跨层调用效率低</td></tr><tr><td>模块化结构</td><td>按功能划分模块，模块之间通过明确接口通信</td><td>灵活，便于维护和扩展</td></tr><tr><td>外核</td><td>内核只做资源保护和多路复用，资源管理策略交给应用</td><td>应用可针对自身需求做最优资源管理；实现复杂</td></tr></tbody></table><div class="callout callout-abstract"><div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">区分两个"结构"</span></div><div class="callout-content"><p>“大内核 vs 微内核”回答的是<strong>代码跑在内核态还是用户态</strong>。<br>“分层&#x2F;模块化&#x2F;外核”回答的是<strong>代码怎么组织、模块之间怎么调用</strong>。<br>两者正交。Linux 是大内核 + 模块化；QNX 是微内核 + 模块化。</p></div></div>## 原语<p><strong>原语</strong>是一段具有<strong>原子性</strong>的内核程序：一旦开始执行就必须一气呵成，中途不能被中断或调度打断。</p><p>原语的原子性依赖内核态的执行权限来保证——原语运行时通常关中断，或使用自旋锁等同步机制阻止并发访问。</p><p>原语常用于修改系统全局的关键数据结构：</p><ul><li>进程控制块的创建、状态切换和撤销</li><li>就绪队列和等待队列的插入与删除</li><li>设备分配表的修改</li><li>信号量的 P&#x2F;V 操作</li></ul><p>这些操作若被中途打断——例如刚修改了一半 PCB 状态就发生进程切换——系统状态可能出现不一致，后续难以恢复。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;操作系统内核&quot;&gt;&lt;a href=&quot;#操作系统内核&quot; class=&quot;headerlink&quot; title=&quot;操作系统内核&quot;&gt;&lt;/a&gt;操作系统内核&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;内核&lt;/strong&gt;是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行</summary>
+      
+    
+    
+    
+    <category term="Operating System" scheme="https://eliano64.github.io/categories/Operating-System/"/>
+    
+    
+    <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
+    
+    <category term="Overview" scheme="https://eliano64.github.io/tags/Overview/"/>
+    
+  </entry>
+  
+  <entry>
     <title>OS Boot</title>
     <link href="https://eliano64.github.io/2026/07/10/OS-Boot/"/>
     <id>https://eliano64.github.io/2026/07/10/OS-Boot/</id>
     <published>2026-07-09T16:00:00.000Z</published>
-    <updated>2026-07-10T07:16:51.033Z</updated>
+    <updated>2026-07-10T12:44:47.080Z</updated>
     
     <content type="html"><![CDATA[<p>操作系统<strong>引导</strong>解决的问题是：按下电源后，CPU 如何从一无所有的硬件初始状态，一步步走到操作系统就绪、用户可以开始使用？</p><p>核心矛盾是一个<strong>自举问题</strong>：要加载操作系统，需要磁盘读写能力和文件系统解析能力；但这些能力本身就是操作系统才提供的。开机时内存是空的，操作系统还没运行——谁来加载操作系统？</p><p>答案是一段<strong>极小的固化程序</strong>充当起点。它只做最基础的事：从磁盘的固定位置找到下一段稍大的程序，把控制权交过去。每一段程序再找到更大、更完整的下一段，像接力一样逐级放大，直到完整的内核被装入内存并接管整台机器。</p><h1 id="引导块"><a href="#引导块" class="headerlink" title="引导块"></a>引导块</h1><p>引导程序的存放位置是约定好的——在磁盘的某个<strong>固定位置</strong>。这个位置称为<strong>引导块</strong>，也叫启动块。</p><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">为什么必须是固定位置</span></div><div class="callout-content"><p>开机早期没有操作系统，ROM 中的小程序不能依赖文件系统去”按路径查找”下一段程序。它只能用最简单的规则——比如”去磁盘的第一个扇区”——找到引导程序。所以启动块、MBR、活动分区引导记录等位置都需要硬件或固件级别的约定，不能随意变动。</p></div></div>拥有引导块的磁盘称为**启动磁盘**或**系统磁盘**。<h1 id="BIOS-引导链"><a href="#BIOS-引导链" class="headerlink" title="BIOS 引导链"></a>BIOS 引导链</h1><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||720)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||720)-80))+'px'">−</button></div><iframe src="/assets/os-boot-process-slides.html" style="width:100%;height:720px;border:0" loading="lazy"></iframe></div><p>典型的 BIOS 引导过程：</p><ol><li><strong>CPU 上电复位</strong> 从硬件约定的固定地址开始取指，该地址映射到 ROM，执行其中的<strong>自举装入程序</strong>。</li><li><strong>硬件自检与设备选择</strong> ROM 程序进行 POST 自检，按 BIOS 中设置的启动顺序选择启动设备。</li><li><strong>读入 MBR</strong> ROM 程序把启动磁盘的第一个扇区（512 字节）——<strong>主引导记录 MBR</strong> 读入内存，并把控制权交给其中的引导代码。MBR 的前 446 字节是可执行代码，后 64 字节是分区表。</li><li><strong>扫描分区表</strong> MBR 中的引导程序扫描分区表，找到标记为<strong>活动分区</strong>的分区。</li><li><strong>读入分区引导记录</strong> 系统读入活动分区的第一个扇区——<strong>分区引导记录</strong>，执行其中的引导程序。</li><li><strong>查找并加载内核</strong> 分区引导程序或启动管理器在文件系统中定位操作系统内核和初始化程序，将它们装入内存。</li><li><strong>内核初始化</strong> 内核开始执行，建立中断向量表、内存管理、进程管理、设备驱动等基本运行环境。</li><li><strong>进入用户态</strong> 系统启动第一个用户态服务或登录程序，此后普通用户程序通过系统调用请求内核服务。</li></ol><p>整个过程的逻辑是：<strong>每一段程序都只负责找到比它更大、更完整的下一段，交付控制权，不做多余的事。</strong> 这种逐级放大的设计让几百字节的 ROM 代码最终能启动几 GB 的操作系统内核。</p>]]></content>
     
@@ -169,29 +391,7 @@
     
     <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
     
-  </entry>
-  
-  <entry>
-    <title>OS Kernel</title>
-    <link href="https://eliano64.github.io/2026/07/10/OS-Kernel/"/>
-    <id>https://eliano64.github.io/2026/07/10/OS-Kernel/</id>
-    <published>2026-07-09T16:00:00.000Z</published>
-    <updated>2026-07-10T07:16:51.033Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="操作系统内核"><a href="#操作系统内核" class="headerlink" title="操作系统内核"></a>操作系统内核</h1><p><strong>内核</strong>是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行在<strong>内核态</strong>。</p><h2 id="内核态与用户态"><a href="#内核态与用户态" class="headerlink" title="内核态与用户态"></a>内核态与用户态</h2><p>CPU 至少提供两种执行状态：</p><table><thead><tr><th>状态</th><th>权限</th><th>运行内容</th></tr></thead><tbody><tr><td>内核态</td><td>可执行所有指令，访问所有内存和硬件</td><td>内核程序</td></tr><tr><td>用户态</td><td>只能执行非特权指令，访问受限地址空间</td><td>普通应用程序</td></tr></tbody></table><p>区分两种状态是为了<strong>保护</strong>。如果任意程序都能直接操作硬件或修改内核数据结构，一个用户程序的 bug 就可能破坏整个系统。CPU 在硬件层面强制执行这一隔离——用户态程序执行特权指令会触发异常，CPU 把控制权交还给内核处理。</p><h2 id="内核的典型功能"><a href="#内核的典型功能" class="headerlink" title="内核的典型功能"></a>内核的典型功能</h2><table><thead><tr><th>功能</th><th>说明</th></tr></thead><tbody><tr><td>时钟管理</td><td>利用时钟中断实现计时、进程调度</td></tr><tr><td>中断处理</td><td>响应外部中断和异常，转入对应处理程序</td></tr><tr><td>原语</td><td>完成不可被中断打断的关键操作</td></tr><tr><td>进程管理</td><td>进程创建、撤销、调度、切换</td></tr><tr><td>存储器管理</td><td>内存分配、地址转换、虚拟存储</td></tr><tr><td>设备管理</td><td>I&#x2F;O 控制、设备分配、驱动协作</td></tr></tbody></table><p>判断一个功能是否应放入内核的标准：是否必须直接访问硬件？是否执行特权指令？是否维护影响系统全局的关键数据结构？图形界面、部分系统工具、某些服务程序不满足这些条件，放在用户态更安全。</p><h2 id="大内核与微内核"><a href="#大内核与微内核" class="headerlink" title="大内核与微内核"></a>大内核与微内核</h2><p>内核设计的根本分歧在于：<strong>多少功能应该放在内核态？</strong></p><table><thead><tr><th>结构</th><th>做法</th><th>优点</th><th>代价</th></tr></thead><tbody><tr><td>大内核</td><td>进程管理、存储管理、设备管理等主要功能都放在内核态</td><td>模块之间直接调用，状态切换少，性能较高</td><td>内核庞大，任何模块的 bug 都可能影响整个系统</td></tr><tr><td>微内核</td><td>内核只保留中断处理、原语、进程通信、调度等最基本功能；文件系统、网络栈等作为用户态进程运行</td><td>内核小，可靠性高；单个服务崩溃不拖垮内核</td><td>服务之间需要频繁的用户态&#x2F;内核态切换，开销更大</td></tr></tbody></table><p>大内核也称宏内核、单内核，典型例子是 Linux、UNIX。微内核的代表是 Minix、QNX。</p><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">状态切换有成本</span></div><div class="callout-content"><p>用户态切到内核态需要保存现场、切换栈、修改 CPU 状态位，返回用户态时需要恢复。微内核结构中服务间通信更频繁，切换次数更多，性能开销更明显——这也是实际商用的微内核系统较少的原因：设计上的简洁往往需要为性能做出妥协。</p></div></div>## 常见 OS 结构<p>除了大内核与微内核的核心选择，操作系统在代码组织上还有多种形式。这些结构可以和上述内核架构组合使用。</p><table><thead><tr><th>结构</th><th>思路</th><th>特点</th></tr></thead><tbody><tr><td>分层结构</td><td>每层只能调用更低层</td><td>层次清晰，便于调试；但严格分层不易，跨层调用效率低</td></tr><tr><td>模块化结构</td><td>按功能划分模块，模块之间通过明确接口通信</td><td>灵活，便于维护和扩展</td></tr><tr><td>外核</td><td>内核只做资源保护和多路复用，资源管理策略交给应用</td><td>应用可针对自身需求做最优资源管理；实现复杂</td></tr></tbody></table><div class="callout callout-abstract"><div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">区分两个"结构"</span></div><div class="callout-content"><p>“大内核 vs 微内核”回答的是<strong>代码跑在内核态还是用户态</strong>。<br>“分层&#x2F;模块化&#x2F;外核”回答的是<strong>代码怎么组织、模块之间怎么调用</strong>。<br>两者正交。Linux 是大内核 + 模块化；QNX 是微内核 + 模块化。</p></div></div>## 原语<p><strong>原语</strong>是一段具有<strong>原子性</strong>的内核程序：一旦开始执行就必须一气呵成，中途不能被中断或调度打断。</p><p>原语的原子性依赖内核态的执行权限来保证——原语运行时通常关中断，或使用自旋锁等同步机制阻止并发访问。</p><p>原语常用于修改系统全局的关键数据结构：</p><ul><li>进程控制块的创建、状态切换和撤销</li><li>就绪队列和等待队列的插入与删除</li><li>设备分配表的修改</li><li>信号量的 P&#x2F;V 操作</li></ul><p>这些操作若被中途打断——例如刚修改了一半 PCB 状态就发生进程切换——系统状态可能出现不一致，后续难以恢复。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;操作系统内核&quot;&gt;&lt;a href=&quot;#操作系统内核&quot; class=&quot;headerlink&quot; title=&quot;操作系统内核&quot;&gt;&lt;/a&gt;操作系统内核&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;内核&lt;/strong&gt;是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行</summary>
-      
-    
-    
-    
-    <category term="Operating System" scheme="https://eliano64.github.io/categories/Operating-System/"/>
-    
-    
-    <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
+    <category term="Overview" scheme="https://eliano64.github.io/tags/Overview/"/>
     
   </entry>
   
@@ -200,7 +400,7 @@
     <link href="https://eliano64.github.io/2026/07/10/OS-VMM/"/>
     <id>https://eliano64.github.io/2026/07/10/OS-VMM/</id>
     <published>2026-07-09T16:00:00.000Z</published>
-    <updated>2026-07-10T07:16:51.033Z</updated>
+    <updated>2026-07-10T12:44:41.013Z</updated>
     
     <content type="html"><![CDATA[<h1 id="虚拟机"><a href="#虚拟机" class="headerlink" title="虚拟机"></a>虚拟机</h1><p><strong>虚拟机</strong>是用软件模拟出来的计算机。它在一台物理机器上创建多个彼此隔离的执行环境，每个环境可以独立运行一个操作系统，就像独占一台真实机器一样。</p><p><strong>VMM</strong> 负责管理这些虚拟机。VMM 也叫 <strong>Hypervisor</strong>。</p><p>虚拟化的典型用途：</p><ul><li><strong>服务器整合</strong>：多台虚拟机跑在同一台物理服务器上，提高硬件利用率、降低运维成本。</li><li><strong>隔离测试</strong>：在一台机器上同时运行多个操作系统实例，彼此互不影响，适合安全研究和兼容性测试。</li><li><strong>兼容旧系统</strong>：在新硬件上运行为旧操作系统编写的程序，无需保留老机器。</li></ul><h2 id="VMM-的两种类型"><a href="#VMM-的两种类型" class="headerlink" title="VMM 的两种类型"></a>VMM 的两种类型</h2><table><thead><tr><th>类型</th><th>位置</th><th>特点</th></tr></thead><tbody><tr><td>第一类 VMM</td><td>直接运行在硬件上，本身就是一个精简的操作系统</td><td>管理虚拟机更直接，性能较高，常用于数据中心（如 VMware ESXi、KVM）</td></tr><tr><td>第二类 VMM</td><td>运行在宿主操作系统上，作为一个用户态或内核态程序</td><td>安装使用方便，常见于桌面虚拟化（如 VirtualBox、VMware Workstation）</td></tr></tbody></table><p>第一类 VMM 直接面对硬件，不需要经过宿主 OS 中转，因此指令模拟和资源调度的路径更短。第二类 VMM 借助宿主 OS 已有的设备驱动和电源管理，实现更简单但开销更大。</p><h2 id="CPU-虚拟化的核心挑战"><a href="#CPU-虚拟化的核心挑战" class="headerlink" title="CPU 虚拟化的核心挑战"></a>CPU 虚拟化的核心挑战</h2><p>虚拟化的根本困难在于<strong>特权指令的控制权</strong>。</p><p>客户操作系统认为自己拥有整台机器，运行在最高特权级（Ring 0），可以执行任何特权指令。但实际上它不能真正控制物理硬件——否则一台虚拟机里的操作可能破坏另一台虚拟机，甚至破坏宿主机。</p><h3 id="陷入与模拟"><a href="#陷入与模拟" class="headerlink" title="陷入与模拟"></a>陷入与模拟</h3><p>解决思路是 <strong>trap-and-emulate</strong>，三步循环：</p><ol><li><strong>降级执行</strong>：VMM 运行在最高特权级；客户 OS 被放在较低特权级运行。</li><li><strong>陷入</strong>：客户 OS 执行特权指令时，CPU 检测到权限不足，自动把控制权交还给 VMM。这个机制叫 <strong>trap</strong> 或 <strong>VM exit</strong>。</li><li><strong>模拟并返回</strong>：VMM 检查被拦截的指令、判断其意图，在自己的数据结构和硬件上模拟执行结果，然后把控制权返回客户 OS。</li></ol><p>客户 OS 始终不知道自己在”坐牢”——它以为自己执行了特权指令，实际上每条敏感指令都被 VMM 拦截并代劳。</p><h3 id="硬件辅助"><a href="#硬件辅助" class="headerlink" title="硬件辅助"></a>硬件辅助</h3><p>早期的 x86 架构对虚拟化支持不完善：部分敏感指令在非 Ring 0 下不触发 trap，VMM 无法完全拦截。现代 CPU 把拦截能力做进了硬件：</p><table><thead><tr><th>技术</th><th>来源</th><th>做法</th></tr></thead><tbody><tr><td>VT-x</td><td>Intel</td><td>引入 VMX root 模式（VMM）和 non-root 模式（客户 OS），客户 OS 的敏感操作自动触发 VM exit</td></tr><tr><td>AMD-V</td><td>AMD</td><td>类似的硬件辅助，引入 host 模式和 guest 模式</td></tr></tbody></table><p>有了硬件辅助，VMM 不再需要复杂的软件手段（如动态二进制翻译）去补全拦截缺口——CPU 自身就保证所有需要拦截的敏感操作都能被捕获。</p><h3 id="权限级模型"><a href="#权限级模型" class="headerlink" title="权限级模型"></a>权限级模型</h3><p>支持虚拟化的 CPU 提供的特权层次大致为：</p><table><thead><tr><th>层级</th><th>运行内容</th><th>说明</th></tr></thead><tbody><tr><td>VMM 层（VMX root &#x2F; Ring -1）</td><td>Hypervisor</td><td>最高特权，管理所有物理资源</td></tr><tr><td>Ring 0（内核态）</td><td>客户 OS 内核</td><td>客户 OS “以为”自己拥有整台机器</td></tr><tr><td>Ring 3（用户态）</td><td>普通应用程序</td><td>最低特权，只能通过系统调用请求服务</td></tr></tbody></table><div class="callout callout-abstract"><div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">一句话概括</span></div><div class="callout-content"><p>虚拟化的核心难题始终是同一个：既要让客户 OS 感觉自己在控制硬件，又要保证真正的物理资源始终在 VMM 的掌控之下。trap-and-emulate 是软件解法，硬件辅助（VT-x &#x2F; AMD-V）把这个难题从软件层移到了硬件层，让 VMM 的实现复杂度大幅降低。</p></div></div>]]></content>
     
@@ -216,6 +416,8 @@
     
     
     <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
+    
+    <category term="Overview" scheme="https://eliano64.github.io/tags/Overview/"/>
     
   </entry>
   
@@ -347,191 +549,6 @@
     <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
     
     <category term="TransportLayer" scheme="https://eliano64.github.io/tags/TransportLayer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Transport Layer Overview</title>
-    <link href="https://eliano64.github.io/2026/07/09/Transport-Layer/"/>
-    <id>https://eliano64.github.io/2026/07/09/Transport-Layer/</id>
-    <published>2026-07-09T03:37:07.000Z</published>
-    <updated>2026-07-10T07:16:51.040Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="运输层解决什么问题"><a href="#运输层解决什么问题" class="headerlink" title="运输层解决什么问题"></a>运输层解决什么问题</h1><p>网络层把 IP 数据报从一台主机送到另一台主机，运输层则把数据交给正确的应用进程。换句话说：</p><table><thead><tr><th>层次</th><th>通信范围</th><th>标识对象</th></tr></thead><tbody><tr><td>网络层</td><td>主机到主机</td><td>IP 地址</td></tr><tr><td>运输层</td><td>进程到进程</td><td>端口号</td></tr></tbody></table><p><img src="/assets/transport-layer-scope.svg" alt="900"></p><p>进程到进程通信是逻辑通信。两端运输层看起来像是在水平通信，但数据实际仍要向下交给网络层、数据链路层和物理层，再在接收端逐层向上交付。</p><p>在 TCP&#x2F;IP 体系中，运输层最重要的两个协议是 UDP 和 TCP：</p><table><thead><tr><th>协议</th><th>运输层数据单元</th><th>基本服务</th></tr></thead><tbody><tr><td>UDP</td><td>UDP 用户数据报</td><td>无连接、不可靠、首部小</td></tr><tr><td>TCP</td><td>TCP 报文段</td><td>面向连接、可靠、面向字节流</td></tr></tbody></table><h1 id="端口号"><a href="#端口号" class="headerlink" title="端口号"></a>端口号</h1><p>一台主机上可能同时运行很多网络应用。运输层用端口号区分这些应用进程。</p><p>端口号长度为 16 bit，取值范围是 <code>0-65535</code>。</p><table><thead><tr><th>类型</th><th align="right">范围</th><th>用途</th></tr></thead><tbody><tr><td>熟知端口号</td><td align="right"><code>0-1023</code></td><td>分配给重要服务器程序</td></tr><tr><td>登记端口号</td><td align="right"><code>1024-49151</code></td><td>给一般服务器程序登记使用</td></tr><tr><td>短暂端口号</td><td align="right"><code>49152-65535</code></td><td>客户端运行时临时选择</td></tr></tbody></table><p>常见熟知端口号：</p><table><thead><tr><th>应用层协议</th><th>运输层协议</th><th align="right">端口号</th></tr></thead><tbody><tr><td>FTP</td><td>TCP</td><td align="right"><code>21/20</code></td></tr><tr><td>DNS</td><td>UDP</td><td align="right"><code>53</code></td></tr><tr><td>DHCP</td><td>UDP</td><td align="right"><code>67/68</code></td></tr><tr><td>HTTP</td><td>TCP</td><td align="right"><code>80</code></td></tr><tr><td>HTTPS</td><td>TCP</td><td align="right"><code>443</code></td></tr><tr><td>SMTP</td><td>TCP</td><td align="right"><code>25</code></td></tr><tr><td>BGP</td><td>TCP</td><td align="right"><code>179</code></td></tr><tr><td>RIP</td><td>UDP</td><td align="right"><code>520</code></td></tr></tbody></table><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">端口号的本地意义</span></div><div class="callout-content"><p>端口号只在本机运输层协议栈内用来标识应用进程。不同主机上的同一端口号没有必然关系；TCP 的 <code>53</code> 端口和 UDP 的 <code>53</code> 端口也属于不同的端口空间。</p></div></div># 复用与分用<p>发送方的多个应用进程把数据交给运输层，运输层根据应用选择 UDP 或 TCP 封装，这叫复用。接收方收到 UDP 用户数据报或 TCP 报文段后，根据协议类型和目的端口号把数据交给对应应用进程，这叫分用。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button></div><iframe src="/assets/transport-port-mux-demux-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe></div><p><img src="/assets/transport-port-demux-examples.svg" alt="900"></p><h1 id="UDP-与-TCP-的服务模型"><a href="#UDP-与-TCP-的服务模型" class="headerlink" title="UDP 与 TCP 的服务模型"></a>UDP 与 TCP 的服务模型</h1><p>UDP 和 TCP 都运行在 IP 之上。IP 本身不保证可靠交付，UDP 基本保留这种简单模型，只增加端口分用和检验和；TCP 则在运输层补上连接管理、确认、重传、流量控制和拥塞控制等机制。</p><p><img src="/assets/udp-tcp-service-model.svg" alt="900"></p><table><thead><tr><th>维度</th><th>UDP</th><th>TCP</th></tr></thead><tbody><tr><td>连接</td><td>无连接，发送前不握手</td><td>面向连接，通信前建立连接</td></tr><tr><td>可靠性</td><td>不确认、不重传、不保证有序</td><td>确认、重传、有序交付</td></tr><tr><td>数据形态</td><td>保留应用报文边界</td><td>面向字节流</td></tr><tr><td>通信方式</td><td>可单播、多播、广播</td><td>点对点单播连接</td></tr><tr><td>首部开销</td><td>固定 8 B</td><td>最小 20 B，最大 60 B</td></tr><tr><td>典型场景</td><td>DNS、DHCP、RIP、实时音视频、简单请求响应</td><td>HTTP、HTTPS、SMTP、FTP、BGP</td></tr></tbody></table><p>实时语音、视频会议这类应用通常更怕等待重传造成时延抖动；文件传输、网页访问、邮件传送更需要可靠、有序的字节流。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;运输层解决什么问题&quot;&gt;&lt;a href=&quot;#运输层解决什么问题&quot; class=&quot;headerlink&quot; title=&quot;运输层解决什么问题&quot;&gt;&lt;/a&gt;运输层解决什么问题&lt;/h1&gt;&lt;p&gt;网络层把 IP 数据报从一台主机送到另一台主机，运输层则把数据交给正确的应用进程。换</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="TransportLayer" scheme="https://eliano64.github.io/tags/TransportLayer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>UDP Datagram</title>
-    <link href="https://eliano64.github.io/2026/07/09/UDP-Datagram/"/>
-    <id>https://eliano64.github.io/2026/07/09/UDP-Datagram/</id>
-    <published>2026-07-09T03:37:07.000Z</published>
-    <updated>2026-07-10T08:19:28.191Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="UDP-的位置"><a href="#UDP-的位置" class="headerlink" title="UDP 的位置"></a>UDP 的位置</h1><p>UDP 是运输层协议。它在 IP 提供的主机到主机交付之上，增加了两件事：</p><ul><li>用端口号把数据交给正确的应用进程。</li><li>用检验和检查 UDP 用户数据报是否出现误码。</li></ul><p><strong>UDP 不建立连接，不维护可靠传输状态</strong>。发送方把应用报文交给 UDP 后，UDP 封装成一个 UDP 用户数据报并交给 IP；接收方若检出误码就丢弃，不确认、不重传、不排序。</p><h1 id="UDP-用户数据报"><a href="#UDP-用户数据报" class="headerlink" title="UDP 用户数据报"></a>UDP 用户数据报</h1><p>UDP 用户数据报由 UDP 首部和数据载荷组成。首部固定 8 B，包含 4 个字段，每个字段 2 B。</p><p><img src="/assets/udp-datagram-header.svg" alt="900"></p><table><thead><tr><th>字段</th><th align="right">长度</th><th>含义</th></tr></thead><tbody><tr><td>源端口</td><td align="right">16 bit</td><td>发送进程使用的端口号；接收方回送响应时作为目的端口</td></tr><tr><td>目的端口</td><td align="right">16 bit</td><td>接收进程使用的端口号；接收方据此分用</td></tr><tr><td>长度</td><td align="right">16 bit</td><td>UDP 首部和 UDP 数据载荷的总长度</td></tr><tr><td>检验和</td><td align="right">16 bit</td><td>检查 UDP 首部、数据载荷和伪首部是否出错</td></tr></tbody></table><p>UDP 长度字段是<strong>整个</strong> UDP 用户数据报的长度。因为 UDP 首部固定 8 B，所以：</p><p>$$<br>\text{UDP 数据载荷长度}&#x3D;\text{UDP 长度字段表示长度}-8\text{ B}<br>$$</p><h1 id="报文边界"><a href="#报文边界" class="headerlink" title="报文边界"></a>报文边界</h1><p>UDP 保留应用报文边界。应用进程一次交给 UDP 的一份报文，会被封装成一个 UDP 用户数据报；接收方 UDP 也按一个个 UDP 用户数据报向上交付。</p><p><img src="/assets/udp-message-boundary.svg" alt="900"></p><p>这与 TCP 的字节流模型不同。UDP 以报文为单位交付：发送方一次交付的应用报文，对应接收方一次收到的 UDP 数据载荷。TCP 以字节流为单位交付，应用程序需要自己从连续字节流中恢复报文边界。</p><h1 id="UDP-检验和"><a href="#UDP-检验和" class="headerlink" title="UDP 检验和"></a>UDP 检验和</h1><p>计算 UDP 检验和时，是把三部分临时拼在一起计算：</p><ul><li>12 B <strong>伪首部</strong>。</li><li>UDP 首部。</li><li>UDP 数据载荷。</li></ul><p>其中，UDP 首部和 UDP 数据载荷是真正发送的 UDP 用户数据报；伪首部不是 UDP 用户数据报的一部分，也不会向下发送。它只在计算检验和时临时加入，使 UDP 能够同时检查 IP 源地址、IP 目的地址和协议号是否匹配。</p><p><img src="/assets/udp-checksum-pseudo-header.svg" alt="900"></p><p>IPv4 下 UDP 伪首部包含：</p><table><thead><tr><th>字段</th><th align="right">长度</th><th>含义</th></tr></thead><tbody><tr><td>源 IP 地址</td><td align="right">32 bit</td><td>发送主机 IP 地址</td></tr><tr><td>目的 IP 地址</td><td align="right">32 bit</td><td>接收主机 IP 地址</td></tr><tr><td>全 0</td><td align="right">8 bit</td><td>填充字段</td></tr><tr><td>协议号</td><td align="right">8 bit</td><td>UDP 为 <code>17</code></td></tr><tr><td>UDP 长度</td><td align="right">16 bit</td><td>UDP 首部和数据载荷的总长度</td></tr></tbody></table><h2 id="计算方法"><a href="#计算方法" class="headerlink" title="计算方法"></a>计算方法</h2><p>UDP 使用 <strong>16 bit 反码加法</strong>计算检验和：</p><ol><li>把伪首部、UDP 首部和数据载荷按网络字节序每 2 B 划分为一个 16 bit 字。发送端先把 UDP 首部的检验和字段置为全 0。</li><li>将所有 16 bit 字逐个相加。若最高位产生进位，不能直接丢弃，而要把进位加回结果的最低位，这称为<strong>回卷</strong>。</li><li>对最终的 16 bit 累加和逐位取反，所得结果写入检验和字段。</li></ol><p>若数据载荷的字节数为奇数，计算前在末尾临时补一个全 0 字节，使参与计算的总长度为偶数；这个填充字节不计入 UDP 长度，也不随数据发送。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||690)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||690)-80))+'px'">−</button></div><iframe src="/assets/udp-checksum-calculation-slides.html" style="width:100%;height:690px;border:0" loading="lazy"></iframe></div><p>上例的 16 bit 累加和为 <code>0x0D0B</code>，逐位取反后得到检验和 <code>0xF2F4</code>。接收端把收到的检验和字段也纳入相同计算：</p><p>$$<br>\mathtt{0x0D0B}+\mathtt{0xF2F4}&#x3D;\mathtt{0xFFFF}<br>$$</p><p>最终结果为 16 bit 全 1，检验通过；否则检验失败，UDP 丢弃该用户数据报。UDP 本身不会请求重传，也不会向发送方确认。</p><div class="callout callout-note"><div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">全 0 与全 1 的特殊含义</span></div><div class="callout-content"><p>在 IPv4 中，UDP 检验和字段为全 0 表示发送方未计算检验和。若实际计算出的检验和恰好为全 0，发送时应改写为全 1。IPv6 中 UDP 检验和通常是必需的，不能用全 0 表示省略。</p></div></div><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">伪首部不属于真正的 UDP 首部</span></div><div class="callout-content"><p>UDP 首部仍然只有 8 B。伪首部只是检验和计算时的辅助数据，不会作为 UDP 数据报的一部分在网络中传输。</p></div></div># UDP 适用场景<p>UDP 适合应用自己能够接受或处理不可靠性的场景：</p><ul><li>实时语音、视频会议：过期数据重传价值很低，低时延更重要。</li><li>DNS 查询：请求和响应短，应用可以自行超时重试。</li><li>DHCP、RIP 等协议：协议本身较简单，常使用广播或组播。</li><li>多播、广播通信：UDP 可以配合 IP 多播和广播使用；TCP 连接只适合点对点单播。</li></ul><p>UDP 把可靠性、顺序控制、重传策略等问题留给应用层或直接放弃，从而换来更小的首部和更低的协议状态开销。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;UDP-的位置&quot;&gt;&lt;a href=&quot;#UDP-的位置&quot; class=&quot;headerlink&quot; title=&quot;UDP 的位置&quot;&gt;&lt;/a&gt;UDP 的位置&lt;/h1&gt;&lt;p&gt;UDP 是运输层协议。它在 IP 提供的主机到主机交付之上，增加了两件事：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="TransportLayer" scheme="https://eliano64.github.io/tags/TransportLayer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>IP Multicast</title>
-    <link href="https://eliano64.github.io/2026/07/08/IP-Multicast/"/>
-    <id>https://eliano64.github.io/2026/07/08/IP-Multicast/</id>
-    <published>2026-07-08T08:05:00.000Z</published>
-    <updated>2026-07-10T07:16:51.018Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="IP-多播"><a href="#IP-多播" class="headerlink" title="IP 多播"></a>IP 多播</h1><p>多播是一对多通信。发送者只发送一份数据，网络在需要分叉的地方复制分组，把数据送给多播组成员。</p><p><img src="/assets/unicast-vs-multicast.svg" alt="900"></p><p>与单播相比，多播能减少源主机发送副本数量，也能减少链路上的重复流量。典型场景是视频直播、会议分发、组通信等。</p><h1 id="多播组和多播地址"><a href="#多播组和多播地址" class="headerlink" title="多播组和多播地址"></a>多播组和多播地址</h1><p>IPv4 多播地址使用 D 类地址，即 <code>224.0.0.0</code> 到 <code>239.255.255.255</code>。多播地址只能作为目的地址，不能作为源地址。</p><p>一个 IP 多播地址标识一个多播组。使用同一个 IP 多播地址接收数据报的主机构成一个多播组。</p><p>多播组有几个特点：</p><ul><li>主机可以动态加入或离开多播组。</li><li>一台主机可以加入多个多播组。</li><li>多播组成员数量和位置可以变化。</li><li>发送者不一定是多播组成员。</li></ul><p>IP 多播可以发生在局域网内，也可以跨越因特网。跨网络多播需要多播路由选择；到达最后一个局域网后，通常还要依赖局域网硬件多播交付给组成员。</p><h1 id="多播-MAC-映射"><a href="#多播-MAC-映射" class="headerlink" title="多播 MAC 映射"></a>多播 MAC 映射</h1><p>以太网支持多播 MAC 地址。IPv4 多播数据报在以太网上发送时，需要把 IP 多播地址映射成以太网多播 MAC 地址。</p><p><img src="/assets/ipv4-multicast-mac-mapping.svg" alt="900"></p><p>映射规则的关键是：</p><ul><li>以太网多播 MAC 地址前缀为 <code>01-00-5E</code>。</li><li>MAC 地址后 23 bit 来自 IPv4 多播地址的低 23 bit。</li><li>IPv4 多播地址中有 28 bit 多播组号，但只有低 23 bit 参与映射。</li></ul><p>因此，IPv4 多播地址到以太网多播 MAC 地址的映射不是一一对应。32($2^{5}$, 即低23位相同但被丢弃的高5位不同的情况)个 IP 多播地址映射到同一个多播 MAC 地址。</p><p>这会带来一个后果：主机网卡可能接收了某个以太网多播帧，但帧中 IP 多播地址并不是自己真正加入的多播组。主机还需要在 IP 层进行软件过滤。</p><h1 id="IGMP"><a href="#IGMP" class="headerlink" title="IGMP"></a>IGMP</h1><p>IGMP 网际组管理协议用于让多播路由器知道自己直连网络中有哪些多播组成员。它管理的是<strong>某个直连网络是否有某个多播组成员，不记录每个成员主机的完整名单。</strong></p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||570)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||570)-80))+'px'">−</button></div><iframe src="/assets/igmp-membership-slides.html" style="width:100%;height:570px;border:0" loading="lazy"></iframe></div><p>IGMP 报文封装在 IP 数据报中，IP 首部的协议字段取值为 <code>2</code>。基本工作包括：</p><table><thead><tr><th>过程</th><th>含义</th></tr></thead><tbody><tr><td>加入多播组</td><td>主机发送成员报告，报告自己要加入的 IP 多播组</td></tr><tr><td>成员报告抑制</td><td>同组其他主机听到报告后取消自己的报告</td></tr><tr><td>成员查询</td><td>多播路由器周期性查询直连网络上的组成员情况</td></tr><tr><td>超时删除</td><td>长时间没有成员报告的组从列表中删除</td></tr><tr><td>退出多播组</td><td>IGMPv2 支持主机主动发送离开报文</td></tr></tbody></table><p>同一链路上可能有多个多播路由器，但通常只需要一个查询路由器周期性发送查询。常见选举规则是 IP 地址较小的多播路由器成为查询路由器。</p><h1 id="多播转发树"><a href="#多播转发树" class="headerlink" title="多播转发树"></a>多播转发树</h1><p>单播路由只需要给每个目的网络选择下一跳；多播路由要为每个多播组建立覆盖成员的转发结构。这个结构称为多播转发树。</p><p>多播转发树需要满足两个目标：</p><ul><li>数据能到达所有有成员的网络。</li><li>尽量不要把数据发送到没有成员、也不通向成员的分支。</li></ul><p><img src="/assets/multicast-tree-prune-graft.svg" alt="900"></p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button></div><iframe src="/assets/multicast-tree-prune-graft-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe></div><p>一种思路是先形成广播转发树，再剪掉不需要的分支：</p><ul><li>反向路径广播 RPB 用来避免广播分组兜圈。</li><li>若某叶节点路由器没有多播组成员，也没有下游成员路由器，就向上游发送剪枝报文。</li><li>若后来该分支又出现多播组成员，则发送嫁接报文重新加入多播转发树。</li></ul><p>另一种思路是使用共享树。每个多播组指定一个核心路由器，成员路由器向核心发送加入报文，逐步形成以核心为根的共享树。</p><h1 id="常见多播路由协议"><a href="#常见多播路由协议" class="headerlink" title="常见多播路由协议"></a>常见多播路由协议</h1><p>常见多播路由选择协议包括：</p><table><thead><tr><th>协议</th><th>简要含义</th></tr></thead><tbody><tr><td>DVMRP</td><td>距离向量多播路由选择协议</td></tr><tr><td>MOSPF</td><td>OSPF 的多播扩展</td></tr><tr><td>PIM-SM</td><td>协议无关多播，稀疏方式</td></tr><tr><td>PIM-DM</td><td>协议无关多播，密集方式</td></tr><tr><td>CBT</td><td>基于核心的转发树</td></tr></tbody></table><p>IP 多播在整个因特网范围内推广并不容易，主要部署在局部园区网络、专用网络或 VPN 中。应用层多播和内容分发系统也常用类似“树形分发”的思想。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;IP-多播&quot;&gt;&lt;a href=&quot;#IP-多播&quot; class=&quot;headerlink&quot; title=&quot;IP 多播&quot;&gt;&lt;/a&gt;IP 多播&lt;/h1&gt;&lt;p&gt;多播是一对多通信。发送者只发送一份数据，网络在需要分叉的地方复制分组，把数据送给多播组成员。&lt;/p&gt;
-&lt;p&gt;&lt;img</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="NetworkLayer" scheme="https://eliano64.github.io/tags/NetworkLayer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>IPv6</title>
-    <link href="https://eliano64.github.io/2026/07/08/IPv6/"/>
-    <id>https://eliano64.github.io/2026/07/08/IPv6/</id>
-    <published>2026-07-08T08:05:00.000Z</published>
-    <updated>2026-07-10T07:16:51.018Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="IPv6"><a href="#IPv6" class="headerlink" title="IPv6"></a>IPv6</h1><p>IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网规模增长。IPv6 把地址长度扩展到 128 bit，同时调整首部结构、扩展首部、地址类型和控制协议。</p><p>IPv6 仍提供无连接、尽最大努力交付的不可靠数据报服务。它不是把 IP 变成可靠协议，而是在地址空间和转发机制上做了新设计。</p><h1 id="主要变化"><a href="#主要变化" class="headerlink" title="主要变化"></a>主要变化</h1><p>IPv6 的主要变化包括：</p><ul><li>地址长度从 32 bit 增加到 128 bit。</li><li>基本首部固定为 40 字节。</li><li>取消 IPv4 首部中的首部长度、首部检验和、标识、标志、片偏移等字段。</li><li>使用扩展首部承载选项和分片等功能。</li><li>使用“下一个首部”字段串联扩展首部或上层协议。</li><li>引入流标号，便于标识同一类需要特殊处理的数据报序列。</li><li>不使用广播，把广播看作多播的特殊情形。</li><li>不使用 ARP，邻站发现由 ICMPv6 完成。</li></ul><p><img src="/assets/ipv4-ipv6-header-comparison.svg" alt="900"></p><h1 id="基本首部"><a href="#基本首部" class="headerlink" title="基本首部"></a>基本首部</h1><p>IPv6 基本首部固定 40 字节。</p><p><img src="/assets/ipv6-basic-header.svg" alt="900"></p><p>IPv6 基本首部字段如下：</p><table><thead><tr><th>字段</th><th align="right">长度</th><th>作用</th></tr></thead><tbody><tr><td>版本</td><td align="right">4 bit</td><td>IPv6 中取值为 6</td></tr><tr><td>通信量类</td><td align="right">8 bit</td><td>区分不同类型或优先级的数据报</td></tr><tr><td>流标号</td><td align="right">20 bit</td><td>标识同一流中的 IPv6 数据报</td></tr><tr><td>有效载荷长度</td><td align="right">16 bit</td><td>指明基本首部之后的有效载荷长度</td></tr><tr><td>下一个首部</td><td align="right">8 bit</td><td>指明后面是扩展首部还是上层协议数据</td></tr><tr><td>跳数限制</td><td align="right">8 bit</td><td>类似 IPv4 的 TTL，每经过一个路由器减 1</td></tr><tr><td>源地址</td><td align="right">128 bit</td><td>发送端 IPv6 地址</td></tr><tr><td>目的地址</td><td align="right">128 bit</td><td>接收端 IPv6 地址</td></tr></tbody></table><p>IPv6 取消首部检验和的目的之一是减少路由器逐跳处理开销。IPv4 路由器每次修改 TTL 后都要重新计算首部检验和；IPv6 路由器转发时不再做这项工作。</p><h1 id="扩展首部"><a href="#扩展首部" class="headerlink" title="扩展首部"></a>扩展首部</h1><p>IPv6 把可选功能从基本首部中移出，放到扩展首部中。基本首部的“下一个首部”字段指向第一个扩展首部；每个扩展首部也有自己的“下一个首部”字段，直到最后指向 TCP、UDP、ICMPv6 等上层协议。</p><p>常见扩展首部包括：</p><table><thead><tr><th>扩展首部</th><th>作用</th></tr></thead><tbody><tr><td>逐跳选项</td><td>需要路径上每个路由器检查的选项</td></tr><tr><td>路由选择</td><td>指定数据报经过的部分路径</td></tr><tr><td>分片</td><td>承载分片相关信息</td></tr><tr><td>鉴别</td><td>提供认证相关功能</td></tr><tr><td>封装安全有效载荷</td><td>提供加密和完整性保护</td></tr><tr><td>目的站选项</td><td>只需目的站检查的选项</td></tr></tbody></table><p>分片字段不再出现在基本首部中。IPv6 中通常由源主机执行分片，路由器不负责像 IPv4 那样在转发途中分片。</p><h1 id="地址表示"><a href="#地址表示" class="headerlink" title="地址表示"></a>地址表示</h1><p>IPv6 地址用冒号十六进制记法表示。128 bit 地址分成 8 组，每组 16 bit，用 4 个十六进制数表示。</p><p><img src="/assets/ipv6-address-compression.svg" alt="900"></p><p>书写时有两条常用压缩规则：</p><ul><li>每一组中的前导 0 可以省略。</li><li>连续的一段全 0 组可以用 <code>::</code> 压缩，但一个地址中 <code>::</code> 只能出现一次。</li></ul><p>例如：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2001:0db8:0000:0000:0000:ff00:0042:8329</span><br><span class="line">2001:db8:0:0:0:ff00:42:8329</span><br><span class="line">2001:db8::ff00:42:8329</span><br></pre></td></tr></table></figure><p>IPv6 仍可使用类似 CIDR 的前缀长度写法，例如 <code>2001:db8:1234::/48</code>。</p><h1 id="地址类型"><a href="#地址类型" class="headerlink" title="地址类型"></a>地址类型</h1><p>IPv6 数据报的目的地址有三种基本类型：</p><table><thead><tr><th>类型</th><th>含义</th></tr></thead><tbody><tr><td>单播</td><td>发给一个接口</td></tr><tr><td>多播</td><td>发给一组接口中的每一个</td></tr><tr><td>任播</td><td>发给一组接口中按路由意义最近的一个</td></tr></tbody></table><p>IPv6 不再使用广播地址。需要“一对多”发送时使用多播。</p><p>常见 IPv6 地址类型：</p><table><thead><tr><th>地址</th><th>含义</th></tr></thead><tbody><tr><td><code>::</code></td><td>未指明地址，只能在特定场景作为源地址使用</td></tr><tr><td><code>::1</code></td><td>环回地址</td></tr><tr><td><code>FF00::/8</code></td><td>多播地址</td></tr><tr><td><code>FE80::/10</code></td><td>本地链路单播地址，只在同一链路内有效</td></tr><tr><td>其他全球单播地址</td><td>可在全球范围路由的单播地址</td></tr></tbody></table><p>IPv6 地址分配给接口。一个主机或路由器可以有多个接口，因此可以有多个 IPv6 地址。</p><h1 id="全球单播地址"><a href="#全球单播地址" class="headerlink" title="全球单播地址"></a>全球单播地址</h1><p>IPv6 全球单播地址采用层次结构，便于路由聚合和查找。</p><p><img src="/assets/ipv6-global-unicast.svg" alt="900"></p><p>三级结构通常可以理解为：</p><ul><li>全球路由选择前缀：由上级机构分配，用于全球路由。</li><li>子网标识符：机构内部划分子网。</li><li>接口标识符：标识具体网络接口，常为 64 bit。</li></ul><h1 id="ICMPv6"><a href="#ICMPv6" class="headerlink" title="ICMPv6"></a>ICMPv6</h1><p>ICMPv6 是 IPv6 的重要配套协议。它不仅承担 IPv4 中 ICMP 的差错报告和诊断功能，还合并了 ARP 和 IGMP 的部分功能。</p><p>ICMPv6 可用于：</p><ul><li>差错报告。</li><li>回送请求和回答。</li><li>邻站发现。</li><li>多播听众发现。</li></ul><p>IPv6 不使用 ARP。邻站询问和邻站通告用于替代 IPv4 中 ARP 的地址解析功能。多播听众发现用于替代 IGMP 的多播组成员管理功能。</p><h1 id="IPv4-到-IPv6-过渡"><a href="#IPv4-到-IPv6-过渡" class="headerlink" title="IPv4 到 IPv6 过渡"></a>IPv4 到 IPv6 过渡</h1><p>因特网不能一次性从 IPv4 切换到 IPv6，只能逐步过渡。常见策略是双协议栈和隧道技术。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||570)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||570)-80))+'px'">−</button></div><iframe src="/assets/ipv6-transition-slides.html" style="width:100%;height:570px;border:0" loading="lazy"></iframe></div><p><strong>双协议栈</strong>指主机或路由器同时支持 IPv4 和 IPv6。与 IPv4 主机通信时使用 IPv4 地址；与 IPv6 主机通信时使用 IPv6 地址。双协议栈主机可以根据 DNS 返回的地址类型选择使用哪套协议。</p><p><strong>隧道技术</strong>用于让 IPv6 数据报穿过 IPv4 网络。隧道入口把整个 IPv6 数据报封装到 IPv4 数据报的数据部分中；IPv4 网络只负责转发外层 IPv4 数据报；隧道出口再取出原 IPv6 数据报继续转发。为了标明 IPv4 数据部分承载的是 IPv6 数据报，IPv4 首部协议字段可设置为 41。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;IPv6&quot;&gt;&lt;a href=&quot;#IPv6&quot; class=&quot;headerlink&quot; title=&quot;IPv6&quot;&gt;&lt;/a&gt;IPv6&lt;/h1&gt;&lt;p&gt;IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="NetworkLayer" scheme="https://eliano64.github.io/tags/NetworkLayer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Mobile IP</title>
-    <link href="https://eliano64.github.io/2026/07/08/Mobile-IP/"/>
-    <id>https://eliano64.github.io/2026/07/08/Mobile-IP/</id>
-    <published>2026-07-08T08:05:00.000Z</published>
-    <updated>2026-07-10T07:16:51.018Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="移动-IP"><a href="#移动-IP" class="headerlink" title="移动 IP"></a>移动 IP</h1><p>普通 IP 地址同时包含两个含义：主机接口标识和所在网络位置。路由器根据地址中的网络前缀转发分组。如果主机移动到另一个网络但仍使用原地址，分组仍会被路由到原网络；如果直接换成新地址，原有通信连接又会被破坏。</p><p>移动 IP 的目标是：移动主机跨网络移动时，仍能保持原来的永久 IP 地址，并尽量不要求固定主机和普通路由器修改协议。</p><h1 id="移动性的几种情况"><a href="#移动性的几种情况" class="headerlink" title="移动性的几种情况"></a>移动性的几种情况</h1><p>移动性对网络层的影响不同：</p><table><thead><tr><th>情况</th><th>是否需要移动 IP</th></tr></thead><tbody><tr><td>只在同一 Wi-Fi 覆盖区内移动，网络层地址不变</td><td>不需要</td></tr><tr><td>换地点重新接入，地址改变，但不要求保持原连接</td><td>不需要</td></tr><tr><td>跨网络移动，仍要求保持原地址和通信连续性</td><td>需要移动 IP 这类机制</td></tr></tbody></table><p>移动 IP 解决的是第三种情况。</p><h1 id="基本术语"><a href="#基本术语" class="headerlink" title="基本术语"></a>基本术语</h1><p><img src="/assets/mobile-ip-terms.svg" alt="900"></p><table><thead><tr><th>术语</th><th>含义</th></tr></thead><tbody><tr><td>移动主机</td><td>可以从一个网络移动到另一个网络的主机</td></tr><tr><td>归属网络</td><td>移动主机默认所属的网络</td></tr><tr><td>归属地址</td><td>移动主机在归属网络中的永久地址</td></tr><tr><td>归属代理</td><td>归属网络中代表移动主机执行移动管理的实体，通常是路由器</td></tr><tr><td>外地网络</td><td>移动主机当前接入的非归属网络</td></tr><tr><td>外地代理</td><td>外地网络中协助移动主机接入的实体</td></tr><tr><td>转交地址</td><td>移动主机当前所在位置对应的地址，常由外地代理提供</td></tr></tbody></table><p>移动主机对外仍使用归属地址。转交地址用于让归属代理知道移动主机当前在哪里，并把数据通过隧道送过去。</p><h1 id="代理发现和注册"><a href="#代理发现和注册" class="headerlink" title="代理发现和注册"></a>代理发现和注册</h1><p>移动主机进入外地网络后，需要发现外地代理，并向归属代理注册当前转交地址。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||570)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||570)-80))+'px'">−</button></div><iframe src="/assets/mobile-ip-process-slides.html" style="width:100%;height:570px;border:0" loading="lazy"></iframe></div><p>基本过程是：</p><ol><li>移动主机到达外地网络。</li><li>移动主机通过代理发现协议找到外地代理。</li><li>移动主机从外地代理获得转交地址。</li><li>移动主机通过外地代理向归属代理注册。</li><li>归属代理记录“归属地址 → 转交地址”的绑定关系。</li></ol><p>注册完成后，归属代理就能把发往移动主机归属地址的数据报转发到当前外地网络。</p><h1 id="固定主机到移动主机"><a href="#固定主机到移动主机" class="headerlink" title="固定主机到移动主机"></a>固定主机到移动主机</h1><p>固定主机不知道移动主机已经离开归属网络，它仍把 IP 数据报发往移动主机的归属地址。</p><p>移动 IP 的间接路由过程是：</p><ol><li>固定主机发送目的地址为移动主机归属地址的 IP 数据报。</li><li>普通路由机制把该数据报送到移动主机的归属网络。</li><li>归属代理代替移动主机接收或截获该数据报。</li><li>归属代理把原 IP 数据报封装到一个新的 IP 数据报中。</li><li>新 IP 数据报的目的地址是转交地址。</li><li>外地代理收到外层数据报后解封，取出原 IP 数据报。</li><li>外地代理把原 IP 数据报交付给外地网络中的移动主机。</li></ol><p>这里使用的是 IP 隧道思想：原数据报没有被修改，而是作为新数据报的数据部分穿过因特网。</p><h1 id="移动主机到固定主机"><a href="#移动主机到固定主机" class="headerlink" title="移动主机到固定主机"></a>移动主机到固定主机</h1><p>移动主机向固定主机发送数据时，可以直接按照普通 IP 转发机制发给固定主机。源地址仍可使用移动主机的归属地址，目的地址是固定主机地址。</p><p>这样会形成路径不对称：固定主机发往移动主机的数据要先到归属代理，再隧道转发到外地代理；移动主机发回固定主机的数据可以直接走普通路由。</p><p><img src="/assets/mobile-ip-triangle-routing.svg" alt="900"></p><p>这种路径称为三角形路由。它能保持对固定主机透明，但路径可能不是最短路径。</p><h1 id="透明性"><a href="#透明性" class="headerlink" title="透明性"></a>透明性</h1><p>移动 IP 对固定主机和大多数普通路由器是透明的。固定主机仍按移动主机的永久地址通信，不需要知道移动主机当前在哪个网络。</p><h1 id="局限"><a href="#局限" class="headerlink" title="局限"></a>局限</h1><p>它的局限包括：</p><ul><li>固定主机到移动主机的路径可能绕远。</li><li>发往移动主机的数据通常要先经过归属代理。若归属代理故障、过载或绑定表出错，固定主机到移动主机的通信就会受影响。</li><li>代理发现、注册、隧道和安全认证增加复杂性。</li><li>在整个因特网范围内大规模部署困难。</li></ul><p>移动 IP 的思想与蜂窝移动通信中的位置管理有相似之处，但后者通常在 IP 层以下或运营商核心网中使用更复杂的机制。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;移动-IP&quot;&gt;&lt;a href=&quot;#移动-IP&quot; class=&quot;headerlink&quot; title=&quot;移动 IP&quot;&gt;&lt;/a&gt;移动 IP&lt;/h1&gt;&lt;p&gt;普通 IP 地址同时包含两个含义：主机接口标识和所在网络位置。路由器根据地址中的网络前缀转发分组。如果主机移动到另一</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="NetworkLayer" scheme="https://eliano64.github.io/tags/NetworkLayer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Network Congestion Control</title>
-    <link href="https://eliano64.github.io/2026/07/08/Network-Congestion-Control/"/>
-    <id>https://eliano64.github.io/2026/07/08/Network-Congestion-Control/</id>
-    <published>2026-07-08T07:07:30.000Z</published>
-    <updated>2026-07-10T07:16:51.018Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="拥塞"><a href="#拥塞" class="headerlink" title="拥塞"></a>拥塞</h1><p>拥塞是网络内部资源不足造成的现象。若进入网络的分组太多，路由器缓冲区、链路带宽、处理能力等资源被持续压满，就会出现排队时延增大、队列溢出、分组丢失和重传增多。</p><p>拥塞不是接收方来不及收。接收方来不及收属于流量控制问题；拥塞发生在网络内部，常见位置是路由器队列和瓶颈链路。</p><table><thead><tr><th>比较点</th><th>流量控制</th><th>拥塞控制</th></tr></thead><tbody><tr><td>控制对象</td><td>发送方和接收方之间的速率匹配</td><td>网络内部整体负载</td></tr><tr><td>直接原因</td><td>接收方缓存或处理能力有限</td><td>路由器、链路、队列等网络资源过载</td></tr><tr><td>典型现象</td><td>接收方来不及接收</td><td>排队时延增大、丢包、重传增多</td></tr><tr><td>常见位置</td><td>数据链路层或运输层</td><td>网络层和运输层共同涉及</td></tr></tbody></table><h1 id="队列、时延和丢包"><a href="#队列、时延和丢包" class="headerlink" title="队列、时延和丢包"></a>队列、时延和丢包</h1><p>路由器不是立即把所有分组都发出去。若多个输入端口的分组都要从同一个输出端口发送，而输出链路速率有限，分组就要在输出队列中等待。</p><p><img src="/assets/router-queue-congestion.svg" alt="900"></p><p>队列带来两个结果：</p><ul><li><strong>排队时延增大</strong>：队列越长，分组等待发送的时间越长。</li><li><strong>队列溢出丢包</strong>：缓冲区不是无限的，队列满时，新到分组或队列中已有分组会被丢弃。</li></ul><p>如果丢包触发上层重传，网络中会出现更多分组，进一步加重拥塞。因此严重拥塞时，输入负载继续增加不但不能提高有效吞吐量，反而可能使吞吐量下降。</p><p><img src="/assets/network-load-throughput.svg" alt="900"></p><h1 id="拥塞控制的目标"><a href="#拥塞控制的目标" class="headerlink" title="拥塞控制的目标"></a>拥塞控制的目标</h1><p>拥塞控制的目标不是让链路永远低负载，而是在吞吐量、时延和丢包之间保持可用状态：</p><ul><li>避免路由器队列长期处于满载。</li><li>避免大量丢包引起重传风暴。</li><li>让网络吞吐量随负载增加而平稳接近容量，而不是进入崩溃区。</li><li>在不同通信流之间尽量保持公平。</li></ul><h1 id="开环控制和闭环控制"><a href="#开环控制和闭环控制" class="headerlink" title="开环控制和闭环控制"></a>开环控制和闭环控制</h1><p>拥塞控制可以分为开环控制和闭环控制。</p><table><thead><tr><th>类型</th><th>思路</th><th>典型做法</th></tr></thead><tbody><tr><td>开环控制</td><td>在拥塞发生前通过设计避免拥塞</td><td>合理的路由选择、准入控制、资源预留、流量整形</td></tr><tr><td>闭环控制</td><td>监测拥塞迹象，发生后反馈并调整</td><td>丢包反馈、RTT 增大、显式拥塞通知、源点抑制</td></tr></tbody></table><p>开环控制强调预防，闭环控制强调检测、反馈和调节。实际网络通常同时使用两类思想。</p><h1 id="隐式反馈和显式反馈"><a href="#隐式反馈和显式反馈" class="headerlink" title="隐式反馈和显式反馈"></a>隐式反馈和显式反馈</h1><p>闭环拥塞控制需要让发送方知道网络变拥塞了。反馈可以是隐式的，也可以是显式的。</p><p><img src="/assets/congestion-feedback.svg" alt="900"></p><p><strong>隐式反馈</strong>不直接告诉发送方发生拥塞。发送方从现象推断拥塞，例如：</p><ul><li>分组丢失。</li><li>计时器超时。</li><li>往返时间 RTT 明显增大。</li><li>ACK 返回变慢。</li></ul><p>运输层的 TCP 拥塞控制主要使用这类信号。慢开始、拥塞避免、快重传、快恢复应放在运输层笔记里详细展开。</p><p><strong>显式反馈</strong>由网络设备或接收方明确反馈拥塞信息。历史上的 ICMP 源点抑制就是一种显式反馈：路由器或主机因拥塞丢弃 IP 数据报时，向源主机发送源点抑制报文，要求源主机降低发送速率。现代因特网已经不依赖它作为主流拥塞控制机制，但它能说明网络层也曾尝试直接向源站反馈拥塞。</p><h1 id="队列管理"><a href="#队列管理" class="headerlink" title="队列管理"></a>队列管理</h1><p>最简单的路由器队列管理方式是<strong>尾部丢弃</strong>。当队列满时，新到分组被丢弃。它实现简单，但问题也明显：</p><ul><li>拥塞信号来得太晚，只有队列满了才丢包。</li><li>多个 TCP 流可能同时被丢包，导致同步降速和同步恢复。</li><li>队列长期很满时，排队时延很大。</li></ul><p>主动队列管理 AQM 的思想是：不要等队列完全满了才处理，而是在拥塞明显恶化前提前丢弃或标记一部分分组，让发送方较早感知拥塞。</p><h1 id="RED"><a href="#RED" class="headerlink" title="RED"></a>RED</h1><p>RED 随机早期检测是一种典型 AQM 方法。它不只看瞬时队列长度，而是使用平均队列长度，并设置最小门限和最大门限。</p><p><img src="/assets/red-aqm-zones.svg" alt="900"></p><p>RED 的基本规则是：</p><table><thead><tr><th>平均队列长度</th><th>处理</th></tr></thead><tbody><tr><td>小于最小门限</td><td>分组正常入队</td></tr><tr><td>介于最小门限和最大门限之间</td><td>按一定概率丢弃或标记分组</td></tr><tr><td>大于最大门限</td><td>强制丢弃分组</td></tr></tbody></table><p>RED 的目的不是“为了丢包而丢包”，而是提前给发送端拥塞信号，避免队列长时间满载。它试图用少量早期丢弃换取更稳定的队列长度和更低的排队时延。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;拥塞&quot;&gt;&lt;a href=&quot;#拥塞&quot; class=&quot;headerlink&quot; title=&quot;拥塞&quot;&gt;&lt;/a&gt;拥塞&lt;/h1&gt;&lt;p&gt;拥塞是网络内部资源不足造成的现象。若进入网络的分组太多，路由器缓冲区、链路带宽、处理能力等资源被持续压满，就会出现排队时延增大、队列溢出、分</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="NetworkLayer" scheme="https://eliano64.github.io/tags/NetworkLayer/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Software Defined Networking</title>
-    <link href="https://eliano64.github.io/2026/07/08/Software-Defined-Networking/"/>
-    <id>https://eliano64.github.io/2026/07/08/Software-Defined-Networking/</id>
-    <published>2026-07-08T07:07:30.000Z</published>
-    <updated>2026-07-10T07:16:51.040Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="SDN"><a href="#SDN" class="headerlink" title="SDN"></a>SDN</h1><p>软件定义网络 SDN 的核心是把传统网络设备中的<strong>控制层面</strong>和<strong>数据层面</strong>分离。</p><p>传统路由器内部同时有两类功能：</p><ul><li>数据层面：根据转发表快速转发分组。</li><li>控制层面：运行路由协议，交换路由信息，计算路由表和转发表。</li></ul><p>SDN 把控制功能从数据层设备中抽离出来，放到逻辑集中的控制器中。数据层设备变得更简单，主要按控制器下发的规则执行“匹配 + 动作”。</p><p><img src="/assets/traditional-vs-sdn-plane.svg" alt="900"></p><p>这里的“逻辑集中”不等于物理上只有一台控制器。实际部署中可以有多台服务器组成控制层面，但对数据层设备来说，它表现为统一的网络控制中心。</p><h1 id="传统转发和广义转发"><a href="#传统转发和广义转发" class="headerlink" title="传统转发和广义转发"></a>传统转发和广义转发</h1><p>传统 IP 转发可以概括为：</p><p>$$<br>\text{匹配目的网络前缀}<br>\rightarrow<br>\text{选择输出接口或下一跳}<br>$$</p><p>也就是说，路由器通常按目的 IP 地址做最长前缀匹配，然后转发分组。</p><p>SDN 把这种方式扩展为<strong>广义转发</strong>：</p><p>$$<br>\text{匹配多层首部字段}<br>\rightarrow<br>\text{执行指定动作}<br>$$</p><p>匹配字段不局限于目的 IP 前缀，可以包括：</p><ul><li>入端口。</li><li>源 MAC 地址、目的 MAC 地址。</li><li>源 IP 地址、目的 IP 地址。</li><li>运输层源端口、目的端口。</li><li>协议类型等其他首部字段。</li></ul><p>动作也不局限于转发，可以包括：</p><ul><li>转发到某个端口。</li><li>丢弃。</li><li>改写首部字段。</li><li>复制到多个端口。</li><li>发送给控制器。</li><li>按规则做负载均衡。</li></ul><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||650)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||650)-80))+'px'">−</button></div><iframe src="/assets/openflow-match-action-slides.html" style="width:100%;height:650px;border:0" loading="lazy"></iframe></div><h1 id="OpenFlow"><a href="#OpenFlow" class="headerlink" title="OpenFlow"></a>OpenFlow</h1><p>OpenFlow 是 SDN 控制器和数据层设备之间常见的通信接口。SDN 并不必然等于 OpenFlow，但 OpenFlow 是理解 SDN 流表机制的典型入口。</p><p><img src="/assets/openflow-architecture.svg" alt="900"></p><p>OpenFlow 有两层含义：</p><ul><li>它是 SDN 控制器与网络设备之间的通信协议。</li><li>它规定了交换机按流表完成网络交换功能的逻辑结构。</li></ul><p>在 SDN 中，完成“匹配 + 动作”的设备通常称为 OpenFlow 交换机或分组交换机。它不一定只工作在网络层，因为匹配字段可以跨越数据链路层、网络层和运输层。</p><h1 id="流表"><a href="#流表" class="headerlink" title="流表"></a>流表</h1><p>OpenFlow 交换机中的核心结构是流表。流表由 SDN 控制器计算、安装和管理。</p><p>一个流表项通常包含三部分：</p><table><thead><tr><th>组成</th><th>含义</th></tr></thead><tbody><tr><td>匹配字段</td><td>用哪些首部字段判断分组是否属于这条流</td></tr><tr><td>计数器</td><td>记录命中次数、字节数等统计信息</td></tr><tr><td>动作</td><td>命中后如何处理分组</td></tr></tbody></table><p>这里的“流”可以理解为共享某些首部字段值的一串分组。例如，入端口相同、目的 IP 前缀相同、TCP 目的端口相同的一组分组，可以被同一条流表项匹配。</p><p>如果分组匹配不上任何流表项，交换机可以丢弃它，也可以把它发送给控制器，由控制器决定是否安装新的流表项。</p><h1 id="SDN-控制器"><a href="#SDN-控制器" class="headerlink" title="SDN 控制器"></a>SDN 控制器</h1><p>SDN 控制器常被称为网络操作系统。它维护网络范围内的状态，并向上层网络控制应用提供接口。</p><p>SDN 控制器可以分成三层理解：</p><table><thead><tr><th>层次</th><th>作用</th></tr></thead><tbody><tr><td>通信层</td><td>与数据层设备通信，下发规则，接收事件</td></tr><tr><td>网络范围状态管理层</td><td>维护链路、交换机、主机、流表、计数器等全局状态</td></tr><tr><td>网络控制应用接口</td><td>让路由、防火墙、负载均衡等应用读取状态并下发控制决策</td></tr></tbody></table><p>控制器需要知道网络状态，才能决定如何安装流表。例如链路故障、设备上线、端口状态变化、流量计数器变化，都可能触发控制应用重新计算规则。</p><h1 id="四个关键特征"><a href="#四个关键特征" class="headerlink" title="四个关键特征"></a>四个关键特征</h1><p>SDN 体系结构有四个关键特征：</p><table><thead><tr><th>特征</th><th>含义</th></tr></thead><tbody><tr><td>基于流的转发</td><td>分组按流表规则处理，而不只是按目的 IP 前缀转发</td></tr><tr><td>数据层面与控制层面分离</td><td>数据层设备负责快速执行，控制逻辑位于外部控制器</td></tr><tr><td>控制功能位于数据层设备之外</td><td>路由、策略、安全、负载均衡等控制功能由控制器和应用实现</td></tr><tr><td>网络可编程</td><td>控制应用可以通过控制器改变网络行为</td></tr></tbody></table><h1 id="典型应用"><a href="#典型应用" class="headerlink" title="典型应用"></a>典型应用</h1><p><img src="/assets/sdn-use-cases.svg" alt="900"></p><p>SDN 的灵活性来自流表规则。改变匹配字段和动作，就能让同一套数据层设备实现不同网络行为：</p><ul><li><strong>简单转发</strong>：匹配目的 IP 前缀，转发到指定端口。</li><li><strong>负载均衡</strong>：匹配源地址、目的地址、入端口等字段，把不同流分配到不同路径。</li><li><strong>防火墙</strong>：匹配入端口、地址或端口号，对不符合策略的分组执行丢弃。</li></ul><p>传统路由器的主要动作是“按路由表转发”。SDN 的动作空间更大，控制规则也更集中，因此适合需要统一策略控制和快速调整的网络环境。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;SDN&quot;&gt;&lt;a href=&quot;#SDN&quot; class=&quot;headerlink&quot; title=&quot;SDN&quot;&gt;&lt;/a&gt;SDN&lt;/h1&gt;&lt;p&gt;软件定义网络 SDN 的核心是把传统网络设备中的&lt;strong&gt;控制层面&lt;/strong&gt;和&lt;strong&gt;数据层面&lt;/strong</summary>
-      
-    
-    
-    
-    <category term="Computer Network" scheme="https://eliano64.github.io/categories/Computer-Network/"/>
-    
-    
-    <category term="ComputerNetwork" scheme="https://eliano64.github.io/tags/ComputerNetwork/"/>
-    
-    <category term="NetworkLayer" scheme="https://eliano64.github.io/tags/NetworkLayer/"/>
     
   </entry>
   
