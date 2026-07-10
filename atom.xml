@@ -172,30 +172,6 @@
   </entry>
   
   <entry>
-    <title>OS Kernel</title>
-    <link href="https://eliano64.github.io/2026/07/10/OS-Kernel/"/>
-    <id>https://eliano64.github.io/2026/07/10/OS-Kernel/</id>
-    <published>2026-07-09T16:00:00.000Z</published>
-    <updated>2026-07-10T07:16:51.033Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="操作系统内核"><a href="#操作系统内核" class="headerlink" title="操作系统内核"></a>操作系统内核</h1><p><strong>内核</strong>是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行在<strong>内核态</strong>。</p><h2 id="内核态与用户态"><a href="#内核态与用户态" class="headerlink" title="内核态与用户态"></a>内核态与用户态</h2><p>CPU 至少提供两种执行状态：</p><table><thead><tr><th>状态</th><th>权限</th><th>运行内容</th></tr></thead><tbody><tr><td>内核态</td><td>可执行所有指令，访问所有内存和硬件</td><td>内核程序</td></tr><tr><td>用户态</td><td>只能执行非特权指令，访问受限地址空间</td><td>普通应用程序</td></tr></tbody></table><p>区分两种状态是为了<strong>保护</strong>。如果任意程序都能直接操作硬件或修改内核数据结构，一个用户程序的 bug 就可能破坏整个系统。CPU 在硬件层面强制执行这一隔离——用户态程序执行特权指令会触发异常，CPU 把控制权交还给内核处理。</p><h2 id="内核的典型功能"><a href="#内核的典型功能" class="headerlink" title="内核的典型功能"></a>内核的典型功能</h2><table><thead><tr><th>功能</th><th>说明</th></tr></thead><tbody><tr><td>时钟管理</td><td>利用时钟中断实现计时、进程调度</td></tr><tr><td>中断处理</td><td>响应外部中断和异常，转入对应处理程序</td></tr><tr><td>原语</td><td>完成不可被中断打断的关键操作</td></tr><tr><td>进程管理</td><td>进程创建、撤销、调度、切换</td></tr><tr><td>存储器管理</td><td>内存分配、地址转换、虚拟存储</td></tr><tr><td>设备管理</td><td>I&#x2F;O 控制、设备分配、驱动协作</td></tr></tbody></table><p>判断一个功能是否应放入内核的标准：是否必须直接访问硬件？是否执行特权指令？是否维护影响系统全局的关键数据结构？图形界面、部分系统工具、某些服务程序不满足这些条件，放在用户态更安全。</p><h2 id="大内核与微内核"><a href="#大内核与微内核" class="headerlink" title="大内核与微内核"></a>大内核与微内核</h2><p>内核设计的根本分歧在于：<strong>多少功能应该放在内核态？</strong></p><table><thead><tr><th>结构</th><th>做法</th><th>优点</th><th>代价</th></tr></thead><tbody><tr><td>大内核</td><td>进程管理、存储管理、设备管理等主要功能都放在内核态</td><td>模块之间直接调用，状态切换少，性能较高</td><td>内核庞大，任何模块的 bug 都可能影响整个系统</td></tr><tr><td>微内核</td><td>内核只保留中断处理、原语、进程通信、调度等最基本功能；文件系统、网络栈等作为用户态进程运行</td><td>内核小，可靠性高；单个服务崩溃不拖垮内核</td><td>服务之间需要频繁的用户态&#x2F;内核态切换，开销更大</td></tr></tbody></table><p>大内核也称宏内核、单内核，典型例子是 Linux、UNIX。微内核的代表是 Minix、QNX。</p><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">状态切换有成本</span></div><div class="callout-content"><p>用户态切到内核态需要保存现场、切换栈、修改 CPU 状态位，返回用户态时需要恢复。微内核结构中服务间通信更频繁，切换次数更多，性能开销更明显——这也是实际商用的微内核系统较少的原因：设计上的简洁往往需要为性能做出妥协。</p></div></div>## 常见 OS 结构<p>除了大内核与微内核的核心选择，操作系统在代码组织上还有多种形式。这些结构可以和上述内核架构组合使用。</p><table><thead><tr><th>结构</th><th>思路</th><th>特点</th></tr></thead><tbody><tr><td>分层结构</td><td>每层只能调用更低层</td><td>层次清晰，便于调试；但严格分层不易，跨层调用效率低</td></tr><tr><td>模块化结构</td><td>按功能划分模块，模块之间通过明确接口通信</td><td>灵活，便于维护和扩展</td></tr><tr><td>外核</td><td>内核只做资源保护和多路复用，资源管理策略交给应用</td><td>应用可针对自身需求做最优资源管理；实现复杂</td></tr></tbody></table><div class="callout callout-abstract"><div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">区分两个"结构"</span></div><div class="callout-content"><p>“大内核 vs 微内核”回答的是<strong>代码跑在内核态还是用户态</strong>。<br>“分层&#x2F;模块化&#x2F;外核”回答的是<strong>代码怎么组织、模块之间怎么调用</strong>。<br>两者正交。Linux 是大内核 + 模块化；QNX 是微内核 + 模块化。</p></div></div>## 原语<p><strong>原语</strong>是一段具有<strong>原子性</strong>的内核程序：一旦开始执行就必须一气呵成，中途不能被中断或调度打断。</p><p>原语的原子性依赖内核态的执行权限来保证——原语运行时通常关中断，或使用自旋锁等同步机制阻止并发访问。</p><p>原语常用于修改系统全局的关键数据结构：</p><ul><li>进程控制块的创建、状态切换和撤销</li><li>就绪队列和等待队列的插入与删除</li><li>设备分配表的修改</li><li>信号量的 P&#x2F;V 操作</li></ul><p>这些操作若被中途打断——例如刚修改了一半 PCB 状态就发生进程切换——系统状态可能出现不一致，后续难以恢复。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;操作系统内核&quot;&gt;&lt;a href=&quot;#操作系统内核&quot; class=&quot;headerlink&quot; title=&quot;操作系统内核&quot;&gt;&lt;/a&gt;操作系统内核&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;内核&lt;/strong&gt;是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行</summary>
-      
-    
-    
-    
-    <category term="Operating System" scheme="https://eliano64.github.io/categories/Operating-System/"/>
-    
-    
-    <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
-    
-  </entry>
-  
-  <entry>
     <title>OS VMM</title>
     <link href="https://eliano64.github.io/2026/07/10/OS-VMM/"/>
     <id>https://eliano64.github.io/2026/07/10/OS-VMM/</id>
@@ -208,6 +184,30 @@
       
       
     <summary type="html">&lt;h1 id=&quot;虚拟机&quot;&gt;&lt;a href=&quot;#虚拟机&quot; class=&quot;headerlink&quot; title=&quot;虚拟机&quot;&gt;&lt;/a&gt;虚拟机&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;虚拟机&lt;/strong&gt;是用软件模拟出来的计算机。它在一台物理机器上创建多个彼此隔离的执行环境，每个环境可以独立运行</summary>
+      
+    
+    
+    
+    <category term="Operating System" scheme="https://eliano64.github.io/categories/Operating-System/"/>
+    
+    
+    <category term="OperatingSystem" scheme="https://eliano64.github.io/tags/OperatingSystem/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>OS Kernel</title>
+    <link href="https://eliano64.github.io/2026/07/10/OS-Kernel/"/>
+    <id>https://eliano64.github.io/2026/07/10/OS-Kernel/</id>
+    <published>2026-07-09T16:00:00.000Z</published>
+    <updated>2026-07-10T07:16:51.033Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="操作系统内核"><a href="#操作系统内核" class="headerlink" title="操作系统内核"></a>操作系统内核</h1><p><strong>内核</strong>是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行在<strong>内核态</strong>。</p><h2 id="内核态与用户态"><a href="#内核态与用户态" class="headerlink" title="内核态与用户态"></a>内核态与用户态</h2><p>CPU 至少提供两种执行状态：</p><table><thead><tr><th>状态</th><th>权限</th><th>运行内容</th></tr></thead><tbody><tr><td>内核态</td><td>可执行所有指令，访问所有内存和硬件</td><td>内核程序</td></tr><tr><td>用户态</td><td>只能执行非特权指令，访问受限地址空间</td><td>普通应用程序</td></tr></tbody></table><p>区分两种状态是为了<strong>保护</strong>。如果任意程序都能直接操作硬件或修改内核数据结构，一个用户程序的 bug 就可能破坏整个系统。CPU 在硬件层面强制执行这一隔离——用户态程序执行特权指令会触发异常，CPU 把控制权交还给内核处理。</p><h2 id="内核的典型功能"><a href="#内核的典型功能" class="headerlink" title="内核的典型功能"></a>内核的典型功能</h2><table><thead><tr><th>功能</th><th>说明</th></tr></thead><tbody><tr><td>时钟管理</td><td>利用时钟中断实现计时、进程调度</td></tr><tr><td>中断处理</td><td>响应外部中断和异常，转入对应处理程序</td></tr><tr><td>原语</td><td>完成不可被中断打断的关键操作</td></tr><tr><td>进程管理</td><td>进程创建、撤销、调度、切换</td></tr><tr><td>存储器管理</td><td>内存分配、地址转换、虚拟存储</td></tr><tr><td>设备管理</td><td>I&#x2F;O 控制、设备分配、驱动协作</td></tr></tbody></table><p>判断一个功能是否应放入内核的标准：是否必须直接访问硬件？是否执行特权指令？是否维护影响系统全局的关键数据结构？图形界面、部分系统工具、某些服务程序不满足这些条件，放在用户态更安全。</p><h2 id="大内核与微内核"><a href="#大内核与微内核" class="headerlink" title="大内核与微内核"></a>大内核与微内核</h2><p>内核设计的根本分歧在于：<strong>多少功能应该放在内核态？</strong></p><table><thead><tr><th>结构</th><th>做法</th><th>优点</th><th>代价</th></tr></thead><tbody><tr><td>大内核</td><td>进程管理、存储管理、设备管理等主要功能都放在内核态</td><td>模块之间直接调用，状态切换少，性能较高</td><td>内核庞大，任何模块的 bug 都可能影响整个系统</td></tr><tr><td>微内核</td><td>内核只保留中断处理、原语、进程通信、调度等最基本功能；文件系统、网络栈等作为用户态进程运行</td><td>内核小，可靠性高；单个服务崩溃不拖垮内核</td><td>服务之间需要频繁的用户态&#x2F;内核态切换，开销更大</td></tr></tbody></table><p>大内核也称宏内核、单内核，典型例子是 Linux、UNIX。微内核的代表是 Minix、QNX。</p><div class="callout callout-warning"><div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">状态切换有成本</span></div><div class="callout-content"><p>用户态切到内核态需要保存现场、切换栈、修改 CPU 状态位，返回用户态时需要恢复。微内核结构中服务间通信更频繁，切换次数更多，性能开销更明显——这也是实际商用的微内核系统较少的原因：设计上的简洁往往需要为性能做出妥协。</p></div></div>## 常见 OS 结构<p>除了大内核与微内核的核心选择，操作系统在代码组织上还有多种形式。这些结构可以和上述内核架构组合使用。</p><table><thead><tr><th>结构</th><th>思路</th><th>特点</th></tr></thead><tbody><tr><td>分层结构</td><td>每层只能调用更低层</td><td>层次清晰，便于调试；但严格分层不易，跨层调用效率低</td></tr><tr><td>模块化结构</td><td>按功能划分模块，模块之间通过明确接口通信</td><td>灵活，便于维护和扩展</td></tr><tr><td>外核</td><td>内核只做资源保护和多路复用，资源管理策略交给应用</td><td>应用可针对自身需求做最优资源管理；实现复杂</td></tr></tbody></table><div class="callout callout-abstract"><div class="callout-title"><i class="fa-solid fa-file-lines callout-icon"></i><span class="callout-title-text">区分两个"结构"</span></div><div class="callout-content"><p>“大内核 vs 微内核”回答的是<strong>代码跑在内核态还是用户态</strong>。<br>“分层&#x2F;模块化&#x2F;外核”回答的是<strong>代码怎么组织、模块之间怎么调用</strong>。<br>两者正交。Linux 是大内核 + 模块化；QNX 是微内核 + 模块化。</p></div></div>## 原语<p><strong>原语</strong>是一段具有<strong>原子性</strong>的内核程序：一旦开始执行就必须一气呵成，中途不能被中断或调度打断。</p><p>原语的原子性依赖内核态的执行权限来保证——原语运行时通常关中断，或使用自旋锁等同步机制阻止并发访问。</p><p>原语常用于修改系统全局的关键数据结构：</p><ul><li>进程控制块的创建、状态切换和撤销</li><li>就绪队列和等待队列的插入与删除</li><li>设备分配表的修改</li><li>信号量的 P&#x2F;V 操作</li></ul><p>这些操作若被中途打断——例如刚修改了一半 PCB 状态就发生进程切换——系统状态可能出现不一致，后续难以恢复。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;操作系统内核&quot;&gt;&lt;a href=&quot;#操作系统内核&quot; class=&quot;headerlink&quot; title=&quot;操作系统内核&quot;&gt;&lt;/a&gt;操作系统内核&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;内核&lt;/strong&gt;是操作系统中最基本、最核心的部分。实现内核功能的程序称为内核程序，运行</summary>
       
     
     
