@@ -8,7 +8,7 @@
 :root {
   --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
   --bg: #f8fafc; --panel: #fff; --code: #111827; --codeText: #e5e7eb;
-  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706;
+  --blue: #2563eb; --green: #059669; --red: #dc2626; --amber: #d97706; --purple: #7c3aed;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, "Microsoft YaHei", sans-serif; }
@@ -41,7 +41,7 @@ button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink);
   :root {
     --ink: #e6edf3; --muted: #b8c4cf; --border: #2c3a47;
     --bg: #0f1720; --panel: #16212c; --code: #080d13; --codeText: #e6edf3;
-    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24;
+    --blue: #3b82f6; --green: #10b981; --red: #f87171; --amber: #fbbf24; --purple: #a78bfa;
   }
   .node.browser { background: #1a2e1f; border-color: #10b981; }
   .node.server { background: #1e293b; border-color: #3b82f6; }
@@ -49,6 +49,14 @@ button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink);
   .node.cookie { background: #1e1a2a; border-color: #a78bfa; }
   button { border-color: #52616b; }
 }
+@media (min-width: 851px) and (max-width: 1100px) {
+  .diagram { width: 100%; }
+}
+@media (max-width: 850px) {
+  .row { flex-direction: column; }
+  .diagram { width: 100%; }
+}
+.diagram svg { display: block; width: 100%; height: 100%; }
   </style>
 </head>
 <body>
@@ -61,39 +69,25 @@ button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink);
     <div class="row">
       <div class="panel" style="flex:1.3;">
         <div class="diagram" style="height:220px;">
-          <div class="node browser" style="left:20px;top:60px;">
-            <div class="node-title">浏览器</div>
-            <div class="node-sub">首次访问，无 Cookie</div>
-          </div>
-          <div class="node server" style="left:340px;top:20px;">
-            <div class="node-title">Web 服务器</div>
-            <div class="node-sub">识别新用户</div>
-          </div>
-          <div class="node db" style="left:380px;top:140px;">
-            <div class="node-title">后端数据库</div>
-            <div class="node-sub">新建用户记录</div>
-          </div>
-          <div class="node cookie" style="left:20px;top:170px;">
-            <div class="node-title">Cookie 文件</div>
-            <div class="node-sub">存储识别码</div>
-          </div>
-          <!-- Arrows -->
-          <div style="position:absolute;left:180px;top:62px;width:160px;text-align:center;">
-            <div style="height:2px;background:var(--blue);"></div>
-            <div style="font-size:10px;font-weight:700;color:var(--blue);">① HTTP 请求（无 Cookie 头）</div>
-          </div>
-          <div style="position:absolute;left:460px;top:82px;width:60px;text-align:center;">
-            <div style="height:2px;background:var(--amber);"></div>
-            <div style="font-size:9px;color:var(--amber);">② 生成识别码</div>
-          </div>
-          <div style="position:absolute;left:320px;top:105px;width:180px;text-align:center;">
-            <div style="height:2px;background:var(--green);"></div>
-            <div style="font-size:10px;font-weight:700;color:var(--green);">③ HTTP 响应: Set-Cookie: id=abc123</div>
-          </div>
-          <div style="position:absolute;left:110px;top:160px;width:120px;text-align:center;">
-            <div style="height:2px;background:var(--purple);"></div>
-            <div style="font-size:9px;color:#7c3aed;">④ 存储</div>
-          </div>
+          <svg viewBox="0 0 720 260" role="img" aria-label="首次访问时 Cookie 的生成与存储流程">
+            <defs>
+              <marker id="cb1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--blue)"/></marker>
+              <marker id="cg1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--green)"/></marker>
+              <marker id="ca1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--amber)"/></marker>
+              <marker id="cp1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--purple)"/></marker>
+            </defs>
+            <g font-family="Arial,Microsoft YaHei,sans-serif" text-anchor="middle">
+              <rect x="25" y="70" width="175" height="58" rx="9" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/><text x="112" y="94" fill="var(--ink)" font-size="15" font-weight="700">浏览器</text><text x="112" y="115" fill="var(--muted)" font-size="11">首次访问，无 Cookie</text>
+              <rect x="520" y="25" width="175" height="58" rx="9" fill="var(--panel)" stroke="var(--blue)" stroke-width="2"/><text x="607" y="49" fill="var(--ink)" font-size="15" font-weight="700">Web 服务器（后端）</text><text x="607" y="70" fill="var(--muted)" font-size="11">生成 HTTP 响应</text>
+              <rect x="520" y="177" width="175" height="58" rx="9" fill="var(--panel)" stroke="var(--amber)" stroke-width="2"/><text x="607" y="201" fill="var(--ink)" font-size="15" font-weight="700">后端数据库</text><text x="607" y="222" fill="var(--muted)" font-size="11">新建用户记录</text>
+              <rect x="25" y="177" width="175" height="58" rx="9" fill="var(--panel)" stroke="var(--purple)" stroke-width="2"/><text x="112" y="201" fill="var(--ink)" font-size="15" font-weight="700">Cookie 文件</text><text x="112" y="222" fill="var(--muted)" font-size="11">存储识别码</text>
+              <line x1="200" y1="87" x2="270" y2="87" stroke="var(--blue)" stroke-width="2"/><line x1="455" y1="87" x2="520" y2="69" stroke="var(--blue)" stroke-width="2" marker-end="url(#cb1)"/><rect x="270" y="72" width="185" height="28" rx="5" fill="var(--panel)"/><text x="362" y="91" fill="var(--blue)" font-size="12" font-weight="700">① HTTP 请求（无 Cookie）</text>
+              <line x1="607" y1="83" x2="607" y2="177" stroke="var(--amber)" stroke-width="2" marker-end="url(#ca1)"/><rect x="615" y="116" width="94" height="24" rx="4" fill="var(--panel)"/><text x="662" y="132" fill="var(--amber)" font-size="11">② 生成识别码</text>
+              <polyline points="555,83 500,125 200,125" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round" marker-end="url(#cg1)"/>
+              <text x="350" y="145" fill="var(--green)" font-size="10.5" font-weight="700">③ 后端 → 浏览器：Set-Cookie</text>
+              <line x1="112" y1="128" x2="112" y2="177" stroke="var(--purple)" stroke-width="2" marker-end="url(#cp1)"/><rect x="120" y="142" width="54" height="22" rx="4" fill="var(--panel)"/><text x="147" y="157" fill="var(--purple)" font-size="11">④ 存储</text>
+            </g>
+          </svg>
         </div>
       </div>
       <div class="panel">
@@ -113,30 +107,17 @@ button { border: 1px solid #a7b4c2; background: var(--panel); color: var(--ink);
     <div class="row">
       <div class="panel" style="flex:1.3;">
         <div class="diagram" style="height:180px;">
-          <div class="node browser" style="left:20px;top:60px;">
-            <div class="node-title">浏览器</div>
-            <div class="node-sub">Cookie 文件中有 id=abc123</div>
-          </div>
-          <div class="node server" style="left:340px;top:60px;">
-            <div class="node-title">Web 服务器</div>
-            <div class="node-sub">识别用户</div>
-          </div>
-          <div class="node db" style="left:550px;top:25px;">
-            <div class="node-title">后端数据库</div>
-            <div class="node-sub">查询识别码→用户信息</div>
-          </div>
-          <div style="position:absolute;left:180px;top:72px;width:160px;text-align:center;">
-            <div style="height:2px;background:var(--blue);"></div>
-            <div style="font-size:10px;font-weight:700;color:var(--blue);">⑤ HTTP 请求: Cookie: id=abc123</div>
-          </div>
-          <div style="position:absolute;left:470px;top:50px;width:80px;text-align:center;">
-            <div style="height:2px;background:var(--amber);"></div>
-            <div style="font-size:9px;color:var(--amber);">⑥ 查询</div>
-          </div>
-          <div style="position:absolute;left:340px;top:120px;width:160px;text-align:center;">
-            <div style="height:2px;background:var(--green);"></div>
-            <div style="font-size:10px;font-weight:700;color:var(--green);">⑦ HTTP 响应：个性化网页内容</div>
-          </div>
+          <svg viewBox="0 0 720 220" role="img" aria-label="再次访问时浏览器携带 Cookie 的流程">
+            <defs><marker id="cb2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--blue)"/></marker><marker id="cg2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--green)"/></marker><marker id="ca2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--amber)"/></marker></defs>
+            <g font-family="Arial,Microsoft YaHei,sans-serif" text-anchor="middle">
+              <rect x="25" y="80" width="180" height="62" rx="9" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/><text x="115" y="104" fill="var(--ink)" font-size="15" font-weight="700">浏览器</text><text x="115" y="124" fill="var(--muted)" font-size="10">Cookie: id=abc123</text>
+              <rect x="320" y="80" width="170" height="62" rx="9" fill="var(--panel)" stroke="var(--blue)" stroke-width="2"/><text x="405" y="104" fill="var(--ink)" font-size="15" font-weight="700">Web 服务器（后端）</text><text x="405" y="124" fill="var(--muted)" font-size="10">识别用户并生成响应</text>
+              <rect x="545" y="25" width="160" height="62" rx="9" fill="var(--panel)" stroke="var(--amber)" stroke-width="2"/><text x="625" y="49" fill="var(--ink)" font-size="15" font-weight="700">后端数据库</text><text x="625" y="69" fill="var(--muted)" font-size="10">识别码 → 用户信息</text>
+              <line x1="205" y1="96" x2="235" y2="96" stroke="var(--blue)" stroke-width="2"/><line x1="292" y1="96" x2="320" y2="96" stroke="var(--blue)" stroke-width="2" marker-end="url(#cb2)"/><rect x="235" y="82" width="57" height="27" rx="4" fill="var(--panel)"/><text x="263" y="100" fill="var(--blue)" font-size="10" font-weight="700">⑤ 携带 Cookie</text>
+              <line x1="490" y1="95" x2="545" y2="72" stroke="var(--amber)" stroke-width="2" marker-end="url(#ca2)"/><rect x="493" y="56" width="50" height="22" rx="4" fill="var(--panel)"/><text x="518" y="71" fill="var(--amber)" font-size="10">⑥ 查询</text>
+              <line x1="320" y1="128" x2="205" y2="128" stroke="var(--green)" stroke-width="2" marker-end="url(#cg2)"/><rect x="218" y="114" width="90" height="26" rx="4" fill="var(--panel)"/><text x="263" y="131" fill="var(--green)" font-size="9.5" font-weight="700">⑦ 后端 → 浏览器</text>
+            </g>
+          </svg>
         </div>
       </div>
       <div class="panel">

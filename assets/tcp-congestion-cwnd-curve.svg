@@ -125,10 +125,10 @@ svg{background:#f8fafc}
   <text x="215" y="247" text-anchor="middle" class="ss" fill="#d97706">切换算法 ↓</text>
 
   <!-- Slow start label -->
-  <rect x="100" y="90" width="130" height="26" rx="4" class="tag-g"/>
-  <text x="165" y="100" text-anchor="middle" class="sw" style="font-size:11px;">慢开始：指数增长</text>
-  <text x="165" y="115" text-anchor="middle" class="ss contrast-label">每收到 1 个 ACK → cwnd += 1</text>
-  <text x="165" y="130" text-anchor="middle" class="ss">每轮 cwnd 翻倍</text>
+  <rect x="92" y="78" width="156" height="54" rx="4" class="tag-g"/>
+  <text x="170" y="96" text-anchor="middle" class="sw" style="font-size:11px;">慢开始：指数增长</text>
+  <text x="170" y="113" text-anchor="middle" class="ss contrast-label">每个 ACK 使 cwnd 增加 1</text>
+  <text x="170" y="127" text-anchor="middle" class="ss contrast-label">每轮 RTT 约翻倍</text>
 
   <!-- === PHASE 1: Congestion Avoidance === -->
   <!-- cwnd grows +1 per round: 16→17(r5), 17→18(r6), ... 23→24(r12) -->
@@ -152,9 +152,9 @@ svg{background:#f8fafc}
   <circle cx="486" cy="124" r="5" class="dot-r"/>
 
   <!-- Congestion avoidance label -->
-  <rect x="270" y="78" width="148" height="26" rx="4" class="tag-b"/>
-  <text x="344" y="93" text-anchor="middle" class="sw" style="font-size:11px;">拥塞避免：线性增长</text>
-  <text x="344" y="113" text-anchor="middle" class="ss" style="font-size:11px;">每经过 1 个 RTT → cwnd += 1</text>
+  <rect x="278" y="72" width="160" height="46" rx="4" class="tag-b"/>
+  <text x="358" y="91" text-anchor="middle" class="sw" style="font-size:11px;">拥塞避免：线性增长</text>
+  <text x="358" y="109" text-anchor="middle" class="ss contrast-label" style="font-size:11px;">每个 RTT：cwnd += 1</text>
 
   <!-- === TIMEOUT === -->
   <!-- r13: cwnd=1 → (520, 436) -->
@@ -211,15 +211,15 @@ svg{background:#f8fafc}
   <rect x="80" y="488" width="800" height="44" rx="5" class="box"/>
   <rect x="90" y="496" width="160" height="28" rx="4" class="tag-g"/>
   <text x="170" y="515" text-anchor="middle" class="sw" style="font-size:11px;">慢开始（Slow Start）</text>
-  <text x="340" y="495" text-anchor="middle" class="ss">cwnd &lt; ssthresh</text>
-  <text x="340" y="512" text-anchor="middle" class="ss" style="font-size:11px;">指数增长：每收到 1 ACK → cwnd += 1 MSS</text>
+  <text x="340" y="500" text-anchor="middle" class="ss">cwnd &lt; ssthresh</text>
+  <text x="340" y="518" text-anchor="middle" class="ss" style="font-size:10px;">指数增长：每轮 RTT 约翻倍</text>
 
   <line x1="460" y1="510" x2="480" y2="510" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>
 
   <rect x="490" y="496" width="170" height="28" rx="4" class="tag-b"/>
   <text x="575" y="515" text-anchor="middle" class="sw" style="font-size:11px;">拥塞避免（CA）</text>
-  <text x="755" y="495" text-anchor="middle" class="ss">cwnd &gt;= ssthresh</text>
-  <text x="755" y="512" text-anchor="middle" class="ss" style="font-size:11px;">线性增长：每 RTT → cwnd += 1 MSS</text>
+  <text x="755" y="500" text-anchor="middle" class="ss">cwnd &gt;= ssthresh</text>
+  <text x="755" y="518" text-anchor="middle" class="ss" style="font-size:10px;">线性增长：每 RTT 增加 1 MSS</text>
 
   <defs>
     <marker id="ar" markerWidth="7" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 7 3, 0 6" fill="#9ca3af"/></marker>
