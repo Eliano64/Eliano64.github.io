@@ -1,22 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430" role="img" aria-labelledby="title desc">
-  <title id="title">PDU 与 SDU 关系</title>
-  <desc id="desc">展示上一层交给本层的数据作为 SDU，本层添加首部后成为本层 PDU。</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#cbd5e1;--blue:#dbeafe;--bl:#2563eb;--green:#dcfce7;--gl:#16a34a;--amber:#fef3c7;--al:#d97706;--arrow:#475569}
-    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#334155;--blue:#1e3a8a;--bl:#60a5fa;--green:#14532d;--gl:#4ade80;--amber:#713f12;--al:#fbbf24;--arrow:#cbd5e1}}
-    .bg{fill:var(--bg)}.card{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.sdu{fill:var(--green);stroke:var(--gl);stroke-width:2}.hdr{fill:var(--amber);stroke:var(--al);stroke-width:2}.pdu{fill:none;stroke:var(--bl);stroke-width:3}.arrow{stroke:var(--arrow);stroke-width:3;fill:none;marker-end:url(#arrow)}
-    text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:26px;font-weight:700}.label{font-size:17px;font-weight:700;text-anchor:middle;dominant-baseline:middle}.small{font-size:15px;fill:var(--muted);text-anchor:middle}
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="title desc">
+  <title id="title">PDU、IDU、SDU 与 ICI 的层间关系</title>
+  <desc id="desc">自上而下展示上层 PDU 经过服务访问点形成 IDU，下层取得其中的 SDU，添加本层 PCI 后形成下层 PDU。</desc>
+  <style>
+    svg{background:#f8fafc}
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#cbd5e1;--blue:#dbeafe;--bl:#2563eb;--green:#dcfce7;--gl:#16a34a;--amber:#fef3c7;--al:#d97706;--violet:#ede9fe;--vl:#7c3aed;--arrow:#475569}
+    @media(prefers-color-scheme:dark){svg{background:#0b1020}:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#a5b4c7;--line:#334155;--blue:#1e3a8a;--bl:#60a5fa;--green:#14532d;--gl:#4ade80;--amber:#713f12;--al:#fbbf24;--violet:#2e1065;--vl:#c4b5fd;--arrow:#cbd5e1}}
+    .bg{fill:var(--bg)}.card{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.outer{fill:none;stroke:var(--bl);stroke-width:3}.sdu{fill:var(--green);stroke:var(--gl);stroke-width:2}.ctrl{fill:var(--amber);stroke:var(--al);stroke-width:2}.upper{fill:var(--violet);stroke:var(--vl);stroke-width:2}.arrow{stroke:var(--arrow);stroke-width:2.5;fill:none;marker-end:url(#arr)}.guide{stroke:var(--line);stroke-width:1.5;stroke-dasharray:7 6}.dash{stroke:var(--al);stroke-width:1.7;stroke-dasharray:6 5;fill:none}
+    text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:25px;font-weight:700}.layer{font-size:16px;font-weight:700;fill:var(--muted)}.head{font-size:17px;font-weight:700;text-anchor:middle}.label{font-size:16px;font-weight:700;text-anchor:middle;dominant-baseline:middle}.small{font-size:13px;fill:var(--muted);text-anchor:middle}.note{font-size:13px;fill:var(--muted)}.formula{font-size:14px;font-weight:700;text-anchor:middle}
   </style>
-  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 Z" fill="var(--arrow)"/></marker></defs>
-  <rect class="bg" width="900" height="430"/><rect class="card" x="28" y="26" width="844" height="344" rx="16"/>
-  <text class="title" x="58" y="70">SDU 是层间交付的数据，PDU 是对等层交互的数据</text>
-  <rect class="sdu" x="288" y="112" width="280" height="66" rx="10"/><text class="label" x="428" y="146">第 n 层 SDU</text><text class="small" x="428" y="202">来自第 n+1 层，作为第 n 层要承载的数据</text>
-  <path class="arrow" d="M428 220 V258"/>
-  <rect class="hdr" x="198" y="270" width="120" height="66" rx="10"/><text class="label" x="258" y="304">首部</text>
-  <rect class="sdu" x="318" y="270" width="280" height="66" rx="10"/><text class="label" x="458" y="304">SDU</text>
-  <rect class="pdu" x="188" y="260" width="420" height="86" rx="14"/><text class="small" x="398" y="374">第 n 层 PDU = 第 n 层控制信息 + 第 n 层 SDU</text>
-  <text class="small" x="690" y="148">多个 SDU 可以合成一个 PDU；</text><text class="small" x="690" y="174">一个 SDU 也可拆成多个 PDU。</text>
+  <defs><marker id="arr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--arrow)"/></marker></defs>
+
+  <rect class="bg" width="900" height="560"/>
+  <rect class="card" x="22" y="20" width="856" height="518" rx="16"/>
+  <text class="title" x="48" y="58">从上层 PDU 到下层 PDU：接口传递与封装</text>
+
+  <text class="layer" x="62" y="116">第 n+1 层</text>
+  <rect class="upper" x="205" y="82" width="300" height="62" rx="10"/>
+  <text class="label" x="355" y="113">(n+1)-PDU</text>
+  <text class="small" x="355" y="165">上层协议已经形成的数据单元</text>
+
+  <path class="arrow" d="M355 176V207"/>
+  <text class="small" x="470" y="197">通过 SAP，并携带接口控制信息</text>
+
+  <line class="guide" x1="55" y1="218" x2="570" y2="218"/>
+  <rect class="card" x="62" y="204" width="104" height="28" rx="14"/>
+  <text class="small" x="114" y="223">SAP 层间接口</text>
+
+  <text class="layer" x="62" y="271">接口实际传递</text>
+  <rect class="outer" x="160" y="238" width="410" height="82" rx="12"/>
+  <rect class="ctrl" x="172" y="250" width="128" height="58" rx="8"/>
+  <text class="label" x="236" y="279">ICI</text>
+  <rect class="sdu" x="300" y="250" width="258" height="58" rx="8"/>
+  <text class="label" x="429" y="279">n-SDU</text>
+  <text class="formula" x="365" y="343">IDU = ICI + n-SDU</text>
+
+  <path class="arrow" d="M429 354V390"/>
+  <text class="small" x="535" y="377">下层取出 SDU，添加本层 PCI</text>
+
+  <text class="layer" x="62" y="441">第 n 层</text>
+  <rect class="outer" x="160" y="402" width="410" height="82" rx="12"/>
+  <rect class="ctrl" x="172" y="414" width="128" height="58" rx="8"/>
+  <text class="label" x="236" y="443">n-PCI</text>
+  <rect class="sdu" x="300" y="414" width="258" height="58" rx="8"/>
+  <text class="label" x="429" y="443">n-SDU</text>
+  <text class="formula" x="365" y="507">n-PDU = n-PCI + n-SDU</text>
+
+  <rect class="card" x="610" y="90" width="230" height="112" rx="10"/>
+  <text class="head" x="725" y="118">数据内容关系</text>
+  <text class="formula" x="725" y="149">(n+1)-PDU → n-SDU</text>
+  <text class="note" x="630" y="177">上层 PDU 的数据内容成为</text>
+  <text class="note" x="630" y="195">下层封装时的有效载荷。</text>
+
+  <rect class="card" x="610" y="230" width="230" height="128" rx="10"/>
+  <text class="head" x="725" y="258">ICI 去哪里？</text>
+  <text class="note" x="630" y="287">ICI 只供本机相邻层交互，</text>
+  <text class="note" x="630" y="309">告诉下层如何处理 SDU。</text>
+  <text class="note" x="630" y="337">它不封装进发往远端的 n-PDU。</text>
+  <rect class="card" x="610" y="386" width="230" height="98" rx="10"/>
+  <text class="head" x="725" y="414">分段与聚合</text>
+  <text class="note" x="630" y="443">一个 SDU 可拆成多个 PDU，</text>
+  <text class="note" x="630" y="465">多个 SDU 也可合成一个 PDU。</text>
 </svg>

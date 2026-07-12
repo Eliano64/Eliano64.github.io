@@ -87,6 +87,7 @@
     <div class="panel">
       <div class="explain" id="explain"></div>
       <div class="legend">
+        <span class="tag"><span style="font-size:24px;line-height:14px;color:var(--edge);">→</span>箭头方向：起点 → 后继</span>
         <span class="tag"><span class="dot visiting"></span>visiting：正在当前 DFS 路径中</span>
         <span class="tag"><span class="dot done"></span>done：该点所有后继已处理完</span>
         <span class="tag"><span style="display:inline-block;width:22px;height:0;border-top:4px solid var(--cross);"></span>指向 DONE：不直接判环</span>
@@ -113,11 +114,16 @@ const slides = [
 ];
 let index = 0;
 function hasEdge(list, a, b) { return list.some(([x,y]) => x === a && y === b); }
+function edgeEnds(a, b) {
+  const [sx,sy] = nodes[a], [tx,ty] = nodes[b];
+  const dx = tx - sx, dy = ty - sy, len = Math.hypot(dx,dy);
+  return [sx + dx*29/len, sy + dy*29/len, tx - dx*35/len, ty - dy*35/len];
+}
 function render() {
   const s = slides[index];
-  const marker = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowTree" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path style="fill:var(--tree)" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowBack" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path style="fill:var(--back)" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowCross" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path style="fill:var(--cross)" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>`;
+  const marker = `<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowTree" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path style="fill:var(--tree)" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowBack" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path style="fill:var(--back)" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker id="arrowCross" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path style="fill:var(--cross)" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>`;
   const edgeMarkup = edges.map(([a,b]) => {
-    const [x1,y1] = nodes[a], [x2,y2] = nodes[b];
+    const [x1,y1,x2,y2] = edgeEnds(a,b);
     const cls = s.back && s.back[0] === a && s.back[1] === b ? "back" : s.cross && s.cross[0] === a && s.cross[1] === b ? "cross" : hasEdge(s.tree,a,b) ? "tree" : "edge";
     return `<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
   }).join("");

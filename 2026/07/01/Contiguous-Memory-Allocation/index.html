@@ -234,7 +234,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <p>固定分区分配没有外部碎片，但容易产生<strong>内部碎片</strong>：如果一个 6MB 程序被放入 10MB 分区，剩下的 4MB 已经属于该进程所在分区，不能再分给其他进程。</p>
 <h1 id="动态分区分配"><a href="#动态分区分配" class="headerlink" title="动态分区分配"></a>动态分区分配</h1><p>动态分区分配又称可变分区分配。它不会预先把用户区切成固定分区，而是在进程装入时，根据进程大小动态建立分区。</p>
 <p>动态分区分配没有内部碎片，因为分给进程的分区大小正好匹配进程需要；但会产生<strong>外部碎片</strong>。</p>
- <div class="callout callout-note">
+<div class="callout callout-note">
 <div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">内部碎片 vs 外部碎片</span></div>
 <div class="callout-content"><table>
 <thead>
@@ -254,8 +254,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tbody></table>
 </div>
 </div>
-即使空闲空间总量足够，但没有一整块连续空间满足请求，就会分配失败。
-
+<p>即使空闲空间总量足够，但没有一整块连续空间满足请求，就会分配失败。</p>
 <p>外部碎片可以通过紧凑解决：移动内存中的进程，把分散的空闲区拼成一整块。但紧凑需要移动进程并更新地址转换信息，代价较高，通常要求动态重定位支持。</p>
 <h2 id="空闲分区表与空闲分区链"><a href="#空闲分区表与空闲分区链" class="headerlink" title="空闲分区表与空闲分区链"></a>空闲分区表与空闲分区链</h2><p>动态分区分配需要记录空闲区。常见结构有两类：</p>
 <table>

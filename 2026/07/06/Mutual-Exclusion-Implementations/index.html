@@ -278,6 +278,8 @@ btf.addGlobalFn('pjaxSend', () => {
 </div>
 
 
+
+
 <div class="callout callout-important">
 <div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">为什么Peterson算法能避免前面算法的问题？</span></div>
 <div class="callout-content"><p>Peterson 算法不会让两个进程同时进入，关键在于 <code>turn</code> 是单个共享变量。双方都想进入时，<code>flag[0]</code> 和 <code>flag[1]</code> 都为 <code>true</code>，但 <code>turn</code> 最终只能等于 0 或 1。</p>
@@ -288,8 +290,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <p>若只有 $P_0$ 想进入，<code>flag[1] == false</code>，$P_0$ 不会等待，满足空闲让进。若 $P_0$、$P_1$ 都想进入，后写入 <code>turn</code> 的进程相当于最后一次表示谦让，它会等待；另一个进程可以进入。因此 Peterson 算法能满足空闲让进、忙则等待、有限等待。</p>
 </div>
 </div>
-但等待者仍然停在 `while` 循环中反复检查条件，占用 CPU，所以不满足**让权等待**。
-
+<p>但等待者仍然停在 <code>while</code> 循环中反复检查条件，占用 CPU，所以不满足<strong>让权等待</strong>。</p>
 <h1 id="硬件实现方法"><a href="#硬件实现方法" class="headerlink" title="硬件实现方法"></a>硬件实现方法</h1><p>软件方法的根本困难是：普通语句之间可能发生进程切换。硬件方法让某些关键指令在执行期间不可被中断，从而得到原子性。</p>
 <h2 id="中断屏蔽方法"><a href="#中断屏蔽方法" class="headerlink" title="中断屏蔽方法"></a>中断屏蔽方法</h2><p>中断屏蔽方法在进入临界区前关中断，退出临界区后开中断。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">关中断;</span><br><span class="line">critical section;     // 临界区</span><br><span class="line">开中断;</span><br><span class="line">remainder section;    // 剩余区</span><br></pre></td></tr></table></figure>
