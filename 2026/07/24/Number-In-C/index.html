@@ -294,13 +294,13 @@ btf.addGlobalFn('pjaxSend', () => {
 <p>若截断后的整数超出目标整数类型的表示范围，C 语言不保证转换结果，不能依赖所谓的“截断低位”或“饱和到最大值”。</p>
 <div class="callout callout-danger">
 <div class="callout-title"><i class="fa-solid fa-bolt callout-icon"></i><span class="callout-title-text">整数转浮点数会有精度丢失问题</span></div>
-<div class="callout-content"><p>IEEE 754 单精度 <code>float</code> 只能连续精确表示 $-2^{24}\sim 2^{24}$ 内的整数。精度边界见 <a href="/2026/06/30/Floating-Point-Numbers/#精度" class="wikilink">推导过程</a>。</p>
+<div class="callout-content"><p>IEEE 754 单精度 <code>float</code> 只能连续精确表示 $-2^{24}\sim 2^{24}$ 内的整数。精度边界见 <a href="&#x2F;2026&#x2F;06&#x2F;30&#x2F;Floating-Point-Numbers&#x2F;#精度" class="wikilink">推导过程</a>。</p>
 <p><hexoPostRenderCodeBlock><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> x = <span class="number">16777217</span>;       <span class="comment">// 2^24 + 1</span></span><br><span class="line"><span class="type">float</span> f = (<span class="type">float</span>)x;     <span class="comment">// 舍入为 16777216.0f</span></span><br><span class="line"><span class="type">int</span> y = (<span class="type">int</span>)f;         <span class="comment">// 16777216</span></span><br></pre></td></tr></table></figure></hexoPostRenderCodeBlock></p>
 <p>这里 <code>y != x</code> 是 <code>x</code> 转成 <code>float</code> 时已经丢失了最低有效位。</p>
 <p><code>double</code> 有 53 位有效精度，能精确表示所有常见的 32 位整数；但对 64 位整数仍可能发生同类问题，例如 $2^{53}+1$ 不能被 <code>double</code> 精确表示。</p>
 </div>
 </div>
-<p>^222228</p>
+<p><span id="block-222228" class="obsidian-block-anchor" aria-hidden="true"></span></p>
 <h1 id="运算时的默认类型提升"><a href="#运算时的默认类型提升" class="headerlink" title="运算时的默认类型提升"></a>运算时的默认类型提升</h1><p>C 语言做算术运算时，先看下面这张等级图。</p>
 <p><img src="/assets/c-usual-arithmetic-conversions.svg"></p>
 <ol>

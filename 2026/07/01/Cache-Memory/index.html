@@ -169,7 +169,7 @@ btf.addGlobalFn('pjaxSend', () => {
 }, 'pace_restart')
 
 </script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">297</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Cache Memory</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Cache Memory</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-01T04:36:54.000Z" title="发表于 2026-07-01 12:36:54">2026-07-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-24T10:50:29.295Z" title="更新于 2026-07-24 18:50:29">2026-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Organization/">Computer Organization</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.5k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h1><p>主存容量大，但速度仍然比 CPU 慢得多。Cache 逻辑上位于 CPU 和主存之间（物理上通常集成在CPU内部），对于所有程序员和 OS 透明，用更快的 SRAM 保存主存中近期可能访问的数据副本，从而缓和 CPU 与主存之间的速度差距。</p>
-<p>Cache 依赖的是<a href="/2026/06/30/Memory-System-Overview/#局部性原理" class="wikilink">局部性原理</a>：</p>
+<p>Cache 依赖的是<a href="&#x2F;2026&#x2F;06&#x2F;30&#x2F;Memory-System-Overview&#x2F;#局部性原理" class="wikilink">局部性原理</a>：</p>
 <table>
 <thead>
 <tr>
@@ -214,7 +214,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tr>
 </tbody></table>
 <p>通常 L1 Cache 最靠近核心，容量最小、速度最快；L2、L3 容量更大但速度更慢。一次访问若在 L1 未命中，会继续查 L2、L3，仍未命中才访问主存。</p>
-<h1 id="Cache-行"><a href="#Cache-行" class="headerlink" title="Cache 行"></a>Cache 行</h1><p>一个 Cache 行不仅保存数据块本身，还要保存一些判断和维护状态所需的额外信息。见[[#Cache 容量]]</p>
+<h1 id="Cache-行"><a href="#Cache-行" class="headerlink" title="Cache 行"></a>Cache 行</h1><p>一个 Cache 行不仅保存数据块本身，还要保存一些判断和维护状态所需的额外信息。见<a href="#Cache-容量" class="wikilink">Cache 容量</a></p>
 <table>
 <thead>
 <tr>
@@ -278,7 +278,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tbody></table>
 <p><img src="/assets/cache-address-fields.svg"></p>
 <p><code>Index</code> 和 <code>Block Offset</code> 都来自 CPU 地址，但它们不会作为 Cache 表项的元数据保存下来。<code>Index</code> 用来找到要查的行或组；<code>Block Offset</code> 用来在已经命中的数据块中选择字节或字。</p>
-<p>Cache 表项除了一块的数据，真正额外保存的是 <code>Tag</code>、<code>Valid</code>、<code>Dirty</code> 以及替换控制位。见[[#Cache 行|前文]]。</p>
+<p>Cache 表项除了一块的数据，真正额外保存的是 <code>Tag</code>、<code>Valid</code>、<code>Dirty</code> 以及替换控制位。见<a href="#Cache-行" class="wikilink">前文</a>。</p>
 <h1 id="映射方式"><a href="#映射方式" class="headerlink" title="映射方式"></a>映射方式</h1><p>主存块调入 Cache 时，必须确定能放到哪里。这就是映射方式。</p>
 <p><img src="/assets/cache-mapping-methods.svg"></p>
 <h2 id="直接映射"><a href="#直接映射" class="headerlink" title="直接映射"></a>直接映射</h2><p>直接映射中，每个主存块只能放入唯一的 Cache 行：</p>
@@ -462,7 +462,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <li>根据映射方式确定访问的位置：直接映射定位到唯一行，组相联定位到某一组，全相联可放入任意行。</li>
 <li>在候选行中查 <code>Valid</code> 和 <code>Tag</code>：<code>Valid=0</code> 表示该行不能合法访问，必未命中；<code>Valid=1</code> 且 <code>Tag</code> 相等才命中；<code>Valid=1</code> 但 <code>Tag</code> 不等，说明该行保存的是别的主存块，也未命中。</li>
 <li>命中则命中次数加 1，并按替换算法更新状态。</li>
-<li>未命中则把目标块调入 Cache；若有 <code>Valid=0</code> 的空行，优先放入空行；若候选位置已满，按[[#替换算法]]换出旧块。</li>
+<li>未命中则把目标块调入 Cache；若有 <code>Valid=0</code> 的空行，优先放入空行；若候选位置已满，按<a href="#替换算法" class="wikilink">替换算法</a>换出旧块。</li>
 <li>最后用命中次数除以总访问次数。</li>
 </ol>
 <div class="callout callout-example">

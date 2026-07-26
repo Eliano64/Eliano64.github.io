@@ -256,7 +256,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tr>
 </tbody></table>
 <p><strong>Discover</strong> 由客户广播发送。报文中包含事务 ID 和客户 MAC 地址。网络中的设备都会收到广播，但只有 DHCP 服务器进程监听 UDP 67 端口并处理该报文。</p>
-<p><strong>Offer</strong> 由服务器发出。服务器根据客户 MAC 地址查找数据库；若有专门配置，就按该配置提供；否则从地址池中选择地址。Offer 中包含可租用 IP 地址、子网掩码、租期、默认网关、DNS 服务器等信息。服务器选择地址前，可以使用 <a href="/2026/07/08/ARP/" class="wikilink">ARP</a> 检测该地址是否已被占用。</p>
+<p><strong>Offer</strong> 由服务器发出。服务器根据客户 MAC 地址查找数据库；若有专门配置，就按该配置提供；否则从地址池中选择地址。Offer 中包含可租用 IP 地址、子网掩码、租期、默认网关、DNS 服务器等信息。服务器选择地址前，可以使用 <a href="&#x2F;2026&#x2F;07&#x2F;08&#x2F;ARP&#x2F;" class="wikilink">ARP</a> 检测该地址是否已被占用。</p>
 <p><strong>Request</strong> 由客户广播发送。客户可能收到多个 Offer，通常选择先到的一个。Request 广播的意义是：通知被选中的服务器“我接受你的租约”，也通知其他服务器“我没有选择你们，可以释放预留地址”。</p>
 <p><strong>ACK</strong> 由被选中的服务器发送。客户收到 ACK 后，才正式使用租用到的 IP 地址。使用前，客户还可以用 ARP 检测该地址是否已被占用；若发现冲突，可发送 DHCP Decline 拒绝该租约并重新申请。</p>
 <h1 id="租约更新与释放"><a href="#租约更新与释放" class="headerlink" title="租约更新与释放"></a>租约更新与释放</h1><p>DHCP 分配的是“租约”，不是永久地址。租期到期前，客户需要续租。</p>

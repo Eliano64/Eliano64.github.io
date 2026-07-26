@@ -313,7 +313,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <p>静态重定位的限制是：进程装入时必须一次性分配所需的全部连续空间；一旦装入，在运行期间不能移动，也不能方便地动态扩展。</p>
 <h3 id="动态重定位"><a href="#动态重定位" class="headerlink" title="动态重定位"></a>动态重定位</h3><p>动态重定位把地址转换推迟到程序执行期间。装入模块进入内存后，指令中仍保留逻辑地址；CPU 执行到访存指令时，由硬件把逻辑地址加上重定位寄存器中的起始物理地址，得到物理地址。</p>
 <p>$$<br>\text{物理地址} &#x3D; \text{重定位寄存器} + \text{逻辑地址}<br>$$</p>
-<p>动态重定位的优点是灵活：进程可以在运行期间移动，后续的<a href="/2026/07/01/Paging-And-Segmentation/" class="wikilink">分页、分段</a>、虚拟内存也都依赖“运行时地址转换”这个思想。</p>
+<p>动态重定位的优点是灵活：进程可以在运行期间移动，后续的<a href="&#x2F;2026&#x2F;07&#x2F;01&#x2F;Paging-And-Segmentation&#x2F;" class="wikilink">分页、分段</a>、虚拟内存也都依赖“运行时地址转换”这个思想。</p>
 <h1 id="内存保护"><a href="#内存保护" class="headerlink" title="内存保护"></a>内存保护</h1><p>硬件在地址转换前先检查逻辑地址是否越界。</p>
 <p><img src="/assets/os-memory-address-translation.svg"></p>
 <p>设某进程的逻辑地址空间为 <code>0~179</code>，实际装入物理地址 <code>100~279</code>：</p>
@@ -344,7 +344,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tbody></table>
 <p>内存保护的目标是保证进程只能访问自己的地址空间，不能随意读写其他进程或操作系统内核的数据。</p>
 <h1 id="内存分配与回收"><a href="#内存分配与回收" class="headerlink" title="内存分配与回收"></a>内存分配与回收</h1><p>内存分配与回收要解决的是：进程装入时放到哪里，运行结束后如何释放它占用的空间。</p>
-<p>连续分配方式、空闲分区管理、分配算法和回收合并见 <a href="/2026/07/01/Contiguous-Memory-Allocation/" class="wikilink">Contiguous-Memory-Allocation</a>。</p>
+<p>连续分配方式、空闲分区管理、分配算法和回收合并见 <a href="&#x2F;2026&#x2F;07&#x2F;01&#x2F;Contiguous-Memory-Allocation&#x2F;" class="wikilink">Contiguous-Memory-Allocation</a>。</p>
 <h1 id="内存共享"><a href="#内存共享" class="headerlink" title="内存共享"></a>内存共享</h1><p>内存共享让多个进程使用同一份物理内存内容，而不是为每个进程都复制一份。</p>
 <p>常见共享对象包括：</p>
 <table>
@@ -372,7 +372,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tr>
 </tbody></table>
 <p>共享通常要求配合保护机制：只读代码可以共享执行，但不能被普通进程修改；可写共享区则需要同步机制，否则多个进程并发写入会造成数据不一致。</p>
-<p><a href="/2026/07/01/Paging-And-Segmentation/" class="wikilink">分段管理</a>更容易按逻辑模块表达共享和保护，例如让不同进程的段表项指向同一个只读代码段。分页系统也能共享，但共享单位是页面，表达逻辑模块边界不如分段直观。</p>
+<p><a href="&#x2F;2026&#x2F;07&#x2F;01&#x2F;Paging-And-Segmentation&#x2F;" class="wikilink">分段管理</a>更容易按逻辑模块表达共享和保护，例如让不同进程的段表项指向同一个只读代码段。分页系统也能共享，但共享单位是页面，表达逻辑模块边界不如分段直观。</p>
 <h1 id="内存空间扩展"><a href="#内存空间扩展" class="headerlink" title="内存空间扩展"></a>内存空间扩展</h1><p>早期系统中，程序可能大于物理内存，或者内存无法同时容纳太多程序。覆盖技术和交换技术都是在虚拟内存成熟之前用于缓解内存不足的办法。</p>
 <h2 id="覆盖技术"><a href="#覆盖技术" class="headerlink" title="覆盖技术"></a>覆盖技术</h2><p>覆盖技术把程序划分成若干模块。常用模块常驻内存，不常用模块在需要时调入；不会同时执行的模块可以共用同一个覆盖区。</p>
 <p>它能让程序大小超过物理内存，但需要程序员显式设计覆盖结构，对用户不透明，编程负担重，现代系统中基本已成为历史。</p>

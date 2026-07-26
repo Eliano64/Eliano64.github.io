@@ -248,7 +248,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <td>只修改该进程自己的数据，不会改变系统时钟</td>
 </tr>
 </tbody></table>
-<p>读取时间不一定每次都要通过<a href="/2026/07/10/System-Call/" class="wikilink">系统调用</a>[[#用户态到内核态|切换为内核态]]。操作系统可以把经过整理的时间数据以只读方式映射到用户空间，例如 Linux 通过 vDSO 加速部分时钟查询。某些处理器还允许用户态读取硬件计数器。</p>
+<p>读取时间不一定每次都要通过<a href="&#x2F;2026&#x2F;07&#x2F;10&#x2F;System-Call&#x2F;" class="wikilink">系统调用</a><a href="#用户态到内核态" class="wikilink">切换为内核态</a>。操作系统可以把经过整理的时间数据以只读方式映射到用户空间，例如 Linux 通过 vDSO 加速部分时钟查询。某些处理器还允许用户态读取硬件计数器。</p>
 <h1 id="CPU-状态切换"><a href="#CPU-状态切换" class="headerlink" title="CPU 状态切换"></a>CPU 状态切换</h1><h2 id="内核态到用户态"><a href="#内核态到用户态" class="headerlink" title="内核态到用户态"></a>内核态到用户态</h2><p>内核态到用户态通常由内核主动完成。操作系统准备让某个应用程序运行时，会通过特权指令修改 PSW 中的状态位，并恢复该程序的运行现场，使 CPU 回到用户态执行用户程序。</p>
 <p>这个方向是“内核让出 CPU 控制权”。</p>
 <h2 id="用户态到内核态"><a href="#用户态到内核态" class="headerlink" title="用户态到内核态"></a>用户态到内核态</h2><p>用户态程序不能直接把 CPU 改成内核态。用户态到内核态必须由硬件事件触发，常见来源包括：</p>
@@ -263,7 +263,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <tbody><tr>
 <td>系统调用</td>
 <td>用户程序执行 trap &#x2F; 访管指令</td>
-<td>程序主动请求内核服务，完整过程见 <a href="/2026/07/10/System-Call/" class="wikilink">System-Call</a></td>
+<td>程序主动请求内核服务，完整过程见 <a href="&#x2F;2026&#x2F;07&#x2F;10&#x2F;System-Call&#x2F;" class="wikilink">System-Call</a></td>
 </tr>
 <tr>
 <td>异常</td>
@@ -277,7 +277,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tr>
 </tbody></table>
 <p>这个方向是“操作系统夺回 CPU 控制权”。没有这种机制，应用程序一旦运行，就可能长期占用 CPU，操作系统无法重新获得控制。</p>
-<h1 id="异常与中断在状态切换中的作用"><a href="#异常与中断在状态切换中的作用" class="headerlink" title="异常与中断在状态切换中的作用"></a>异常与中断在状态切换中的作用</h1><p>这里关心的是异常与中断如何改变 CPU 状态。其完整定义、分类和处理过程见 <a href="/2026/07/01/Exception-And-Interrupt-Definition/" class="wikilink">Exception-And-Interrupt-Definition</a> 与 <a href="/2026/07/03/Exception-And-Interrupt-Handling/" class="wikilink">Exception-And-Interrupt-Handling</a>。</p>
+<h1 id="异常与中断在状态切换中的作用"><a href="#异常与中断在状态切换中的作用" class="headerlink" title="异常与中断在状态切换中的作用"></a>异常与中断在状态切换中的作用</h1><p>这里关心的是异常与中断如何改变 CPU 状态。其完整定义、分类和处理过程见 <a href="&#x2F;2026&#x2F;07&#x2F;01&#x2F;Exception-And-Interrupt-Definition&#x2F;" class="wikilink">Exception-And-Interrupt-Definition</a> 与 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Exception-And-Interrupt-Handling&#x2F;" class="wikilink">Exception-And-Interrupt-Handling</a>。</p>
 <p>它们在操作系统中的作用：</p>
 <ol>
 <li>让 CPU 从用户态转入内核态。</li>
@@ -285,8 +285,8 @@ btf.addGlobalFn('pjaxSend', () => {
 <li>为系统调用、I&#x2F;O 完成、时钟调度、错误处理提供统一入口。</li>
 </ol>
 <p>异常来自 CPU 内部，通常与当前正在执行的指令有关。异常发生后，CPU 转入内核态，使内核有机会处理当前指令引发的问题或请求。</p>
-<p>系统调用使用 trap &#x2F; 访管指令主动触发自陷；缺页故障、除 0、用户态执行特权指令等也会触发异常。分类细节见 <a href="/2026/07/01/Exception-And-Interrupt-Definition/#异常" class="wikilink">异常</a>。</p>
-<p><a href="/2026/07/01/Exception-And-Interrupt-Definition/#中断" class="wikilink">中断</a>来自 CPU 外部，通常与当前正在执行的指令无关。中断让操作系统可以在用户程序运行期间重新获得 CPU 控制权。</p>
+<p>系统调用使用 trap &#x2F; 访管指令主动触发自陷；缺页故障、除 0、用户态执行特权指令等也会触发异常。分类细节见 <a href="&#x2F;2026&#x2F;07&#x2F;01&#x2F;Exception-And-Interrupt-Definition&#x2F;#异常" class="wikilink">异常</a>。</p>
+<p><a href="&#x2F;2026&#x2F;07&#x2F;01&#x2F;Exception-And-Interrupt-Definition&#x2F;#中断" class="wikilink">中断</a>来自 CPU 外部，通常与当前正在执行的指令无关。中断让操作系统可以在用户程序运行期间重新获得 CPU 控制权。</p>
 <p>常见中断：</p>
 <ul>
 <li>时钟中断：让操作系统周期性获得控制权，可用于计时和调度。</li>

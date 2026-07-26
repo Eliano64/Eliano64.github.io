@@ -228,7 +228,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </ol>
 <p>中断方式解决了查询方式的忙等问题，但每个字或字符仍要经过 CPU。若高速设备频繁中断，CPU 会把大量时间花在中断响应、保护现场、恢复现场和服务程序上。</p>
 <blockquote>
-<p>中断响应和处理流程见 <a href="/2026/07/03/Exception-And-Interrupt-Handling/" class="wikilink">Exception-And-Interrupt-Handling</a>。这里关心的是 I&#x2F;O 控制方式：中断使 CPU 不必一直轮询，但数据搬运仍由 CPU 参与。</p>
+<p>中断响应和处理流程见 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Exception-And-Interrupt-Handling&#x2F;" class="wikilink">Exception-And-Interrupt-Handling</a>。这里关心的是 I&#x2F;O 控制方式：中断使 CPU 不必一直轮询，但数据搬运仍由 CPU 参与。</p>
 </blockquote>
 <table>
 <thead>
@@ -265,7 +265,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <h1 id="DMA-方式"><a href="#DMA-方式" class="headerlink" title="DMA 方式"></a>DMA 方式</h1><p>DMA 是 Direct Memory Access，直接存储器存取。它适合高速块设备。</p>
 <p>DMA 的关键变化是：<strong>主存与 I&#x2F;O 设备之间的数据传送不再经过 CPU，而由 DMA 控制器控制</strong>。CPU 只在传输开始前做预处理，在传输结束后通过中断做后处理。</p>
 <p><img src="/assets/dma-controller-structure.svg" alt="1000"></p>
-<p>DMA 能工作，是因为 DMA 控制器可以临时成为总线主设备。它向 CPU 或总线仲裁逻辑申请总线使用权，获得授权后发出主存地址、读写控制信号，并通过数据线完成设备与主存之间的传送。总线事务本身仍然遵守 <a href="/2026/07/03/Bus-Overview/#总线传输周期的四个阶段" class="wikilink">总线传输周期</a> 和 <a href="/2026/07/03/Bus-Timing/" class="wikilink">总线定时</a> 的约束。</p>
+<p>DMA 能工作，是因为 DMA 控制器可以临时成为总线主设备。它向 CPU 或总线仲裁逻辑申请总线使用权，获得授权后发出主存地址、读写控制信号，并通过数据线完成设备与主存之间的传送。总线事务本身仍然遵守 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Bus-Overview&#x2F;#总线传输周期的四个阶段" class="wikilink">总线传输周期</a> 和 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Bus-Timing&#x2F;" class="wikilink">总线定时</a> 的约束。</p>
 <p>DMA 控制器常见部件：</p>
 <table>
 <thead>
@@ -389,7 +389,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <div class="callout-content"><p>上面的 128 次成立于“每准备好 32 位数据就申请一次总线”的题设。实际 DMA 控制器可能取得一次总线使用权后连续传送多个字，即采用突发传送；此时数据传送次数仍由数据块大小和单次数据宽度决定，但总线申请次数可能更少。</p>
 </div>
 </div>
-<p>这类冲突本质上是总线和主存端口的占用冲突。DMA 提高了块设备吞吐量，但不是绕开了总线；它只是把数据搬运的控制者从 CPU 换成 DMA 控制器。传输完成后，DMA 仍要通过中断让 CPU 进入内核做结束处理，处理流程见 <a href="/2026/07/03/Exception-And-Interrupt-Handling/#io-中断处理程序" class="wikilink">I/O 中断处理程序</a>。</p>
+<p>这类冲突本质上是总线和主存端口的占用冲突。DMA 提高了块设备吞吐量，但不是绕开了总线；它只是把数据搬运的控制者从 CPU 换成 DMA 控制器。传输完成后，DMA 仍要通过中断让 CPU 进入内核做结束处理，处理流程见 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Exception-And-Interrupt-Handling&#x2F;#I&#x2F;O-中断处理程序" class="wikilink">I&#x2F;O 中断处理程序</a>。</p>
 <h2 id="DMA-与中断方式的区别"><a href="#DMA-与中断方式的区别" class="headerlink" title="DMA 与中断方式的区别"></a>DMA 与中断方式的区别</h2><table>
 <thead>
 <tr>

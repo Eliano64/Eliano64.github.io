@@ -265,10 +265,10 @@ btf.addGlobalFn('pjaxSend', () => {
 <p>分片可以再次分片。中间路由器只负责继续转发或继续分片；重组只在目的主机进行。这样可以避免每个中间路由器都维护大量重组状态。</p>
 <div class="callout callout-warning">
 <div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">DF = 1 且数据报长度大于 MTU</span></div>
-<div class="callout-content"><p><code>DF=1</code> 表示不允许分片。若下一段链路的 MTU 装不下该数据报，路由器不能强行分片，只能丢弃，并通常通过 <a href="/2026/07/08/ICMP/" class="wikilink">ICMP</a> 返回差错报告。</p>
+<div class="callout-content"><p><code>DF=1</code> 表示不允许分片。若下一段链路的 MTU 装不下该数据报，路由器不能强行分片，只能丢弃，并通常通过 <a href="&#x2F;2026&#x2F;07&#x2F;08&#x2F;ICMP&#x2F;" class="wikilink">ICMP</a> 返回差错报告。</p>
 </div>
 </div>
-<h1 id="TTL、协议字段和首部检验和"><a href="#TTL、协议字段和首部检验和" class="headerlink" title="TTL、协议字段和首部检验和"></a>TTL、协议字段和首部检验和</h1><p>TTL 用来限制 IPv4 数据报的生存时间。每经过一个路由器，TTL 至少减 1；若减到 0，路由器丢弃该数据报，并通常向源主机发送 <a href="/2026/07/08/ICMP/" class="wikilink">ICMP</a> 时间超过报文。TTL 的核心作用是防止路由环路导致分组无限循环。</p>
+<h1 id="TTL、协议字段和首部检验和"><a href="#TTL、协议字段和首部检验和" class="headerlink" title="TTL、协议字段和首部检验和"></a>TTL、协议字段和首部检验和</h1><p>TTL 用来限制 IPv4 数据报的生存时间。每经过一个路由器，TTL 至少减 1；若减到 0，路由器丢弃该数据报，并通常向源主机发送 <a href="&#x2F;2026&#x2F;07&#x2F;08&#x2F;ICMP&#x2F;" class="wikilink">ICMP</a> 时间超过报文。TTL 的核心作用是防止路由环路导致分组无限循环。</p>
 <p>协议字段告诉目的主机的 IP 层把载荷交给谁处理。常见取值包括 ICMP、TCP、UDP 等。</p>
 <p>首部检验和只覆盖 IPv4 首部，不覆盖数据载荷。由于 TTL 每跳都会变化，所以每个路由器转发前都需要重新计算首部检验和。IPv6 删除了首部检验和字段，以减少路由器逐跳处理开销。</p>
 <h1 id="易混点"><a href="#易混点" class="headerlink" title="易混点"></a>易混点</h1><ul>

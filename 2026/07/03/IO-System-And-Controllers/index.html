@@ -225,7 +225,7 @@ btf.addGlobalFn('pjaxSend', () => {
 <p>字符设备和块设备的区别会影响后面的控制方式：字符设备每次数据量小，频繁中断还能接受；块设备一次传输大量连续数据，更适合让 DMA 或通道接管传输过程。</p>
 <h1 id="I-O-控制器"><a href="#I-O-控制器" class="headerlink" title="I&#x2F;O 控制器"></a>I&#x2F;O 控制器</h1><p>I&#x2F;O 控制器是 CPU 与设备之间的电子部件。它一侧连接系统总线，另一侧连接一个或多个设备。</p>
 <p><img src="/assets/io-controller-structure.svg" alt="1000"></p>
-<p>从主机一侧看，控制器通过数据线、地址线和控制线与 CPU、主存相连。这一侧也称<strong>内部接口</strong>，它接入的是系统内部的并行总线环境。系统总线的地址、数据、控制三类信号见 <a href="/2026/07/03/Bus-Overview/#系统总线的三类信号" class="wikilink">系统总线</a>。</p>
+<p>从主机一侧看，控制器通过数据线、地址线和控制线与 CPU、主存相连。这一侧也称<strong>内部接口</strong>，它接入的是系统内部的并行总线环境。系统总线的地址、数据、控制三类信号见 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Bus-Overview&#x2F;#系统总线的三类信号" class="wikilink">系统总线</a>。</p>
 <p>从设备一侧看，控制器通过外部接口连接具体设备。外部设备不一定按主机总线的格式工作，数据可能是串行传输，也可能有设备自己的控制时序。因此 I&#x2F;O 控制器常要完成串并转换、格式转换和速度匹配。</p>
 <p>控制器通常包含三类寄存器：</p>
 <table>
@@ -283,7 +283,7 @@ btf.addGlobalFn('pjaxSend', () => {
 </tr>
 </tbody></table>
 <p>实际接口中还可能设置完成触发器、工作触发器、中断请求触发器和屏蔽触发器。它们分别用来记录设备是否完成、是否正在工作、是否提出中断请求，以及该中断请求是否允许送给 CPU。</p>
-<p>因此，I&#x2F;O 控制器不是单纯的“连线转换器”。它既负责主机侧的端口访问，又负责设备侧的控制、状态收集和数据暂存。若控制器用中断方式通知 CPU，后续响应流程进入 <a href="/2026/07/03/Exception-And-Interrupt-Handling/" class="wikilink">异常与中断处理</a>。</p>
+<p>因此，I&#x2F;O 控制器不是单纯的“连线转换器”。它既负责主机侧的端口访问，又负责设备侧的控制、状态收集和数据暂存。若控制器用中断方式通知 CPU，后续响应流程进入 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Exception-And-Interrupt-Handling&#x2F;" class="wikilink">异常与中断处理</a>。</p>
 <h1 id="I-O-端口"><a href="#I-O-端口" class="headerlink" title="I&#x2F;O 端口"></a>I&#x2F;O 端口</h1><p>控制器中的寄存器对 CPU 来说就是可访问的端口。所谓 <strong>I&#x2F;O 端口</strong>，就是 I&#x2F;O 控制器里能被 CPU 读写的寄存器地址。</p>
 <p>一次典型输入过程可以看成：</p>
 <ol>
