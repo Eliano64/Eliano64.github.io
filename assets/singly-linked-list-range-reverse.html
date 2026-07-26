@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>单链表区间反转</title>
+<link rel="icon" href="data:,">
+<style>
+:root{color-scheme:light dark;--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#5b687b;--line:#64748b;--border:#cbd5e1;--blue:#2563eb;--green:#059669;--orange:#d97706;--soft:#e8eef8}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1722;--panel:#172331;--ink:#f3f6fb;--muted:#b8c5d8;--line:#94a3b8;--border:#3a4a60;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--soft:#223248}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif}main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header{padding:18px 28px 13px;border-bottom:1px solid var(--border)}h1{font-size:25px;margin:0 0 5px}.sub{font-size:15px;color:var(--muted)}.slide{display:none;padding:20px 28px 14px}.slide.active{display:block}.slide h2{font-size:23px;margin:0 0 6px}.slide>p{font-size:16px;line-height:1.6;color:var(--muted);margin:0 0 10px}.visual{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px 14px}.visual svg{display:block;width:100%;height:auto;max-height:260px}.node{fill:var(--soft);stroke:var(--blue);stroke-width:2}.focus{fill:color-mix(in srgb,var(--orange) 24%,var(--panel));stroke:var(--orange);stroke-width:3}.moving{fill:color-mix(in srgb,var(--green) 22%,var(--panel));stroke:var(--green);stroke-width:3}.edge{fill:none;stroke:var(--line);stroke-width:3}.edge-accent{fill:none;stroke:var(--green);stroke-width:4}.s1 .edge{marker-end:url(#arrow1)}.s2 .edge{marker-end:url(#arrow2)}.s2 .edge-accent{marker-end:url(#arrowGreen2)}.s3 .edge{marker-end:url(#arrow3)}.s3 .edge-accent{marker-end:url(#arrowGreen3)}.s4 .edge{marker-end:url(#arrow4)}.label{fill:var(--ink);font-size:21px;font-weight:700;text-anchor:middle}.small{fill:var(--muted);font-size:17px;text-anchor:middle}.pointer{fill:var(--orange);font-size:18px;font-weight:700;text-anchor:middle}.code{margin-top:10px;background:#111827;color:#e5e7eb;border-radius:10px;padding:11px 15px;font:15px/1.5 Consolas,monospace;white-space:pre-wrap}.rule{margin-top:9px;border-left:4px solid var(--green);padding:7px 12px;background:color-mix(in srgb,var(--green) 9%,var(--panel));font-size:16px;line-height:1.5}footer{padding:11px 28px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}button{border:1px solid var(--border);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 15px;font-size:15px;cursor:pointer}.count{color:var(--muted);font-size:14px}@media(max-width:620px){header,.slide,footer{padding-left:16px;padding-right:16px}.slide{padding-top:14px}h1{font-size:21px}.slide h2{font-size:20px}.label{font-size:18px}.visual{padding:6px}.code{font-size:13px}}
+</style>
+</head>
+<body>
+<main>
+  <header><h1>单链表翻转区间 [left, right]</h1><div class="sub">示例：head → 1 → 2 → 3 → 4 → 5 → 6，翻转 [2,5]</div></header>
+
+  <section class="slide s1 active">
+    <h2>1. 找到区间前驱和区间首结点</h2>
+    <p><code>before</code> 停在第 <code>left-1</code> 个结点，<code>first</code> 指向第 <code>left</code> 个结点。</p>
+    <div class="visual"><svg viewBox="0 0 1000 260" aria-label="定位区间前驱和首结点">
+      <defs><marker id="arrow1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="var(--line)"/></marker></defs>
+      <path class="edge" d="M116 145H165"/><path class="edge" d="M276 145H325"/><path class="edge" d="M436 145H485"/><path class="edge" d="M596 145H645"/><path class="edge" d="M756 145H805"/>
+      <g><rect class="node" x="20" y="110" width="96" height="70" rx="10"/><text class="label" x="68" y="153">1</text></g>
+      <g><rect class="focus" x="180" y="110" width="96" height="70" rx="10"/><text class="label" x="228" y="153">2</text></g>
+      <g><rect class="node" x="340" y="110" width="96" height="70" rx="10"/><text class="label" x="388" y="153">3</text></g>
+      <g><rect class="node" x="500" y="110" width="96" height="70" rx="10"/><text class="label" x="548" y="153">4</text></g>
+      <g><rect class="node" x="660" y="110" width="96" height="70" rx="10"/><text class="label" x="708" y="153">5</text></g>
+      <g><rect class="node" x="820" y="110" width="96" height="70" rx="10"/><text class="label" x="868" y="153">6</text></g>
+      <text class="pointer" x="68" y="75">before</text><path d="M68 82V103" stroke="var(--orange)" stroke-width="3"/>
+      <text class="pointer" x="228" y="75">first</text><path d="M228 82V103" stroke="var(--orange)" stroke-width="3"/>
+      <path d="M176 205H760" stroke="var(--orange)" stroke-width="3"/><path d="M176 196V214M760 196V214" stroke="var(--orange)" stroke-width="3"/><text class="small" x="468" y="237">待翻转区间</text>
+    </svg></div>
+    <div class="rule"><code>before</code> 不再移动；<code>first</code> 最终会成为翻转区间的尾结点。</div>
+  </section>
+
+  <section class="slide s2">
+    <h2>2. 把 first 后面的结点移到区间最前面</h2>
+    <p>第一轮取下结点 3，将它插到 <code>before</code> 与结点 2 之间。</p>
+    <div class="visual"><svg viewBox="0 0 1000 260" aria-label="移动结点三到区间前端">
+      <defs><marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="var(--line)"/></marker><marker id="arrowGreen2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="var(--green)"/></marker></defs>
+      <path class="edge" d="M116 145H165"/><path class="edge" d="M276 145H325"/><path class="edge" d="M436 145H485"/><path class="edge" d="M596 145H645"/><path class="edge" d="M756 145H805"/>
+      <rect class="node" x="20" y="110" width="96" height="70" rx="10"/><text class="label" x="68" y="153">1</text>
+      <rect class="focus" x="180" y="110" width="96" height="70" rx="10"/><text class="label" x="228" y="153">2</text>
+      <rect class="moving" x="340" y="110" width="96" height="70" rx="10"/><text class="label" x="388" y="153">3</text>
+      <rect class="node" x="500" y="110" width="96" height="70" rx="10"/><text class="label" x="548" y="153">4</text>
+      <rect class="node" x="660" y="110" width="96" height="70" rx="10"/><text class="label" x="708" y="153">5</text>
+      <rect class="node" x="820" y="110" width="96" height="70" rx="10"/><text class="label" x="868" y="153">6</text>
+      <text class="pointer" x="68" y="75">before</text><text class="pointer" x="228" y="75">first</text><text class="pointer" x="388" y="75">moved</text>
+      <path class="edge-accent" d="M388 105C380 18 152 18 114 102"/>
+    </svg></div>
+    <div class="code">moved = first-&gt;next;
+first-&gt;next = moved-&gt;next;
+moved-&gt;next = before-&gt;next;
+before-&gt;next = moved;</div>
+  </section>
+
+  <section class="slide s3">
+    <h2>3. 重复同一组改链</h2>
+    <p>结点 3、4 已依次移到前端；<code>first</code> 仍指向结点 2，下一次移动结点 5。</p>
+    <div class="visual"><svg viewBox="0 0 1000 260" aria-label="区间反转中间状态">
+      <defs><marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="var(--line)"/></marker><marker id="arrowGreen3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="var(--green)"/></marker></defs>
+      <path class="edge" d="M116 145H165"/><path class="edge" d="M276 145H325"/><path class="edge" d="M436 145H485"/><path class="edge" d="M596 145H645"/><path class="edge" d="M756 145H805"/>
+      <rect class="node" x="20" y="110" width="96" height="70" rx="10"/><text class="label" x="68" y="153">1</text>
+      <rect class="node" x="180" y="110" width="96" height="70" rx="10"/><text class="label" x="228" y="153">4</text>
+      <rect class="node" x="340" y="110" width="96" height="70" rx="10"/><text class="label" x="388" y="153">3</text>
+      <rect class="focus" x="500" y="110" width="96" height="70" rx="10"/><text class="label" x="548" y="153">2</text>
+      <rect class="moving" x="660" y="110" width="96" height="70" rx="10"/><text class="label" x="708" y="153">5</text>
+      <rect class="node" x="820" y="110" width="96" height="70" rx="10"/><text class="label" x="868" y="153">6</text>
+      <text class="pointer" x="68" y="75">before</text><text class="pointer" x="548" y="75">first</text><text class="pointer" x="708" y="75">moved</text>
+      <path class="edge-accent" d="M708 105C690 22 160 22 114 102"/>
+    </svg></div>
+    <div class="rule">循环执行 <code>right-left</code> 次。每一轮只搬动一个结点，已经翻转好的前半段不会被破坏。</div>
+  </section>
+
+  <section class="slide s4">
+    <h2>4. 区间翻转完成</h2>
+    <p>区间外的结点保持原顺序，原区间首结点 2 成为区间尾结点并接回结点 6。</p>
+    <div class="visual"><svg viewBox="0 0 1000 260" aria-label="区间反转完成">
+      <defs><marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="var(--line)"/></marker></defs>
+      <path class="edge" d="M116 145H165"/><path class="edge" d="M276 145H325"/><path class="edge" d="M436 145H485"/><path class="edge" d="M596 145H645"/><path class="edge" d="M756 145H805"/>
+      <rect class="node" x="20" y="110" width="96" height="70" rx="10"/><text class="label" x="68" y="153">1</text>
+      <rect class="moving" x="180" y="110" width="96" height="70" rx="10"/><text class="label" x="228" y="153">5</text>
+      <rect class="moving" x="340" y="110" width="96" height="70" rx="10"/><text class="label" x="388" y="153">4</text>
+      <rect class="moving" x="500" y="110" width="96" height="70" rx="10"/><text class="label" x="548" y="153">3</text>
+      <rect class="focus" x="660" y="110" width="96" height="70" rx="10"/><text class="label" x="708" y="153">2</text>
+      <rect class="node" x="820" y="110" width="96" height="70" rx="10"/><text class="label" x="868" y="153">6</text>
+      <text class="pointer" x="68" y="75">before</text><text class="pointer" x="708" y="75">first</text>
+      <path d="M176 205H760" stroke="var(--green)" stroke-width="3"/><path d="M176 196V214M760 196V214" stroke="var(--green)" stroke-width="3"/><text class="small" x="468" y="237">5 → 4 → 3 → 2</text>
+    </svg></div>
+    <div class="rule">结果：head → 1 → 5 → 4 → 3 → 2 → 6。时间复杂度为 O(n)，额外空间为 O(1)。</div>
+  </section>
+
+  <footer><button id="prev" type="button">上一页</button><span class="count" id="count"></span><button id="next" type="button">下一页</button></footer>
+</main>
+<script>
+const slides=[...document.querySelectorAll('.slide')];let index=0;
+function show(i){index=(i+slides.length)%slides.length;slides.forEach((s,n)=>s.classList.toggle('active',n===index));document.getElementById('count').textContent=`${index+1} / ${slides.length}`;}
+document.getElementById('prev').onclick=()=>show(index-1);document.getElementById('next').onclick=()=>show(index+1);
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1)});
+const requested=Number(new URLSearchParams(location.search).get('slide'));show(Number.isInteger(requested)&&requested>0?requested-1:0);
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" role="img" aria-labelledby="title desc">
+  <title id="title">常见计算机网络拓扑结构</title>
+  <desc id="desc">总线型、星型、环型、树型、网状型，以及物理拓扑和逻辑拓扑不一致的示例。</desc>
+  <style>
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#5b697b;--line:#94a3b8;--node:#dbeafe;--node-line:#2563eb;--accent:#7c3aed;--warn:#d97706}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#162131;--text:#eef2f7;--muted:#b5c0cf;--line:#64748b;--node:#1e3a5f;--node-line:#60a5fa;--accent:#a78bfa;--warn:#fbbf24}}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:var(--text)}.bg{fill:var(--bg)}.card{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.link{fill:none;stroke:var(--line);stroke-width:3;stroke-linecap:round}.logical{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-dasharray:6 4;marker-end:url(#arrow)}.node{fill:var(--node);stroke:var(--node-line);stroke-width:2}.center{fill:var(--panel);stroke:var(--accent);stroke-width:2.5}.title{font-size:28px;font-weight:700}.sub{font-size:14px;fill:var(--muted)}.card-title{font-size:20px;font-weight:700;text-anchor:middle}.node-label{font-size:12px;font-weight:700;text-anchor:middle;dominant-baseline:middle}.desc{font-size:13px;fill:var(--muted);text-anchor:middle}.mini{font-size:12px;fill:var(--muted);text-anchor:middle}.em{font-size:13px;font-weight:700;text-anchor:middle;fill:var(--warn)}
+  </style>
+  <defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L0 6L9 3Z" fill="context-stroke"/></marker></defs>
+  <rect class="bg" width="1000" height="680" rx="18"/>
+  <text class="title" x="35" y="45">常见网络拓扑结构</text>
+  <text class="sub" x="35" y="70">拓扑描述节点和链路的连接关系；物理布线方式与数据实际传播方式可能不同</text>
+
+  <g transform="translate(25 92)">
+    <rect class="card" width="300" height="250" rx="14"/>
+    <text class="card-title" x="150" y="32">总线型</text>
+    <path class="link" d="M45 120H255M70 120V85M115 120V155M160 120V85M205 120V155M250 120V85"/>
+    <g><circle class="node" cx="70" cy="75" r="17"/><text class="node-label" x="70" y="75">A</text><circle class="node" cx="115" cy="165" r="17"/><text class="node-label" x="115" y="165">B</text><circle class="node" cx="160" cy="75" r="17"/><text class="node-label" x="160" y="75">C</text><circle class="node" cx="205" cy="165" r="17"/><text class="node-label" x="205" y="165">D</text><circle class="node" cx="250" cy="75" r="17"/><text class="node-label" x="250" y="75">E</text></g>
+    <text class="desc" x="150" y="208">所有节点共享一条主干链路</text><text class="mini" x="150" y="230">布线简单；主干故障会影响全网</text>
+  </g>
+
+  <g transform="translate(350 92)">
+    <rect class="card" width="300" height="250" rx="14"/>
+    <text class="card-title" x="150" y="32">星型</text>
+    <path class="link" d="M150 125L72 75M150 125L228 75M150 125L70 175M150 125L230 175"/>
+    <circle class="center" cx="150" cy="125" r="27"/><text class="node-label" x="150" y="125">交换设备</text>
+    <g><circle class="node" cx="72" cy="75" r="17"/><text class="node-label" x="72" y="75">A</text><circle class="node" cx="228" cy="75" r="17"/><text class="node-label" x="228" y="75">B</text><circle class="node" cx="70" cy="175" r="17"/><text class="node-label" x="70" y="175">C</text><circle class="node" cx="230" cy="175" r="17"/><text class="node-label" x="230" y="175">D</text></g>
+    <text class="desc" x="150" y="208">节点分别连接到中心设备</text><text class="mini" x="150" y="230">易扩展；中心设备是关键故障点</text>
+  </g>
+
+  <g transform="translate(675 92)">
+    <rect class="card" width="300" height="250" rx="14"/>
+    <text class="card-title" x="150" y="32">环型</text>
+    <path class="link" d="M150 62L224 105L196 184H104L76 105Z"/>
+    <g><circle class="node" cx="150" cy="62" r="17"/><text class="node-label" x="150" y="62">A</text><circle class="node" cx="224" cy="105" r="17"/><text class="node-label" x="224" y="105">B</text><circle class="node" cx="196" cy="184" r="17"/><text class="node-label" x="196" y="184">C</text><circle class="node" cx="104" cy="184" r="17"/><text class="node-label" x="104" y="184">D</text><circle class="node" cx="76" cy="105" r="17"/><text class="node-label" x="76" y="105">E</text></g>
+    <text class="desc" x="150" y="208">每个节点连接两个相邻节点</text><text class="mini" x="150" y="230">传输有序；单环断点可能破坏环路</text>
+  </g>
+
+  <g transform="translate(25 365)">
+    <rect class="card" width="300" height="250" rx="14"/>
+    <text class="card-title" x="150" y="32">树型</text>
+    <path class="link" d="M150 65L90 115M150 65L210 115M90 115L55 170M90 115L125 170M210 115L175 170M210 115L245 170"/>
+    <g><circle class="center" cx="150" cy="65" r="18"/><text class="node-label" x="150" y="65">根</text><circle class="node" cx="90" cy="115" r="16"/><text class="node-label" x="90" y="115">A</text><circle class="node" cx="210" cy="115" r="16"/><text class="node-label" x="210" y="115">B</text><circle class="node" cx="55" cy="170" r="15"/><text class="node-label" x="55" y="170">C</text><circle class="node" cx="125" cy="170" r="15"/><text class="node-label" x="125" y="170">D</text><circle class="node" cx="175" cy="170" r="15"/><text class="node-label" x="175" y="170">E</text><circle class="node" cx="245" cy="170" r="15"/><text class="node-label" x="245" y="170">F</text></g>
+    <text class="desc" x="150" y="208">多级星型形成层次化分支</text><text class="mini" x="150" y="230">便于分层扩展；上层故障影响整棵子树</text>
+  </g>
+
+  <g transform="translate(350 365)">
+    <rect class="card" width="300" height="250" rx="14"/>
+    <text class="card-title" x="150" y="32">网状型</text>
+    <path class="link" d="M70 75L230 75L250 165L150 195L50 165ZM70 75L250 165M230 75L50 165M70 75L150 195M230 75L150 195M50 165L250 165"/>
+    <g><circle class="node" cx="70" cy="75" r="17"/><text class="node-label" x="70" y="75">A</text><circle class="node" cx="230" cy="75" r="17"/><text class="node-label" x="230" y="75">B</text><circle class="node" cx="250" cy="165" r="17"/><text class="node-label" x="250" y="165">C</text><circle class="node" cx="150" cy="195" r="17"/><text class="node-label" x="150" y="195">D</text><circle class="node" cx="50" cy="165" r="17"/><text class="node-label" x="50" y="165">E</text></g>
+    <text class="desc" x="150" y="218">节点之间存在多条冗余路径</text><text class="mini" x="150" y="238">可靠性高；链路、端口与路由成本较大</text>
+  </g>
+
+  <g transform="translate(675 365)">
+    <rect class="card" width="300" height="250" rx="14"/>
+    <text class="card-title" x="150" y="32">物理拓扑 ≠ 逻辑拓扑</text>
+    <text class="mini" x="78" y="58">物理：星型布线</text><text class="mini" x="222" y="58">逻辑：共享总线</text>
+    <path class="link" d="M78 125L38 85M78 125L118 85M78 125L38 165M78 125L118 165"/>
+    <circle class="center" cx="78" cy="125" r="20"/><text class="node-label" x="78" y="125">集线器</text>
+    <g><circle class="node" cx="38" cy="85" r="13"/><text class="node-label" x="38" y="85">A</text><circle class="node" cx="118" cy="85" r="13"/><text class="node-label" x="118" y="85">B</text><circle class="node" cx="38" cy="165" r="13"/><text class="node-label" x="38" y="165">C</text><circle class="node" cx="118" cy="165" r="13"/><text class="node-label" x="118" y="165">D</text></g>
+    <path class="logical" d="M170 125H272"/><path class="link" d="M175 105V145M205 105V145M237 105V145M267 105V145"/>
+    <g><circle class="node" cx="175" cy="95" r="12"/><text class="node-label" x="175" y="95">A</text><circle class="node" cx="205" cy="155" r="12"/><text class="node-label" x="205" y="155">B</text><circle class="node" cx="237" cy="95" r="12"/><text class="node-label" x="237" y="95">C</text><circle class="node" cx="267" cy="155" r="12"/><text class="node-label" x="267" y="155">D</text></g>
+    <text class="em" x="150" y="208">外形看连线，逻辑看数据如何传播</text><text class="mini" x="150" y="230">集线器以太网：物理星型、逻辑总线型</text>
+  </g>
+
+  <text class="sub" x="500" y="655" text-anchor="middle">现实网络常采用扩展星型或混合拓扑；拓扑分类描述连接关系，不等同于覆盖范围和交换方式</text>
+</svg>

@@ -1,33 +1,104 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="440" viewBox="0 0 980 440" role="img" aria-labelledby="title desc">
-  <title id="title">编码与调制的边界</title>
-  <desc id="desc">展示编码和调制按输出信号类型划分</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--blue-bg:#dbeafe;--green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3c7;--purple:#7c3aed;--purple-bg:#ede9fe}
-    @media (prefers-color-scheme: dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--blue-bg:#1e3a8a;--green:#4ade80;--green-bg:#14532d;--amber:#fbbf24;--amber-bg:#713f12;--purple:#c4b5fd;--purple-bg:#4c1d95}}
-    .bg{fill:var(--bg)}.box{stroke-width:2.2}.data{fill:var(--blue-bg);stroke:var(--blue)}.digital{fill:var(--green-bg);stroke:var(--green)}.analog{fill:var(--amber-bg);stroke:var(--amber)}.op{fill:var(--purple-bg);stroke:var(--purple)}.arrow{fill:none;stroke:var(--line);stroke-width:2.5;marker-end:url(#arrow)}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.label{font-size:22px;font-weight:700}.small{font-size:16px;fill:var(--muted)}
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">数据到信号的四种变换</title>
+  <desc id="desc">数字和模拟数据可分别转换为数字或模拟信号，并列出线路编码、PCM、数字调制和模拟调制。</desc>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #334155;
+      --blue: #2563eb;
+      --blue-bg: #dbeafe;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --purple: #7c3aed;
+      --purple-bg: #ede9fe;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #94a3b8;
+        --blue: #60a5fa;
+        --blue-bg: #1e3a8a;
+        --green: #4ade80;
+        --green-bg: #14532d;
+        --amber: #fbbf24;
+        --amber-bg: #713f12;
+        --purple: #c4b5fd;
+        --purple-bg: #4c1d95;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .header { fill: var(--panel); stroke: var(--line); stroke-width: 1.6; }
+    .data-digital { fill: var(--blue-bg); stroke: var(--blue); stroke-width: 2; }
+    .data-analog { fill: var(--amber-bg); stroke: var(--amber); stroke-width: 2; }
+    .signal-digital { fill: var(--green-bg); stroke: var(--green); stroke-width: 2; }
+    .signal-analog { fill: var(--purple-bg); stroke: var(--purple); stroke-width: 2; }
+    .wire { fill: none; stroke: var(--line); stroke-width: 2.2; marker-end: url(#arrow); }
+    .arrowhead { fill: var(--line); }
+    text { fill: var(--text); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { font-size: 28px; font-weight: 700; }
+    .head { font-size: 18px; font-weight: 700; }
+    .label { font-size: 20px; font-weight: 700; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .op { font-size: 17px; font-weight: 700; fill: var(--text); }
   </style>
-  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="var(--line)"/></marker></defs>
-  <rect class="bg" width="980" height="440"/>
-  <text x="50" y="58" class="title">编码与调制看输出信号类型</text>
-  <rect x="75" y="160" width="190" height="88" rx="10" class="box data"/>
-  <text x="170" y="198" text-anchor="middle" class="label">数据</text>
-  <text x="170" y="226" text-anchor="middle" class="small">数字或模拟</text>
-  <path d="M275 184 H405" class="arrow"/>
-  <path d="M275 224 H405" class="arrow"/>
-  <rect x="420" y="125" width="160" height="72" rx="10" class="box op"/>
-  <text x="500" y="169" text-anchor="middle" class="label">编码</text>
-  <rect x="420" y="225" width="160" height="72" rx="10" class="box op"/>
-  <text x="500" y="269" text-anchor="middle" class="label">调制</text>
-  <path d="M590 161 H715" class="arrow"/>
-  <path d="M590 261 H715" class="arrow"/>
-  <rect x="735" y="125" width="190" height="72" rx="10" class="box digital"/>
-  <text x="830" y="157" text-anchor="middle" class="label">数字信号</text>
-  <text x="830" y="181" text-anchor="middle" class="small">离散电平/脉冲</text>
-  <rect x="735" y="225" width="190" height="72" rx="10" class="box analog"/>
-  <text x="830" y="257" text-anchor="middle" class="label">模拟信号</text>
-  <text x="830" y="281" text-anchor="middle" class="small">载波参数变化</text>
-  <text x="500" y="360" text-anchor="middle" class="small">输出数字信号，通常称为编码；输出模拟载波上的带通信号，通常称为调制。</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <path class="arrowhead" d="M0,0 L0,7 L9,3.5 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="560"/>
+  <text class="title" x="46" y="50">数据 → 信号：四种基本变换</text>
+  <rect class="header" x="44" y="76" width="892" height="48" rx="8"/>
+  <text class="head" x="178" y="107" text-anchor="middle">输入数据</text>
+  <text class="head" x="490" y="107" text-anchor="middle">变换</text>
+  <text class="head" x="802" y="107" text-anchor="middle">输出信号</text>
+
+  <rect class="data-digital" x="76" y="148" width="204" height="74" rx="10"/>
+  <text class="label" x="178" y="181" text-anchor="middle">数字数据</text>
+  <text class="small" x="178" y="207" text-anchor="middle">bit 序列</text>
+  <path class="wire" d="M280 185 H700"/>
+  <text class="op" x="490" y="172" text-anchor="middle">线路编码</text>
+  <text class="small" x="490" y="204" text-anchor="middle">NRZ、曼彻斯特等</text>
+  <rect class="signal-digital" x="700" y="148" width="204" height="74" rx="10"/>
+  <text class="label" x="802" y="181" text-anchor="middle">数字信号</text>
+  <text class="small" x="802" y="207" text-anchor="middle">离散电平或脉冲</text>
+
+  <rect class="data-analog" x="76" y="244" width="204" height="74" rx="10"/>
+  <text class="label" x="178" y="277" text-anchor="middle">模拟数据</text>
+  <text class="small" x="178" y="303" text-anchor="middle">连续幅值</text>
+  <path class="wire" d="M280 281 H700"/>
+  <text class="op" x="490" y="268" text-anchor="middle">PCM 编码</text>
+  <text class="small" x="490" y="300" text-anchor="middle">采样 → 量化 → 编码</text>
+  <rect class="signal-digital" x="700" y="244" width="204" height="74" rx="10"/>
+  <text class="label" x="802" y="277" text-anchor="middle">数字信号</text>
+  <text class="small" x="802" y="303" text-anchor="middle">数字码字对应的波形</text>
+
+  <rect class="data-digital" x="76" y="340" width="204" height="74" rx="10"/>
+  <text class="label" x="178" y="373" text-anchor="middle">数字数据</text>
+  <text class="small" x="178" y="399" text-anchor="middle">bit 或码元状态</text>
+  <path class="wire" d="M280 377 H700"/>
+  <text class="op" x="490" y="364" text-anchor="middle">数字调制</text>
+  <text class="small" x="490" y="396" text-anchor="middle">ASK、FSK、PSK、QAM</text>
+  <rect class="signal-analog" x="700" y="340" width="204" height="74" rx="10"/>
+  <text class="label" x="802" y="373" text-anchor="middle">模拟信号</text>
+  <text class="small" x="802" y="399" text-anchor="middle">载波取离散状态</text>
+
+  <rect class="data-analog" x="76" y="436" width="204" height="74" rx="10"/>
+  <text class="label" x="178" y="469" text-anchor="middle">模拟数据</text>
+  <text class="small" x="178" y="495" text-anchor="middle">声音等连续信息</text>
+  <path class="wire" d="M280 473 H700"/>
+  <text class="op" x="490" y="460" text-anchor="middle">模拟调制</text>
+  <text class="small" x="490" y="492" text-anchor="middle">AM、FM、PM</text>
+  <rect class="signal-analog" x="700" y="436" width="204" height="74" rx="10"/>
+  <text class="label" x="802" y="469" text-anchor="middle">模拟信号</text>
+  <text class="small" x="802" y="495" text-anchor="middle">载波连续变化</text>
 </svg>

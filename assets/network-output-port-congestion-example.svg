@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="570" viewBox="0 0 1000 570" role="img" aria-labelledby="title desc">
+  <title id="title">树形网络中的输出端口拥塞分析</title>
+  <desc id="desc">七台路由器和八台主机构成的树形网络。顶层链路为每秒四兆比特，中层链路为每秒二兆比特，主机接入链路为每秒一兆比特。图中突出流量从 R3 一侧和 R5 汇聚到 R2，再从 R2 发往 R4。</desc>
+  <style>
+    svg{background:#f8fafc}
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#94a3b8;--border:#cbd5e1;--blue:#2563eb;--amber:#d97706;--red:#dc2626;--green:#16a34a;--router:#dbeafe;--host:#f1f5f9}
+    @media(prefers-color-scheme:dark){svg{background:#0b1020}:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#a5b4c7;--line:#64748b;--border:#334155;--blue:#60a5fa;--amber:#fbbf24;--red:#f87171;--green:#4ade80;--router:#172554;--host:#1e293b}}
+    .bg{fill:var(--bg)}.card{fill:var(--panel);stroke:var(--border);stroke-width:1.5}.link{stroke:var(--line);stroke-width:3;fill:none}.topLink{stroke:var(--blue);stroke-width:4}.midLink{stroke:var(--amber);stroke-width:3.5}.access{stroke:var(--line);stroke-width:2}.flowIn{stroke:var(--green);stroke-width:6;fill:none;marker-end:url(#greenArrow)}.flowOut{stroke:var(--red);stroke-width:7;fill:none;marker-end:url(#redArrow)}.router{fill:var(--router);stroke:var(--blue);stroke-width:2.5}.host{fill:var(--host);stroke:var(--line);stroke-width:2}
+    text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:25px;font-weight:700}.label{font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:middle}.small{font-size:13px;fill:var(--muted);text-anchor:middle}.band{font-size:14px;font-weight:700;text-anchor:middle;paint-order:stroke;stroke:var(--panel);stroke-width:5px;stroke-linejoin:round}.note{font-size:14px;fill:var(--muted)}
+  </style>
+  <defs>
+    <marker id="greenArrow" markerWidth="6" markerHeight="6" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--green)"/></marker>
+    <marker id="redArrow" markerWidth="6" markerHeight="6" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--red)"/></marker>
+  </defs>
+  <rect class="bg" width="1000" height="570"/>
+  <rect class="card" x="20" y="18" width="960" height="528" rx="16"/>
+  <text class="title" x="48" y="58">多输入汇聚到同一输出端口</text>
+
+  <!-- tree links -->
+  <path class="link topLink" d="M500 105L300 190M500 105L700 190"/>
+  <path class="link midLink" d="M300 190L185 285M300 190L385 285M700 190L615 285M700 190L815 285"/>
+  <path class="link access" d="M185 285L140 405M185 285L225 405M385 285L340 405M385 285L425 405M615 285L570 405M615 285L655 405M815 285L770 405M815 285L855 405"/>
+
+  <!-- offered traffic converging on R2 -> R4 -->
+  <path class="flowIn" d="M680 176L520 112L325 184" opacity=".9"/>
+  <path class="flowIn" d="M378 264L315 205" opacity=".9"/>
+  <path class="flowOut" d="M283 207L202 274"/>
+
+  <!-- routers -->
+  <g><circle class="router" cx="500" cy="95" r="30"/><text class="label" x="500" y="95">R1</text></g>
+  <g><circle class="router" cx="300" cy="190" r="30"/><text class="label" x="300" y="190">R2</text></g>
+  <g><circle class="router" cx="700" cy="190" r="30"/><text class="label" x="700" y="190">R3</text></g>
+  <g><circle class="router" cx="185" cy="285" r="30"/><text class="label" x="185" y="285">R4</text></g>
+  <g><circle class="router" cx="385" cy="285" r="30"/><text class="label" x="385" y="285">R5</text></g>
+  <g><circle class="router" cx="615" cy="285" r="30"/><text class="label" x="615" y="285">R6</text></g>
+  <g><circle class="router" cx="815" cy="285" r="30"/><text class="label" x="815" y="285">R7</text></g>
+
+  <!-- hosts -->
+  <g><rect class="host" x="116" y="405" width="48" height="38" rx="5"/><text class="label" x="140" y="424">H1</text></g>
+  <g><rect class="host" x="201" y="405" width="48" height="38" rx="5"/><text class="label" x="225" y="424">H2</text></g>
+  <g><rect class="host" x="316" y="405" width="48" height="38" rx="5"/><text class="label" x="340" y="424">H3</text></g>
+  <g><rect class="host" x="401" y="405" width="48" height="38" rx="5"/><text class="label" x="425" y="424">H4</text></g>
+  <g><rect class="host" x="546" y="405" width="48" height="38" rx="5"/><text class="label" x="570" y="424">H5</text></g>
+  <g><rect class="host" x="631" y="405" width="48" height="38" rx="5"/><text class="label" x="655" y="424">H6</text></g>
+  <g><rect class="host" x="746" y="405" width="48" height="38" rx="5"/><text class="label" x="770" y="424">H7</text></g>
+  <g><rect class="host" x="831" y="405" width="48" height="38" rx="5"/><text class="label" x="855" y="424">H8</text></g>
+
+  <!-- bandwidth labels -->
+  <text class="band" x="385" y="126" fill="var(--blue)">4 Mb/s</text>
+  <text class="band" x="605" y="126" fill="var(--blue)">4 Mb/s</text>
+  <text class="band" x="245" y="244" fill="var(--amber)">2 Mb/s</text>
+  <text class="band" x="350" y="235" fill="var(--amber)">2 Mb/s</text>
+  <text class="band" x="650" y="235" fill="var(--amber)">2 Mb/s</text>
+  <text class="band" x="755" y="244" fill="var(--amber)">2 Mb/s</text>
+  <text class="small" x="500" y="463">每条主机接入链路：1 Mb/s；所有链路均为全双工</text>
+
+  <!-- legend -->
+  <line x1="80" y1="500" x2="135" y2="500" class="flowIn"/><text class="note" x="150" y="505">可能汇聚到 R2 的输入</text>
+  <line x1="390" y1="500" x2="445" y2="500" class="flowOut"/><text class="note" x="460" y="505">R2 → R4 的 2 Mb/s 输出</text>
+  <text class="note" x="730" y="505">最大输入：4 + 2 = 6 Mb/s</text>
+  <text class="note" x="730" y="528">输出能力：2 Mb/s，因此可能拥塞</text>
+</svg>

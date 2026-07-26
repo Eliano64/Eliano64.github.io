@@ -1,69 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" role="img" aria-labelledby="title desc">
-  <title id="title">调度、分派与进程切换的边界</title>
-  <desc id="desc">展示调度器选择进程，分派器交出CPU，进程切换保存和恢复现场。</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root {
-      --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
-      --blue:#2563eb; --green:#0f766e; --amber:#b45309; --chip:#e6eef9; --shadow:rgba(15,23,42,.12);
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
-        --blue:#7aa2ff; --green:#62d4c5; --amber:#f6b85f; --chip:#263142; --shadow:rgba(0,0,0,.38);
-      }
-    }
-    svg { background:var(--bg); font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif; }
-    .title { fill:var(--text); font-size:26px; font-weight:700; }
-    .h { fill:var(--text); font-size:20px; font-weight:700; }
-    .t { fill:var(--text); font-size:16px; }
-    .s { fill:var(--muted); font-size:14px; }
-    .box { fill:var(--panel); stroke:var(--line); stroke-width:1.6; rx:14; filter:drop-shadow(0 6px 12px var(--shadow)); }
-    .chip { fill:var(--chip); stroke:var(--line); stroke-width:1.2; rx:8; }
-    .line { stroke:var(--line); stroke-width:2.2; fill:none; marker-end:url(#arrow); }
-    .blue { stroke:var(--blue); }
-    .green { stroke:var(--green); }
-    .amber { stroke:var(--amber); }
-    .blueText { fill:var(--blue); font-size:17px; font-weight:700; }
-    .greenText { fill:var(--green); font-size:17px; font-weight:700; }
-    .amberText { fill:var(--amber); font-size:17px; font-weight:700; }
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">调度、分派与返回用户态</title>
+  <desc id="desc">展示用户进程因中断或系统调用进入内核，调度器选择、分派器切换，最后通过返回指令重新进入用户态。</desc>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--fg:#111827;--muted:#64748b;--line:#94a3b8;--user:#dbeafe;--kernel:#fef3c7;--dispatch:#dcfce7;--accent:#2563eb;--return:#059669}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--line:#64748b;--user:#1e3a8a;--kernel:#713f12;--dispatch:#14532d;--accent:#60a5fa;--return:#34d399}}
+    .bg{fill:var(--bg)}.box{stroke:var(--line);stroke-width:2}.user{fill:var(--user)}.kernel{fill:var(--kernel)}.dispatch{fill:var(--dispatch)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--fg)}.title{font-size:28px;font-weight:700}.head{font-size:19px;font-weight:700}.t{font-size:16px}.small{font-size:15px;fill:var(--muted)}.boundary{stroke:var(--line);stroke-width:2;stroke-dasharray:8 8}.arrow{stroke:var(--accent);stroke-width:3;fill:none;marker-end:url(#a1)}.back{stroke:var(--return);stroke-width:3;fill:none;marker-end:url(#a2)}
   </style>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L8,3 L0,6 Z" style="fill:var(--line)"/>
-    </marker>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--accent)"/></marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--return)"/></marker>
   </defs>
+  <rect class="bg" width="980" height="560"/>
+  <text class="title" x="490" y="38" text-anchor="middle">调度完成时仍在内核态；返回指令之后才进入用户态</text>
 
-  <text class="title" x="560" y="42" text-anchor="middle">调度、分派与进程切换的边界</text>
+  <rect class="box user" x="42" y="66" width="190" height="74" rx="12"/>
+  <text class="head" x="137" y="99" text-anchor="middle">用户态：进程 P1</text>
+  <text class="small" x="137" y="124" text-anchor="middle">正在执行用户指令</text>
+  <rect class="box user" x="748" y="66" width="190" height="74" rx="12"/>
+  <text class="head" x="843" y="99" text-anchor="middle">用户态：进程 P2</text>
+  <text class="small" x="843" y="124" text-anchor="middle">从保存位置继续</text>
 
-  <rect class="box" x="60" y="118" width="210" height="150"/>
-  <text class="h" x="165" y="158" text-anchor="middle">就绪队列</text>
-  <rect class="chip" x="92" y="184" width="146" height="38"/>
-  <text class="t" x="165" y="209" text-anchor="middle">P2 / P3 / P4</text>
-  <text class="s" x="165" y="246" text-anchor="middle">候选进程集合</text>
+  <line class="boundary" x1="25" y1="170" x2="955" y2="170"/>
+  <text class="small" x="490" y="160" text-anchor="middle">用户态 / 内核态边界</text>
 
-  <rect class="box" x="340" y="118" width="210" height="150"/>
-  <text class="blueText" x="445" y="153" text-anchor="middle">调度器 scheduler</text>
-  <text class="t" x="445" y="192" text-anchor="middle">决定让谁运行</text>
-  <text class="s" x="445" y="222" text-anchor="middle">调度算法 / 时间片大小</text>
+  <path class="arrow" d="M137 140 L137 220"/>
+  <text class="small" x="158" y="196">中断 / 异常 / 系统调用</text>
 
-  <rect class="box" x="620" y="118" width="210" height="150"/>
-  <text class="greenText" x="725" y="153" text-anchor="middle">分派器 dispatcher</text>
-  <text class="t" x="725" y="192" text-anchor="middle">真正交出 CPU</text>
-  <text class="s" x="725" y="222" text-anchor="middle">保存现场 / 恢复现场</text>
+  <rect class="box kernel" x="42" y="220" width="190" height="116" rx="12"/>
+  <text class="head" x="137" y="257" text-anchor="middle">进入内核</text>
+  <text class="t" x="137" y="289" text-anchor="middle">处理事件，更新状态</text>
+  <text class="small" x="137" y="316" text-anchor="middle">可能标记需要调度</text>
 
-  <rect class="box" x="900" y="118" width="160" height="150"/>
-  <text class="amberText" x="980" y="153" text-anchor="middle">CPU</text>
-  <text class="t" x="980" y="192" text-anchor="middle">运行 P3</text>
-  <text class="s" x="980" y="222" text-anchor="middle">PC 指向 P3 指令</text>
+  <rect class="box kernel" x="278" y="220" width="190" height="116" rx="12"/>
+  <text class="head" x="373" y="257" text-anchor="middle">调度器</text>
+  <text class="t" x="373" y="289" text-anchor="middle">从就绪队列选出 P2</text>
+  <text class="small" x="373" y="316" text-anchor="middle">此时仍在内核态</text>
 
-  <path class="line blue" d="M270 193 L340 193"/>
-  <path class="line green" d="M550 193 L620 193"/>
-  <path class="line amber" d="M830 193 L900 193"/>
+  <rect class="box dispatch" x="514" y="220" width="190" height="116" rx="12"/>
+  <text class="head" x="609" y="257" text-anchor="middle">分派器</text>
+  <text class="t" x="609" y="289" text-anchor="middle">保存 P1，恢复 P2</text>
+  <text class="small" x="609" y="316" text-anchor="middle">切换地址空间与栈</text>
 
-  <rect class="box" x="178" y="334" width="764" height="100"/>
-  <text class="h" x="560" y="368" text-anchor="middle">狭义调度只回答“选谁”；广义调度还包括进程切换</text>
-  <text class="t" x="560" y="402" text-anchor="middle">进程切换 = 保存原运行进程现场 + 恢复新进程现场</text>
+  <rect class="box dispatch" x="750" y="220" width="188" height="116" rx="12"/>
+  <text class="head" x="844" y="257" text-anchor="middle">返回准备</text>
+  <text class="t" x="844" y="289" text-anchor="middle">恢复 P2 用户现场</text>
+  <text class="small" x="844" y="316" text-anchor="middle">执行 iret / sysret 等</text>
+
+  <path class="arrow" d="M232 278 L278 278"/>
+  <path class="arrow" d="M468 278 L514 278"/>
+  <path class="arrow" d="M704 278 L750 278"/>
+  <path class="back" d="M844 220 L844 140"/>
+
+  <rect class="panel" x="78" y="390" width="824" height="110" rx="12"/>
+  <text class="head" x="490" y="425" text-anchor="middle">三个动作不能混为一个</text>
+  <text class="t" x="490" y="457" text-anchor="middle">调度：选谁　　分派：切换现场　　返回：恢复用户态执行</text>
+  <text class="small" x="490" y="484" text-anchor="middle">若选中的是内核线程，或者内核仍有工作要做，分派后也不一定立即进入用户态。</text>
 </svg>

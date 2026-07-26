@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="680" viewBox="0 0 980 680" role="img" aria-labelledby="title desc">
+  <title id="title">进程地址空间与线程栈</title>
+  <desc id="desc">同一进程从单线程变为多线程后，代码、数据、堆和映射区共享，每个线程在共享地址空间中拥有独立用户栈。</desc>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#ffffff;--fg:#111827;--muted:#64748b;--line:#94a3b8;--shared:#dbeafe;--heap:#dcfce7;--map:#fef3c7;--stack:#ede9fe;--accent:#2563eb}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--line:#64748b;--shared:#1e3a8a;--heap:#14532d;--map:#713f12;--stack:#4c1d95;--accent:#60a5fa}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.shared{fill:var(--shared)}.heap{fill:var(--heap)}.map{fill:var(--map)}.stack{fill:var(--stack)}.seg{stroke:var(--line);stroke-width:1.5}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--fg)}.title{font-size:24px;font-weight:700}.h{font-size:19px;font-weight:700}.t{font-size:16px}.small{font-size:16px;fill:var(--muted)}.arrow{stroke:var(--accent);stroke-width:3;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--accent)"/></marker>
+  </defs>
+  <rect class="bg" width="980" height="680"/>
+  <text class="title" x="490" y="38" text-anchor="middle">同一进程：共享地址空间，线程各有用户栈</text>
+  <text class="small" x="490" y="63" text-anchor="middle">区域位置只作示意，不代表固定地址</text>
+
+  <text class="h" x="235" y="104" text-anchor="middle">单线程</text>
+  <rect class="panel" x="55" y="120" width="360" height="480" rx="12"/>
+  <text class="small" x="70" y="146">高地址</text>
+  <rect class="seg stack" x="85" y="160" width="300" height="76" rx="8"/>
+  <text class="h" x="235" y="191" text-anchor="middle">线程 T1 的用户栈</text>
+  <text class="small" x="235" y="216" text-anchor="middle">栈指针 SP → 当前栈顶</text>
+  <rect class="seg map" x="85" y="250" width="300" height="82" rx="8"/>
+  <text class="h" x="235" y="282" text-anchor="middle">映射区</text>
+  <text class="small" x="235" y="307" text-anchor="middle">共享库 / mmap / 共享内存</text>
+  <rect class="seg heap" x="85" y="346" width="300" height="72" rx="8"/>
+  <text class="h" x="235" y="389" text-anchor="middle">堆</text>
+  <rect class="seg shared" x="85" y="432" width="300" height="62" rx="8"/>
+  <text class="h" x="235" y="470" text-anchor="middle">数据段 / BSS</text>
+  <rect class="seg shared" x="85" y="508" width="300" height="62" rx="8"/>
+  <text class="h" x="235" y="546" text-anchor="middle">代码 / 只读区</text>
+  <text class="small" x="70" y="588">低地址</text>
+
+  <path class="arrow" d="M435 350 L535 350"/>
+  <text class="t" x="485" y="324" text-anchor="middle">创建线程</text>
+
+  <text class="h" x="745" y="104" text-anchor="middle">多线程</text>
+  <rect class="panel" x="565" y="120" width="360" height="480" rx="12"/>
+  <text class="small" x="580" y="146">高地址</text>
+  <rect class="seg stack" x="585" y="160" width="96" height="76" rx="8"/>
+  <rect class="seg stack" x="697" y="160" width="96" height="76" rx="8"/>
+  <rect class="seg stack" x="809" y="160" width="96" height="76" rx="8"/>
+  <text class="h" x="633" y="191" text-anchor="middle">T1 栈</text>
+  <text class="h" x="745" y="191" text-anchor="middle">T2 栈</text>
+  <text class="h" x="857" y="191" text-anchor="middle">T3 栈</text>
+  <rect class="seg map" x="585" y="250" width="320" height="82" rx="8"/>
+  <text class="h" x="745" y="282" text-anchor="middle">映射区</text>
+  <text class="small" x="745" y="307" text-anchor="middle">共享库 / mmap / 共享内存</text>
+  <rect class="seg heap" x="585" y="346" width="320" height="72" rx="8"/>
+  <text class="h" x="745" y="389" text-anchor="middle">共享堆</text>
+  <rect class="seg shared" x="585" y="432" width="320" height="62" rx="8"/>
+  <text class="h" x="745" y="470" text-anchor="middle">共享数据段 / BSS</text>
+  <rect class="seg shared" x="585" y="508" width="320" height="62" rx="8"/>
+  <text class="h" x="745" y="546" text-anchor="middle">共享代码 / 只读区</text>
+  <text class="small" x="580" y="588">低地址</text>
+
+  <text class="small" x="490" y="634" text-anchor="middle">寄存器不在地址空间中：运行时位于 CPU，切换时保存到线程控制信息中。</text>
+  <text class="small" x="490" y="658" text-anchor="middle">内核级线程通常另有内核栈，用户态不能访问。</text>
+</svg>

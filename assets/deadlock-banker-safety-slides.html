@@ -7,6 +7,14 @@ const baseRows=[
 ["P3","(2,2,2)","(2,1,1)","(0,1,1)"],
 ["P4","(4,3,3)","(0,0,2)","(4,3,1)"]
 ];
+const safeRows=[
+["P1","3","1","2"],
+["P2","2","1","1"]
+];
+const unsafeRows=[
+["P1","3","2","1"],
+["P2","2","1","1"]
+];
 const trialRows=[
 ["P0","(7,5,3)","(2,2,1)","(5,3,2)"],
 ["P1","(3,2,2)","(2,0,0)","(1,2,2)"],
@@ -15,6 +23,9 @@ const trialRows=[
 ["P4","(4,3,3)","(0,0,2)","(4,3,1)"]
 ];
 const steps=[
+{a:["资源总数 R=3","Available=1"],data:safeRows,seq:[],ok:[],wait:[],trial:"",t:"先判断是否存在完成顺序",b1:"安全状态不是看“现在有没有进程阻塞”，而是看从当前分配状态出发，能否安排所有进程依次完成。",b2:"只要能找到一个完成顺序，系统就是安全的。",f:"安全状态 ⇔ 存在安全序列"},
+{a:["Available=1"],data:safeRows,seq:["P2","P1"],ok:[1,0],wait:[],trial:"P2 还需要 1 个实例，可以先完成并归还它占有的资源。",t:"当前状态安全",b1:"P2 完成后，Available 从 1 增加到 2，足以满足 P1 的 Need=2。",b2:"因此存在安全序列 P2 → P1。",f:"P2 完成：Available=1+1=2；随后 P1 完成"},
+{a:["试探给 P1 一个实例","Available=0"],data:unsafeRows,seq:[],ok:[],wait:[0,1],trial:"P1 和 P2 都还需要 1 个实例，但当前一个也不剩。",t:"不安全，但未必已经死锁",b1:"试探后找不到安全序列，因此进入不安全状态，银行家算法必须撤销这次分配。",b2:"若两个进程尚未发出最后一次请求，它们还没有互相阻塞；等二者都请求并等待时，才真正死锁。",f:"不安全状态 ⊃ 死锁状态"},
 {a:["Available=(3,3,2)"],data:baseRows,seq:[],ok:[],wait:[],trial:"",t:"从当前资源状态开始",b1:"安全性算法不是直接判断“会不会马上死锁”，而是尝试找出一个能让所有进程完成的顺序。",b2:"每轮只找 Need 小于等于 Available 的进程。找到后，假定它完成并归还 Allocation。",f:""},
 {a:["Available=(3,3,2)"],data:baseRows,seq:["P1"],ok:[1],wait:[],trial:"",t:"P1 可以先完成",b1:"P1 的 Need=(1,2,2)，能被 (3,3,2) 满足。",b2:"P1 完成后归还 Allocation=(2,0,0)。",f:"Available = (3,3,2) + (2,0,0) = (5,3,2)"},
 {a:["Available=(5,3,2)"],data:baseRows,seq:["P1","P3"],ok:[1,3],wait:[],trial:"",t:"P3 随后可以完成",b1:"P3 的 Need=(0,1,1)，能被 (5,3,2) 满足。",b2:"P3 完成后归还 Allocation=(2,1,1)。",f:"Available = (5,3,2) + (2,1,1) = (7,4,3)"},
@@ -25,5 +36,5 @@ const steps=[
 {a:["Available=(5,3,2)"],data:trialRows,seq:["P3","P1","P0","P2","P4"],ok:[0,1,2,3,4],wait:[],trial:"P0 能被满足；P0 完成后，P2、P4 也能继续完成。",t:"试探分配可以正式生效",b1:"这次请求试探后仍能找到安全序列，因此系统可以正式分配资源。",b2:"如果某个例子在某一轮没有任何进程可选，就进入不安全状态，必须撤销试探分配。",f:"判断关键：不是看当前够不够一次请求，而是看试探后能否让所有进程完成。"}
 ];
 let i=Math.min(Math.max((Number(new URLSearchParams(location.search).get("step"))||1)-1,0),steps.length-1);
-function render(){const s=steps[i];stepLabel.textContent=`${i+1} / ${steps.length}`;available.innerHTML=s.a.map(x=>`<span class="tag">${x}</span>`).join("");document.getElementById("rows").innerHTML=s.data.map((r,idx)=>`<tr class="${s.ok.includes(idx)?"ok":s.wait.includes(idx)?"wait":""}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");seq.innerHTML=s.seq.length?"安全序列片段："+s.seq.map(x=>`<span>${x}</span>`).join(""):"";trial.textContent=s.trial;trial.style.display=s.trial?"block":"none";title.textContent=s.t;body1.textContent=s.b1;body2.textContent=s.b2;formula.textContent=s.f;formula.style.display=s.f?"block":"none"}prev.onclick=()=>{i=Math.max(0,i-1);render()};next.onclick=()=>{i=Math.min(steps.length-1,i+1);render()};render();
+function render(){const s=steps[i];stepLabel.textContent=`${i+1} / ${steps.length}`;available.innerHTML=s.a.map(x=>`<span class="tag">${x}</span>`).join("");document.getElementById("rows").innerHTML=s.data.map((r,idx)=>`<tr class="${s.ok.includes(idx)?"ok":s.wait.includes(idx)?"wait":""}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");seq.innerHTML=s.seq.length?"安全序列片段："+s.seq.map(x=>`<span>${x}</span>`).join(""):"";trial.textContent=s.trial;trial.style.display=s.trial?"block":"none";title.textContent=s.t;body1.textContent=s.b1;body2.textContent=s.b2;formula.textContent=s.f;formula.style.display=s.f?"block":"none"}prev.onclick=()=>{i=Math.max(0,i-1);render()};next.onclick=()=>{i=Math.min(steps.length-1,i+1);render()};addEventListener("keydown",e=>{if(e.key==="ArrowLeft")prev.click();if(e.key==="ArrowRight")next.click()});render();
 </script></body></html>

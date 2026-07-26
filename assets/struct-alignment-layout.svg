@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="620" viewBox="0 0 980 620" role="img" aria-labelledby="title desc">
+  <title id="title">结构体成员顺序对内存布局的影响</title>
+  <desc id="desc">相同的 char、double、int 成员，以不同顺序排列时，结构体 A 占 24 字节，结构体 B 占 16 字节。</desc>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #5e6a7d;
+      --line: #53657a;
+      --char: #f1a15d;
+      --double: #5c93dd;
+      --int: #43af86;
+      --padding: #d8dee8;
+      --accent: #7656c9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111923;
+        --panel: #172332;
+        --text: #eef4ff;
+        --muted: #afbdd0;
+        --line: #91a1b5;
+        --char: #b56e36;
+        --double: #315f9b;
+        --int: #26775e;
+        --padding: #3b4656;
+        --accent: #b39cff;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+    .title { fill: var(--text); font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .sub { fill: var(--muted); font: 17px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .heading { fill: var(--text); font: 700 21px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .size { fill: var(--accent); font: 700 19px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .segment { stroke: var(--line); stroke-width: 1.4; }
+    .char { fill: var(--char); }
+    .double { fill: var(--double); }
+    .int { fill: var(--int); }
+    .padding { fill: var(--padding); }
+    .label { fill: var(--text); font: 700 16px "Segoe UI", "Microsoft YaHei", sans-serif; text-anchor: middle; dominant-baseline: middle; }
+    .tiny { fill: var(--text); font: 700 14px "Segoe UI", "Microsoft YaHei", sans-serif; text-anchor: middle; dominant-baseline: middle; }
+    .offset { fill: var(--muted); font: 14px Consolas, monospace; text-anchor: middle; }
+    .rule { fill: var(--text); font: 18px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .em { fill: var(--accent); font-weight: 700; }
+  </style>
+
+  <rect class="bg" width="980" height="620"/>
+  <text class="title" x="48" y="50">成员顺序决定填充量</text>
+  <text class="sub" x="48" y="82">假设 char / int / double 的大小和对齐量分别为 1 / 4 / 8 字节</text>
+
+  <rect class="panel" x="42" y="104" width="896" height="196" rx="14"/>
+  <text class="heading" x="76" y="140">struct A：char → double → int</text>
+  <text class="size" x="858" y="140" text-anchor="end">align = 8，sizeof = 24</text>
+
+  <rect class="segment char" x="120" y="166" width="30" height="70"/>
+  <rect class="segment padding" x="150" y="166" width="210" height="70"/>
+  <rect class="segment double" x="360" y="166" width="240" height="70"/>
+  <rect class="segment int" x="600" y="166" width="120" height="70"/>
+  <rect class="segment padding" x="720" y="166" width="120" height="70"/>
+  <text class="tiny" x="135" y="201">C</text>
+  <text class="label" x="255" y="201">内部填充 1–7</text>
+  <text class="label" x="480" y="201">double value 8–15</text>
+  <text class="label" x="660" y="201">int 16–19</text>
+  <text class="label" x="780" y="201">尾部填充</text>
+  <text class="offset" x="120" y="261">0</text>
+  <text class="offset" x="150" y="261">1</text>
+  <text class="offset" x="360" y="261">8</text>
+  <text class="offset" x="600" y="261">16</text>
+  <text class="offset" x="720" y="261">20</text>
+  <text class="offset" x="840" y="261">24</text>
+
+  <rect class="panel" x="42" y="322" width="896" height="196" rx="14"/>
+  <text class="heading" x="76" y="358">struct B：double → int → char</text>
+  <text class="size" x="858" y="358" text-anchor="end">align = 8，sizeof = 16</text>
+
+  <rect class="segment double" x="120" y="384" width="240" height="70"/>
+  <rect class="segment int" x="360" y="384" width="120" height="70"/>
+  <rect class="segment char" x="480" y="384" width="30" height="70"/>
+  <rect class="segment padding" x="510" y="384" width="90" height="70"/>
+  <text class="label" x="240" y="419">double value 0–7</text>
+  <text class="label" x="420" y="419">int 8–11</text>
+  <text class="tiny" x="495" y="419">C</text>
+  <text class="tiny" x="555" y="419">尾填充</text>
+  <text class="offset" x="120" y="479">0</text>
+  <text class="offset" x="360" y="479">8</text>
+  <text class="offset" x="480" y="479">12</text>
+  <text class="offset" x="510" y="479">13</text>
+  <text class="offset" x="600" y="479">16</text>
+
+  <text class="rule" x="58" y="561">
+    <tspan class="em">内部填充</tspan><tspan>让下一个成员对齐；</tspan>
+    <tspan class="em">尾部填充</tspan><tspan>让结构体数组的下一个元素仍然对齐。</tspan>
+  </text>
+  <text class="sub" x="58" y="593">把高对齐量成员放在前面，常能减少内部空洞；最终结果仍以当前 ABI 和编译器为准。</text>
+</svg>

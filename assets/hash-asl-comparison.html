@@ -1,47 +1,97 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Hash ASL Comparison</title>
-  <style>
-    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626}
-    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#cbd5e1;--line:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171}}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}.wrap{max-width:1040px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}h1{font-size:22px;margin:0}.hint{font-size:14px;color:var(--muted);margin-top:6px}button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:6px;padding:8px 12px;cursor:pointer}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tabs button.active{border-color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 25%,transparent)}.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}.stage{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}.explain{font-size:18px;line-height:1.65;min-height:110px}.formula{font:16px/1.55 Consolas,monospace;background:rgba(148,163,184,.12);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap}svg{width:100%;height:auto}.cell{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.empty{fill:#fff;stroke:#94a3b8;stroke-width:2}.hit{fill:#dcfce7;stroke:var(--green);stroke-width:4}.stop{fill:#fee2e2;stroke:var(--red);stroke-width:4}.edge{stroke:#64748b;stroke-width:2}.text{fill:var(--text);font-weight:700;font-size:15px;text-anchor:middle}.idx{fill:var(--muted);font-size:12px;text-anchor:middle}@media(prefers-color-scheme:dark){.cell{fill:#172554;stroke:#38bdf8}.empty{fill:#111827;stroke:#64748b}.hit{fill:#12351f}.stop{fill:#3f1d1d}.edge{stroke:#94a3b8}}@media(max-width:760px){.stage{grid-template-columns:1fr}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>散列表 ASL 计算</title>
+<link rel="icon" href="data:,">
+<style>
+:root{color-scheme:light dark;--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#5c697c;--border:#cbd5e1;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626;--soft:#e8eef8;--empty:#eef2f7}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1722;--panel:#172331;--ink:#f3f6fb;--muted:#b8c5d8;--border:#3a4a60;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#fb7185;--soft:#223248;--empty:#202d3d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif}main{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}header{padding:17px 26px 12px;border-bottom:1px solid var(--border)}h1{margin:0 0 4px;font-size:25px}.sub{font-size:15px;color:var(--muted)}.slide{display:none;padding:18px 26px 12px}.slide.active{display:block}h2{font-size:23px;margin:0 0 7px}p{font-size:16px;line-height:1.55;margin:0 0 10px;color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}.fact{background:var(--soft);border:1px solid var(--border);border-radius:10px;padding:11px;text-align:center}.fact b{display:block;font-size:23px;color:var(--blue)}.fact span{font-size:14px;color:var(--muted)}.keys{font:16px/1.5 Consolas,monospace;margin:10px 0;padding:10px 13px;background:var(--soft);border-radius:9px}.slots{display:grid;grid-template-columns:repeat(13,1fr);gap:4px}.slot{min-width:0;text-align:center}.slot .idx{font-size:12px;color:var(--muted);margin-bottom:4px}.slot .value{height:48px;display:grid;place-items:center;border:1.5px solid var(--blue);border-radius:7px;background:color-mix(in srgb,var(--blue) 12%,var(--panel));font-size:16px;font-weight:700}.slot .value.blank{border-color:var(--border);background:var(--empty);color:var(--muted)}.hint{margin-top:11px;padding:9px 12px;border-left:4px solid var(--orange);background:color-mix(in srgb,var(--orange) 9%,var(--panel));font-size:15px;line-height:1.5}.calc{margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.formula{padding:12px 18px;border-radius:10px;background:color-mix(in srgb,var(--green) 12%,var(--panel));border:1.5px solid var(--green);font:700 21px/1.45 Consolas,monospace;white-space:nowrap}.explain{font-size:15px;line-height:1.6;color:var(--muted)}table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;overflow:hidden;border:1px solid var(--border);border-radius:10px}th,td{padding:8px 7px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}th{background:var(--soft);font-weight:700}tr:last-child td,tr:last-child th{border-bottom:0}td:last-child,th:last-child{border-right:0}.accent{color:var(--blue);font-weight:700}.stop{color:var(--red);font-weight:700}.chain-svg{display:block;width:100%;height:auto;max-height:245px}.bucket{fill:var(--soft);stroke:var(--border);stroke-width:1.5}.chain-node{fill:color-mix(in srgb,var(--blue) 12%,var(--panel));stroke:var(--blue);stroke-width:2}.svgtext{fill:var(--ink);font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;text-anchor:middle}.svglight{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;text-anchor:middle}.edge{stroke:var(--muted);stroke-width:2}.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:13px}.summary>div{border:1px solid var(--border);border-radius:10px;padding:12px}.summary b{display:block;margin-bottom:5px}.summary span{font-size:14px;line-height:1.5;color:var(--muted)}footer{padding:10px 26px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}button{border:1px solid var(--border);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 15px;font-size:15px;cursor:pointer}.count{font-size:14px;color:var(--muted)}@media(max-width:620px){header,.slide,footer{padding-left:14px;padding-right:14px}.slide{padding-top:13px}h1{font-size:21px}h2{font-size:20px}.fact b{font-size:20px}.slots{gap:2px}.slot .value{height:40px;font-size:13px}.slot .idx{font-size:10px}table{font-size:12px}th,td{padding:6px 3px}.calc{grid-template-columns:1fr}.formula{font-size:18px;white-space:normal}.summary{grid-template-columns:1fr}}
+.chain-svg .edge{marker-end:url(#chainArrow)}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top"><div><h1>散列表 ASL：失败查找的计数差异</h1><div class="hint">开放定址法按探测单元计数；拉链法按关键字比较次数计数。</div></div></div>
-    <div class="tabs" id="tabs"></div>
-    <div class="card"><div class="stage"><svg viewBox="0 0 560 330" id="fig"></svg><div><div class="explain" id="explain"></div><pre class="formula" id="formula"></pre></div></div></div>
-  </div>
-  <script>
-    const cases={
-      open:{name:"开放定址失败",text:"线性探测查找 key=21，H(21)=1。依次检查 1、2、3、4，直到位置 4 是空单元才确定失败。注意：这个“空”单元也算一次探测/比较次数。",formula:"失败查找长度 = 4\n路径：#1 -> #2 -> #3 -> #4(空)\n\n开放定址法失败 ASL：\n对每个可能初始地址，数到第一个空单元为止，空单元计入次数。",type:"open"},
-      chain:{name:"拉链法失败",text:"拉链法查找 key=21，H(21)=8。8 号桶是空链表，查找失败。因为没有任何关键字可比较，所以查找长度为 0。",formula:"失败查找长度 = 0\n路径：bucket[8] 是空链表\n\n拉链法失败 ASL：\n只数链表中的关键字比较次数，空链表不计入 1。",type:"chain"}
-    };
-    let cur="open";
-    const tabs=document.getElementById("tabs");
-    for(const k of Object.keys(cases)){const b=document.createElement("button");b.textContent=cases[k].name;b.dataset.k=k;b.onclick=()=>{cur=k;draw()};tabs.appendChild(b)}
-    function drawOpen(svg){
-      const vals=["","14","2","15","","","19","","","","23","","12"];
-      for(let i=0;i<13;i++){const x=20+i*40, cls=i===4?"stop":(i>=1&&i<=3?"hit":(vals[i]?"cell":"empty"));svg.innerHTML+=`<rect class="${cls}" x="${x}" y="120" width="36" height="42" rx="5"/><text class="text" x="${x+18}" y="147">${vals[i]}</text><text class="idx" x="${x+18}" y="180">${i}</text>`}
-      [1,2,3,4].forEach((v,i)=>{const x=38+v*40;svg.innerHTML+=`<text class="idx" x="${x}" y="105">${i+1}</text>`});
-    }
-    function drawChain(svg){
-      for(let i=0;i<13;i++){const x=20+i*40;svg.innerHTML+=`<rect class="${i===8?'stop':'empty'}" x="${x}" y="80" width="36" height="30" rx="5"/><text class="idx" x="${x+18}" y="128">${i}</text>`}
-      const chains={1:["79","27","1","14"],3:["55","68"],6:["84","19"],7:["20"],10:["10","23"],11:["11"]};
-      for(const [bucket,arr] of Object.entries(chains)){const x=38+Number(bucket)*40;arr.forEach((v,j)=>{const y=150+j*38;svg.innerHTML+=`<line class="edge" x1="${x}" y1="${j===0?110:y-20}" x2="${x}" y2="${y-15}"/><rect class="cell" x="${x-18}" y="${y}" width="36" height="28" rx="5"/><text class="text" x="${x}" y="${y+20}">${v}</text>`})}
-      svg.innerHTML+=`<text class="idx" x="${38+8*40}" y="65">空链表</text>`;
-    }
-    function draw(){
-      const data=cases[cur],svg=document.getElementById("fig");svg.innerHTML="";
-      document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.k===cur));
-      if(data.type==="open")drawOpen(svg);else drawChain(svg);
-      document.getElementById("explain").textContent=data.text;document.getElementById("formula").textContent=data.formula;
-    }
-    draw();
-  </script>
+<main>
+  <header><h1>散列表 ASL：分母取决于查找对象</h1><div class="sub">H(x)=x mod 11；表长 13；线性探测按模 13 前进</div></header>
+
+  <section class="slide active">
+    <h2>1. 三个数量彼此独立</h2>
+    <p>依次插入 8 个关键字。散列函数只产生 11 个初始地址，但开放定址表有 13 个存储单元。</p>
+    <div class="facts"><div class="fact"><b>8</b><span>已存关键字数 n</span></div><div class="fact"><b>11</b><span>可能的初始地址数</span></div><div class="fact"><b>13</b><span>散列表长度 m</span></div></div>
+    <div class="panel">
+      <div class="keys">22，1，13，11，24，33，14，37</div>
+      <div class="slots">
+        <div class="slot"><div class="idx">0</div><div class="value">22</div></div><div class="slot"><div class="idx">1</div><div class="value">1</div></div><div class="slot"><div class="idx">2</div><div class="value">13</div></div><div class="slot"><div class="idx">3</div><div class="value">11</div></div><div class="slot"><div class="idx">4</div><div class="value">24</div></div><div class="slot"><div class="idx">5</div><div class="value">33</div></div><div class="slot"><div class="idx">6</div><div class="value">14</div></div><div class="slot"><div class="idx">7</div><div class="value">37</div></div><div class="slot"><div class="idx">8</div><div class="value blank">空</div></div><div class="slot"><div class="idx">9</div><div class="value blank">空</div></div><div class="slot"><div class="idx">10</div><div class="value blank">空</div></div><div class="slot"><div class="idx">11</div><div class="value blank">空</div></div><div class="slot"><div class="idx">12</div><div class="value blank">空</div></div>
+      </div>
+      <div class="hint">22、11、33 的初始地址都是 0；13、24 的初始地址都是 2。冲突把元素推入后续单元，形成 0～7 的连续聚集。</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>2. 开放定址法：成功 ASL</h2>
+    <p>成功查找的长度等于从初始地址到实际存储位置所探测的单元数，对 8 个已存关键字取平均。</p>
+    <table>
+      <tr><th>关键字</th><td>22</td><td>1</td><td>13</td><td>11</td><td>24</td><td>33</td><td>14</td><td>37</td></tr>
+      <tr><th>H(key)</th><td>0</td><td>1</td><td>2</td><td>0</td><td>2</td><td>0</td><td>3</td><td>4</td></tr>
+      <tr><th>存储地址</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
+      <tr><th>探测次数</th><td class="accent">1</td><td class="accent">1</td><td class="accent">1</td><td class="accent">4</td><td class="accent">3</td><td class="accent">6</td><td class="accent">4</td><td class="accent">4</td></tr>
+    </table>
+    <div class="calc"><div class="explain">例如查找 33 时依次探测 0、1、2、3、4、5，共 6 次。分母是实际存在且默认等概率被查找的 8 个关键字。</div><div class="formula">ASL成功 = 24 / 8 = 3</div></div>
+  </section>
+
+  <section class="slide">
+    <h2>3. 开放定址法：失败 ASL</h2>
+    <p>查找失败时，从每个可能的初始地址出发，直到遇到第一个空单元；这个空单元也计入探测次数。</p>
+    <table>
+      <tr><th>初始地址 h</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>
+      <tr><th>失败长度</th><td class="stop">9</td><td>8</td><td>7</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td class="accent">1</td><td class="accent">1</td><td class="accent">1</td></tr>
+    </table>
+    <div class="panel" style="margin-top:12px">
+      <div class="slots">
+        <div class="slot"><div class="idx">0</div><div class="value">22</div></div><div class="slot"><div class="idx">1</div><div class="value">1</div></div><div class="slot"><div class="idx">2</div><div class="value">13</div></div><div class="slot"><div class="idx">3</div><div class="value">11</div></div><div class="slot"><div class="idx">4</div><div class="value">24</div></div><div class="slot"><div class="idx">5</div><div class="value">33</div></div><div class="slot"><div class="idx">6</div><div class="value">14</div></div><div class="slot"><div class="idx">7</div><div class="value">37</div></div><div class="slot"><div class="idx">8</div><div class="value blank">停</div></div><div class="slot"><div class="idx">9</div><div class="value blank">空</div></div><div class="slot"><div class="idx">10</div><div class="value blank">空</div></div><div class="slot"><div class="idx">11</div><div class="value blank">空</div></div><div class="slot"><div class="idx">12</div><div class="value blank">空</div></div>
+      </div>
+    </div>
+    <div class="calc"><div class="explain">从 h=0 出发要检查 0～8，共 9 次。H(x) 不会直接产生 11、12，所以失败 ASL 只对 0～10 这 11 个初始地址取平均。</div><div class="formula">ASL失败 = 47 / 11 ≈ 4.27</div></div>
+  </section>
+
+  <section class="slide">
+    <h2>4. 拉链法：成功 ASL</h2>
+    <p>改用尾插建立同义词链。成功查找只数链中实际比较的关键字，目标在链中的次序就是查找长度。</p>
+    <div class="panel"><svg class="chain-svg" viewBox="0 0 1000 270" aria-label="拉链法散列表">
+      <defs><marker id="chainArrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="var(--muted)"/></marker></defs>
+      <g>
+        <rect class="bucket" x="25" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="60" y="65" font-size="17">0</text><rect class="bucket" x="113" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="148" y="65" font-size="17">1</text><rect class="bucket" x="201" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="236" y="65" font-size="17">2</text><rect class="bucket" x="289" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="324" y="65" font-size="17">3</text><rect class="bucket" x="377" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="412" y="65" font-size="17">4</text><rect class="bucket" x="465" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="500" y="65" font-size="17">5</text><rect class="bucket" x="553" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="588" y="65" font-size="17">6</text><rect class="bucket" x="641" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="676" y="65" font-size="17">7</text><rect class="bucket" x="729" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="764" y="65" font-size="17">8</text><rect class="bucket" x="817" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="852" y="65" font-size="17">9</text><rect class="bucket" x="905" y="38" width="70" height="42" rx="7"/><text class="svgtext" x="940" y="65" font-size="17">10</text>
+        <path class="edge" d="M60 80V102M148 80V102M236 80V102M324 80V102M412 80V102"/>
+        <rect class="chain-node" x="25" y="102" width="70" height="38" rx="7"/><text class="svgtext" x="60" y="127" font-size="16">22</text><rect class="chain-node" x="113" y="102" width="70" height="38" rx="7"/><text class="svgtext" x="148" y="127" font-size="16">1</text><rect class="chain-node" x="201" y="102" width="70" height="38" rx="7"/><text class="svgtext" x="236" y="127" font-size="16">13</text><rect class="chain-node" x="289" y="102" width="70" height="38" rx="7"/><text class="svgtext" x="324" y="127" font-size="16">14</text><rect class="chain-node" x="377" y="102" width="70" height="38" rx="7"/><text class="svgtext" x="412" y="127" font-size="16">37</text>
+        <path class="edge" d="M60 140V157M236 140V157"/><rect class="chain-node" x="25" y="157" width="70" height="38" rx="7"/><text class="svgtext" x="60" y="182" font-size="16">11</text><rect class="chain-node" x="201" y="157" width="70" height="38" rx="7"/><text class="svgtext" x="236" y="182" font-size="16">24</text>
+        <path class="edge" d="M60 195V212"/><rect class="chain-node" x="25" y="212" width="70" height="38" rx="7"/><text class="svgtext" x="60" y="237" font-size="16">33</text>
+        <text class="svglight" x="720" y="160" font-size="17">5～10 号桶为空</text>
+      </g>
+    </svg></div>
+    <div class="calc"><div class="explain">各链长度为 3、1、2、1、1。成功比较次数分别取链中位置：1、1、1、2、2、3、1、1。</div><div class="formula">ASL成功 = 12 / 8 = 1.5</div></div>
+  </section>
+
+  <section class="slide">
+    <h2>5. 拉链法：失败 ASL</h2>
+    <p>失败查找要比较对应链中的全部关键字，因此失败长度就是桶的链长；空链表没有关键字可比，记为 0。</p>
+    <table>
+      <tr><th>初始地址 h</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>
+      <tr><th>链长</th><td class="accent">3</td><td>1</td><td>2</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    </table>
+    <div class="calc"><div class="explain">所有链长之和就是元素个数 8。失败 ASL 仍对 H(x) 的 11 个可能结果平均，而不是对 13 个存储单元平均。</div><div class="formula">ASL失败 = 8 / 11 ≈ 0.73</div></div>
+    <div class="summary"><div><b>成功查找</b><span>对表中 n 个关键字的查找长度取平均，分母是元素数。</span></div><div><b>失败查找</b><span>对 H(x) 可能产生的初始地址取平均，分母是散列地址数。</span></div></div>
+  </section>
+
+  <footer><button id="prev" type="button">上一页</button><span class="count" id="count"></span><button id="next" type="button">下一页</button></footer>
+</main>
+<script>
+const slides=[...document.querySelectorAll('.slide')];let index=0;
+function show(i){index=(i+slides.length)%slides.length;slides.forEach((s,n)=>s.classList.toggle('active',n===index));document.getElementById('count').textContent=`${index+1} / ${slides.length}`;}
+document.getElementById('prev').onclick=()=>show(index-1);document.getElementById('next').onclick=()=>show(index+1);
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft')show(index-1);if(e.key==='ArrowRight')show(index+1)});
+const requested=Number(new URLSearchParams(location.search).get('slide'));show(Number.isInteger(requested)&&requested>0?requested-1:0);
+</script>
 </body>
 </html>

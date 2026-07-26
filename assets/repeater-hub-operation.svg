@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">中继器与集线器的工作方式</title>
+  <desc id="desc">中继器在两个网段之间再生比特信号，集线器把一个端口收到的信号再生后发往其他所有端口。</desc>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #334155;
+      --signal: #2563eb;
+      --device: #ede9fe;
+      --device-line: #7c3aed;
+      --host: #dcfce7;
+      --host-line: #16a34a;
+      --warn: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #94a3b8;
+        --signal: #60a5fa;
+        --device: #4c1d95;
+        --device-line: #c4b5fd;
+        --host: #14532d;
+        --host-line: #4ade80;
+        --warn: #f87171;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.6; }
+    .device { fill: var(--device); stroke: var(--device-line); stroke-width: 2.2; }
+    .host { fill: var(--host); stroke: var(--host-line); stroke-width: 1.8; }
+    .wire { fill: none; stroke: var(--signal); stroke-width: 3; marker-end: url(#arrow); }
+    .arrowhead { fill: var(--signal); }
+    .wave { fill: none; stroke: var(--signal); stroke-width: 3; }
+    text { fill: var(--text); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { font-size: 28px; font-weight: 700; }
+    .head { font-size: 22px; font-weight: 700; text-anchor: middle; }
+    .label { font-size: 18px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    .small { font-size: 15px; fill: var(--muted); text-anchor: middle; }
+    .warn { font-size: 16px; fill: var(--warn); font-weight: 700; text-anchor: middle; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <path class="arrowhead" d="M0,0 L0,7 L9,3.5 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="560"/>
+  <text class="title" x="46" y="50">中继器与集线器都只处理比特信号</text>
+
+  <rect class="panel" x="42" y="82" width="416" height="420" rx="14"/>
+  <text class="head" x="250" y="122">中继器：两侧再生</text>
+  <rect class="host" x="72" y="214" width="90" height="58" rx="8"/>
+  <text class="label" x="117" y="243">网段 A</text>
+  <rect class="device" x="198" y="196" width="108" height="94" rx="10"/>
+  <text class="label" x="252" y="229">Repeater</text>
+  <text class="small" x="252" y="260">整形、定时、再生</text>
+  <rect class="host" x="344" y="214" width="90" height="58" rx="8"/>
+  <text class="label" x="389" y="243">网段 B</text>
+  <path class="wire" d="M162 243 H198"/>
+  <path class="wire" d="M306 243 H344"/>
+  <path class="wave" d="M84 178 C94 165 104 165 114 178 S134 191 144 178 S164 165 174 178"/>
+  <path class="wave" d="M330 178 C340 158 350 158 360 178 S380 198 390 178 S410 158 420 178"/>
+  <text class="small" x="250" y="342">不读取帧头，不识别 MAC 地址</text>
+  <text class="small" x="250" y="376">两侧仍在同一个碰撞域和广播域</text>
+  <text class="warn" x="250" y="430">不是简单放大：要重新整形并定时</text>
+
+  <rect class="panel" x="490" y="82" width="448" height="420" rx="14"/>
+  <text class="head" x="714" y="122">集线器：多端口中继</text>
+  <rect class="host" x="520" y="214" width="90" height="58" rx="8"/>
+  <text class="label" x="565" y="243">端口 A</text>
+  <rect class="device" x="650" y="196" width="128" height="94" rx="10"/>
+  <text class="label" x="714" y="229">Hub</text>
+  <text class="small" x="714" y="260">信号再生</text>
+  <rect class="host" x="826" y="136" width="90" height="52" rx="8"/>
+  <rect class="host" x="826" y="217" width="90" height="52" rx="8"/>
+  <rect class="host" x="826" y="298" width="90" height="52" rx="8"/>
+  <text class="label" x="871" y="162">端口 B</text>
+  <text class="label" x="871" y="243">端口 C</text>
+  <text class="label" x="871" y="324">端口 D</text>
+  <path class="wire" d="M610 243 H650"/>
+  <path class="wire" d="M778 225 C804 225 800 162 826 162"/>
+  <path class="wire" d="M778 243 H826"/>
+  <path class="wire" d="M778 261 C804 261 800 324 826 324"/>
+  <text class="small" x="714" y="382">A 收到的信号被送往 B、C、D</text>
+  <text class="small" x="714" y="416">不查目的地址，不能选择目标端口</text>
+  <text class="warn" x="714" y="458">所有端口共享带宽和碰撞域</text>
+</svg>

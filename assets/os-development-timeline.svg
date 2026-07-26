@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" role="img" aria-labelledby="title desc">
+  <title id="title">操作系统发展历程</title>
+  <desc id="desc">从手工操作、单道批处理、多道批处理到分时与实时系统的演进，以及网络、分布式和微机操作系统的支线。</desc>
+  <style>
+    :root{--bg:#ffffff;--panel:#f8fafc;--text:#172033;--muted:#526174;--line:#94a3b8;--blue:#2563eb;--green:#059669;--amber:#d97706;--red:#dc2626;--purple:#7c3aed}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#162131;--text:#eef2f7;--muted:#b5c0cf;--line:#64748b;--blue:#60a5fa;--green:#34d399;--amber:#fbbf24;--red:#fb7185;--purple:#a78bfa}}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:var(--text)}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+    .title{font-size:28px;font-weight:700}.subtitle{font-size:14px;fill:var(--muted)}
+    .phase{font-size:18px;font-weight:700;text-anchor:middle}.detail{font-size:13px;fill:var(--muted);text-anchor:middle}
+    .axis{fill:none;stroke:var(--line);stroke-width:3;marker-end:url(#arrow)}
+    .branch{fill:none;stroke:var(--line);stroke-width:2;stroke-dasharray:6 5;marker-end:url(#arrow)}
+    .problem{font-size:13px;font-weight:700;text-anchor:middle}.label{font-size:14px;font-weight:700;text-anchor:middle}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0L0 6L9 3Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1000" height="570" rx="18"/>
+  <text class="title" x="40" y="48">操作系统发展：不断重新平衡效率、交互与确定性</text>
+  <text class="subtitle" x="40" y="75">主线不是简单替代：批处理追求吞吐，分时追求响应，实时系统追求在截止时间前完成</text>
+
+  <path class="axis" d="M105 210H900"/>
+
+  <g transform="translate(35 115)">
+    <rect class="panel" width="140" height="145" rx="14" stroke="var(--line)"/>
+    <circle cx="70" cy="95" r="9" fill="var(--line)"/>
+    <text class="phase" x="70" y="34">手工操作</text>
+    <text class="detail" x="70" y="61">人工装入程序和数据</text>
+    <text class="detail" x="70" y="82">机器等待人的操作</text>
+    <text class="problem" x="70" y="124" fill="var(--red)">问题：人工切换慢</text>
+  </g>
+
+  <g transform="translate(225 115)">
+    <rect class="panel" width="150" height="145" rx="14" stroke="var(--blue)"/>
+    <circle cx="75" cy="95" r="9" fill="var(--blue)"/>
+    <text class="phase" x="75" y="34">单道批处理</text>
+    <text class="detail" x="75" y="61">作业成批提交</text>
+    <text class="detail" x="75" y="82">监督程序自动换作业</text>
+    <text class="problem" x="75" y="124" fill="var(--red)">问题：I/O 时 CPU 空闲</text>
+  </g>
+
+  <g transform="translate(425 115)">
+    <rect class="panel" width="150" height="145" rx="14" stroke="var(--green)"/>
+    <circle cx="75" cy="95" r="9" fill="var(--green)"/>
+    <text class="phase" x="75" y="34">多道批处理</text>
+    <text class="detail" x="75" y="61">多道作业同时驻留</text>
+    <text class="detail" x="75" y="82">一项等待时运行另一项</text>
+    <text class="problem" x="75" y="124" fill="var(--amber)">高吞吐，交互性仍差</text>
+  </g>
+
+  <g transform="translate(625 115)">
+    <rect class="panel" width="150" height="145" rx="14" stroke="var(--purple)"/>
+    <circle cx="75" cy="95" r="9" fill="var(--purple)"/>
+    <text class="phase" x="75" y="34">分时系统</text>
+    <text class="detail" x="75" y="61">时间片轮转</text>
+    <text class="detail" x="75" y="82">多用户终端交互</text>
+    <text class="problem" x="75" y="124" fill="var(--purple)">目标：及时响应</text>
+  </g>
+
+  <g transform="translate(825 115)">
+    <rect class="panel" width="140" height="145" rx="14" stroke="var(--red)"/>
+    <circle cx="70" cy="95" r="9" fill="var(--red)"/>
+    <text class="phase" x="70" y="34">实时系统</text>
+    <text class="detail" x="70" y="61">外部事件驱动</text>
+    <text class="detail" x="70" y="82">满足明确时间约束</text>
+    <text class="problem" x="70" y="124" fill="var(--red)">目标：可预测性</text>
+  </g>
+
+  <path class="branch" d="M500 260V335H280V375"/>
+  <path class="branch" d="M700 260V335H720V375"/>
+
+  <g transform="translate(85 375)">
+    <rect class="panel" width="390" height="135" rx="14" stroke="var(--blue)"/>
+    <text class="label" x="195" y="30">网络操作系统与分布式操作系统</text>
+    <text class="detail" x="195" y="58">网络 OS：各计算机保持自治，通过网络共享服务</text>
+    <text class="detail" x="195" y="82">分布式 OS：统一管理多机资源，力图隐藏机器边界</text>
+    <text class="detail" x="195" y="108">二者与批处理、分时、实时并非单一前后继关系</text>
+  </g>
+
+  <g transform="translate(525 375)">
+    <rect class="panel" width="390" height="135" rx="14" stroke="var(--amber)"/>
+    <text class="label" x="195" y="30">微机操作系统</text>
+    <text class="detail" x="195" y="58">从单用户单任务发展到单用户多任务</text>
+    <text class="detail" x="195" y="82">再发展为具备多用户、网络和图形界面的通用系统</text>
+    <text class="detail" x="195" y="108">重点是个人计算环境，不是一种独立调度原理</text>
+  </g>
+
+  <text class="subtitle" x="500" y="548" text-anchor="middle">利用率 → 吞吐量 → 交互响应 → 时间确定性；不同目标决定不同系统形态</text>
+</svg>

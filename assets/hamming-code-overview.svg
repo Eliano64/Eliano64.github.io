@@ -1,41 +1,88 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img" aria-labelledby="title desc">
-  <title id="title">海明码校验位覆盖关系</title>
-  <desc id="desc">展示海明码中校验位放在 1、2、4、8 等位置，并按二进制位覆盖数据位</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--purple:#7c3aed;--red:#dc2626}
-    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--blue:#60a5fa;--green:#4ade80;--amber:#fbbf24;--purple:#c4b5fd;--red:#f87171}}
-    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.cell{stroke:var(--line);stroke-width:1.3}.p1{fill:color-mix(in srgb,var(--blue) 25%,transparent)}.p2{fill:color-mix(in srgb,var(--green) 25%,transparent)}.p4{fill:color-mix(in srgb,var(--amber) 30%,transparent)}.p8{fill:color-mix(in srgb,var(--purple) 28%,transparent)}.d{fill:var(--panel)}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.head{font-size:18px;font-weight:700}.small{font-size:15px;fill:var(--muted)}.mark{font-size:17px;font-weight:800}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" role="img" aria-labelledby="title desc">
+  <title id="title">海明码的位置编号与校验组</title>
+  <desc id="desc">以十二位海明码为例，说明校验位位于一、二、四、八号位置，以及每个校验位按位置编号的二进制位选择校验组。</desc>
+  <style>
+    :root { color-scheme: light dark; }
+    .bg { fill: #f7f9fc; }
+    .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+    .grid { stroke: #cbd5e1; stroke-width: 1.5; }
+    .text { fill: #172033; font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .muted { fill: #536279; }
+    .head { fill: #e8eef7; }
+    .data { fill: #eaf4ff; }
+    .parity { fill: #fff0cc; }
+    .p1 { fill: #ef4444; }
+    .p2 { fill: #3b82f6; }
+    .p3 { fill: #10b981; }
+    .p4 { fill: #8b5cf6; }
+    .mark { fill: #ffffff; font-weight: 700; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f1722; }
+      .panel { fill: #162230; stroke: #334155; }
+      .grid { stroke: #405066; }
+      .text { fill: #f3f6fb; }
+      .muted { fill: #b8c5d8; }
+      .head { fill: #243449; }
+      .data { fill: #173554; }
+      .parity { fill: #5a4212; }
+    }
   </style>
-  <rect class="bg" width="980" height="520"/>
-  <text x="50" y="56" class="title">海明码：用多个校验位定位 1 位错误</text>
-  <text x="50" y="84" class="small">校验位放在 1、2、4、8 等 2 的幂次位置。每个校验位检查编号二进制中对应位为 1 的位置。</text>
-  <rect x="70" y="125" width="840" height="110" rx="10" class="panel"/>
-  <g transform="translate(110,158)">
-    <rect x="0" y="0" width="58" height="48" class="cell p1"/><text x="29" y="30" text-anchor="middle" class="mark">P1</text>
-    <rect x="58" y="0" width="58" height="48" class="cell p2"/><text x="87" y="30" text-anchor="middle" class="mark">P2</text>
-    <rect x="116" y="0" width="58" height="48" class="cell d"/><text x="145" y="30" text-anchor="middle" class="mark">D3</text>
-    <rect x="174" y="0" width="58" height="48" class="cell p4"/><text x="203" y="30" text-anchor="middle" class="mark">P4</text>
-    <rect x="232" y="0" width="58" height="48" class="cell d"/><text x="261" y="30" text-anchor="middle" class="mark">D5</text>
-    <rect x="290" y="0" width="58" height="48" class="cell d"/><text x="319" y="30" text-anchor="middle" class="mark">D6</text>
-    <rect x="348" y="0" width="58" height="48" class="cell d"/><text x="377" y="30" text-anchor="middle" class="mark">D7</text>
-    <rect x="406" y="0" width="58" height="48" class="cell p8"/><text x="435" y="30" text-anchor="middle" class="mark">P8</text>
-    <rect x="464" y="0" width="58" height="48" class="cell d"/><text x="493" y="30" text-anchor="middle" class="mark">D9</text>
-    <rect x="522" y="0" width="58" height="48" class="cell d"/><text x="551" y="30" text-anchor="middle" class="mark">D10</text>
-    <rect x="580" y="0" width="58" height="48" class="cell d"/><text x="609" y="30" text-anchor="middle" class="mark">D11</text>
-    <rect x="638" y="0" width="58" height="48" class="cell d"/><text x="667" y="30" text-anchor="middle" class="mark">D12</text>
+
+  <rect class="bg" width="1000" height="760" rx="18"/>
+  <text class="text" x="50" y="54" font-size="30" font-weight="700">海明码：位置编号决定校验组</text>
+  <text class="muted" x="50" y="87" font-size="18">位置从 H₁ 开始编号；2 的幂次位置放校验位，其余位置依次放数据位。</text>
+
+  <rect class="panel" x="40" y="110" width="920" height="164" rx="14"/>
+  <text class="text" x="62" y="145" font-size="18" font-weight="700">从高位到低位书写</text>
+  <text class="muted" x="62" y="175" font-size="16">位置</text>
+  <text class="muted" x="62" y="232" font-size="16">内容</text>
+
+  <g class="text" font-size="17" text-anchor="middle">
+    <g class="head">
+      <rect x="160" y="150" width="65" height="52"/><rect x="225" y="150" width="65" height="52"/><rect x="290" y="150" width="65" height="52"/><rect x="355" y="150" width="65" height="52"/><rect x="420" y="150" width="65" height="52"/><rect x="485" y="150" width="65" height="52"/><rect x="550" y="150" width="65" height="52"/><rect x="615" y="150" width="65" height="52"/><rect x="680" y="150" width="65" height="52"/><rect x="745" y="150" width="65" height="52"/><rect x="810" y="150" width="65" height="52"/><rect x="875" y="150" width="65" height="52"/>
+    </g>
+    <g class="data">
+      <rect x="160" y="202" width="65" height="52"/><rect x="225" y="202" width="65" height="52"/><rect x="290" y="202" width="65" height="52"/><rect x="355" y="202" width="65" height="52"/><rect x="485" y="202" width="65" height="52"/><rect x="550" y="202" width="65" height="52"/><rect x="615" y="202" width="65" height="52"/><rect x="745" y="202" width="65" height="52"/>
+    </g>
+    <g class="parity">
+      <rect x="420" y="202" width="65" height="52"/><rect x="680" y="202" width="65" height="52"/><rect x="810" y="202" width="65" height="52"/><rect x="875" y="202" width="65" height="52"/>
+    </g>
+    <g class="grid" fill="none">
+      <rect x="160" y="150" width="780" height="104"/>
+      <path d="M160 202H940 M225 150V254 M290 150V254 M355 150V254 M420 150V254 M485 150V254 M550 150V254 M615 150V254 M680 150V254 M745 150V254 M810 150V254 M875 150V254"/>
+    </g>
+    <text x="192.5" y="183">H₁₂</text><text x="257.5" y="183">H₁₁</text><text x="322.5" y="183">H₁₀</text><text x="387.5" y="183">H₉</text><text x="452.5" y="183">H₈</text><text x="517.5" y="183">H₇</text><text x="582.5" y="183">H₆</text><text x="647.5" y="183">H₅</text><text x="712.5" y="183">H₄</text><text x="777.5" y="183">H₃</text><text x="842.5" y="183">H₂</text><text x="907.5" y="183">H₁</text>
+    <text x="192.5" y="236">D₈</text><text x="257.5" y="236">D₇</text><text x="322.5" y="236">D₆</text><text x="387.5" y="236">D₅</text><text x="452.5" y="236">P₄</text><text x="517.5" y="236">D₄</text><text x="582.5" y="236">D₃</text><text x="647.5" y="236">D₂</text><text x="712.5" y="236">P₃</text><text x="777.5" y="236">D₁</text><text x="842.5" y="236">P₂</text><text x="907.5" y="236">P₁</text>
   </g>
-  <rect x="70" y="275" width="405" height="150" rx="10" class="panel"/>
-  <text x="96" y="314" class="head">覆盖规则</text>
-  <text x="96" y="348" class="small">P1 检查位置编号最低位为 1 的位置。</text>
-  <text x="96" y="376" class="small">P2 检查位置编号第 2 位为 1 的位置。</text>
-  <text x="96" y="404" class="small">P4 检查位置编号第 3 位为 1 的位置。</text>
-  <rect x="505" y="275" width="405" height="150" rx="10" class="panel"/>
-  <text x="532" y="314" class="head">定位错误</text>
-  <text x="532" y="348" class="small">接收端重新计算各组校验结果。</text>
-  <text x="532" y="376" class="small">出错校验位组合成二进制数。</text>
-  <text x="532" y="404" class="small">该数就是错误位的位置。</text>
-  <text x="490" y="480" text-anchor="middle" class="small">海明码开销比检错码大，但能在一定条件下直接定位并纠正 1 位错误。</text>
+
+  <text class="text" x="50" y="315" font-size="23" font-weight="700">校验组：看位置编号的二进制</text>
+  <text class="muted" x="50" y="344" font-size="17">某一二进制位为 1，该位置就属于对应的校验组；校验位本身也在组内。</text>
+
+  <g class="text" font-size="16" text-anchor="middle">
+    <g class="grid" fill="none">
+      <rect x="160" y="370" width="780" height="240" rx="8"/>
+      <path d="M160 430H940 M160 490H940 M160 550H940 M225 370V610 M290 370V610 M355 370V610 M420 370V610 M485 370V610 M550 370V610 M615 370V610 M680 370V610 M745 370V610 M810 370V610 M875 370V610"/>
+    </g>
+    <text x="192.5" y="397" class="muted">12</text><text x="257.5" y="397" class="muted">11</text><text x="322.5" y="397" class="muted">10</text><text x="387.5" y="397" class="muted">9</text><text x="452.5" y="397" class="muted">8</text><text x="517.5" y="397" class="muted">7</text><text x="582.5" y="397" class="muted">6</text><text x="647.5" y="397" class="muted">5</text><text x="712.5" y="397" class="muted">4</text><text x="777.5" y="397" class="muted">3</text><text x="842.5" y="397" class="muted">2</text><text x="907.5" y="397" class="muted">1</text>
+
+    <text x="90" y="418" font-size="20" font-weight="700">P₁</text><text x="90" y="444" class="muted">选1 跳1</text>
+    <circle class="p1" cx="257.5" cy="412" r="15"/><circle class="p1" cx="387.5" cy="412" r="15"/><circle class="p1" cx="517.5" cy="412" r="15"/><circle class="p1" cx="647.5" cy="412" r="15"/><circle class="p1" cx="777.5" cy="412" r="15"/><circle class="p1" cx="907.5" cy="412" r="15"/>
+    <text class="mark" x="257.5" y="418">✓</text><text class="mark" x="387.5" y="418">✓</text><text class="mark" x="517.5" y="418">✓</text><text class="mark" x="647.5" y="418">✓</text><text class="mark" x="777.5" y="418">✓</text><text class="mark" x="907.5" y="418">✓</text>
+
+    <text x="90" y="478" font-size="20" font-weight="700">P₂</text><text x="90" y="504" class="muted">选2 跳2</text>
+    <circle class="p2" cx="257.5" cy="472" r="15"/><circle class="p2" cx="322.5" cy="472" r="15"/><circle class="p2" cx="517.5" cy="472" r="15"/><circle class="p2" cx="582.5" cy="472" r="15"/><circle class="p2" cx="777.5" cy="472" r="15"/><circle class="p2" cx="842.5" cy="472" r="15"/>
+    <text class="mark" x="257.5" y="478">✓</text><text class="mark" x="322.5" y="478">✓</text><text class="mark" x="517.5" y="478">✓</text><text class="mark" x="582.5" y="478">✓</text><text class="mark" x="777.5" y="478">✓</text><text class="mark" x="842.5" y="478">✓</text>
+
+    <text x="90" y="538" font-size="20" font-weight="700">P₃</text><text x="90" y="564" class="muted">选4 跳4</text>
+    <circle class="p3" cx="192.5" cy="532" r="15"/><circle class="p3" cx="517.5" cy="532" r="15"/><circle class="p3" cx="582.5" cy="532" r="15"/><circle class="p3" cx="647.5" cy="532" r="15"/><circle class="p3" cx="712.5" cy="532" r="15"/>
+    <text class="mark" x="192.5" y="538">✓</text><text class="mark" x="517.5" y="538">✓</text><text class="mark" x="582.5" y="538">✓</text><text class="mark" x="647.5" y="538">✓</text><text class="mark" x="712.5" y="538">✓</text>
+
+    <text x="90" y="598" font-size="20" font-weight="700">P₄</text><text x="90" y="624" class="muted">选8 跳8</text>
+    <circle class="p4" cx="192.5" cy="592" r="15"/><circle class="p4" cx="257.5" cy="592" r="15"/><circle class="p4" cx="322.5" cy="592" r="15"/><circle class="p4" cx="387.5" cy="592" r="15"/><circle class="p4" cx="452.5" cy="592" r="15"/>
+    <text class="mark" x="192.5" y="598">✓</text><text class="mark" x="257.5" y="598">✓</text><text class="mark" x="322.5" y="598">✓</text><text class="mark" x="387.5" y="598">✓</text><text class="mark" x="452.5" y="598">✓</text>
+  </g>
+
+  <rect class="panel" x="40" y="652" width="920" height="72" rx="12"/>
+  <text class="text" x="65" y="683" font-size="18" font-weight="700">等价判断</text>
+  <text class="muted" x="65" y="708" font-size="17">P₁ 看编号二进制的最低位，P₂ 看倒数第 2 位，P₃ 看倒数第 3 位，P₄ 看倒数第 4 位。</text>
 </svg>

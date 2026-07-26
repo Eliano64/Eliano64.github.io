@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Floating Point Addition Process</title>
+  <title>Floating Point Addition And Subtraction Process</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -57,10 +57,10 @@
 </head>
 <body>
 <main>
-  <h1>浮点加法过程</h1>
-  <p class="sub">例：1.5 + 0.25。先对阶，再做尾数加法、规格化、舍入和异常检查。</p>
+  <h1>浮点加减过程</h1>
+  <p class="sub">先对阶，再做尾数运算、规格化、舍入和异常检查。</p>
   <section class="stage">
-    <svg viewBox="0 0 1080 520" role="img" aria-label="浮点加法过程">
+    <svg viewBox="0 0 1080 520" role="img" aria-label="浮点加减运算过程">
       <defs>
         <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
           <path d="M0,0 L0,7 L9,3.5 z" fill="currentColor"></path>
@@ -123,19 +123,23 @@
 </main>
 <script>
   const steps = [
-    { active:["node-a","node-b"], step:"准备两个规格化操作数。", state:"A = +1.100₂ × 2⁰ = 1.5\nB = +1.000₂ × 2⁻² = 0.25", align:"等待对阶", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
-    { active:["node-b","node-align","w-b-align"], step:"比较阶码：A 的阶码为 0，B 的阶码为 -2。", state:"B 的阶码小 2\n需要把 B 的尾数右移 2 位", align:"B 右移 2 位", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
-    { active:["node-align"], step:"对阶：把 B 改写到阶码 0。", state:"1.000₂ × 2⁻²\n= 0.010₂ × 2⁰", align:"B: 1.000 -> 0.010", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
-    { active:["node-a","node-align","node-add","w-align-add"], step:"尾数相加。", state:"1.100₂\n+0.010₂\n=1.110₂", align:"阶码统一为 0", add:"1.100 + 0.010", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
-    { active:["node-add","node-norm","w-add-norm"], step:"规格化：结果已经是 1.x 形式，不需要移动尾数。", state:"1.110₂ × 2⁰", align:"阶码统一为 0", add:"1.110", norm:"1.110₂ × 2⁰", round:"等待舍入", result:"", warn:"" },
-    { active:["node-norm","node-round","w-norm-round"], step:"舍入检查：本例结果能被当前尾数精确保存。", state:"没有额外低位被丢弃\n不需要改变尾数", align:"阶码统一为 0", add:"1.110", norm:"1.110₂ × 2⁰", round:"无额外舍入", result:"", warn:"" },
-    { active:["node-result","w-round-result"], step:"写回结果。", state:"1.110₂ × 2⁰ = 1.75", align:"完成", add:"完成", norm:"完成", round:"完成", result:"1.110₂ × 2⁰ = 1.75", warn:"" },
-    { active:["node-b","node-align","node-result"], step:"大数吃小数：若两个数阶码差太大，小数在对阶右移时可能完全消失。", state:"例：1.0e20 + 1.0\n1.0 对阶后无法影响 1.0e20 的有效位\n结果仍可能是 1.0e20", align:"小数尾数右移很多位", add:"有效位被移出", norm:"结果仍由大数决定", round:"小数贡献为 0", result:"A + B = A", warn:"大数吃小数" }
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁻²", active:["node-a","node-b"], step:"准备两个规格化操作数。", state:"A = +1.100₂ × 2⁰ = 1.5\nB = +1.000₂ × 2⁻² = 0.25", align:"等待对阶", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁻²", active:["node-b","node-align","w-b-align"], step:"比较阶码：A 的阶码为 0，B 的阶码为 -2。", state:"B 的阶码小 2\n需要把 B 的尾数右移 2 位", align:"B 右移 2 位", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁻²", active:["node-align"], step:"对阶：把 B 改写到阶码 0。", state:"1.000₂ × 2⁻²\n= 0.010₂ × 2⁰", align:"B: 1.000 → 0.010", add:"等待尾数运算", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁻²", active:["node-a","node-align","node-add","w-align-add"], step:"尾数相加。", state:"1.100₂\n+0.010₂\n=1.110₂", align:"阶码统一为 0", add:"1.100 + 0.010", norm:"等待规格化", round:"等待舍入", result:"", warn:"" },
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁻²", active:["node-add","node-norm","w-add-norm"], step:"结果已经是 1.x 形式，不需要移动尾数。", state:"1.110₂ × 2⁰", align:"阶码统一为 0", add:"1.110", norm:"无需左规或右规", round:"等待舍入", result:"", warn:"" },
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁻²", active:["node-norm","node-round","w-norm-round"], step:"舍入检查：本例结果能被当前尾数精确保存。", state:"没有额外低位被丢弃\n不需要改变尾数", align:"阶码统一为 0", add:"1.110", norm:"1.110₂ × 2⁰", round:"无额外舍入", result:"", warn:"" },
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁻²", active:["node-result","w-round-result"], step:"写回结果。", state:"1.110₂ × 2⁰ = 1.75", align:"完成", add:"完成", norm:"完成", round:"完成", result:"1.110₂ × 2⁰ = 1.75", warn:"" },
+    { a:"+1.100₂ × 2⁰", b:"+1.000₂ × 2⁰", active:["node-a","node-b","node-add","node-norm","w-add-norm"], step:"右规：尾数相加产生最高位进位。", state:"1.100 + 1.000 = 10.100\n尾数右移 1 位，阶码加 1", align:"阶码已经相同", add:"10.100 × 2⁰", norm:"右规 → 1.010 × 2¹", round:"检查移出的低位", result:"1.010₂ × 2¹ = 2.5", warn:"右规：右移尾数，阶码 +1" },
+    { a:"+1.000₂ × 2⁰", b:"−1.110₂ × 2⁻¹", active:["node-a","node-b","node-align","node-add","node-norm"], step:"左规：两个接近的数相减，结果出现前导 0。", state:"B 对阶为 −0.111 × 2⁰\n1.000 − 0.111 = 0.001\n尾数左移 3 位，阶码减 3", align:"B: 1.110 → 0.111", add:"0.001 × 2⁰", norm:"左规 → 1.000 × 2⁻³", round:"检查下溢", result:"1.000₂ × 2⁻³ = 0.125", warn:"左规：左移尾数，阶码 −3" },
+    { a:"+1.0e20", b:"+1.0", active:["node-b","node-align","node-result"], step:"大数吃小数：阶码差太大时，小数在对阶右移中可能完全消失。", state:"1.0 对阶后无法影响 1.0e20 的有效位\n结果仍可能是 1.0e20", align:"小数尾数右移很多位", add:"有效位被移出", norm:"结果仍由大数决定", round:"小数贡献为 0", result:"A + B = A", warn:"大数吃小数" }
   ];
   const ids = ["node-a","node-b","node-align","node-add","node-norm","node-round","node-result","w-a-align","w-b-align","w-align-add","w-add-norm","w-norm-round","w-round-result"];
   let pos = 0;
   function render() {
     const s = steps[pos];
+    document.getElementById("val-a").textContent = s.a;
+    document.getElementById("val-b").textContent = s.b;
     document.getElementById("val-align").textContent = s.align;
     document.getElementById("val-add").textContent = s.add;
     document.getElementById("val-norm").textContent = s.norm;
@@ -150,6 +154,10 @@
   }
   document.getElementById("prev").addEventListener("click", () => { pos = Math.max(0, pos - 1); render(); });
   document.getElementById("next").addEventListener("click", () => { pos = Math.min(steps.length - 1, pos + 1); render(); });
+  document.addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft") { pos = Math.max(0, pos - 1); render(); }
+    if (event.key === "ArrowRight") { pos = Math.min(steps.length - 1, pos + 1); render(); }
+  });
   render();
 </script>
 </body>

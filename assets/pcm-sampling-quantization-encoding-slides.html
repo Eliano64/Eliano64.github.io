@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PCM：采样、量化与编码</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #5f6b7d;
+      --line: #cbd5e1;
+      --grid: #d8e0ea;
+      --wave: #2563eb;
+      --sample: #d97706;
+      --quant: #16a34a;
+      --code: #7c3aed;
+      --soft: #eef2f7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101722;
+        --panel: #172131;
+        --text: #eef4ff;
+        --muted: #aab7ca;
+        --line: #35445a;
+        --grid: #2c3a4d;
+        --wave: #70adff;
+        --sample: #ffbd61;
+        --quant: #55d4ad;
+        --code: #b39cff;
+        --soft: #1e2a3a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    main { width: min(100%, 1040px); margin: 0 auto; padding: 16px; }
+    header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+    h1 { margin: 0; font-size: clamp(23px, 3.5vw, 30px); }
+    .status { margin-left: auto; color: var(--muted); }
+    .stage {
+      padding: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    svg { display: block; width: 100%; height: auto; }
+    .axis { stroke: var(--muted); stroke-width: 1.6; }
+    .grid { stroke: var(--grid); stroke-width: 1.2; stroke-dasharray: 5 5; }
+    .wave { fill: none; stroke: var(--wave); stroke-width: 4; }
+    .sample-line { stroke: var(--sample); stroke-width: 2; }
+    .sample-dot { fill: var(--sample); }
+    .quant-line { stroke: var(--quant); stroke-width: 1.7; stroke-dasharray: 7 5; }
+    .quant-dot { fill: var(--quant); }
+    .stem { stroke: var(--quant); stroke-width: 2.5; }
+    .svg-label { fill: var(--muted); font: 15px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .code-label { fill: var(--code); font: 700 16px Consolas, monospace; text-anchor: middle; }
+    .hidden { opacity: .08; }
+    .gone { display: none; }
+    .caption {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .card {
+      min-height: 116px;
+      padding: 12px 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .card h2 { margin: 0 0 8px; color: var(--code); font-size: 20px; }
+    .card p { margin: 0; line-height: 1.6; }
+    .result {
+      display: grid;
+      place-items: center;
+      background: var(--soft);
+      color: var(--text);
+      font: 700 clamp(16px, 2.5vw, 21px)/1.5 Consolas, "Microsoft YaHei", monospace;
+      text-align: center;
+      white-space: pre-line;
+    }
+    .controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 15px;
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+    button:hover, button:focus-visible { border-color: var(--code); outline: none; }
+    button:disabled { opacity: .45; cursor: default; }
+    @media (max-width: 620px) {
+      main { padding: 10px; }
+      .caption { grid-template-columns: 1fr; }
+      .card { min-height: 92px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>PCM：把模拟波形变成 bit 流</h1>
+    <span id="status" class="status"></span>
+  </header>
+
+  <section class="stage">
+    <svg viewBox="0 0 960 390" role="img" aria-label="PCM 采样、量化、编码过程">
+      <line class="axis" x1="70" y1="205" x2="920" y2="205"/>
+      <line class="axis" x1="70" y1="42" x2="70" y2="350"/>
+      <text class="svg-label" x="78" y="62">幅值</text>
+      <text class="svg-label" x="884" y="226">时间</text>
+
+      <g id="quant-grid">
+        <line class="quant-line" x1="70" y1="75" x2="920" y2="75"/>
+        <line class="quant-line" x1="70" y1="118" x2="920" y2="118"/>
+        <line class="quant-line" x1="70" y1="161" x2="920" y2="161"/>
+        <line class="quant-line" x1="70" y1="205" x2="920" y2="205"/>
+        <line class="quant-line" x1="70" y1="248" x2="920" y2="248"/>
+        <line class="quant-line" x1="70" y1="291" x2="920" y2="291"/>
+        <line class="quant-line" x1="70" y1="334" x2="920" y2="334"/>
+      </g>
+
+      <path id="analog-wave" class="wave" d="M70 205 C125 75 180 75 235 205 S345 335 400 205 S510 75 565 205 S675 335 730 205 S840 75 895 205"/>
+
+      <g id="sample-guides">
+        <line class="grid" x1="125" y1="42" x2="125" y2="350"/>
+        <line class="grid" x1="235" y1="42" x2="235" y2="350"/>
+        <line class="grid" x1="345" y1="42" x2="345" y2="350"/>
+        <line class="grid" x1="455" y1="42" x2="455" y2="350"/>
+        <line class="grid" x1="565" y1="42" x2="565" y2="350"/>
+        <line class="grid" x1="675" y1="42" x2="675" y2="350"/>
+        <line class="grid" x1="785" y1="42" x2="785" y2="350"/>
+        <line class="grid" x1="895" y1="42" x2="895" y2="350"/>
+      </g>
+
+      <g id="samples">
+        <line class="sample-line" x1="125" y1="205" x2="125" y2="91"/><circle class="sample-dot" cx="125" cy="91" r="7"/>
+        <line class="sample-line" x1="235" y1="205" x2="235" y2="205"/><circle class="sample-dot" cx="235" cy="205" r="7"/>
+        <line class="sample-line" x1="345" y1="205" x2="345" y2="319"/><circle class="sample-dot" cx="345" cy="319" r="7"/>
+        <line class="sample-line" x1="455" y1="205" x2="455" y2="91"/><circle class="sample-dot" cx="455" cy="91" r="7"/>
+        <line class="sample-line" x1="565" y1="205" x2="565" y2="205"/><circle class="sample-dot" cx="565" cy="205" r="7"/>
+        <line class="sample-line" x1="675" y1="205" x2="675" y2="319"/><circle class="sample-dot" cx="675" cy="319" r="7"/>
+        <line class="sample-line" x1="785" y1="205" x2="785" y2="91"/><circle class="sample-dot" cx="785" cy="91" r="7"/>
+        <line class="sample-line" x1="895" y1="205" x2="895" y2="205"/><circle class="sample-dot" cx="895" cy="205" r="7"/>
+      </g>
+
+      <g id="quantized">
+        <line class="stem" x1="125" y1="205" x2="125" y2="75"/><circle class="quant-dot" cx="125" cy="75" r="7"/>
+        <line class="stem" x1="235" y1="205" x2="235" y2="205"/><circle class="quant-dot" cx="235" cy="205" r="7"/>
+        <line class="stem" x1="345" y1="205" x2="345" y2="334"/><circle class="quant-dot" cx="345" cy="334" r="7"/>
+        <line class="stem" x1="455" y1="205" x2="455" y2="75"/><circle class="quant-dot" cx="455" cy="75" r="7"/>
+        <line class="stem" x1="565" y1="205" x2="565" y2="205"/><circle class="quant-dot" cx="565" cy="205" r="7"/>
+        <line class="stem" x1="675" y1="205" x2="675" y2="334"/><circle class="quant-dot" cx="675" cy="334" r="7"/>
+        <line class="stem" x1="785" y1="205" x2="785" y2="75"/><circle class="quant-dot" cx="785" cy="75" r="7"/>
+        <line class="stem" x1="895" y1="205" x2="895" y2="205"/><circle class="quant-dot" cx="895" cy="205" r="7"/>
+      </g>
+
+      <g id="codes">
+        <text class="code-label" x="125" y="370">111</text>
+        <text class="code-label" x="235" y="370">100</text>
+        <text class="code-label" x="345" y="370">001</text>
+        <text class="code-label" x="455" y="370">111</text>
+        <text class="code-label" x="565" y="370">100</text>
+        <text class="code-label" x="675" y="370">001</text>
+        <text class="code-label" x="785" y="370">111</text>
+        <text class="code-label" x="895" y="370">100</text>
+      </g>
+    </svg>
+  </section>
+
+  <section class="caption">
+    <div class="card">
+      <h2 id="step-title"></h2>
+      <p id="step-text"></p>
+    </div>
+    <div id="result" class="card result"></div>
+  </section>
+
+  <nav class="controls" aria-label="幻灯片控制">
+    <button id="prev" type="button">上一步</button>
+    <button id="next" type="button">下一步</button>
+  </nav>
+</main>
+
+<script>
+  const steps = [
+    {
+      title: "1. 模拟数据",
+      text: "原始信号的时间和幅值都连续，不能直接写成有限长度的 bit 串。",
+      result: "连续波形",
+      show: ["analog-wave"]
+    },
+    {
+      title: "2. 采样",
+      text: "每隔固定时间读取一次瞬时幅值。采样率必须足够高，才能避免不同频率成分在采样后混叠。",
+      result: "fₛ ≥ 2fₘₐₓ",
+      show: ["analog-wave", "sample-guides", "samples"]
+    },
+    {
+      title: "3. 量化",
+      text: "把每个样本归入最近的离散等级。样本从连续幅值变成有限状态，但会产生量化误差。",
+      result: "连续幅值 → 8 个等级",
+      show: ["analog-wave", "sample-guides", "quant-grid", "quantized"]
+    },
+    {
+      title: "4. 编码",
+      text: "8 个量化等级需要 3 bit 编号。每个量化样本被替换为对应的二进制码字。",
+      result: "L = 8 = 2³\n每个样本 3 bit",
+      show: ["sample-guides", "quant-grid", "quantized", "codes"]
+    },
+    {
+      title: "5. 串接码字",
+      text: "按采样时间顺序连接各码字，形成 PCM bit 流。随后还要通过线路编码把 bit 表现为数字波形。",
+      result: "111 100 001 111\n100 001 111 100",
+      show: ["quantized", "codes"]
+    }
+  ];
+
+  const layerIds = ["analog-wave", "sample-guides", "samples", "quant-grid", "quantized", "codes"];
+  let pos = 0;
+  function render() {
+    const step = steps[pos];
+    layerIds.forEach(id => document.getElementById(id).classList.toggle("gone", !step.show.includes(id)));
+    document.getElementById("step-title").textContent = step.title;
+    document.getElementById("step-text").textContent = step.text;
+    document.getElementById("result").textContent = step.result;
+    document.getElementById("status").textContent = `${pos + 1} / ${steps.length}`;
+    document.getElementById("prev").disabled = pos === 0;
+    document.getElementById("next").disabled = pos === steps.length - 1;
+  }
+  function move(delta) {
+    pos = Math.max(0, Math.min(steps.length - 1, pos + delta));
+    render();
+  }
+  document.getElementById("prev").addEventListener("click", () => move(-1));
+  document.getElementById("next").addEventListener("click", () => move(1));
+  document.addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft") move(-1);
+    if (event.key === "ArrowRight") move(1);
+  });
+  render();
+</script>
+</body>
+</html>

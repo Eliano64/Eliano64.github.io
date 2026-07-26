@@ -1,0 +1,353 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>System Call | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="系统调用用户程序不能直接执行特权指令，也不能直接访问受保护的内核数据和设备。当它需要操作系统服务时，应执行系统调用指令，引发同步自陷；CPU 切换到内核态并进入内核的系统调用处理程序，由内核检查参数与权限后完成相应操作，必要时执行特权指令，最后返回用户态。    类型 例子    进程控制 创建进程、终止进程、等待子进程   文件管理 创建、打开、读写、关闭、删除文件   设备管理 请求 I&amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Call">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/10/System-Call/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="系统调用用户程序不能直接执行特权指令，也不能直接访问受保护的内核数据和设备。当它需要操作系统服务时，应执行系统调用指令，引发同步自陷；CPU 切换到内核态并进入内核的系统调用处理程序，由内核检查参数与权限后完成相应操作，必要时执行特权指令，最后返回用户态。    类型 例子    进程控制 创建进程、终止进程、等待子进程   文件管理 创建、打开、读写、关闭、删除文件   设备管理 请求 I&amp;#x">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-10T12:43:08.000Z">
+<meta property="article:modified_time" content="2026-07-24T12:34:14.064Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="OperatingSystemIntroduction">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "System Call",
+  "url": "https://eliano64.github.io/2026/07/10/System-Call/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-10T12:43:08.000Z",
+  "dateModified": "2026-07-24T12:34:14.064Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/10/System-Call/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'System Call',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">297</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">System Call</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">System Call</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-10T12:43:08.000Z" title="发表于 2026-07-10 20:43:08">2026-07-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-24T12:34:14.064Z" title="更新于 2026-07-24 20:34:14">2026-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h1><p>用户程序不能直接执行特权指令，也不能直接访问受保护的内核数据和设备。当它需要操作系统服务时，应执行<strong>系统调用指令</strong>，引发同步<a href="/2026/07/01/Exception-And-Interrupt-Definition/#异常" class="wikilink">自陷</a>；CPU 切换到内核态并进入内核的系统调用处理程序，由内核检查参数与权限后完成相应操作，必要时执行特权指令，最后返回用户态。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>进程控制</td>
+<td>创建进程、终止进程、等待子进程</td>
+</tr>
+<tr>
+<td>文件管理</td>
+<td>创建、打开、读写、关闭、删除文件</td>
+</tr>
+<tr>
+<td>设备管理</td>
+<td>请求 I&#x2F;O、释放设备、获取设备状态</td>
+</tr>
+<tr>
+<td>内存管理</td>
+<td>申请内存、映射文件、调整地址空间</td>
+</tr>
+</tbody></table>
+<h1 id="调用过程"><a href="#调用过程" class="headerlink" title="调用过程"></a>调用过程</h1><p>一次系统调用跨越用户态与内核态：</p>
+<ol>
+<li>用户程序按照约定准备<strong>系统调用号</strong>和参数。</li>
+<li>用户程序在<strong>用户态</strong>执行体系结构规定的<strong>系统调用入口指令</strong>，例如 x86-64 的 <code>syscall</code>、ARM 的 <code>SVC</code>、RISC-V 的 <code>ecall</code>，以及早期 x86&#x2F;Linux 使用的 <code>int 0x80</code>。</li>
+<li>CPU 按照该指令规定的方式完成受控转移：保存必要的返回信息、切换到内核态，并跳转到内核预先设置的系统调用入口。</li>
+<li>系统调用入口检查系统调用号和参数，再分派到对应的内核处理程序。</li>
+<li>内核处理程序执行所请求的服务，将结果或错误码写入约定位置。</li>
+<li>内核执行返回操作，恢复用户程序现场和用户态，用户程序从入口指令之后继续运行。</li>
+</ol>
+<p>一次系统调用中，不同环节所处的状态如下：</p>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>CPU 状态</th>
+<th>执行的操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>发起请求</td>
+<td>用户态</td>
+<td>准备系统调用号和参数，执行 <code>syscall</code> 等入口指令</td>
+</tr>
+<tr>
+<td>进入内核</td>
+<td>状态切换边界</td>
+<td>CPU 保存必要现场、切换特权级，并跳转到内核规定的入口</td>
+</tr>
+<tr>
+<td>处理请求</td>
+<td>内核态</td>
+<td>内核检查参数和权限，执行系统调用服务；需要时执行特权指令</td>
+</tr>
+<tr>
+<td>返回用户程序</td>
+<td>内核态到用户态</td>
+<td>内核恢复现场并执行返回操作，用户程序继续运行</td>
+</tr>
+</tbody></table>
+<p>用户程序主动请求进入内核属于<strong>同步控制转移</strong>，它由当前执行的指令触发，与外部设备异步产生的中断不同。这种受控进入内核的过程抽象即为 <strong>trap（自陷）</strong>。CPU 状态和切换条件见 <a href="/2026/07/10/CPU-Modes/" class="wikilink">CPU-Modes</a>，同步异常的分类见 <a href="/2026/07/01/Exception-And-Interrupt-Definition/#异常" class="wikilink">异常</a>。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">用户程序不能自行修改特权级</span></div>
+<div class="callout-content"><p>系统调用入口指令只负责发出受控请求。真正的状态切换、入口选择和现场保护由硬件按照预设规则完成，用户程序不能指定任意内核入口，也不能直接把 CPU 改为内核态。</p>
+</div>
+</div>
+<h1 id="system-call-neq-syscall"><a href="#system-call-neq-syscall" class="headerlink" title="system call $\neq$ syscall"></a>system call $\neq$ syscall</h1><div class="callout callout-danger">
+<div class="callout-title"><i class="fa-solid fa-bolt callout-icon"></i><span class="callout-title-text">`system call` 不等于 `syscall`</span></div>
+<div class="callout-content"><ul>
+<li><strong>system call</strong> 是一套完整机制流程，包括用户发出请求、进入内核、执行内核服务和返回用户态，在用户态被调用，在内核态执行。</li>
+<li><strong><code>syscall</code></strong> 属于非特权指令，是用户程序进入内核的入口，即<a href="/2026/07/01/Exception-And-Interrupt-Definition/#异常" class="wikilink">trap</a>，调用与执行都在用户态。</li>
+</ul>
+<p><strong>后者不是前者的简写！！！二者完全不是同一个概念！！！</strong></p>
+</div>
+</div>
+<h1 id="库函数"><a href="#库函数" class="headerlink" title="库函数"></a>库函数</h1><p><strong>调用库函数不等于发起系统调用。</strong> 库函数是程序调用的普通函数接口，是否进入内核取决于其实现：</p>
+<ul>
+<li>数学计算、字符串处理等库函数通常完全在用户态执行。</li>
+<li>文件创建、进程创建、网络读写等库函数通常封装一个或多个系统调用。</li>
+<li>一个库函数可能在用户态完成部分工作，只在必要时进入内核。例如带缓冲的输出函数可以先把数据写入用户态缓冲区，缓冲区需要提交时才调用内核写接口。</li>
+</ul>
+<p>因此，调用库函数是语言或运行库层面的函数调用；执行系统调用则意味着通过受控入口请求操作系统服务，并发生用户态到内核态的切换。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/10/System-Call/">https://eliano64.github.io/2026/07/10/System-Call/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/10/OS-Overview/" title="OS Overview"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">OS Overview</div></div><div class="info-2"><div class="info-item-1">操作系统是什么操作系统是控制和管理整个计算机系统硬件与软件资源的系统软件。它组织调度计算机工作，分配系统资源，并向用户和应用程序提供接口和运行环境。 从层次上看：     位置 作用    向下 管理 CPU、内存、磁盘、I&#x2F;O 设备等硬件资源   向上 向用户和应用程序提供方便易用的接口   中间 把裸机扩展成更易用、更安全、更强的机器   操作系统的三个核心定位：  系统资源的管理者：管理处理机、存储器、文件和设备。 向上层提供服务：提供命令接口、程序接口、图形界面等。 最接近硬件的软件层：直接处理时钟、中断、设备驱动、CPU 状态切换等底层机制。   扩充机器 裸机只提供硬件能力。操作系统把硬件能力组织起来，提供进程、文件、虚拟内存、设备抽象等机制，使用户看到的是一台更方便的“扩充机器”。   操作系统的发展历程操作系统的演进始终围绕几组矛盾展开：人工操作跟不上机器速度、CPU 与 I&#x2F;O...</div></div></div></a><a class="pagination-related" href="/2026/07/10/Network-Performance-Metrics/" title="Network Performance Metrics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Network Performance Metrics</div></div><div class="info-2"><div class="info-item-1">性能指标总览   指标 关注的问题    速率 数据传送有多快   带宽 链路理论上能传多快   吞吐量 实际通过了多少数据   时延 一个分组从发送到到达要多久   时延带宽积 链路中能同时“容纳”多少比特   RTT 一次往返交互要多久   利用率 链路或网络有多少时间处于忙碌状态   丢包率 有多少分组丢失   速率速率是数据的传送速率，也称数据率或比特率，基本单位是 bit/s。    单位 含义    kb/s $10^3$ bit&#x2F;s   Mb/s $10^6$ bit&#x2F;s   Gb/s $10^9$ bit&#x2F;s   Tb/s $10^{12}$ bit&#x2F;s    速率单位通常按 10 进制换算 计算机组成原理、操作系统里讨论存储容量时，KB、MB、GB 常按 $2^{10}$ 进位理解；计算机网络里讨论速率时，kb/s、Mb/s、Gb/s 通常按 $10^3$ 进位理解。例如 $1\text{ Mb&#x2F;s}&#x3D;10^6\text{ bit&#x2F;s}$，不是 $2^{20}\text{...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">297</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-text">系统调用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B0%83%E7%94%A8%E8%BF%87%E7%A8%8B"><span class="toc-text">调用过程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#system-call-neq-syscall"><span class="toc-text">system call $\neq$ syscall</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BA%93%E5%87%BD%E6%95%B0"><span class="toc-text">库函数</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Basic-Graphs-Of-A-Function/" title="Basic Graphs Of A Function">Basic Graphs Of A Function</a><time datetime="2026-07-26T07:46:23.000Z" title="发表于 2026-07-26 15:46:23">2026-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Improper-integral/" title="Improper integral">Improper integral</a><time datetime="2026-07-26T05:22:43.000Z" title="发表于 2026-07-26 13:22:43">2026-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Mean-Value-Theorem/" title="Mean Value Theorem">Mean Value Theorem</a><time datetime="2026-07-26T04:28:06.000Z" title="发表于 2026-07-26 12:28:06">2026-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/24/Number-In-Machine/" title="Number In Machine">Number In Machine</a><time datetime="2026-07-24T11:48:36.000Z" title="发表于 2026-07-24 19:48:36">2026-07-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/24/Number-In-C/" title="Number In C">Number In C</a><time datetime="2026-07-24T11:43:27.000Z" title="发表于 2026-07-24 19:43:27">2026-07-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

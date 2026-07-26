@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420" role="img" aria-labelledby="title desc">
+  <title id="title">父子进程创建关系</title>
+  <desc id="desc">Unix fork 与 Windows CreateProcess 创建子进程的方式不同，但子进程都是独立调度、拥有独立进程标识的进程。</desc>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--fg:#111827;--muted:#64748b;--line:#94a3b8;--blue:#dbeafe;--green:#dcfce7;--amber:#fef3c7;--accent:#2563eb}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--line:#64748b;--blue:#1e3a8a;--green:#14532d;--amber:#713f12;--accent:#60a5fa}}
+    .bg{fill:var(--bg)}.box{stroke:var(--line);stroke-width:2}.blue{fill:var(--blue)}.green{fill:var(--green)}.amber{fill:var(--amber)}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--fg)}.title{font-size:24px;font-weight:700}.h{font-size:19px;font-weight:700}.t{font-size:16px}.small{font-size:16px;fill:var(--muted)}.arrow{stroke:var(--accent);stroke-width:3;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--accent)"/></marker></defs>
+  <rect class="bg" width="980" height="420"/>
+  <text class="title" x="490" y="40" text-anchor="middle">父子关系描述“由谁创建”，不表示子进程从属于父进程运行</text>
+
+  <text class="h" x="245" y="88" text-anchor="middle">Unix：fork 模型</text>
+  <rect class="box blue" x="45" y="112" width="150" height="88" rx="10"/>
+  <text class="h" x="120" y="147" text-anchor="middle">父进程</text>
+  <text class="small" x="120" y="175" text-anchor="middle">PID = P</text>
+  <path class="arrow" d="M195 156 L300 156"/>
+  <text class="t" x="247" y="140" text-anchor="middle">fork()</text>
+  <rect class="box green" x="300" y="112" width="155" height="88" rx="10"/>
+  <text class="h" x="378" y="147" text-anchor="middle">子进程</text>
+  <text class="small" x="378" y="175" text-anchor="middle">新 PID，PPID = P</text>
+  <path class="arrow" d="M378 200 L378 270"/>
+  <text class="t" x="397" y="240">可选 exec()</text>
+  <rect class="box amber" x="300" y="270" width="155" height="76" rx="10"/>
+  <text class="h" x="378" y="303" text-anchor="middle">装入新程序</text>
+  <text class="small" x="378" y="328" text-anchor="middle">替换原地址空间内容</text>
+  <text class="small" x="245" y="380" text-anchor="middle">fork 后父子地址空间逻辑独立，常用写时复制延迟物理页复制</text>
+
+  <text class="h" x="735" y="88" text-anchor="middle">Windows：CreateProcess 模型</text>
+  <rect class="box blue" x="515" y="112" width="140" height="88" rx="10"/>
+  <text class="h" x="585" y="147" text-anchor="middle">父进程</text>
+  <text class="small" x="585" y="175" text-anchor="middle">发起创建请求</text>
+  <path class="arrow" d="M655 156 L810 156"/>
+  <text class="t" x="733" y="136" text-anchor="middle">CreateProcess</text>
+  <rect class="box green" x="810" y="112" width="145" height="118" rx="10"/>
+  <text class="h" x="883" y="147" text-anchor="middle">子进程</text>
+  <text class="small" x="883" y="175" text-anchor="middle">新地址空间</text>
+  <text class="small" x="883" y="201" text-anchor="middle">主线程 + 指定程序</text>
+  <text class="small" x="735" y="286" text-anchor="middle">不是先复制父进程地址空间再替换</text>
+  <text class="small" x="735" y="380" text-anchor="middle">两种模型中，父子进程都有各自 PID，并由系统分别调度</text>
+</svg>

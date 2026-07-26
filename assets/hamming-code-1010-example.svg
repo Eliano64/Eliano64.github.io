@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 880" role="img" aria-labelledby="title desc">
+  <title id="title">海明码七四编码与单比特纠错示例</title>
+  <desc id="desc">采用偶校验，将信息位 D4D3D2D1 等于 1010 编成海明码 1010010，并演示第五位翻转后用校验症候定位和纠正。</desc>
+  <style>
+    :root { color-scheme: light dark; }
+    .bg { fill: #f7f9fc; }
+    .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+    .grid { stroke: #cbd5e1; stroke-width: 1.5; }
+    .text { fill: #172033; font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+    .muted { fill: #536279; }
+    .head { fill: #e8eef7; }
+    .data { fill: #eaf4ff; }
+    .parity { fill: #fff0cc; }
+    .error { fill: #fee2e2; stroke: #ef4444; stroke-width: 2.5; }
+    .good { fill: #dcfce7; stroke: #16a34a; stroke-width: 2; }
+    .accent { fill: #2563eb; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0f1722; }
+      .panel { fill: #162230; stroke: #334155; }
+      .grid { stroke: #405066; }
+      .text { fill: #f3f6fb; }
+      .muted { fill: #b8c5d8; }
+      .head { fill: #243449; }
+      .data { fill: #173554; }
+      .parity { fill: #5a4212; }
+      .error { fill: #542121; stroke: #fb7185; }
+      .good { fill: #143d2a; stroke: #4ade80; }
+      .accent { fill: #60a5fa; }
+    }
+  </style>
+
+  <rect class="bg" width="1000" height="880" rx="18"/>
+  <text class="text" x="50" y="54" font-size="30" font-weight="700">(7,4) 海明码：从编码到纠错</text>
+  <text class="muted" x="50" y="87" font-size="18">约定：偶校验；信息写作 D₄D₃D₂D₁ = 1010；码字按 H₇…H₁（高位到低位）书写。</text>
+
+  <rect class="panel" x="40" y="112" width="920" height="250" rx="14"/>
+  <text class="text" x="65" y="148" font-size="22" font-weight="700">① 放置数据位，计算校验位</text>
+  <text class="muted" x="65" y="179" font-size="17">D₁=0，D₂=1，D₃=0，D₄=1；校验位放在 H₁、H₂、H₄。</text>
+  <g class="text" font-size="18" text-anchor="middle">
+    <g class="head"><rect x="100" y="202" width="112" height="48"/><rect x="212" y="202" width="112" height="48"/><rect x="324" y="202" width="112" height="48"/><rect x="436" y="202" width="112" height="48"/><rect x="548" y="202" width="112" height="48"/><rect x="660" y="202" width="112" height="48"/><rect x="772" y="202" width="112" height="48"/></g>
+    <g class="data"><rect x="100" y="250" width="112" height="48"/><rect x="212" y="250" width="112" height="48"/><rect x="324" y="250" width="112" height="48"/><rect x="548" y="250" width="112" height="48"/></g>
+    <g class="parity"><rect x="436" y="250" width="112" height="48"/><rect x="660" y="250" width="112" height="48"/><rect x="772" y="250" width="112" height="48"/></g>
+    <g class="grid" fill="none"><rect x="100" y="202" width="784" height="144"/><path d="M100 250H884 M100 298H884 M212 202V346 M324 202V346 M436 202V346 M548 202V346 M660 202V346 M772 202V346"/></g>
+    <text x="156" y="233">H₇</text><text x="268" y="233">H₆</text><text x="380" y="233">H₅</text><text x="492" y="233">H₄</text><text x="604" y="233">H₃</text><text x="716" y="233">H₂</text><text x="828" y="233">H₁</text>
+    <text x="156" y="281">D₄</text><text x="268" y="281">D₃</text><text x="380" y="281">D₂</text><text x="492" y="281">P₃</text><text x="604" y="281">D₁</text><text x="716" y="281">P₂</text><text x="828" y="281">P₁</text>
+    <text x="156" y="329" font-size="22" font-weight="700">1</text><text x="268" y="329" font-size="22" font-weight="700">0</text><text x="380" y="329" font-size="22" font-weight="700">1</text><text x="492" y="329" font-size="22" font-weight="700">0</text><text x="604" y="329" font-size="22" font-weight="700">0</text><text x="716" y="329" font-size="22" font-weight="700">1</text><text x="828" y="329" font-size="22" font-weight="700">0</text>
+  </g>
+
+  <rect class="panel" x="40" y="384" width="920" height="156" rx="14"/>
+  <text class="text" x="65" y="420" font-size="22" font-weight="700">偶校验方程</text>
+  <g class="text" font-size="18">
+    <text x="76" y="457">P₁ ⊕ D₁ ⊕ D₂ ⊕ D₄ = 0　→　P₁ = 0</text>
+    <text x="76" y="491">P₂ ⊕ D₁ ⊕ D₃ ⊕ D₄ = 0　→　P₂ = 1</text>
+    <text x="76" y="525">P₃ ⊕ D₂ ⊕ D₃ ⊕ D₄ = 0　→　P₃ = 0</text>
+    <text x="640" y="468" class="muted">发送码字</text>
+    <text x="640" y="512" class="accent" font-size="32" font-weight="700">H₇…H₁ = 1010010</text>
+  </g>
+
+  <rect class="panel" x="40" y="562" width="920" height="270" rx="14"/>
+  <text class="text" x="65" y="600" font-size="22" font-weight="700">② 假设 H₅ 在传输中翻转</text>
+  <text class="muted" x="65" y="631" font-size="17">收到 1000010。重新检查三组奇偶性，得到症候位 S₁、S₂、S₃。</text>
+  <g class="text" font-size="18">
+    <text x="76" y="674">S₁ = H₁ ⊕ H₃ ⊕ H₅ ⊕ H₇ = 1</text>
+    <text x="76" y="709">S₂ = H₂ ⊕ H₃ ⊕ H₆ ⊕ H₇ = 0</text>
+    <text x="76" y="744">S₃ = H₄ ⊕ H₅ ⊕ H₆ ⊕ H₇ = 1</text>
+  </g>
+  <rect class="error" x="560" y="651" width="350" height="66" rx="12"/>
+  <text class="text" x="735" y="692" font-size="24" font-weight="700" text-anchor="middle">S₃S₂S₁ = 101₂ = 5</text>
+  <path d="M735 719V747" stroke="#64748b" stroke-width="3"/>
+  <path d="M727 740L735 750L743 740" fill="none" stroke="#64748b" stroke-width="3"/>
+  <rect class="good" x="560" y="751" width="350" height="58" rx="12"/>
+  <text class="text" x="735" y="787" font-size="20" font-weight="700" text-anchor="middle">翻转 H₅，恢复 1010010</text>
+
+  <text class="muted" x="50" y="862" font-size="17">症候值就是错误位置编号；症候为 0 表示未检测到单比特错误。</text>
+</svg>

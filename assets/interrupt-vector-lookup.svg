@@ -1,38 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 420" role="img" aria-labelledby="title desc">
-  <title id="title">Interrupt Vector Lookup</title>
-  <desc id="desc">Interrupt type number maps to vector address, which contains the kernel interrupt service routine entry address.</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706}
-    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24}}
-    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.hit{fill:var(--orange);opacity:.2;stroke:var(--orange);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#arrow)}.ga{stroke:var(--green);stroke-width:3;fill:none;marker-end:url(#garrow)}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" role="img" aria-labelledby="title desc">
+  <title id="title">中断向量表从创建到查找</title>
+  <desc id="desc">展示固件临时表、内核最终表、驱动注册、中断控制器映射以及 CPU 按向量号查表进入处理程序的过程。</desc>
+  <style>
+    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#5c6a7c;--line:#94a3b8;--blue:#2563eb;--green:#059669;--amber:#d97706;--red:#dc2626;--purple:#7c3aed}
+    @media(prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#162131;--text:#eef2f7;--muted:#b5c0cf;--line:#64748b;--blue:#60a5fa;--green:#34d399;--amber:#fbbf24;--red:#fb7185;--purple:#a78bfa}}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:var(--text)}.bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.title{font-size:28px;font-weight:700}.sub{font-size:14px;fill:var(--muted)}.box-title{font-size:17px;font-weight:700;text-anchor:middle}.body{font-size:13px;fill:var(--muted);text-anchor:middle}.step{font-size:13px;font-weight:700;text-anchor:middle}.arrow{fill:none;stroke:var(--blue);stroke-width:2.5;marker-end:url(#arrow)}.flow{fill:none;stroke:var(--green);stroke-width:2.5;marker-end:url(#greenArrow)}.entry{fill:var(--bg);stroke:var(--line);stroke-width:1.3}.hit{fill:color-mix(in srgb,var(--amber) 18%,var(--panel));stroke:var(--amber);stroke-width:2}.label{font-size:13px;font-weight:700;text-anchor:middle}.tiny{font-size:12px;fill:var(--muted);text-anchor:middle}.warning{fill:color-mix(in srgb,var(--red) 10%,var(--panel));stroke:var(--red);stroke-width:1.5}
   </style>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker>
-    <marker id="garrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--green)"/></marker>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L0 6L9 3Z" fill="context-stroke"/></marker>
+    <marker id="greenArrow" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L0 6L9 3Z" fill="context-stroke"/></marker>
   </defs>
-  <rect class="bg" width="1040" height="420"/>
-  <text class="t" x="520" y="40" text-anchor="middle" font-size="24" font-weight="700">中断向量查找</text>
-  <text class="m" x="520" y="68" text-anchor="middle" font-size="15">CPU 根据中断类型号找到内核处理程序入口，并把入口地址送入 PC</text>
 
-  <rect class="box" x="70" y="150" width="190" height="92" rx="8"/>
-  <text class="t" x="165" y="184" text-anchor="middle" font-size="17" font-weight="700">中断源</text>
-  <text class="m" x="165" y="212" text-anchor="middle" font-size="14">给出中断类型号</text>
+  <rect class="bg" width="1000" height="760" rx="18"/>
+  <text class="title" x="35" y="43">中断向量表：先创建，再开放中断，运行时按号查表</text>
+  <text class="sub" x="35" y="68">硬件规定表的使用方式；固件建立早期环境；操作系统建立最终表并管理处理程序</text>
 
-  <rect class="box" x="350" y="105" width="230" height="210" rx="8"/>
-  <text class="t" x="465" y="136" text-anchor="middle" font-size="17" font-weight="700">中断向量表</text>
-  <rect class="box" x="380" y="162" width="170" height="32" rx="4"/><text class="m" x="465" y="184" text-anchor="middle" font-size="13">类型 0 -> 入口 A</text>
-  <rect class="hit" x="380" y="202" width="170" height="34" rx="4"/><text class="t" x="465" y="224" text-anchor="middle" font-size="13" font-weight="700">类型 n -> 入口 X</text>
-  <rect class="box" x="380" y="244" width="170" height="32" rx="4"/><text class="m" x="465" y="266" text-anchor="middle" font-size="13">类型 n+1 -> 入口 Y</text>
+  <text class="step" x="70" y="104" fill="var(--blue)">启动阶段</text>
+  <g transform="translate(35 122)">
+    <rect class="panel" width="205" height="128" rx="13" stroke="var(--amber)"/>
+    <text class="box-title" x="102" y="31">① 固件 / BIOS</text>
+    <text class="body" x="102" y="59">建立临时中断表和基础入口</text>
+    <text class="body" x="102" y="83">支持启动期的基本输入输出</text>
+    <text class="body" x="102" y="107">为内核接管机器提供早期环境</text>
+  </g>
+  <path class="arrow" d="M240 186H275"/>
+  <g transform="translate(275 122)">
+    <rect class="panel" width="205" height="128" rx="13" stroke="var(--purple)"/>
+    <text class="box-title" x="102" y="31">② 内核早期入口</text>
+    <text class="body" x="102" y="59">保持中断屏蔽或受控</text>
+    <text class="body" x="102" y="83">先安装最小异常处理入口</text>
+    <text class="body" x="102" y="107">避免初始化期间无入口可用</text>
+  </g>
+  <path class="arrow" d="M480 186H515"/>
+  <g transform="translate(515 122)">
+    <rect class="panel" width="205" height="128" rx="13" stroke="var(--green)"/>
+    <text class="box-title" x="102" y="31">③ 建立最终向量表</text>
+    <text class="body" x="102" y="59">预先准备固定数量的表项</text>
+    <text class="body" x="102" y="83">填入异常、默认及中断入口</text>
+    <text class="body" x="102" y="107">装入 IDTR / VBAR 等基址寄存器</text>
+  </g>
+  <path class="arrow" d="M720 186H755"/>
+  <g transform="translate(755 122)">
+    <rect class="panel" width="210" height="128" rx="13" stroke="var(--blue)"/>
+    <text class="box-title" x="105" y="31">④ 配置并开放中断</text>
+    <text class="body" x="105" y="59">中断控制器分配 IRQ → 向量号</text>
+    <text class="body" x="105" y="83">驱动登记自己的处理程序</text>
+    <text class="body" x="105" y="107">准备完成后解除相应中断屏蔽</text>
+  </g>
 
-  <rect class="box" x="690" y="150" width="250" height="92" rx="8"/>
-  <text class="t" x="815" y="184" text-anchor="middle" font-size="17" font-weight="700">内核服务程序入口</text>
-  <text class="m" x="815" y="212" text-anchor="middle" font-size="14">入口地址装入 PC</text>
+  <rect class="warning" x="100" y="276" width="800" height="44" rx="9"/>
+  <text class="label" x="500" y="303" fill="var(--red)">向量表必须在相应中断被允许发生之前可用；“注册新处理程序”通常是更新既有表项或二级分派关系</text>
 
-  <path class="a" d="M260 196 H350"/>
-  <path class="ga" d="M580 219 H690"/>
-  <text class="m" x="305" y="184" text-anchor="middle" font-size="13">类型号</text>
-  <text class="m" x="635" y="207" text-anchor="middle" font-size="13">入口地址</text>
+  <text class="step" x="70" y="359" fill="var(--green)">运行阶段</text>
+
+  <g transform="translate(35 380)">
+    <rect class="panel" width="185" height="106" rx="12" stroke="var(--blue)"/>
+    <text class="box-title" x="92" y="32">中断源 / 异常</text>
+    <text class="body" x="92" y="60">产生向量号 i</text>
+    <text class="body" x="92" y="84">例如 i = 33</text>
+  </g>
+  <path class="flow" d="M220 433H270"/>
+  <text class="tiny" x="245" y="419">向量号</text>
+
+  <g transform="translate(270 348)">
+    <rect class="panel" width="310" height="255" rx="13"/>
+    <text class="box-title" x="155" y="30">中断向量表 / IDT</text>
+    <text class="tiny" x="155" y="51">基址 B 由专用寄存器保存；每项大小为 S</text>
+    <rect class="entry" x="35" y="67" width="240" height="35" rx="5"/><text class="tiny" x="155" y="89">表项 0：异常入口与属性</text>
+    <rect class="entry" x="35" y="108" width="240" height="35" rx="5"/><text class="tiny" x="155" y="130">…</text>
+    <rect class="hit" x="35" y="149" width="240" height="45" rx="5"/><text class="label" x="155" y="169">表项 i</text><text class="tiny" x="155" y="187">入口信息 + 控制属性</text>
+    <rect class="entry" x="35" y="200" width="240" height="35" rx="5"/><text class="tiny" x="155" y="222">表项 i+1</text>
+    <text class="label" x="155" y="251" fill="var(--amber)">表项地址 = B + i × S</text>
+  </g>
+
+  <path class="flow" d="M580 476H630"/>
+  <text class="tiny" x="605" y="461">读取表项</text>
+
+  <g transform="translate(630 380)">
+    <rect class="panel" width="335" height="106" rx="12" stroke="var(--green)"/>
+    <text class="box-title" x="167" y="29">内核中断入口</text>
+    <text class="body" x="167" y="56">CPU 装载表项给出的入口信息</text>
+    <text class="body" x="167" y="80">保存现场后转入统一入口或具体处理程序</text>
+  </g>
+
+  <path class="flow" d="M797 486V532"/>
+  <g transform="translate(630 532)">
+    <rect class="panel" width="335" height="72" rx="12" stroke="var(--purple)"/>
+    <text class="box-title" x="167" y="29">驱动处理程序 / 内核服务程序</text>
+    <text class="body" x="167" y="53">处理中断原因，随后恢复被中断程序</text>
+  </g>
+
+  <g transform="translate(35 628)">
+    <rect class="panel" width="930" height="94" rx="13"/>
+    <text class="box-title" x="465" y="29">注册处理程序时究竟发生什么</text>
+    <text class="body" x="465" y="55">向量表的槽位和基本结构早已建立；内核把某个向量关联到统一入口、设备驱动或共享中断处理链</text>
+    <text class="body" x="465" y="78">因此：注册新的中断类型或驱动 ≠ 此时才临时创建一个向量表项</text>
+  </g>
+
+  <text class="sub" x="500" y="747" text-anchor="middle">创建者、表项布局和寄存器名称因体系结构而异；上图展示的是共同逻辑，x86 的具体表称为 IDT</text>
 </svg>

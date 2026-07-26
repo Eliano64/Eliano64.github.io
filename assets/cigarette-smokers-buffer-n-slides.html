@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capacity N Cigarette Smokers</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#fff;--fg:#111827;--muted:#475569;--line:#94a3b8;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--amber:#d97706;--purple:#7c3aed;--red:#dc2626;--soft-blue:#eff6ff;--soft-green:#ecfdf5;--soft-amber:#fff7ed;--soft-purple:#f5f3ff;--soft-red:#fef2f2;--empty:#f1f5f9}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#64748b;--panel:#111827;--blue:#60a5fa;--green:#34d399;--amber:#fbbf24;--purple:#a78bfa;--red:#f87171;--soft-blue:#13233d;--soft-green:#102c26;--soft-amber:#332411;--soft-purple:#241b3d;--soft-red:#291418;--empty:#172033}}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.deck{max-width:1040px;margin:0 auto;padding:16px 20px 18px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px}h1{margin:0;font-size:24px}.nav{display:flex;align-items:center;gap:8px;flex:0 0 auto}.progress{min-width:48px;text-align:center;color:var(--muted);font-size:14px}button{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:7px;padding:7px 11px;font-size:14px;cursor:pointer}.stage{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:10px 12px}svg{display:block;width:100%;height:auto;max-height:430px}.base{fill:var(--bg);stroke:var(--line);stroke-width:2}.provider{fill:var(--soft-purple);stroke:var(--purple);stroke-width:2.5}.smoker{fill:var(--bg);stroke-width:2.5}.s1{stroke:var(--green)}.s2{stroke:var(--blue)}.s3{stroke:var(--amber)}.slot{stroke-width:2}.type1{fill:var(--soft-green);stroke:var(--green)}.type2{fill:var(--soft-blue);stroke:var(--blue)}.type3{fill:var(--soft-amber);stroke:var(--amber)}.vacant{fill:var(--empty);stroke:var(--line);stroke-dasharray:6 4}.sem{fill:var(--bg);stroke:var(--line);stroke-width:2}.txt{fill:var(--fg)}.muted{fill:var(--muted)}.flow{fill:none;stroke-width:4;marker-end:url(#arrow)}.purple{stroke:var(--purple)}.blue{stroke:var(--blue)}.green{stroke:var(--green)}.red{stroke:var(--red);stroke-dasharray:7 5}.hidden{display:none}.dim{opacity:.2}.active rect,.active.base,.active.sem{stroke-width:4}.explain{display:grid;grid-template-columns:1.35fr .9fr;gap:12px;margin-top:10px}.text,.code{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:11px 13px;min-height:92px}.text h2{margin:0 0 5px;font-size:19px}.text p{margin:0;color:var(--muted);font-size:15px;line-height:1.55}.code{white-space:pre-wrap;font:14px/1.5 Consolas,"Courier New",monospace;color:var(--fg)}@media(max-width:680px){.deck{padding:12px}.top{align-items:flex-start;flex-wrap:wrap}h1{font-size:20px}.explain{grid-template-columns:1fr}.code{min-height:64px}}
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header class="top">
+      <h1>吸烟者问题：容量为 N</h1>
+      <div class="nav"><button id="prev" type="button">上一步</button><span id="progress" class="progress"></span><button id="next" type="button">下一步</button></div>
+    </header>
+    <section class="stage">
+      <svg viewBox="0 0 1000 450" role="img" aria-label="容量为 N 的吸烟者问题同步过程">
+        <defs><marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="context-stroke"></path></marker></defs>
+        <g id="provider" class="node"><rect class="provider" x="28" y="151" width="170" height="94" rx="11"></rect><text class="txt" x="113" y="187" text-anchor="middle" font-size="19" font-weight="700">供应者</text><text class="muted" x="113" y="216" text-anchor="middle" font-size="14">k = produce()</text></g>
+        <g id="buffer" class="node"><rect class="base" x="278" y="54" width="424" height="292" rx="13"></rect><text class="txt" x="490" y="88" text-anchor="middle" font-size="20" font-weight="700">共享缓冲区：N 个槽位</text></g>
+        <g id="slot1" class="node"><rect class="slot type1" x="314" y="111" width="156" height="57" rx="7"></rect><text class="txt" x="392" y="136" text-anchor="middle" font-size="14" font-weight="700">组合 1</text><text class="muted" x="392" y="156" text-anchor="middle" font-size="12">纸 + 胶水</text></g>
+        <g id="slot2" class="node"><rect class="slot type2" x="510" y="111" width="156" height="57" rx="7"></rect><text class="txt" x="588" y="136" text-anchor="middle" font-size="14" font-weight="700">组合 2</text><text class="muted" x="588" y="156" text-anchor="middle" font-size="12">烟草 + 胶水</text></g>
+        <g id="slot3" class="node"><rect class="slot vacant" x="314" y="188" width="156" height="57" rx="7"></rect><text class="muted" x="392" y="223" text-anchor="middle" font-size="14">空槽</text></g>
+        <g id="slot4" class="node"><rect class="slot type3" x="510" y="188" width="156" height="57" rx="7"></rect><text class="txt" x="588" y="213" text-anchor="middle" font-size="14" font-weight="700">组合 3</text><text class="muted" x="588" y="233" text-anchor="middle" font-size="12">烟草 + 纸</text></g>
+        <g id="slot5" class="node"><rect class="slot vacant" x="314" y="265" width="156" height="57" rx="7"></rect><text class="muted" x="392" y="300" text-anchor="middle" font-size="14">空槽</text></g>
+        <g id="slot6" class="node"><rect class="slot vacant" x="510" y="265" width="156" height="57" rx="7"></rect><text class="muted" x="588" y="300" text-anchor="middle" font-size="14">… 第 N 个槽位</text></g>
+        <g id="s1" class="node"><rect class="smoker s1" x="808" y="48" width="164" height="76" rx="9"></rect><text class="txt" x="890" y="80" text-anchor="middle" font-size="17" font-weight="700">吸烟者 1</text><text class="muted" x="890" y="104" text-anchor="middle" font-size="13">P(offer1)</text></g>
+        <g id="s2" class="node"><rect class="smoker s2" x="808" y="161" width="164" height="76" rx="9"></rect><text class="txt" x="890" y="193" text-anchor="middle" font-size="17" font-weight="700">吸烟者 2</text><text class="muted" x="890" y="217" text-anchor="middle" font-size="13">P(offer2)</text></g>
+        <g id="s3" class="node"><rect class="smoker s3" x="808" y="274" width="164" height="76" rx="9"></rect><text class="txt" x="890" y="306" text-anchor="middle" font-size="17" font-weight="700">吸烟者 3</text><text class="muted" x="890" y="330" text-anchor="middle" font-size="13">P(offer3)</text></g>
+        <g id="empty" class="node"><rect class="sem" x="225" y="379" width="190" height="48" rx="8"></rect><text class="txt" x="320" y="409" text-anchor="middle" font-size="15" font-weight="700">empty = N − used</text></g>
+        <g id="mutex" class="node"><rect class="sem" x="430" y="379" width="140" height="48" rx="8"></rect><text class="txt" x="500" y="409" text-anchor="middle" font-size="15" font-weight="700">mutex = 1</text></g>
+        <g id="offers" class="node"><rect class="sem" x="585" y="379" width="235" height="48" rx="8"></rect><text class="txt" x="702" y="409" text-anchor="middle" font-size="14" font-weight="700">offer1 / offer2 / offer3</text></g>
+        <path id="put" class="flow purple hidden" d="M198 198 H278"></path><text id="putLabel" class="muted hidden" x="238" y="181" text-anchor="middle" font-size="12">放入组合 2</text>
+        <path id="notify" class="flow blue hidden" d="M702 170 C748 170 765 199 808 199"></path><text id="notifyLabel" class="muted hidden" x="755" y="179" text-anchor="middle" font-size="12">V(offer2)</text>
+        <path id="take" class="flow blue hidden" d="M808 213 C760 230 742 244 702 244"></path><text id="takeLabel" class="muted hidden" x="754" y="252" text-anchor="middle" font-size="12">取走组合 2</text>
+        <path id="release" class="flow green hidden" d="M510 323 C485 350 420 367 368 379"></path><text id="releaseLabel" class="muted hidden" x="430" y="352" text-anchor="middle" font-size="12">V(empty)</text>
+        <path id="wrong" class="flow red hidden" d="M500 379 C410 350 320 350 320 379"></path><text id="wrongLabel" class="txt hidden" x="410" y="346" text-anchor="middle" font-size="13" font-weight="700">错误：持有 mutex 等待 empty</text>
+      </svg>
+      <div class="explain"><div class="text"><h2 id="title"></h2><p id="body"></p></div><div id="code" class="code"></div></div>
+    </section>
+  </div>
+  <script>
+    const nodeIds=["provider","buffer","slot1","slot2","slot3","slot4","slot5","slot6","s1","s2","s3","empty","mutex","offers"];
+    const flowIds=["put","putLabel","notify","notifyLabel","take","takeLabel","release","releaseLabel","wrong","wrongLabel"];
+    const steps=[
+      {title:"初始状态",body:"empty=N，mutex=1，三个 offer 均为 0。每个 offer 是计数信号量，记录对应组合的库存。",code:"empty = N\nmutex = 1\noffer1 = offer2 = offer3 = 0",active:["buffer","empty","mutex","offers"],show:[]},
+      {title:"供应者占用一个空槽",body:"供应者必须先 P(empty)，再 P(mutex)。获得槽位和互斥权后，才能修改共享缓冲区。",code:"k = 2\nP(empty)\nP(mutex)\nput(type2)",active:["provider","buffer","slot2","empty","mutex"],show:["put","putLabel"]},
+      {title:"公布新组合",body:"组合完整写入后先释放 mutex，再 V(offer2)。吸烟者 2 此后才能通过 P(offer2)。",code:"V(mutex)\nV(offer2)",active:["buffer","slot2","s2","offers"],show:["notify","notifyLabel"]},
+      {title:"对应吸烟者取走组合",body:"吸烟者 2 先 P(offer2)，再取得 mutex，从缓冲区删除一组类型 2 的材料。",code:"P(offer2)\nP(mutex)\ntake(type2)\nV(mutex)",active:["buffer","slot2","s2","mutex","offers"],show:["take","takeLabel"]},
+      {title:"离开缓冲区就释放槽位",body:"材料一旦取走，槽位已经空闲，应立即 V(empty)。卷烟和吸烟在缓冲区外进行，供应者可以同时继续生产。",code:"V(empty)\nsmoke()",active:["slot2","s2","empty"],show:["release","releaseLabel"]},
+      {title:"不能拿着 mutex 等待条件",body:"若先 P(mutex) 再等待 empty 或 offer[k]，会阻止其他进程进入缓冲区改变这些条件，可能形成死锁。",code:"错误：P(mutex); P(empty)\n正确：P(empty); P(mutex)",active:["provider","empty","mutex"],show:["wrong","wrongLabel"]}
+    ];
+    let index=Math.min(Math.max((Number(new URLSearchParams(location.search).get("step"))||1)-1,0),steps.length-1);
+    function render(){const step=steps[index];document.getElementById("progress").textContent=`${index+1} / ${steps.length}`;document.getElementById("title").textContent=step.title;document.getElementById("body").textContent=step.body;document.getElementById("code").textContent=step.code;nodeIds.forEach(id=>{const el=document.getElementById(id);el.classList.toggle("dim",!step.active.includes(id));el.classList.toggle("active",step.active.includes(id))});flowIds.forEach(id=>document.getElementById(id).classList.add("hidden"));step.show.forEach(id=>document.getElementById(id).classList.remove("hidden"))}
+    document.getElementById("prev").addEventListener("click",()=>{index=Math.max(0,index-1);render()});document.getElementById("next").addEventListener("click",()=>{index=Math.min(steps.length-1,index+1);render()});render();
+  </script>
+</body>
+</html>

@@ -1,28 +1,87 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
-  <title id="title">数字信号、带宽受限与码间串扰</title>
-  <desc id="desc">展示数字信号高频分量受限后边沿变缓导致码间串扰</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root{--bg:#fff;--panel:#f8fafc;--text:#172033;--muted:#64748b;--line:#334155;--grid:#cbd5e1;--blue:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706}
-    @media (prefers-color-scheme: dark){:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#94a3b8;--grid:#334155;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--amber:#fbbf24}}
-    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.grid{stroke:var(--grid);stroke-width:1;stroke-dasharray:5 6}.ideal{fill:none;stroke:var(--blue);stroke-width:3}.soft{fill:none;stroke:var(--red);stroke-width:3}.sine{fill:none;stroke:var(--green);stroke-width:2.4}.sum{fill:none;stroke:var(--amber);stroke-width:2.4}text{fill:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.title{font-size:28px;font-weight:700}.label{font-size:20px;font-weight:700}.small{font-size:15px;fill:var(--muted)}
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="580" viewBox="0 0 980 580" role="img" aria-labelledby="title desc">
+  <title id="title">码间串扰的形成</title>
+  <desc id="desc">展示单个码元通过带宽受限信道后沿时间展宽，相邻码元响应在采样时刻叠加。</desc>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #334155;
+      --grid: #cbd5e1;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --red: #dc2626;
+      --amber: #d97706;
+      --purple: #7c3aed;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #94a3b8;
+        --grid: #334155;
+        --blue: #60a5fa;
+        --green: #4ade80;
+        --red: #f87171;
+        --amber: #fbbf24;
+        --purple: #c4b5fd;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.8; }
+    .axis { stroke: var(--line); stroke-width: 1.6; }
+    .grid { stroke: var(--grid); stroke-width: 1.2; stroke-dasharray: 5 5; }
+    .ideal { fill: none; stroke: var(--blue); stroke-width: 3; }
+    .pulse1 { fill: none; stroke: var(--green); stroke-width: 3; }
+    .pulse2 { fill: none; stroke: var(--amber); stroke-width: 3; }
+    .pulse3 { fill: none; stroke: var(--purple); stroke-width: 3; }
+    .sum { fill: none; stroke: var(--red); stroke-width: 4; }
+    .sample { fill: var(--red); }
+    text { fill: var(--text); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { font-size: 28px; font-weight: 700; }
+    .label { font-size: 20px; font-weight: 700; }
+    .small { font-size: 15px; fill: var(--muted); }
+    .formula { font: 700 18px Consolas, monospace; }
   </style>
-  <rect class="bg" width="980" height="560"/>
-  <text x="50" y="58" class="title">带宽受限会造成码间串扰</text>
-  <rect x="60" y="95" width="410" height="360" rx="10" class="panel"/>
-  <text x="265" y="135" text-anchor="middle" class="label">数字方波需要高频分量</text>
-  <path d="M100 270 C130 210 160 210 190 270 S250 330 280 270 S340 210 370 270 S430 330 450 285" class="sine"/>
-  <path d="M100 270 C116 210 132 210 148 270 S180 330 196 270 S228 210 244 270 S276 330 292 270 S324 210 340 270 S372 330 388 270 S420 210 436 270" class="sum"/>
-  <path d="M100 320 H160 V220 H260 V320 H360 V220 H450" class="ideal"/>
-  <text x="265" y="400" text-anchor="middle" class="small">高频分量越多，波形越接近理想方波</text>
-  <rect x="510" y="95" width="410" height="360" rx="10" class="panel"/>
-  <text x="715" y="135" text-anchor="middle" class="label">高频分量被衰减后</text>
-  <g>
-    <line x1="560" y1="200" x2="560" y2="350" class="grid"/><line x1="640" y1="200" x2="640" y2="350" class="grid"/><line x1="720" y1="200" x2="720" y2="350" class="grid"/><line x1="800" y1="200" x2="800" y2="350" class="grid"/><line x1="880" y1="200" x2="880" y2="350" class="grid"/>
-  </g>
-  <path d="M550 320 H600 C625 320 625 220 650 220 H700 C725 220 725 320 750 320 H800 C825 320 825 220 850 220 H895" class="soft"/>
-  <text x="715" y="390" text-anchor="middle" class="small">边沿变缓，码元边界不清楚</text>
-  <text x="715" y="420" text-anchor="middle" class="small">相邻码元互相拖尾，形成码间串扰</text>
+
+  <rect class="bg" width="980" height="580"/>
+  <text class="title" x="48" y="52">码间串扰：相邻码元的响应在时间上重叠</text>
+
+  <rect class="panel" x="44" y="82" width="420" height="390" rx="12"/>
+  <text class="label" x="254" y="120" text-anchor="middle">发送端：码元边界清楚</text>
+  <line class="axis" x1="82" y1="330" x2="430" y2="330"/>
+  <line class="grid" x1="128" y1="160" x2="128" y2="370"/>
+  <line class="grid" x1="218" y1="160" x2="218" y2="370"/>
+  <line class="grid" x1="308" y1="160" x2="308" y2="370"/>
+  <line class="grid" x1="398" y1="160" x2="398" y2="370"/>
+  <path class="ideal" d="M82 330 H128 V205 H218 V330 H308 V205 H398 V330 H430"/>
+  <text class="small" x="173" y="394" text-anchor="middle">码元 1</text>
+  <text class="small" x="263" y="394" text-anchor="middle">码元 0</text>
+  <text class="small" x="353" y="394" text-anchor="middle">码元 1</text>
+  <text class="small" x="254" y="438" text-anchor="middle">理想波形只用于表示发送时刻和码元区间</text>
+
+  <rect class="panel" x="506" y="82" width="430" height="390" rx="12"/>
+  <text class="label" x="721" y="120" text-anchor="middle">接收端：响应展宽并叠加</text>
+  <line class="axis" x1="544" y1="330" x2="904" y2="330"/>
+  <line class="grid" x1="590" y1="155" x2="590" y2="370"/>
+  <line class="grid" x1="680" y1="155" x2="680" y2="370"/>
+  <line class="grid" x1="770" y1="155" x2="770" y2="370"/>
+  <line class="grid" x1="860" y1="155" x2="860" y2="370"/>
+
+  <path class="pulse1" d="M544 330 C560 330 566 320 575 286 C586 240 603 196 635 196 C667 196 684 240 695 286 C704 320 710 330 726 330"/>
+  <path class="pulse2" d="M635 330 C651 330 657 320 666 286 C677 240 694 226 726 226 C758 226 775 240 786 286 C795 320 801 330 817 330"/>
+  <path class="pulse3" d="M726 330 C742 330 748 320 757 286 C768 240 785 196 817 196 C849 196 866 240 877 286 C886 320 892 330 908 330"/>
+  <path class="sum" d="M544 330 C575 328 590 245 635 216 C675 190 700 244 726 252 C752 244 778 190 817 216 C861 245 876 328 908 330"/>
+
+  <circle class="sample" cx="680" cy="205" r="6"/>
+  <circle class="sample" cx="770" cy="236" r="6"/>
+  <circle class="sample" cx="860" cy="240" r="6"/>
+  <text class="small" x="721" y="394" text-anchor="middle">红线是叠加后的接收波形；红点是判决时刻</text>
+  <text class="small" x="721" y="425" text-anchor="middle">采样值含当前码元响应，也含相邻码元残余</text>
+
+  <rect class="panel" x="98" y="500" width="784" height="54" rx="10"/>
+  <text class="formula" x="490" y="533" text-anchor="middle">采样值 = 当前码元响应 + 前后码元的残余响应</text>
 </svg>

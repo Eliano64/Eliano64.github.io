@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="650" viewBox="0 0 980 650" role="img" aria-labelledby="title desc">
+  <title id="title">集线器、交换机和路由器对碰撞域与广播域的影响</title>
+  <desc id="desc">集线器所有端口属于一个碰撞域和广播域，交换机每个端口形成独立碰撞域但默认仍是一个广播域，路由器分隔广播域。</desc>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #f8fafc;
+      --text: #172033;
+      --muted: #64748b;
+      --line: #334155;
+      --collision: #dc2626;
+      --broadcast: #2563eb;
+      --device: #ede9fe;
+      --device-line: #7c3aed;
+      --host: #dcfce7;
+      --host-line: #16a34a;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #94a3b8;
+        --collision: #f87171;
+        --broadcast: #60a5fa;
+        --device: #4c1d95;
+        --device-line: #c4b5fd;
+        --host: #14532d;
+        --host-line: #4ade80;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+    .broadcast { fill: none; stroke: var(--broadcast); stroke-width: 2.6; stroke-dasharray: 10 6; }
+    .collision { fill: none; stroke: var(--collision); stroke-width: 2.4; stroke-dasharray: 5 5; }
+    .link { stroke: var(--line); stroke-width: 2.2; }
+    .device { fill: var(--device); stroke: var(--device-line); stroke-width: 2; }
+    .host { fill: var(--host); stroke: var(--host-line); stroke-width: 1.8; }
+    text { fill: var(--text); font-family: "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; }
+    .title { font-size: 28px; font-weight: 700; }
+    .head { font-size: 22px; font-weight: 700; text-anchor: middle; }
+    .label { font-size: 17px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    .small { font-size: 15px; fill: var(--muted); text-anchor: middle; }
+    .collision-text { fill: var(--collision); font-size: 15px; font-weight: 700; }
+    .broadcast-text { fill: var(--broadcast); font-size: 15px; font-weight: 700; }
+  </style>
+
+  <rect class="bg" width="980" height="650"/>
+  <text class="title" x="42" y="48">不同设备怎样切分碰撞域和广播域</text>
+  <text class="collision-text" x="42" y="77">红色虚线：碰撞域</text>
+  <text class="broadcast-text" x="210" y="77">蓝色虚线：广播域</text>
+
+  <rect class="panel" x="36" y="102" width="286" height="492" rx="14"/>
+  <text class="head" x="179" y="140">集线器</text>
+  <rect class="broadcast" x="58" y="158" width="242" height="360" rx="18"/>
+  <rect class="collision" x="72" y="174" width="214" height="328" rx="16"/>
+  <rect class="device" x="124" y="302" width="110" height="60" rx="9"/>
+  <text class="label" x="179" y="332">Hub</text>
+  <line class="link" x1="179" y1="302" x2="179" y2="242"/>
+  <line class="link" x1="124" y1="332" x2="92" y2="412"/>
+  <line class="link" x1="234" y1="332" x2="266" y2="412"/>
+  <rect class="host" x="139" y="202" width="80" height="40" rx="7"/>
+  <rect class="host" x="58" y="412" width="80" height="40" rx="7"/>
+  <rect class="host" x="220" y="412" width="80" height="40" rx="7"/>
+  <text class="label" x="179" y="222">A</text>
+  <text class="label" x="98" y="432">B</text>
+  <text class="label" x="260" y="432">C</text>
+  <text class="small" x="179" y="548">1 个碰撞域</text>
+  <text class="small" x="179" y="572">1 个广播域</text>
+
+  <rect class="panel" x="347" y="102" width="286" height="492" rx="14"/>
+  <text class="head" x="490" y="140">二层交换机</text>
+  <rect class="broadcast" x="369" y="158" width="242" height="360" rx="18"/>
+  <rect class="device" x="435" y="302" width="110" height="60" rx="9"/>
+  <text class="label" x="490" y="332">Switch</text>
+  <line class="link" x1="490" y1="302" x2="490" y2="242"/>
+  <line class="link" x1="435" y1="332" x2="403" y2="412"/>
+  <line class="link" x1="545" y1="332" x2="577" y2="412"/>
+  <rect class="collision" x="462" y="190" width="56" height="126" rx="18"/>
+  <rect class="collision" x="388" y="344" width="76" height="122" rx="18"/>
+  <rect class="collision" x="516" y="344" width="76" height="122" rx="18"/>
+  <rect class="host" x="450" y="202" width="80" height="40" rx="7"/>
+  <rect class="host" x="369" y="412" width="80" height="40" rx="7"/>
+  <rect class="host" x="531" y="412" width="80" height="40" rx="7"/>
+  <text class="label" x="490" y="222">A</text>
+  <text class="label" x="409" y="432">B</text>
+  <text class="label" x="571" y="432">C</text>
+  <text class="small" x="490" y="548">每个端口一个碰撞域</text>
+  <text class="small" x="490" y="572">默认仍为 1 个广播域</text>
+
+  <rect class="panel" x="658" y="102" width="286" height="492" rx="14"/>
+  <text class="head" x="801" y="140">路由器</text>
+  <rect class="broadcast" x="680" y="172" width="112" height="330" rx="18"/>
+  <rect class="broadcast" x="810" y="172" width="112" height="330" rx="18"/>
+  <rect class="device" x="746" y="302" width="110" height="60" rx="9"/>
+  <text class="label" x="801" y="332">Router</text>
+  <line class="link" x1="746" y1="332" x2="722" y2="236"/>
+  <line class="link" x1="856" y1="332" x2="880" y2="236"/>
+  <line class="link" x1="746" y1="342" x2="722" y2="438"/>
+  <line class="link" x1="856" y1="342" x2="880" y2="438"/>
+  <rect class="collision" x="690" y="188" width="76" height="132" rx="18"/>
+  <rect class="collision" x="690" y="344" width="76" height="124" rx="18"/>
+  <rect class="collision" x="836" y="188" width="76" height="132" rx="18"/>
+  <rect class="collision" x="836" y="344" width="76" height="124" rx="18"/>
+  <rect class="host" x="682" y="196" width="80" height="40" rx="7"/>
+  <rect class="host" x="682" y="418" width="80" height="40" rx="7"/>
+  <rect class="host" x="840" y="196" width="80" height="40" rx="7"/>
+  <rect class="host" x="840" y="418" width="80" height="40" rx="7"/>
+  <text class="label" x="722" y="216">A</text>
+  <text class="label" x="722" y="438">B</text>
+  <text class="label" x="880" y="216">C</text>
+  <text class="label" x="880" y="438">D</text>
+  <text class="small" x="801" y="548">每条链路独立碰撞域</text>
+  <text class="small" x="801" y="572">图中为 2 个广播域</text>
+</svg>

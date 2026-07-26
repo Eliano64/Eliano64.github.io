@@ -1,52 +1,84 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 500" role="img" aria-labelledby="title desc">
-  <title id="title">Channel Control Flow</title>
-  <desc id="desc">CPU starts a channel program in memory, then the channel controls controllers and devices, and interrupts CPU when done.</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626}
-    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171}}
-    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#ba)}.ga{stroke:var(--green);stroke-width:3;fill:none;marker-end:url(#ga)}.irq{stroke:var(--red);stroke-width:3;fill:none;marker-end:url(#ra);stroke-dasharray:8 6}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" role="img" aria-labelledby="title desc">
+  <title id="title">通道控制方式与共享主存通路</title>
+  <desc id="desc">CPU 启动通道后，通道读取主存中的通道程序并控制设备与主存交换数据。CPU 与通道共用系统总线和主存端口，因此仍可能发生访存冲突。</desc>
+  <style>
+    svg{background:#f8fafc}
+    @media(prefers-color-scheme:dark){svg{background:#0b1020}}
+    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#94a3b8;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626;--soft-red:#fef2f2}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#64748b;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#f87171;--soft-red:#291418}}
+    .bg{fill:var(--bg)}
+    .box{fill:var(--panel);stroke:var(--line);stroke-width:2}
+    .channel{fill:var(--panel);stroke:var(--green);stroke-width:2.5}
+    .memory{fill:var(--panel);stroke:var(--blue);stroke-width:2.5}
+    .t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .link{stroke:var(--line);stroke-width:4;fill:none;stroke-linejoin:round}
+    .bus{stroke:var(--line);stroke-width:10;stroke-linecap:round}
+    .control{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#blue-arrow)}
+    .io{stroke:var(--green);stroke-width:3.5;fill:none;marker-start:url(#green-back);marker-end:url(#green-arrow)}
+    .data{stroke:var(--green);stroke-width:4;fill:none;marker-end:url(#green-arrow)}
+    .irq{stroke:var(--red);stroke-width:3;fill:none;stroke-dasharray:8 6;marker-end:url(#red-arrow)}
+    .notice{fill:var(--soft-red);stroke:var(--red);stroke-width:1.8}
   </style>
   <defs>
-    <marker id="ba" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker>
-    <marker id="ga" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--green)"/></marker>
-    <marker id="ra" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--red)"/></marker>
+    <marker id="blue-arrow" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="var(--blue)"/></marker>
+    <marker id="green-arrow" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="var(--green)"/></marker>
+    <marker id="green-back" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="1" refY="4.5" orient="auto"><path d="M9 0 L0 4.5 L9 9 Z" fill="var(--green)"/></marker>
+    <marker id="red-arrow" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="var(--red)"/></marker>
   </defs>
-  <rect class="bg" width="1060" height="500"/>
-  <text class="t" x="530" y="42" text-anchor="middle" font-size="24" font-weight="700">通道控制方式</text>
-  <rect class="box" x="70" y="145" width="135" height="90" rx="8"/>
-  <text class="t" x="137" y="181" text-anchor="middle" font-size="18" font-weight="700">CPU</text>
-  <text class="m" x="137" y="209" text-anchor="middle" font-size="13">发 I/O 指令</text>
-  <rect class="box" x="305" y="82" width="180" height="125" rx="8"/>
-  <text class="t" x="395" y="116" text-anchor="middle" font-size="18" font-weight="700">主存</text>
-  <text class="m" x="395" y="144" text-anchor="middle" font-size="13">通道程序</text>
-  <text class="m" x="395" y="168" text-anchor="middle" font-size="13">一串通道指令</text>
-  <rect class="box" x="305" y="280" width="180" height="92" rx="8"/>
-  <text class="t" x="395" y="316" text-anchor="middle" font-size="18" font-weight="700">通道</text>
-  <text class="m" x="395" y="344" text-anchor="middle" font-size="13">执行通道程序</text>
-  <rect class="box" x="625" y="105" width="150" height="82" rx="8"/>
-  <text class="t" x="700" y="138" text-anchor="middle" font-size="17" font-weight="700">控制器 1</text>
-  <text class="m" x="700" y="164" text-anchor="middle" font-size="13">管理设备</text>
-  <rect class="box" x="625" y="283" width="150" height="82" rx="8"/>
-  <text class="t" x="700" y="316" text-anchor="middle" font-size="17" font-weight="700">控制器 2</text>
-  <text class="m" x="700" y="342" text-anchor="middle" font-size="13">管理设备</text>
-  <rect class="box" x="850" y="90" width="135" height="66" rx="8"/>
-  <text class="t" x="917" y="130" text-anchor="middle" font-size="16" font-weight="700">设备 A</text>
-  <rect class="box" x="850" y="178" width="135" height="66" rx="8"/>
-  <text class="t" x="917" y="218" text-anchor="middle" font-size="16" font-weight="700">设备 B</text>
-  <rect class="box" x="850" y="295" width="135" height="66" rx="8"/>
-  <text class="t" x="917" y="335" text-anchor="middle" font-size="16" font-weight="700">设备 C</text>
-  <path class="a" d="M205 188 C250 188 250 326 305 326"/>
-  <text class="m" x="255" y="256" text-anchor="middle" font-size="13">启动通道</text>
-  <path class="ga" d="M395 280 V207"/>
-  <text class="m" x="432" y="246" font-size="13">取通道指令</text>
-  <path class="ga" d="M485 326 H625"/>
-  <path class="ga" d="M485 326 C540 326 560 146 625 146"/>
-  <path class="ga" d="M775 146 H850"/>
-  <path class="ga" d="M775 146 C815 146 815 211 850 211"/>
-  <path class="ga" d="M775 324 H850"/>
-  <path class="irq" d="M305 326 C210 390 112 320 137 235"/>
-  <text class="m" x="210" y="405" text-anchor="middle" font-size="13">完成一组任务后中断 CPU</text>
+
+  <rect class="bg" width="1000" height="580"/>
+  <text class="t" x="500" y="38" text-anchor="middle" font-size="24" font-weight="700">通道控制方式：控制卸载，但主存通路仍共享</text>
+
+  <rect class="box" x="42" y="82" width="165" height="100" rx="10"/>
+  <text class="t" x="124" y="121" text-anchor="middle" font-size="20" font-weight="700">CPU</text>
+  <text class="m" x="124" y="151" text-anchor="middle" font-size="14">发 I/O 指令</text>
+
+  <rect class="memory" x="390" y="67" width="220" height="120" rx="10"/>
+  <text class="t" x="500" y="104" text-anchor="middle" font-size="20" font-weight="700">主存</text>
+  <text class="m" x="500" y="134" text-anchor="middle" font-size="14">通道程序</text>
+  <text class="m" x="500" y="160" text-anchor="middle" font-size="14">I/O 数据缓冲区</text>
+
+  <rect class="channel" x="300" y="244" width="205" height="112" rx="10"/>
+  <text class="t" x="402" y="284" text-anchor="middle" font-size="20" font-weight="700">通道</text>
+  <text class="m" x="402" y="313" text-anchor="middle" font-size="14">执行通道程序</text>
+  <text class="m" x="402" y="337" text-anchor="middle" font-size="14">控制成组 I/O</text>
+
+  <rect class="box" x="635" y="202" width="150" height="78" rx="9"/>
+  <text class="t" x="710" y="235" text-anchor="middle" font-size="17" font-weight="700">设备控制器 1</text>
+  <text class="m" x="710" y="260" text-anchor="middle" font-size="13">状态与数据缓冲</text>
+  <rect class="box" x="635" y="330" width="150" height="78" rx="9"/>
+  <text class="t" x="710" y="363" text-anchor="middle" font-size="17" font-weight="700">设备控制器 2</text>
+  <text class="m" x="710" y="388" text-anchor="middle" font-size="13">状态与数据缓冲</text>
+
+  <rect class="box" x="845" y="187" width="120" height="60" rx="8"/>
+  <text class="t" x="905" y="224" text-anchor="middle" font-size="16" font-weight="700">设备 A</text>
+  <rect class="box" x="845" y="265" width="120" height="60" rx="8"/>
+  <text class="t" x="905" y="302" text-anchor="middle" font-size="16" font-weight="700">设备 B</text>
+  <rect class="box" x="845" y="344" width="120" height="60" rx="8"/>
+  <text class="t" x="905" y="381" text-anchor="middle" font-size="16" font-weight="700">设备 C</text>
+
+  <path class="control" d="M207 132 C260 132 255 276 300 276"/>
+  <text class="m" x="252" y="190" text-anchor="middle" font-size="13">启动通道</text>
+  <path class="irq" d="M300 326 C235 388 120 294 124 182"/>
+  <text class="m" x="192" y="377" text-anchor="middle" font-size="13">任务完成后中断</text>
+
+  <path class="io" d="M505 277 H635"/>
+  <path class="io" d="M505 322 C560 322 575 369 635 369"/>
+  <path class="io" d="M785 225 H845"/>
+  <path class="io" d="M785 257 C818 257 815 295 845 295"/>
+  <path class="io" d="M785 369 H845"/>
+  <text class="m" x="570" y="260" text-anchor="middle" font-size="13">控制命令与数据</text>
+
+  <path class="link" d="M124 182 V452"/>
+  <path class="link" d="M402 356 V452"/>
+  <path class="link" d="M500 187 V452"/>
+  <line class="bus" x1="110" y1="452" x2="585" y2="452"/>
+  <path class="data" d="M402 405 V452 H500 V187"/>
+  <text class="t" x="124" y="435" text-anchor="middle" font-size="14" font-weight="700">CPU 访存</text>
+  <text class="t" x="430" y="435" text-anchor="middle" font-size="14" font-weight="700">通道取指 / 搬数据</text>
+  <text class="t" x="350" y="490" text-anchor="middle" font-size="17" font-weight="700">共享系统总线 / 主存端口</text>
+
+  <rect class="notice" x="190" y="513" width="620" height="46" rx="9"/>
+  <text class="t" x="500" y="542" text-anchor="middle" font-size="16" font-weight="700">CPU 与通道同时访问主存时仍会冲突，需要总线或主存端口仲裁</text>
 </svg>

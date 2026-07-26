@@ -1,41 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420" role="img" aria-labelledby="title desc">
-  <title id="title">IPC methods comparison</title>
-  <desc id="desc">Shared memory, message passing, and pipe communication compared.</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root { color-scheme: light dark; --bg:#fff; --fg:#111827; --muted:#64748b; --line:#94a3b8; --blue:#dbeafe; --green:#dcfce7; --amber:#fef3c7; --accent:#2563eb; }
-    @media (prefers-color-scheme: dark) { :root { --bg:#0f172a; --fg:#e5e7eb; --muted:#94a3b8; --line:#64748b; --blue:#1e3a8a; --green:#14532d; --amber:#713f12; --accent:#60a5fa; } }
-    .bg{fill:var(--bg)} text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--fg)} .h{font-weight:700;font-size:21px}.t{font-size:15px}.small{font-size:13px;fill:var(--muted)}.box{stroke:var(--line);stroke-width:2;rx:10}.arrow{fill:none;stroke:var(--accent);stroke-width:3;marker-end:url(#arrow)}
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="760" viewBox="0 0 980 760" role="img" aria-labelledby="title desc">
+  <title id="title">三种 IPC 的数据路径</title>
+  <desc id="desc">共享内存映射同一物理页，消息传递经内核消息队列，管道经内核字节流缓冲区。</desc>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--fg:#111827;--muted:#64748b;--line:#94a3b8;--blue:#dbeafe;--green:#dcfce7;--amber:#fef3c7;--purple:#ede9fe;--accent:#2563eb;--data:#059669}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--line:#64748b;--blue:#1e3a8a;--green:#14532d;--amber:#713f12;--purple:#4c1d95;--accent:#60a5fa;--data:#34d399}}
+    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.proc{fill:var(--blue);stroke:var(--line);stroke-width:2}.memory{fill:var(--green);stroke:var(--line);stroke-width:2}.kernel{fill:var(--amber);stroke:var(--line);stroke-width:2}.pipe{fill:var(--purple);stroke:var(--line);stroke-width:2}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--fg)}.title{font-size:28px;font-weight:700}.head{font-size:21px;font-weight:700}.t{font-size:17px}.small{font-size:15px;fill:var(--muted)}.arrow{stroke:var(--accent);stroke-width:3;fill:none;marker-end:url(#a1)}.data{stroke:var(--data);stroke-width:3;fill:none;marker-end:url(#a2)}.dashed{stroke-dasharray:7 6}
   </style>
-  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--accent)"/></marker></defs>
-  <rect class="bg" width="980" height="420"/>
-  <g transform="translate(40 48)">
-    <rect class="box" width="280" height="300" fill="var(--blue)"/>
-    <text class="h" x="140" y="42" text-anchor="middle">共享存储</text>
-    <rect class="box" x="35" y="82" width="80" height="58" fill="var(--bg)"/><text class="t" x="75" y="116" text-anchor="middle">进程 P</text>
-    <rect class="box" x="165" y="82" width="80" height="58" fill="var(--bg)"/><text class="t" x="205" y="116" text-anchor="middle">进程 Q</text>
-    <rect class="box" x="75" y="185" width="130" height="58" fill="var(--green)"/><text class="t" x="140" y="219" text-anchor="middle">共享区</text>
-    <path class="arrow" d="M75 140 L115 185"/><path class="arrow" d="M205 140 L165 185"/>
-    <text class="small" x="140" y="272" text-anchor="middle">快；必须处理同步互斥</text>
-  </g>
-  <g transform="translate(350 48)">
-    <rect class="box" width="280" height="300" fill="var(--green)"/>
-    <text class="h" x="140" y="42" text-anchor="middle">消息传递</text>
-    <rect class="box" x="30" y="92" width="78" height="52" fill="var(--bg)"/><text class="t" x="69" y="124" text-anchor="middle">发送者</text>
-    <rect class="box" x="172" y="92" width="78" height="52" fill="var(--bg)"/><text class="t" x="211" y="124" text-anchor="middle">接收者</text>
-    <rect class="box" x="78" y="185" width="125" height="54" fill="var(--amber)"/><text class="t" x="140" y="218" text-anchor="middle">内核消息队列</text>
-    <path class="arrow" d="M108 118 C145 125 175 145 140 185"/><path class="arrow" d="M140 185 C114 152 160 130 172 118"/>
-    <text class="small" x="140" y="272" text-anchor="middle">send / receive 传递格式化消息</text>
-  </g>
-  <g transform="translate(660 48)">
-    <rect class="box" width="280" height="300" fill="var(--amber)"/>
-    <text class="h" x="140" y="42" text-anchor="middle">管道</text>
-    <rect class="box" x="28" y="108" width="72" height="52" fill="var(--bg)"/><text class="t" x="64" y="140" text-anchor="middle">写进程</text>
-    <rect class="box" x="180" y="108" width="72" height="52" fill="var(--bg)"/><text class="t" x="216" y="140" text-anchor="middle">读进程</text>
-    <rect class="box" x="88" y="198" width="104" height="36" fill="var(--blue)"/><text class="t" x="140" y="222" text-anchor="middle">缓冲区</text>
-    <path class="arrow" d="M100 134 C125 150 135 174 140 198"/><path class="arrow" d="M140 198 C145 174 155 150 180 134"/>
-    <text class="small" x="140" y="272" text-anchor="middle">半双工；读空/写满会阻塞</text>
-  </g>
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--accent)"/></marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--data)"/></marker>
+  </defs>
+  <rect class="bg" width="980" height="760"/>
+  <text class="title" x="490" y="40" text-anchor="middle">三种 IPC：数据究竟经过哪里？</text>
+
+  <rect class="panel" x="30" y="66" width="920" height="205" rx="14"/>
+  <text class="head" x="60" y="100">共享存储</text>
+  <rect class="proc" x="70" y="128" width="180" height="74" rx="10"/>
+  <text class="t" x="160" y="158" text-anchor="middle">进程 P 的虚拟地址</text>
+  <text class="small" x="160" y="184" text-anchor="middle">load / store</text>
+  <rect class="memory" x="390" y="118" width="200" height="94" rx="10"/>
+  <text class="head" x="490" y="154" text-anchor="middle">同一组物理页</text>
+  <text class="small" x="490" y="184" text-anchor="middle">共享数据就在这里</text>
+  <rect class="proc" x="730" y="128" width="180" height="74" rx="10"/>
+  <text class="t" x="820" y="158" text-anchor="middle">进程 Q 的虚拟地址</text>
+  <text class="small" x="820" y="184" text-anchor="middle">load / store</text>
+  <path class="data" d="M250 165 L390 165"/>
+  <path class="data" d="M730 165 L590 165"/>
+  <text class="small" x="320" y="151" text-anchor="middle">映射后直接访问</text>
+  <text class="small" x="660" y="151" text-anchor="middle">映射后直接访问</text>
+  <text class="small" x="490" y="242" text-anchor="middle">每次读写不经过内核消息队列；进程自己负责同步与互斥。</text>
+
+  <rect class="panel" x="30" y="292" width="920" height="205" rx="14"/>
+  <text class="head" x="60" y="326">消息传递</text>
+  <rect class="proc" x="70" y="354" width="180" height="74" rx="10"/>
+  <text class="t" x="160" y="385" text-anchor="middle">发送者用户缓冲区</text>
+  <text class="small" x="160" y="411" text-anchor="middle">一条完整消息</text>
+  <rect class="kernel" x="370" y="344" width="240" height="94" rx="10"/>
+  <text class="head" x="490" y="378" text-anchor="middle">内核消息队列</text>
+  <text class="t" x="490" y="410" text-anchor="middle">[消息 1] [消息 2]</text>
+  <rect class="proc" x="730" y="354" width="180" height="74" rx="10"/>
+  <text class="t" x="820" y="385" text-anchor="middle">接收者用户缓冲区</text>
+  <text class="small" x="820" y="411" text-anchor="middle">按消息接收</text>
+  <path class="arrow" d="M250 391 L370 391"/>
+  <path class="arrow" d="M610 391 L730 391"/>
+  <text class="small" x="310" y="374" text-anchor="middle">复制入内核</text>
+  <text class="small" x="670" y="374" text-anchor="middle">复制到接收者</text>
+  <text class="small" x="490" y="468" text-anchor="middle">内核保存消息边界、目标和长度；发送与接收都通过系统调用。</text>
+
+  <rect class="panel" x="30" y="518" width="920" height="205" rx="14"/>
+  <text class="head" x="60" y="552">管道</text>
+  <rect class="proc" x="70" y="580" width="180" height="74" rx="10"/>
+  <text class="t" x="160" y="611" text-anchor="middle">写进程</text>
+  <text class="small" x="160" y="637" text-anchor="middle">write(bytes)</text>
+  <rect class="pipe" x="360" y="570" width="260" height="94" rx="10"/>
+  <text class="head" x="490" y="603" text-anchor="middle">内核字节流缓冲区</text>
+  <text class="t" x="490" y="635" text-anchor="middle">a b c d e f …</text>
+  <rect class="proc" x="730" y="580" width="180" height="74" rx="10"/>
+  <text class="t" x="820" y="611" text-anchor="middle">读进程</text>
+  <text class="small" x="820" y="637" text-anchor="middle">read(bytes)</text>
+  <path class="arrow" d="M250 617 L360 617"/>
+  <path class="arrow" d="M620 617 L730 617"/>
+  <text class="small" x="305" y="600" text-anchor="middle">写满时受阻</text>
+  <text class="small" x="675" y="600" text-anchor="middle">读空时等待</text>
+  <text class="small" x="490" y="694" text-anchor="middle">保留字节先后顺序，但不保留应用层消息边界；读出的字节从管道中消失。</text>
 </svg>

@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="650" viewBox="0 0 980 650" role="img" aria-labelledby="title desc">
+  <title id="title">x86 条件转移与标志位关系</title>
+  <desc id="desc">cmp 设置标志位后，相等比较读取 ZF，无符号比较读取 CF 和 ZF，有符号比较读取 SF、OF 和 ZF。</desc>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #5c697b;
+      --line: #52667e;
+      --eq: #7656c9;
+      --unsigned: #2c83c7;
+      --signed: #15956e;
+      --soft-eq: #f1edff;
+      --soft-unsigned: #eaf5fd;
+      --soft-signed: #e9f8f3;
+      --warn: #cf5d52;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101721;
+        --panel: #172332;
+        --text: #eef4ff;
+        --muted: #aebbd0;
+        --line: #8fa0b5;
+        --eq: #b39cff;
+        --unsigned: #73bdf0;
+        --signed: #55d4ad;
+        --soft-eq: #2a2543;
+        --soft-unsigned: #1c3447;
+        --soft-signed: #193b34;
+        --warn: #ff9086;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1.5; }
+    .title { fill: var(--text); font: 700 30px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .sub { fill: var(--muted); font: 17px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .node-title { fill: var(--text); font: 700 21px "Segoe UI", "Microsoft YaHei", sans-serif; text-anchor: middle; }
+    .mono { fill: var(--text); font: 700 19px Consolas, monospace; text-anchor: middle; }
+    .card-title { font: 700 21px "Segoe UI", "Microsoft YaHei", sans-serif; text-anchor: middle; }
+    .card-text { fill: var(--text); font: 17px Consolas, "Microsoft YaHei", monospace; text-anchor: middle; }
+    .eq-card { fill: var(--soft-eq); stroke: var(--eq); stroke-width: 2; }
+    .unsigned-card { fill: var(--soft-unsigned); stroke: var(--unsigned); stroke-width: 2; }
+    .signed-card { fill: var(--soft-signed); stroke: var(--signed); stroke-width: 2; }
+    .eq-text { fill: var(--eq); }
+    .unsigned-text { fill: var(--unsigned); }
+    .signed-text { fill: var(--signed); }
+    .wire { fill: none; stroke: var(--line); stroke-width: 2.2; marker-end: url(#arrow); }
+    .arrowhead { fill: var(--line); }
+    .example { fill: var(--panel); stroke: var(--warn); stroke-width: 2; }
+    .example-title { fill: var(--warn); font: 700 20px "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .example-text { fill: var(--text); font: 17px Consolas, "Microsoft YaHei", monospace; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <path class="arrowhead" d="M0,0 L0,7 L9,3.5 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="980" height="650"/>
+  <text class="title" x="46" y="49">条件转移读取谁的标志？</text>
+  <text class="sub" x="46" y="80">x86 Intel 语法：cmp a, b 只计算 a − b 并设置标志，不保存差值</text>
+
+  <rect class="panel" x="64" y="108" width="210" height="82" rx="12"/>
+  <text class="node-title" x="169" y="142">cmp a, b</text>
+  <text class="mono" x="169" y="174">a − b</text>
+
+  <rect class="panel" x="382" y="108" width="216" height="82" rx="12"/>
+  <text class="node-title" x="490" y="142">更新标志</text>
+  <text class="mono" x="490" y="174">ZF CF SF OF</text>
+
+  <path class="wire" d="M274 149 H382"/>
+  <path class="wire" d="M490 190 V221 H170 V248"/>
+  <path class="wire" d="M490 190 V248"/>
+  <path class="wire" d="M490 221 H810 V248"/>
+
+  <rect class="eq-card" x="48" y="248" width="244" height="190" rx="14"/>
+  <text class="card-title eq-text" x="170" y="282">相等：只看 ZF</text>
+  <text class="card-text" x="170" y="326">ZF = 1 → JE</text>
+  <text class="card-text" x="170" y="366">ZF = 0 → JNE</text>
+  <text class="card-text" x="170" y="410">不区分有无符号</text>
+
+  <rect class="unsigned-card" x="368" y="248" width="244" height="190" rx="14"/>
+  <text class="card-title unsigned-text" x="490" y="282">无符号：CF + ZF</text>
+  <text class="card-text" x="490" y="326">a &lt; b：CF=1 → JB</text>
+  <text class="card-text" x="490" y="366">a &gt; b：CF=0</text>
+  <text class="card-text" x="490" y="394">且 ZF=0 → JA</text>
+  <text class="card-text" x="490" y="424">below / above</text>
+
+  <rect class="signed-card" x="688" y="248" width="244" height="190" rx="14"/>
+  <text class="card-title signed-text" x="810" y="282">有符号：SF + OF + ZF</text>
+  <text class="card-text" x="810" y="326">a &lt; b：SF≠OF → JL</text>
+  <text class="card-text" x="810" y="366">a &gt; b：ZF=0</text>
+  <text class="card-text" x="810" y="394">且 SF=OF → JG</text>
+  <text class="card-text" x="810" y="424">less / greater</text>
+
+  <rect class="example" x="48" y="474" width="884" height="132" rx="14"/>
+  <text class="example-title" x="76" y="509">同一组标志，两种解释</text>
+  <text class="example-text" x="76" y="544">cmp 0xFFFFFFFF, 1 → ZF=0，CF=0，SF=1，OF=0</text>
+  <text class="example-text" x="76" y="578">有符号：−1 &lt; 1，JL 成立　　无符号：4294967295 &gt; 1，JA 成立</text>
+</svg>
