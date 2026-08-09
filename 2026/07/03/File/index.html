@@ -1,0 +1,842 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>File | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="文件定义文件是一组有意义的信息或数据集合。用户通常通过文件名、路径和应用程序来使用文件；操作系统则需要进一步记录文件的属性、外存位置、访问权限和打开状态。 常见文件属性：    属性 含义    文件名 由用户创建，便于用户查找；同一目录下通常不允许重名   标识符 系统内部唯一标识，对用户不要求可读   类型 指明文件类型，如文本、图片、目录、链接文件等   位置 用户看到的是路径；操作系统还要">
+<meta property="og:type" content="article">
+<meta property="og:title" content="File">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/03/File/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="文件定义文件是一组有意义的信息或数据集合。用户通常通过文件名、路径和应用程序来使用文件；操作系统则需要进一步记录文件的属性、外存位置、访问权限和打开状态。 常见文件属性：    属性 含义    文件名 由用户创建，便于用户查找；同一目录下通常不允许重名   标识符 系统内部唯一标识，对用户不要求可读   类型 指明文件类型，如文本、图片、目录、链接文件等   位置 用户看到的是路径；操作系统还要">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-03T06:11:21.000Z">
+<meta property="article:modified_time" content="2026-08-07T12:20:10.045Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="FileSystem">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "File",
+  "url": "https://eliano64.github.io/2026/07/03/File/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-03T06:11:21.000Z",
+  "dateModified": "2026-08-07T12:20:10.045Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/03/File/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'File',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">File</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">File</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-03T06:11:21.000Z" title="发表于 2026-07-03 14:11:21">2026-07-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-07T12:20:10.045Z" title="更新于 2026-08-07 20:20:10">2026-08-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">5.8k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="文件定义"><a href="#文件定义" class="headerlink" title="文件定义"></a>文件定义</h1><p><strong>文件</strong>是一组有意义的信息或数据集合。用户通常通过文件名、路径和应用程序来使用文件；操作系统则需要进一步记录文件的属性、外存位置、访问权限和打开状态。</p>
+<p>常见文件属性：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文件名</td>
+<td>由用户创建，便于用户查找；同一目录下通常不允许重名</td>
+</tr>
+<tr>
+<td>标识符</td>
+<td>系统内部唯一标识，对用户不要求可读</td>
+</tr>
+<tr>
+<td>类型</td>
+<td>指明文件类型，如文本、图片、目录、链接文件等</td>
+</tr>
+<tr>
+<td>位置</td>
+<td>用户看到的是路径；操作系统还要记录文件在外存中的位置</td>
+</tr>
+<tr>
+<td>大小</td>
+<td>文件当前占用的数据量</td>
+</tr>
+<tr>
+<td>时间</td>
+<td>创建时间、上次修改时间等</td>
+</tr>
+<tr>
+<td>所有者</td>
+<td>文件所属用户或用户组</td>
+</tr>
+<tr>
+<td>保护信息</td>
+<td>访问权限、口令、加密信息等</td>
+</tr>
+</tbody></table>
+<h1 id="文件元数据与索引节点"><a href="#文件元数据与索引节点" class="headerlink" title="文件元数据与索引节点"></a>文件元数据与索引节点</h1><h2 id="FCB"><a href="#FCB" class="headerlink" title="FCB"></a>FCB</h2><p><strong>FCB</strong> 是文件控制块。<strong>每一个文件对应一个 FCB 。</strong></p>
+<p>FCB 通常包含：</p>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>文件名</td>
+<td>实现了<strong>文件名到文件实体的映射</strong>，因此实现按名查找</td>
+</tr>
+<tr>
+<td>类型</td>
+<td>区分普通文件、目录、链接文件等</td>
+</tr>
+<tr>
+<td>存取权限</td>
+<td>用于文件保护</td>
+</tr>
+<tr>
+<td>物理位置</td>
+<td>指向文件数据或索引结构在外存中的位置</td>
+</tr>
+<tr>
+<td>逻辑结构、物理结构</td>
+<td>决定如何解释和定位文件内容</td>
+</tr>
+<tr>
+<td>时间、所有者等信息</td>
+<td>文件管理和保护所需的元数据</td>
+</tr>
+</tbody></table>
+<h2 id="inode"><a href="#inode" class="headerlink" title="inode"></a>inode</h2><p>查找<a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Directory&#x2F;" class="wikilink">目录</a>时，最常用的信息是文件名。若 FCB 中保存了所有文件属性，目录项会很大，目录检索需要读入更多磁盘块。</p>
+<p><strong>inode</strong> 的思想是把目录项文件名与其他信息分离：</p>
+<table>
+<thead>
+<tr>
+<th>结构</th>
+<th>保存内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目录项</td>
+<td>文件名 + inode 号</td>
+</tr>
+<tr>
+<td>inode</td>
+<td>除文件名之外的属性、权限、外存位置等信息</td>
+</tr>
+</tbody></table>
+<p>这样只有文件名匹配后，才需要读入 inode。</p>
+<p>假设一个 FCB 为 64 B，磁盘块大小为 1 KB，则每块只能放 16 个 FCB。若某目录有 640 个目录项，平均检索 320 项，约需读 20 个目录块。</p>
+<p>若目录项缩小为 16 B，则每块可放 64 个目录项，平均检索同样的 320 项只需读约 5 个目录块。目录项瘦身能明显减少目录检索 I&#x2F;O。</p>
+<p>inode 可分为：</p>
+<p>磁盘 inode 通常保存：</p>
+<ul>
+<li>文件类型和访问权限；</li>
+<li>所有者 UID、所属组 GID；</li>
+<li>文件大小；</li>
+<li>访问、修改和 inode 状态改变时间；</li>
+<li>硬链接计数；</li>
+<li>数据块地址、区段或各级索引指针；</li>
+<li>与扩展属性、访问控制表等附加元数据有关的索引。</li>
+</ul>
+<p>文件名不在 inode 中，而在目录项中。同一个磁盘 inode 因此可以被多个硬链接目录项引用。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>磁盘 inode</td>
+<td>存放在外存中的 inode</td>
+</tr>
+<tr>
+<td>内存 inode</td>
+<td>调入主存后的 inode，通常还会增加是否被修改、打开计数等运行时信息</td>
+</tr>
+</tbody></table>
+<h1 id="文件的基本操作"><a href="#文件的基本操作" class="headerlink" title="文件的基本操作"></a>文件的基本操作</h1><p>文件操作看起来是在操作整个文件的内容，但操作系统实际处理的是三类对象：</p>
+<ul>
+<li><strong>目录项、FCB 或 inode</strong>：记录文件名、属性、权限、外存位置等元数据。</li>
+<li><strong>打开文件表</strong>：记录本次打开的状态，例如读写指针、访问模式、打开计数。</li>
+<li><strong>文件数据块</strong>：真正保存文件内容的外存块。</li>
+</ul>
+<p>因此，<code>open</code> 和 <code>close</code> 不是把整个文件搬入或搬出内存。它们主要建立或撤销访问文件所需的内存数据结构。真正把文件内容读入内存的是 <code>read</code>、缺页调入，或其他 I&#x2F;O 过程。</p>
+<h2 id="创建文件"><a href="#创建文件" class="headerlink" title="创建文件"></a>创建文件</h2><p>创建文件时，用户通常给出文件路径、文件名和初始属性。操作系统需要：</p>
+<ol>
+<li>根据路径找到目标目录。</li>
+<li>检查同一目录下是否已有同名文件。</li>
+<li>在目录中建立<strong>目录项、FCB 或 inode</strong>。</li>
+<li>记录文件名、类型、权限、时间、所有者等属性。</li>
+<li>必要时为文件分配初始外存块；若创建的是空文件，也可以暂不分配数据块。</li>
+</ol>
+<p>创建文件的核心是建立文件名到文件控制信息的映射。它不一定立即写入大量文件数据。</p>
+<h2 id="删除文件"><a href="#删除文件" class="headerlink" title="删除文件"></a>删除文件</h2><p>删除文件时，用户通常给出路径和文件名。操作系统需要：</p>
+<ol>
+<li>根据路径找到目标目录文件。</li>
+<li>找到文件名对应的目录项。</li>
+<li>检查删除权限。</li>
+<li>根据目录项、FCB 或 inode 记录的物理位置回收文件占用的磁盘块。</li>
+<li>删除目录项，并更新空闲空间管理结构。</li>
+</ol>
+<p>删除文件通常表示文件系统不再把这些磁盘块视为该文件所有；它不等于立刻把磁盘上的每个字节清零。</p>
+<h2 id="打开文件"><a href="#打开文件" class="headerlink" title="打开文件"></a>打开文件</h2><p>系统要求读写前先 <code>open</code>。打开文件时，操作系统会按名查找，查找目录项、检查权限，并把文件相关信息复制到内存中的打开文件表。</p>
+<p><img src="/assets/file-system-memory-structures.svg" alt="1000"></p>
+<p>打开后，系统返回一个编号，也就是<strong>文件描述符</strong>。之后 <code>read</code> 和 <code>write</code> 用文件描述符指明文件，不必每次重新用路径查目录。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p><strong>打开文件并不是把文件数据全部读入内存</strong>。<code>open</code> 主要把目录项、FCB 或 inode 中的必要信息调入内存，并建立进程打开文件表和系统打开文件表。</p>
+</div>
+</div>
+<p>一次 <code>open</code> 通常会形成两级记录：</p>
+<table>
+<thead>
+<tr>
+<th>结构</th>
+<th>保存内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>进程文件描述符表</td>
+<td>文件描述符、描述符标志、指向打开文件描述的指针</td>
+</tr>
+<tr>
+<td>系统打开文件表</td>
+<td>当前读写偏移、文件状态标志、引用计数、指向目录项和内存 inode 的指针</td>
+</tr>
+</tbody></table>
+<p>每次独立调用 <code>open</code> 通常建立新的打开文件描述，因此即使打开同一文件，读写偏移也相互独立。<code>dup</code> 复制的文件描述符以及 <code>fork</code> 继承的文件描述符可以指向同一打开文件描述，从而共享读写偏移。</p>
+<h2 id="读文件"><a href="#读文件" class="headerlink" title="读文件"></a>读文件</h2><p><code>read</code> 通常需要指明：</p>
+<ul>
+<li>文件描述符。</li>
+<li>要读入的数据量。</li>
+<li>数据放入内存的目标地址。</li>
+</ul>
+<p>操作系统根据文件描述符找到进程打开文件表，再找到系统打开文件表和文件物理结构。随后根据当前读写指针计算逻辑块号，再把逻辑块号转换成物理块号，从外存读入用户指定的内存区域。</p>
+<p>读完后，读写指针通常向后移动。若读到文件末尾，实际读入的数据量可能小于请求的数据量。</p>
+<h2 id="写文件"><a href="#写文件" class="headerlink" title="写文件"></a>写文件</h2><p><code>write</code> 通常需要指明：</p>
+<ul>
+<li>文件描述符。</li>
+<li>要写出的数据量。</li>
+<li>数据在内存中的来源地址。</li>
+</ul>
+<p>操作系统从用户指定的内存区域取数据，写到当前读写指针对应的文件位置。若写入超过文件原有长度，文件可能需要扩展；这时文件系统还要分配新的磁盘块，并更新 FCB、inode、索引表、FAT 或其他分配结构。</p>
+<p>写操作还会影响一致性问题。若数据先进入缓冲区，磁盘上的文件内容可能稍后才真正更新。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">mmap</span></div>
+<div class="callout-content"><p><code>read</code> 和 <code>write</code> 是显式文件 I&#x2F;O。<a href="&#x2F;2026&#x2F;07&#x2F;02&#x2F;mmap&#x2F;" class="wikilink">mmap</a> 则把文件区间映射到进程虚拟地址空间，程序用普通内存访问触发文件页调入或写回。它仍然依赖文件描述符建立映射，但映射建立后，访问路径进入虚拟存储和缺页处理流程。</p>
+</div>
+</div>
+<h2 id="关闭文件"><a href="#关闭文件" class="headerlink" title="关闭文件"></a>关闭文件</h2><p>进程使用完文件后执行 <code>close</code>。操作系统会：</p>
+<ol>
+<li>删除该进程打开文件表中的对应表项。</li>
+<li>回收与本次打开相关的内存资源。</li>
+<li>将系统打开文件表中的打开计数减 1。</li>
+<li>若打开计数变为 0，释放系统打开文件表中的对应表项。</li>
+</ol>
+<p><code>close</code> 关闭的是本进程的这次打开关系。若其他进程仍打开同一个文件，文件不会因为当前进程执行 <code>close</code> 而不可用。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">`close` 没有将文件从内存写回外存</span></div>
+<div class="callout-content"><p>普通 <code>open</code> 本来就不会把整个文件读入内存，所以 <code>close</code> 也谈不上把整个文件搬回磁盘。</p>
+</div>
+</div>
+<div class="callout callout-question">
+<div class="callout-title"><i class="fa-solid fa-circle-question callout-icon"></i><span class="callout-title-text">那真正的写回时机是什么时候？</span></div>
+<div class="callout-content"><p>取决于文件系统、页缓存、缓冲区和同步策略。</p>
+<table>
+<thead>
+<tr>
+<th>时机</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>后台回写</td>
+<td>操作系统周期性把脏页或脏缓冲区写回外存</td>
+</tr>
+<tr>
+<td>缓存压力</td>
+<td>内存紧张或缓存需要回收时，脏页必须先写回才能释放</td>
+</tr>
+<tr>
+<td>显式同步</td>
+<td>程序调用 <code>fsync(fd)</code>、<code>fdatasync(fd)</code> 或 <code>sync()</code>，要求同步数据或元数据</td>
+</tr>
+<tr>
+<td>解除映射</td>
+<td>对 <code>mmap</code> 的共享映射，<code>msync()</code>、后台回写、<code>munmap()</code> 或进程退出都可能与脏页写回有关</td>
+</tr>
+<tr>
+<td>卸载文件系统</td>
+<td>卸载前需要把尚未落盘的脏数据和元数据处理完</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">Note</span></div>
+<div class="callout-content"><p>写回不只包括文件内容。文件大小、时间戳、目录项、inode、位示图、FAT、索引结构等元数据也可能被缓存并延迟写回。</p>
+</div>
+</div>
+<h1 id="文件共享"><a href="#文件共享" class="headerlink" title="文件共享"></a>文件共享</h1><p>通过<a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Directory&#x2F;#文件链接" class="wikilink">链接</a>的方式实现文件共享。文件共享意味着系统中只有一份文件数据，多个目录项或用户可以访问同一份文件。共享文件被一个用户修改后，其他用户看到的也是修改后的内容。</p>
+<p>由<a href="&#x2F;2026&#x2F;07&#x2F;06&#x2F;Readers-Writers-Problem&#x2F;" class="wikilink">Readers-Writers-Problem</a>类比可知，允许多个用户同时对共享文件进行读操作，<strong>但不允许多个用户同时对共享文件进行写操作，也不允许读者和写者同时使用共享文件。</strong></p>
+<h1 id="文件保护"><a href="#文件保护" class="headerlink" title="文件保护"></a>文件保护</h1><p>文件保护用于保证不同用户对文件有不同操作权限。常见方式包括：</p>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>做法</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>口令保护</td>
+<td>文件设置口令，访问前核对口令</td>
+<td>开销小，但口令存放在系统中，不够安全</td>
+</tr>
+<tr>
+<td>加密保护</td>
+<td>文件内容加密，访问时用密码解密</td>
+<td>保密性强，但加密&#x2F;解密需要时间</td>
+</tr>
+<tr>
+<td>访问控制</td>
+<td>为不同用户或用户组设置读、写、执行等权限</td>
+<td>管理灵活，是常见文件保护方式</td>
+</tr>
+</tbody></table>
+<h2 id="访问控制"><a href="#访问控制" class="headerlink" title="访问控制"></a>访问控制</h2><p>访问控制通常在文件的 FCB 或 inode 中保存<strong>访问控制列表</strong>。访问控制列表记录不同用户或用户组对该文件能执行哪些操作。</p>
+<p>如果系统中用户很多，逐个记录每个用户的权限会让访问控制列表过大。常用做法是使用一个 $m \times n$ 的矩阵来表示<strong>访问控制列表 ACL</strong>：把用户划分为 $m$ 类，再为每类用户的 $n$ 类访问权限分别进行设置。因此描述一个 ACL 至少需要 $mn$ 位。</p>
+<p>例如：</p>
+<table>
+<thead>
+<tr>
+<th>用户类型</th>
+<th>读取</th>
+<th>写入</th>
+<th>删除</th>
+<th>执行</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>拥有者</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>组</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p>其中 <code>1</code> 表示允许，<code>0</code> 表示不允许。当用户请求访问文件时，系统先判断该用户属于哪一类，再检查该类用户对目标操作是否有权限。</p>
+<h1 id="文件的逻辑结构"><a href="#文件的逻辑结构" class="headerlink" title="文件的逻辑结构"></a>文件的逻辑结构</h1><p><strong>逻辑结构</strong>是用户视角下文件内部数据如何组织，用户可以决定，与底层存储介质无关。<strong>物理结构</strong>是操作系统视角下文件数据实际如何存放到外存块中，对用户透明。</p>
+<p><strong>同一个逻辑结构可以用不同物理结构实现</strong>。比如顺序文件在用户看来是一组有先后关系的记录，但这些记录对应的文件块在外存中可以连续分配、链接分配，也可以索引分配。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">随机访问的两层含义</span></div>
+<div class="callout-content"><p>文件逻辑结构支持随机访问，是指可以根据记录号直接算出记录的逻辑地址。文件物理结构支持随机访问，是指操作系统可以较快把逻辑块号转换为物理块号。这两件事不是同一层问题。</p>
+</div>
+</div>
+<p>根据逻辑结构文件可分为两类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+<th>支持查找方式</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无结构文件</td>
+<td>文件内部是一串二进制流或字符流，也称流式文件。</td>
+<td>可顺序扫描；支持定位时也可按字节偏移直接访问，但内容查找由应用程序完成</td>
+<td>文本文件</td>
+</tr>
+<tr>
+<td>有结构文件</td>
+<td>文件由一组相似记录组成，也称记录式文件</td>
+<td>可按记录顺序查找；还可根据记录组织方式按记录号、关键字、索引或散列查找</td>
+<td>数据库表文件</td>
+</tr>
+</tbody></table>
+<h2 id="有结构文件"><a href="#有结构文件" class="headerlink" title="有结构文件"></a>有结构文件</h2><p>有结构文件也叫记录式文件。由三个关键部分组成：</p>
+<ul>
+<li><strong>数据项</strong>：文件系统中最基本的数据单位。</li>
+<li><strong>记录</strong>：一组相关数据项的集合。</li>
+<li><strong>关键字</strong>：记录中可用于识别不同记录的数据项。</li>
+</ul>
+<p>有结构文件按记录长度又可分为：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定长记录</td>
+<td>每条记录长度相同，各字段位置固定</td>
+</tr>
+<tr>
+<td>可变长记录</td>
+<td>记录长度不固定，通常需要额外记录长度或分隔信息</td>
+</tr>
+</tbody></table>
+<p>有结构文件按记录组织形式分类：顺序文件、索引文件、索引顺序文件。</p>
+<h3 id="顺序文件"><a href="#顺序文件" class="headerlink" title="顺序文件"></a>顺序文件</h3><p><strong>顺序文件</strong>中的记录在逻辑上一个接一个排列。记录可以定长，也可以可变长；物理上可以顺序存储，也可以链式存储。</p>
+<p>定长记录并且物理顺序存储时，可以直接计算第 $i$ 条记录的位置：</p>
+<p>$$<br>\text{address}(i)&#x3D;\text{start}+i\times L<br>$$</p>
+<p>其中 $L$ 是每条记录长度。这种情况下可以快速定位第 $i$ 条记录。</p>
+<p>顺序文件的特点：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>访问特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定长记录 + 顺序存储</td>
+<td>支持随机访问；若按关键字有序，还可快速检索</td>
+</tr>
+<tr>
+<td>可变长记录</td>
+<td>通常需要从头扫描前面的记录才能定位目标记录</td>
+</tr>
+<tr>
+<td>链式存储</td>
+<td>逻辑上有序，物理上不一定相邻</td>
+</tr>
+</tbody></table>
+<p>顺序文件增加或删除记录通常不方便。若记录在物理上顺序存储，插入或删除可能需要移动大量记录。</p>
+<h3 id="索引文件"><a href="#索引文件" class="headerlink" title="索引文件"></a>索引文件</h3><p>对于可变长记录，若要快速找到第 $i$ 条记录，可以为文件建立索引表。索引表由用户或文件内容组织方式决定，映射“关键字或记录号 -&gt; 记录逻辑地址”。索引表的每个索引项记录某条记录的长度、指针或关键字等信息。</p>
+<p>索引文件的特点：</p>
+<ul>
+<li>索引表本身通常是定长记录的顺序文件。</li>
+<li>可以快速找到第 $i$ 个索引项，再通过索引项找到目标记录。</li>
+<li>若索引项按关键字排序，还可以支持按关键字折半查找。</li>
+<li>可以按不同数据项建立多个索引表。</li>
+</ul>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">两种“索引表”不要混淆</span></div>
+<div class="callout-content"></div>
+</div>
+<blockquote>
+<p>索引分配中的索引表由操作系统维护，映射“逻辑块号 -&gt; 物理块号”。</p>
+</blockquote>
+<p>索引文件的问题是索引表可能很大。若每条记录都对应一个索引项，而记录本身很小，索引表甚至可能比数据本身更占空间。</p>
+<h3 id="索引顺序文件"><a href="#索引顺序文件" class="headerlink" title="索引顺序文件"></a>索引顺序文件</h3><p><strong>索引顺序文件</strong>结合了索引文件和顺序文件。与索引文件的区别是，它是一组顺序记录对应一个索引项。示例：数据结构的 <a href="&#x2F;2026&#x2F;06&#x2F;28&#x2F;linearity-structural-search&#x2F;#分块查找" class="wikilink">分块查找</a>。</p>
+<p>检索过程：</p>
+<ol>
+<li>先查索引表，找到目标关键字可能所在的分组。</li>
+<li>再在该分组中顺序查找目标记录。</li>
+</ol>
+<p>若文件有 $N$ 条记录，分成 $m$ 组，每组 $\frac{N}{m}$ 条记录，则平均查找次数约为：</p>
+<p>$$<br>\frac{m}{2}+\frac{N}{2m}\geqslant \sqrt{N}<br>$$</p>
+<p>当仅当 $m &#x3D; \sqrt{ N }$ 时取等号</p>
+<p>显然，引入多级索引顺序文件还可以进一步降低查找次数。</p>
+<h1 id="文件的物理结构"><a href="#文件的物理结构" class="headerlink" title="文件的物理结构"></a>文件的物理结构</h1><blockquote>
+<p>[! info] 关于文件分配的基本单位的约定<br>虽然 I&#x2F;O 的基本单位是一个磁盘块，但文件系统会把一个或多个磁盘块组成分配单位。UNIX 类文件系统通常称其为<strong>文件系统块</strong>，FAT 等文件系统通常称其为<strong>簇</strong>。<br>在没有明确提及”文件系统块”、”簇”或指明采用 FAT 表的情况下，默认分配的基本单位仍为一个磁盘块。<br>否则，则按照当前语境确定分配单位是”文件系统块”还是”簇”。<br>即使文件很小，通常也至少占用一个分配单位。</p>
+</blockquote>
+<p>文件的逻辑地址空间也按分配单位划分。存入外存时，文件系统要把：</p>
+<p>$$<br>(\text{逻辑块号},\ \text{块内地址})<br>$$</p>
+<p>转换为：</p>
+<p>$$<br>(\text{物理块号},\ \text{块内地址})<br>$$</p>
+<p>块内地址不变，真正需要转换的是块号。</p>
+<p>文件分配方式直接决定文件的物理结构。常见有连续分配、链接分配、索引分配三种方式。</p>
+<p><img src="/assets/file-allocation-methods.svg" alt="1000"></p>
+<h2 id="连续分配"><a href="#连续分配" class="headerlink" title="连续分配"></a>连续分配</h2><p>连续分配要求每个文件在磁盘上占有一组连续的块。目录项中通常记录：</p>
+<ul>
+<li>起始块号。</li>
+<li>文件长度，或占用块数。</li>
+</ul>
+<p>若文件起始块号为 $s$，要访问逻辑块号 $i$，则：</p>
+<p>$$<br>\text{物理块号}&#x3D;s+i<br>$$</p>
+<p>优点：</p>
+<ul>
+<li>支持顺序访问。</li>
+<li>支持直接访问，也就是随机访问。</li>
+<li>顺序读写速度最快，因为逻辑相邻的块在物理上也相邻。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>文件扩展不方便。若文件后方没有连续空闲块，可能需要整体迁移。</li>
+<li>容易产生外部碎片。</li>
+<li>可以通过紧凑处理碎片，但紧凑代价很高。</li>
+</ul>
+<h2 id="链接分配"><a href="#链接分配" class="headerlink" title="链接分配"></a>链接分配</h2><p>链接分配允许文件离散地分配在多个磁盘块中，分为隐式链接和显式链接。</p>
+<h3 id="隐式链接"><a href="#隐式链接" class="headerlink" title="隐式链接"></a>隐式链接</h3><p>除最后一个盘块外，每个盘块中保存指向下一个盘块的指针。目录项通常记录：</p>
+<ul>
+<li>起始块号。</li>
+<li>结束块号。</li>
+</ul>
+<p>要访问逻辑块号 $i$，必须从起始块开始顺着指针找。若目标是第 $i$ 个逻辑块，通常需要读入前面的块才能找到目标块的位置，因此访问效率低。</p>
+<p>优点：</p>
+<ul>
+<li>文件扩展方便。</li>
+<li>不产生外部碎片。</li>
+<li>外存利用率高。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>只适合顺序访问，不支持高效随机访问。</li>
+<li>块内指针占用少量存储空间。</li>
+<li>若题目只说“链接分配”而不说明，一般按隐式链接理解。</li>
+</ul>
+<h3 id="显式链接"><a href="#显式链接" class="headerlink" title="显式链接"></a>显式链接</h3><p>显式链接把用于链接各簇的指针集中存放在一张表中，称为 <strong>FAT</strong>，即文件分配表。</p>
+<p>FAT 表的每个表项对应一个簇。表项内容保存“下一个簇的簇号”，也可以保存空闲、坏簇、文件结束等特殊标记。</p>
+<p>访问逻辑簇号 $i$ 时，操作系统从起始簇号出发，在内存中的 FAT 中追踪 $i$ 次即可得到物理簇号。簇号转换不需要额外磁盘 I&#x2F;O，因此比隐式链接快。</p>
+<p>显式链接支持顺序访问和随机访问，也方便扩展文件，但 FAT 本身需要占用一定内存和外存空间。</p>
+<p>FAT 的特点：</p>
+<ul>
+<li>每个 FAT 文件卷都有自己的 FAT，通常还保存冗余副本。</li>
+<li>操作系统会把 FAT 的全部或近期使用部分缓存在内存中。</li>
+<li>FAT 表项在物理上连续存放，簇号可以由表项位置隐含。</li>
+<li>目录项只需要记录文件起始簇号。</li>
+</ul>
+<p>若已知：</p>
+<ul>
+<li>系统支持的最大文件长度为 $L_{\max}$。</li>
+<li>簇大小为 $B$。</li>
+</ul>
+<p>则最大文件至少需要的簇数为：$N&#x3D;\left\lceil \frac{L_{\max}}{B} \right\rceil$</p>
+<p>为了能在 FAT 表项中表示这些簇号，每个表项至少需要：$\left\lceil \log_2 N \right\rceil$位。</p>
+<ul>
+<li><p>若要求把空闲簇、坏簇、文件结束等特殊状态也计入编码范围，则应把这些状态数一并加到可表示状态中，再取对数上取整。</p>
+</li>
+<li><p>若只要求“支持最大文件长度”所需的最小 FAT 空间，可按$\text{FAT大小}&#x3D;N \times \left\lceil \log_2 N \right\rceil$位计算。</p>
+</li>
+<li><p>若题目给的是整个分区的簇数 $N_{\text{volume}}$，则 FAT 表项数应按簇数算：$\text{FAT大小}&#x3D;N_{\text{volume}} \times \left\lceil \log_2 N_{\text{volume}} \right\rceil$位。</p>
+</li>
+</ul>
+<h2 id="索引分配"><a href="#索引分配" class="headerlink" title="索引分配"></a>索引分配</h2><p>索引分配为每个文件建立一张索引表。索引表记录：</p>
+<p>$$<br>\text{逻辑块号}\rightarrow \text{物理块号}<br>$$</p>
+<p>索引表存放的磁盘块称为<strong>索引块</strong>；文件数据存放的磁盘块称为<strong>数据块</strong>。目录项通常记录文件的索引块号。</p>
+<p>索引分配的特点：</p>
+<ul>
+<li>支持随机访问。</li>
+<li>文件扩展方便，只需分配新数据块并增加索引表项。</li>
+<li>不产生外部碎片。</li>
+<li>索引表需要占用存储空间。</li>
+<li>访问数据前可能需要先读入索引块。</li>
+</ul>
+<h3 id="多层索引与混合索引"><a href="#多层索引与混合索引" class="headerlink" title="多层索引与混合索引"></a>多层索引与混合索引</h3><p>若一个索引块装不下整张索引表，可采用三种方案。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>主要问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>链接方案</td>
+<td>多个索引块链接起来</td>
+<td>查找后面的索引块可能需要顺序读很多索引块</td>
+</tr>
+<tr>
+<td>多层索引</td>
+<td>一级索引指向二级索引，必要时继续分层</td>
+<td>即使小文件也可能需要多次读索引块</td>
+</tr>
+<tr>
+<td>混合索引</td>
+<td>直接地址、一级间接、二级间接等结合</td>
+<td>结构更复杂，但兼顾小文件与大文件</td>
+</tr>
+</tbody></table>
+<p>若磁盘块大小为 1 KB，一个索引项为 4 B，则一个索引块可放：</p>
+<p>$$<br>\frac{1024}{4}&#x3D;256<br>$$</p>
+<p>个索引项。</p>
+<p>两层索引可表示的最大文件大小为：</p>
+<p>$$<br>256\times256\times1\text{ KB}&#x3D;64\text{ MB}<br>$$</p>
+<p>若采用 $K$ 层索引，并且顶级索引表尚未调入内存，则访问一个数据块通常需要 $K+1$ 次读磁盘：读各级索引块，再读目标数据块。</p>
+<p>混合索引在顶级索引表中同时放入：</p>
+<ul>
+<li>直接地址：直接指向数据块。</li>
+<li>一级间接地址：指向一层索引表。</li>
+<li>二级间接地址：指向两层索引表。</li>
+<li>更高层间接地址。</li>
+</ul>
+<p>小文件可以通过直接地址访问，磁盘 I&#x2F;O 次数少；大文件则通过间接索引扩展容量。</p>
+<h2 id="分配方式对比"><a href="#分配方式对比" class="headerlink" title="分配方式对比"></a>分配方式对比</h2><table>
+<thead>
+<tr>
+<th>分配方式</th>
+<th>目录项内容</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>连续分配</td>
+<td>起始块号、文件长度</td>
+<td>顺序读写快，支持随机访问</td>
+<td>产生外部碎片，不利于扩展</td>
+</tr>
+<tr>
+<td>隐式链接</td>
+<td>起始块号、结束块号</td>
+<td>无外部碎片，扩展方便</td>
+<td>只能顺序访问，块内指针占空间</td>
+</tr>
+<tr>
+<td>显式链接</td>
+<td>起始块号，FAT 常驻内存</td>
+<td>支持随机访问，扩展方便</td>
+<td>FAT 占空间</td>
+</tr>
+<tr>
+<td>索引分配</td>
+<td>索引块号或顶级索引块号</td>
+<td>支持随机访问，扩展方便</td>
+<td>索引表占空间，访问前可能需读索引块</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/03/File/">https://eliano64.github.io/2026/07/03/File/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/File-System/" title="File System"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">File System</div></div><div class="info-2"><div class="info-item-1">文件系统定义文件系统是操作系统用来命名、组织、存储和访问文件的一组规则、数据结构与程序。它一方面规定文件、目录和空闲空间在外存中怎样保存，另一方面在内存中维护打开文件、缓存和挂载状态，并向程序提供统一的文件操作接口。 文件管理要实现五个方面：  文件内部的数据如何组织。 文件之间如何组织成目录树。 用户和应用程序如何创建、打开、读写、关闭、删除文件。 文件数据如何落到外存的磁盘块上。 如何实现共享、保护、空闲空间管理和设备 I&#x2F;O。   从路径名到磁盘块的过程通常会经过多层：    层次 主要任务    系统调用接口 接收 open、read、write、close 等请求   VFS 解析通用文件对象和操作，把请求转给对应的具体文件系统   具体文件系统 按 ext4、FAT、NTFS 等格式查目录、检查权限、管理块映射和空闲空间   页缓存与块 I&#x2F;O 层 缓存文件页，把文件系统请求转换为块设备 I&#x2F;O   设备驱动与控制器 向存储设备发出读写命令并完成数据传送   其中，目录、FCB、inode...</div></div></div></a><a class="pagination-related" href="/2026/07/03/Exception-And-Interrupt-Handling/" title="Exception And Interrupt Handling"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Exception And Interrupt Handling</div></div><div class="info-2"><div class="info-item-1">异常与中断的基本定义、分类和返回位置见 Exception-And-Interrupt-Definition。 中断响应与处理过程一次中断处理可以分成两个阶段：  硬件阶段：CPU 完成中断响应，也常称为中断隐指令完成的工作。它会暂停现行程序，保存返回所需的断点信息，并把控制权转入操作系统内核中的处理程序入口。 软件阶段：操作系统内核或设备驱动执行中断服务程序。    ↻ + −     中断处理的主线：  外部中断源提出中断请求。 CPU 在当前指令执行结束后检查中断请求。 若满足响应条件，CPU 进行中断判优，选出要响应的中断源。 CPU 执行中断隐指令：关中断、保存断点、切换到内核态，并引出内核中的中断服务程序。 内核态中断服务程序保存现场。 内核态中断服务程序完成具体服务。 中断服务程序恢复现场。 执行中断返回指令，回到原程序断点继续执行。   什么时候重新开中断？ 单重中断：中断返回指令会恢复中断前的 CPU 状态（包括中断允许位），因此开中断发生在步骤 8；处理期间全程关中断。多重中断：在步骤 5–7...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%AE%9A%E4%B9%89"><span class="toc-text">文件定义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%85%83%E6%95%B0%E6%8D%AE%E4%B8%8E%E7%B4%A2%E5%BC%95%E8%8A%82%E7%82%B9"><span class="toc-text">文件元数据与索引节点</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#FCB"><span class="toc-text">FCB</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#inode"><span class="toc-text">inode</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-text">文件的基本操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%96%87%E4%BB%B6"><span class="toc-text">创建文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6"><span class="toc-text">删除文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6"><span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E6%96%87%E4%BB%B6"><span class="toc-text">读文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E6%96%87%E4%BB%B6"><span class="toc-text">写文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%97%AD%E6%96%87%E4%BB%B6"><span class="toc-text">关闭文件</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB"><span class="toc-text">文件共享</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%BF%9D%E6%8A%A4"><span class="toc-text">文件保护</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-text">访问控制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%9A%84%E9%80%BB%E8%BE%91%E7%BB%93%E6%9E%84"><span class="toc-text">文件的逻辑结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%89%E7%BB%93%E6%9E%84%E6%96%87%E4%BB%B6"><span class="toc-text">有结构文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E6%96%87%E4%BB%B6"><span class="toc-text">顺序文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E6%96%87%E4%BB%B6"><span class="toc-text">索引文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E9%A1%BA%E5%BA%8F%E6%96%87%E4%BB%B6"><span class="toc-text">索引顺序文件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%9A%84%E7%89%A9%E7%90%86%E7%BB%93%E6%9E%84"><span class="toc-text">文件的物理结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9E%E7%BB%AD%E5%88%86%E9%85%8D"><span class="toc-text">连续分配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E5%88%86%E9%85%8D"><span class="toc-text">链接分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E9%93%BE%E6%8E%A5"><span class="toc-text">隐式链接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E9%93%BE%E6%8E%A5"><span class="toc-text">显式链接</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%88%86%E9%85%8D"><span class="toc-text">索引分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E5%B1%82%E7%B4%A2%E5%BC%95%E4%B8%8E%E6%B7%B7%E5%90%88%E7%B4%A2%E5%BC%95"><span class="toc-text">多层索引与混合索引</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E6%96%B9%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="toc-text">分配方式对比</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/09/Multivariable-Function-Property-Relations/" title="Multivariable Function Property Relations">Multivariable Function Property Relations</a><time datetime="2026-08-09T05:10:35.000Z" title="发表于 2026-08-09 13:10:35">2026-08-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/08/Gamma-Function/" title="Gamma Function">Gamma Function</a><time datetime="2026-08-08T09:53:48.000Z" title="发表于 2026-08-08 17:53:48">2026-08-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/05/LAN/" title="LAN">LAN</a><time datetime="2026-08-05T08:25:25.000Z" title="发表于 2026-08-05 16:25:25">2026-08-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Basic-Graphs-Of-A-Function/" title="Basic Graphs Of A Function">Basic Graphs Of A Function</a><time datetime="2026-07-26T07:46:23.000Z" title="发表于 2026-07-26 15:46:23">2026-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Improper-integral/" title="Improper integral">Improper integral</a><time datetime="2026-07-26T05:22:43.000Z" title="发表于 2026-07-26 13:22:43">2026-07-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

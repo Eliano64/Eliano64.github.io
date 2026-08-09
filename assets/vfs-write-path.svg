@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="610" viewBox="0 0 1100 610" role="img" aria-labelledby="title desc">
+  <title id="title">write 系统调用经过 VFS 写入文件的过程</title>
+  <desc id="desc">文件描述符找到 file 对象，VFS 按 file 中的操作表调用具体文件系统，数据先写入页缓存，脏页随后写回存储设备。dentry 和 superblock 提供关联信息，但不是每次 write 都重新依次查找的步骤。</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#4f8cff"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#18b78b"/>
+    </marker>
+    <style>
+      svg {
+        color-scheme: light dark;
+        --diagram-bg: #f5f7fa;
+        --diagram-card: #ffffff;
+        --diagram-border: #c9d1dc;
+        --diagram-text: #182230;
+        --diagram-muted: #52606d;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --diagram-bg: #18212b;
+          --diagram-card: #111923;
+          --diagram-border: #394655;
+          --diagram-text: #eef3f8;
+          --diagram-muted: #b9c6d3;
+        }
+      }
+      .panel { fill: var(--diagram-bg); stroke: var(--diagram-border); stroke-width: 2; }
+      .node { fill: var(--diagram-card); stroke: #4f8cff; stroke-width: 2.5; }
+      .cache { fill: var(--diagram-card); stroke: #18b78b; stroke-width: 2.5; }
+      .support { fill: var(--diagram-card); stroke: #9a7de1; stroke-width: 2; }
+      .title { fill: var(--diagram-text); font: 700 24px system-ui, sans-serif; }
+      .label { fill: var(--diagram-text); font: 700 20px system-ui, sans-serif; }
+      .body { fill: var(--diagram-muted); font: 16px system-ui, sans-serif; }
+      .small { fill: var(--diagram-muted); font: 14px system-ui, sans-serif; }
+      .blue { stroke: #4f8cff; stroke-width: 3; fill: none; marker-end: url(#arrow-blue); }
+      .green { stroke: #18b78b; stroke-width: 3; fill: none; marker-end: url(#arrow-green); }
+      .dash { stroke: #9a7de1; stroke-width: 2; stroke-dasharray: 7 6; fill: none; }
+    </style>
+  </defs>
+
+  <rect class="panel" x="20" y="20" width="1060" height="570" rx="18"/>
+  <text class="title" x="55" y="65">以 write(fd, buf, count) 为例：VFS 负责统一分派</text>
+
+  <rect class="node" x="55" y="120" width="190" height="100" rx="14"/>
+  <text class="label" x="150" y="157" text-anchor="middle">进程的 fd</text>
+  <text class="body" x="150" y="187" text-anchor="middle">查文件描述符表</text>
+
+  <rect class="node" x="315" y="120" width="210" height="100" rx="14"/>
+  <text class="label" x="420" y="157" text-anchor="middle">file 对象</text>
+  <text class="body" x="420" y="187" text-anchor="middle">偏移、标志、操作表</text>
+
+  <rect class="node" x="595" y="120" width="205" height="100" rx="14"/>
+  <text class="label" x="697.5" y="157" text-anchor="middle">VFS</text>
+  <text class="body" x="697.5" y="187" text-anchor="middle">检查并调用写操作</text>
+
+  <rect class="node" x="870" y="120" width="170" height="100" rx="14"/>
+  <text class="label" x="955" y="157" text-anchor="middle">具体文件系统</text>
+  <text class="body" x="955" y="187" text-anchor="middle">如 ext4、FAT</text>
+
+  <path class="blue" d="M245 170 H315"/>
+  <path class="blue" d="M525 170 H595"/>
+  <path class="blue" d="M800 170 H870"/>
+  <text class="small" x="280" y="153" text-anchor="middle">定位</text>
+  <text class="small" x="560" y="153" text-anchor="middle">统一入口</text>
+  <text class="small" x="835" y="153" text-anchor="middle">分派</text>
+
+  <rect class="support" x="315" y="285" width="210" height="105" rx="14"/>
+  <text class="label" x="420" y="322" text-anchor="middle">dentry / inode</text>
+  <text class="body" x="420" y="352" text-anchor="middle">文件名联系、属性</text>
+  <text class="body" x="420" y="376" text-anchor="middle">与数据块映射</text>
+
+  <rect class="support" x="595" y="285" width="205" height="105" rx="14"/>
+  <text class="label" x="697.5" y="322" text-anchor="middle">superblock</text>
+  <text class="body" x="697.5" y="352" text-anchor="middle">所属文件系统及其</text>
+  <text class="body" x="697.5" y="376" text-anchor="middle">整体状态</text>
+
+  <path class="dash" d="M420 220 V285"/>
+  <path class="dash" d="M697.5 220 V285"/>
+  <text class="small" x="437" y="259">已有对象关系</text>
+  <text class="small" x="714" y="259">提供文件系统信息</text>
+
+  <rect class="cache" x="870" y="285" width="170" height="105" rx="14"/>
+  <text class="label" x="955" y="322" text-anchor="middle">页缓存</text>
+  <text class="body" x="955" y="352" text-anchor="middle">复制数据</text>
+  <text class="body" x="955" y="376" text-anchor="middle">并标记脏页</text>
+  <path class="green" d="M955 220 V285"/>
+
+  <rect class="cache" x="760" y="475" width="280" height="80" rx="14"/>
+  <text class="label" x="900" y="508" text-anchor="middle">块 I/O → 驱动 → 存储设备</text>
+  <text class="body" x="900" y="536" text-anchor="middle">回写时才真正提交设备写入</text>
+  <path class="green" d="M955 390 V435 Q955 450 940 450 H915 Q900 450 900 475"/>
+  <text class="small" x="970" y="438">稍后回写</text>
+
+  <text class="body" x="55" y="460">主调用路径：fd → file → VFS → 具体文件系统 → 页缓存</text>
+  <text class="body" x="55" y="494">虚线表示已建立的对象关系，不表示 write 会重新按路径查找文件。</text>
+  <text class="body" x="55" y="528">write 返回 ≠ 数据已经持久化；需要持久化时使用 fsync 等同步操作。</text>
+</svg>

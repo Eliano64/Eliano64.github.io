@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="430" viewBox="0 0 920 430" role="img" aria-labelledby="title desc">
+  <title id="title">集中式轮询过程</title>
+  <desc id="desc">主站依次轮询 A、B、C。A 无数据仍需空响应，B 被轮询后才发送数据。</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--blue)"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--green)"/>
+    </marker>
+    <marker id="arrow-muted" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--muted)"/>
+    </marker>
+    <style>
+      :root { --bg:#f8fafc; --panel:#ffffff; --ink:#172033; --muted:#64748b; --line:#94a3b8; --border:#cbd5e1; --blue:#2563eb; --green:#059669; --amber:#d97706; }
+      @media (prefers-color-scheme: dark) { :root { --bg:#0b1020; --panel:#172033; --ink:#edf3fb; --muted:#aebbd0; --line:#64748b; --border:#475569; --blue:#60a5fa; --green:#34d399; --amber:#fbbf24; } }
+      text { font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif; fill:var(--ink); }
+      .title { font-size:25px; font-weight:800; }
+      .node { fill:var(--panel); stroke:var(--border); stroke-width:2; }
+      .master { stroke:var(--amber); stroke-width:2.5; }
+      .name { font-size:17px; font-weight:750; }
+      .small { font-size:13px; fill:var(--muted); }
+      .life { stroke:var(--line); stroke-width:1.5; stroke-dasharray:6 5; }
+      .poll { stroke:var(--blue); stroke-width:2.6; marker-end:url(#arrow-blue); }
+      .empty { stroke:var(--muted); stroke-width:2.2; stroke-dasharray:6 5; marker-end:url(#arrow-muted); }
+      .data { stroke:var(--green); stroke-width:3.2; marker-end:url(#arrow-green); }
+    </style>
+  </defs>
+
+  <rect width="920" height="430" fill="var(--bg)"/>
+  <text x="460" y="38" text-anchor="middle" class="title">集中式轮询：主站逐站授予发送权</text>
+
+  <rect x="70" y="65" width="150" height="58" rx="10" class="node master"/>
+  <text x="145" y="91" text-anchor="middle" class="name">主站</text>
+  <text x="145" y="111" text-anchor="middle" class="small">发送 POLL</text>
+  <rect x="315" y="65" width="130" height="58" rx="10" class="node"/>
+  <text x="380" y="100" text-anchor="middle" class="name">站点 A</text>
+  <rect x="530" y="65" width="130" height="58" rx="10" class="node"/>
+  <text x="595" y="100" text-anchor="middle" class="name">站点 B</text>
+  <rect x="745" y="65" width="130" height="58" rx="10" class="node"/>
+  <text x="810" y="100" text-anchor="middle" class="name">站点 C</text>
+
+  <line x1="145" y1="123" x2="145" y2="365" class="life"/>
+  <line x1="380" y1="123" x2="380" y2="365" class="life"/>
+  <line x1="595" y1="123" x2="595" y2="365" class="life"/>
+  <line x1="810" y1="123" x2="810" y2="365" class="life"/>
+
+  <line x1="145" y1="155" x2="380" y2="155" class="poll"/>
+  <text x="262" y="148" text-anchor="middle" class="small">① POLL(A)</text>
+  <line x1="380" y1="198" x2="145" y2="198" class="empty"/>
+  <text x="262" y="191" text-anchor="middle" class="small">② 无数据：空响应</text>
+
+  <line x1="145" y1="238" x2="595" y2="238" class="poll"/>
+  <text x="370" y="231" text-anchor="middle" class="small">③ POLL(B)</text>
+  <line x1="595" y1="285" x2="145" y2="285" class="data"/>
+  <text x="370" y="278" text-anchor="middle" class="small">④ B 获得发送权后发送 DATA</text>
+
+  <line x1="145" y1="328" x2="810" y2="328" class="poll"/>
+  <text x="477" y="321" text-anchor="middle" class="small">⑤ B 的机会结束，再 POLL(C)</text>
+
+  <text x="460" y="401" text-anchor="middle" class="small">未被点名的站点不能发送；空闲站点也会消耗询问和响应时间。</text>
+</svg>

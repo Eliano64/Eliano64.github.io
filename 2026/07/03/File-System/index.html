@@ -1,0 +1,515 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>File System | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="文件系统定义文件系统是操作系统用来命名、组织、存储和访问文件的一组规则、数据结构与程序。它一方面规定文件、目录和空闲空间在外存中怎样保存，另一方面在内存中维护打开文件、缓存和挂载状态，并向程序提供统一的文件操作接口。 文件管理要实现五个方面：  文件内部的数据如何组织。 文件之间如何组织成目录树。 用户和应用程序如何创建、打开、读写、关闭、删除文件。 文件数据如何落到外存的磁盘块上。 如何实现共享">
+<meta property="og:type" content="article">
+<meta property="og:title" content="File System">
+<meta property="og:url" content="https://eliano64.github.io/2026/07/03/File-System/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="文件系统定义文件系统是操作系统用来命名、组织、存储和访问文件的一组规则、数据结构与程序。它一方面规定文件、目录和空闲空间在外存中怎样保存，另一方面在内存中维护打开文件、缓存和挂载状态，并向程序提供统一的文件操作接口。 文件管理要实现五个方面：  文件内部的数据如何组织。 文件之间如何组织成目录树。 用户和应用程序如何创建、打开、读写、关闭、删除文件。 文件数据如何落到外存的磁盘块上。 如何实现共享">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-07-03T06:11:21.000Z">
+<meta property="article:modified_time" content="2026-08-07T15:09:11.735Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="FileSystem">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "File System",
+  "url": "https://eliano64.github.io/2026/07/03/File-System/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-07-03T06:11:21.000Z",
+  "dateModified": "2026-08-07T15:09:11.735Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/07/03/File-System/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'File System',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">File System</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">File System</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-03T06:11:21.000Z" title="发表于 2026-07-03 14:11:21">2026-07-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-07T15:09:11.735Z" title="更新于 2026-08-07 23:09:11">2026-08-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Operating-System/">Operating System</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="文件系统定义"><a href="#文件系统定义" class="headerlink" title="文件系统定义"></a>文件系统定义</h1><p><strong>文件系统</strong>是操作系统用来命名、组织、存储和访问文件的一组规则、数据结构与程序。它一方面规定文件、目录和空闲空间在外存中怎样保存，另一方面在内存中维护打开文件、缓存和挂载状态，并向程序提供统一的文件操作接口。</p>
+<p>文件管理要实现五个方面：</p>
+<ol>
+<li>文件内部的数据如何组织。</li>
+<li>文件之间如何组织成目录树。</li>
+<li>用户和应用程序如何创建、打开、读写、关闭、删除文件。</li>
+<li>文件数据如何落到外存的磁盘块上。</li>
+<li>如何实现共享、保护、空闲空间管理和设备 I&#x2F;O。</li>
+</ol>
+<p><img src="/assets/file-system-layered-structure.svg" alt="1000"></p>
+<p>从路径名到磁盘块的过程通常会经过多层：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>主要任务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统调用接口</td>
+<td>接收 <code>open</code>、<code>read</code>、<code>write</code>、<code>close</code> 等请求</td>
+</tr>
+<tr>
+<td>VFS</td>
+<td>解析通用文件对象和操作，把请求转给对应的具体文件系统</td>
+</tr>
+<tr>
+<td>具体文件系统</td>
+<td>按 ext4、FAT、NTFS 等格式查目录、检查权限、管理块映射和空闲空间</td>
+</tr>
+<tr>
+<td>页缓存与块 I&#x2F;O 层</td>
+<td>缓存文件页，把文件系统请求转换为块设备 I&#x2F;O</td>
+</tr>
+<tr>
+<td>设备驱动与控制器</td>
+<td>向存储设备发出读写命令并完成数据传送</td>
+</tr>
+</tbody></table>
+<p>其中，目录、FCB、inode 和分配结构属于文件系统自己的管理对象；真正启动磁盘读写时，会继续下沉到 <a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;Disk-Scheduling-And-Management&#x2F;" class="wikilink">磁盘调度与磁盘管理</a>、<a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;IO-Control-Methods&#x2F;" class="wikilink">I&#x2F;O 控制方式</a> 和设备驱动程序。也就是说，文件系统决定“读哪个文件块”，I&#x2F;O 子系统负责“怎样让设备把这个块传到主存”。</p>
+<h1 id="文件系统在磁盘中的结构"><a href="#文件系统在磁盘中的结构" class="headerlink" title="文件系统在磁盘中的结构"></a>文件系统在磁盘中的结构</h1><p>磁盘成为可用文件系统通常要经历：</p>
+<ol>
+<li><strong>物理格式化</strong>：划分扇区，检测坏扇区，并用备用扇区替换坏扇区。</li>
+<li><strong>磁盘分区</strong>：把物理磁盘划分为一个或多个分区，也称文件卷、逻辑卷或逻辑盘。</li>
+<li><strong>逻辑格式化</strong>：在分区上创建文件系统，初始化目录区、文件区和空闲空间管理结构。</li>
+</ol>
+<p>文件系统在外存中通常包括：</p>
+<p><img src="/assets/file-system-disk-layout.svg" alt="1000"></p>
+<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主引导记录 MBR</td>
+<td>与系统启动有关</td>
+</tr>
+<tr>
+<td>引导块</td>
+<td>保存启动相关信息</td>
+</tr>
+<tr>
+<td>超级块或卷控制块</td>
+<td>保存文件系统总体信息</td>
+</tr>
+<tr>
+<td>目录结构</td>
+<td>保存目录和目录项</td>
+</tr>
+<tr>
+<td>文件控制结构</td>
+<td>保存 FCB、inode 等元数据</td>
+</tr>
+<tr>
+<td>数据区</td>
+<td>保存文件数据块</td>
+</tr>
+<tr>
+<td>空闲空间管理结构</td>
+<td>记录哪些磁盘块空闲</td>
+</tr>
+</tbody></table>
+<h1 id="文件系统在内存中的结构"><a href="#文件系统在内存中的结构" class="headerlink" title="文件系统在内存中的结构"></a>文件系统在内存中的结构</h1><p>外存中的超级块、目录项、inode 和数据块只有被访问时才会调入内存。内核在内存中把它们组织为统一对象，并缓存近期访问的目录项、inode 和文件页。</p>
+<p><img src="/assets/file-system-memory-structures.svg" alt="1000"></p>
+<p>主要结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>内存结构</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>挂载表与内存超级块</td>
+<td>记录已挂载文件系统及其总体状态</td>
+</tr>
+<tr>
+<td>dentry 缓存</td>
+<td>保存“目录 + 文件名 → inode”的近期查找结果</td>
+</tr>
+<tr>
+<td>inode 缓存</td>
+<td>保存已使用文件的属性和数据块映射</td>
+</tr>
+<tr>
+<td>进程文件描述符表</td>
+<td>用文件描述符指向打开文件描述</td>
+</tr>
+<tr>
+<td>打开文件描述（file 对象）</td>
+<td>保存本次打开的偏移、状态标志，并指向 dentry 和 inode</td>
+</tr>
+<tr>
+<td>页缓存</td>
+<td>保存已经读入或等待写回的文件页</td>
+</tr>
+</tbody></table>
+<p>执行 <code>open(path, ...)</code> 时要经过路径查找，建立 file 对象并返回文件描述符。之后执行 <code>read(fd, ...)</code>，内核可由 <code>fd</code> 直接找到 file 对象、dentry 和 inode，再通过页缓存取得文件内容；缓存未命中时才向具体文件系统和块设备发出读请求。</p>
+<h1 id="外存空闲空间管理"><a href="#外存空闲空间管理" class="headerlink" title="外存空闲空间管理"></a>外存空闲空间管理</h1><p>文件卷分为<strong>目录区</strong>和<strong>文件区</strong>。目录区保存目录信息、FCB、空闲空间管理信息等；文件区保存文件数据。</p>
+<p><img src="/assets/free-space-management.svg" alt="1000"></p>
+<h2 id="FAT-表"><a href="#FAT-表" class="headerlink" title="FAT 表"></a>FAT 表</h2><p>FAT 表不仅记录文件的簇链，也标识空闲簇，所以 FAT 表可以直接用于外存空闲空间管理。</p>
+<p>详见<a href="&#x2F;2026&#x2F;07&#x2F;03&#x2F;File&#x2F;#显式链接" class="wikilink">File &gt; 显式链接</a>。</p>
+<h2 id="空闲表法"><a href="#空闲表法" class="headerlink" title="空闲表法"></a>空闲表法</h2><p>空闲表法用表记录每个连续空闲区：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一个空闲盘块号</td>
+<td>空闲区起始位置</td>
+</tr>
+<tr>
+<td>空闲盘块数</td>
+<td>空闲区长度</td>
+</tr>
+</tbody></table>
+<p>它适合连续分配。分配时可以像动态分区分配一样采用首次适应、最佳适应、最坏适应等算法。回收时要考虑回收区与前后空闲区是否相邻，并进行表项合并。</p>
+<h2 id="空闲链表法"><a href="#空闲链表法" class="headerlink" title="空闲链表法"></a>空闲链表法</h2><p>空闲链表法分为两类。</p>
+<h3 id="空闲盘块链"><a href="#空闲盘块链" class="headerlink" title="空闲盘块链"></a>空闲盘块链</h3><p>每个空闲盘块中保存下一个空闲盘块的指针。操作系统保存链头、链尾指针。</p>
+<ul>
+<li>分配：从链头依次摘下所需盘块。</li>
+<li>回收：把回收盘块挂到链尾。</li>
+</ul>
+<p>它适合离散分配，但一次分配多个块时可能要重复多次操作。</p>
+<h3 id="空闲盘区链"><a href="#空闲盘区链" class="headerlink" title="空闲盘区链"></a>空闲盘区链</h3><p>连续的空闲盘块组成一个空闲盘区。每个空闲盘区的第一个块记录：</p>
+<ul>
+<li>盘区长度。</li>
+<li>下一个空闲盘区指针。</li>
+</ul>
+<p>分配时可按首次适应、最佳适应等算法找空闲盘区。回收时若回收区与空闲盘区相邻，需要合并。</p>
+<p>空闲盘区链既可用于连续分配，也可用于离散分配；为一个文件分配多个盘块时效率更高。</p>
+<h2 id="位示图法"><a href="#位示图法" class="headerlink" title="位示图法"></a>位示图法</h2><p>位示图是一个巨大的二进制数。它的位数就是磁盘的盘块数。若第 $i$ 位为 <code>0</code> 则表示盘块号为 $i$ 的块未被分配；否则被分配。</p>
+<p>可见，位示图占用磁盘空间的大小仅被磁盘的盘块总数决定。</p>
+<p>分配时扫描位示图，找到足够的 <code>0</code> 位，计算对应盘块号并把这些位改为 <code>1</code>。回收时根据盘块号计算对应字号、位号，把相应位改为 <code>0</code>。</p>
+<h2 id="成组链接法"><a href="#成组链接法" class="headerlink" title="成组链接法"></a>成组链接法</h2><p>空闲表集中记录各个连续空闲区，便于整段分配；但空闲区很多时，表项也会随之增多。空闲盘块链不需要集中保存这些信息，却要沿链逐块读取，一次申请多个盘块时可能重复多次操作。</p>
+<p>成组链接法把两者结合起来：<strong>组内集中保存一批空闲盘块号，组间再通过链接块链接。不需要把所有空闲盘块号都常驻内存。内存中只保存当前一组，其他组的信息存在磁盘上的链接块中。</strong></p>
+<p><strong>空闲盘块号栈</strong>是内存中专门存放空闲盘块<strong>编号</strong>的栈。栈中的每个元素是一个空闲盘块号，栈顶的块号就是下一次可以分配的盘块的块号。</p>
+<p>文件系统用空闲盘块号栈保存当前组的所有空闲盘块的块号。</p>
+<p>当前组中最后分配的盘块兼作<strong>链接块</strong>：它本身仍是空闲盘块，但其内容暂时保存下一组的盘块数量和编号。下一组也按同样方式连接后一组。</p>
+<p>链接块尚未保存文件数据，因此可以暂存这些管理信息；在其链接的组转移到内存空闲盘块号栈后，链接块本身可正常分配。</p>
+<p><img src="/assets/grouped-free-block-linking.svg" alt="1000"></p>
+<p><strong>分配盘块</strong>时，通常直接从空闲盘块号栈中弹出一个块号。然后分配该块号对应的块。当栈中只剩链接块的块号时，先读取该块号所指盘块中保存的下一组块号，将下一组装入栈，再分配这个链接块。</p>
+<p><strong>回收盘块</strong>时，若栈未满，直接压入回收块号。若栈已满，就把当前栈中的整组的所有块号写入这个回收块，再清空栈，只压入该回收块的块号。这个回收块由此成为新的链接块，原当前组成为它所连接的下一组。</p>
+<p>因此，它的名字也就很好理解了：</p>
+<ul>
+<li>成组：若干空闲块组成一组</li>
+<li>链接：用前一组的一个空闲块保存下一组的信息</li>
+</ul>
+<h1 id="VFS"><a href="#VFS" class="headerlink" title="VFS"></a>VFS</h1><p>不同文件系统的磁盘格式和内部算法不同，但程序都通过 <code>open</code>、<code>read</code>、<code>write</code> 等系统调用访问文件。<strong>VFS（虚拟文件系统）不是文件系统，它是在内核中的一个处在系统调用接口与具体文件系统之间的软件层</strong>：上层只使用统一对象和操作，下层由 ext4、FAT、NTFS 等文件系统提供各自的实现。</p>
+<p>VFS 用几类通用对象表示不同文件系统中的信息：</p>
+<table>
+<thead>
+<tr>
+<th>VFS 对象</th>
+<th>表示什么</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>超级块对象 <code>superblock</code></td>
+<td>一个已挂载文件系统的整体信息</td>
+<td>记录文件系统类型、根目录、块大小和当前状态，并提供管理整个文件系统所需的操作。</td>
+</tr>
+<tr>
+<td>vnode 对象</td>
+<td>一个文件的属性和数据块映射，不含文件名</td>
+<td>仅在文件首次被访问时动态创建于内存。关联底层某具体文件系统的索引节点。</td>
+</tr>
+<tr>
+<td>目录项对象 <code>dentry</code></td>
+<td>路径中的一个名字，以及该名字到 inode 的联系</td>
+<td>VFS 解析路径时动态生成的内存缓存，不直接对应磁盘上的某固定结构。</td>
+</tr>
+<tr>
+<td>文件对象 <code>file</code></td>
+<td>一次打开产生的打开文件描述，保存偏移和状态</td>
+<td>同一文件被多次打开时可以产生多个 file 对象，各自维护本次打开的状态。</td>
+</tr>
+</tbody></table>
+<p>以 <code>write(fd, buf, count)</code> 为例。此时文件已经由 <code>open</code> 打开，所以内核用 <code>fd</code> 从进程的文件描述符表中找到 <code>file</code> 对象，进而找到 <code>vnode</code>。VFS 检查该次打开是否允许写入，然后调用 <code>vnode</code> 记录的写函数指针指向的写操作；这个操作由 ext4、FAT 等具体文件系统提供。因此，应用程序始终调用同一个 <code>write</code>，VFS 负责找到底层具体实现。</p>
+<p><img src="/assets/vfs-write-path.svg" alt="1000"></p>
+<h1 id="挂载（mounting）"><a href="#挂载（mounting）" class="headerlink" title="挂载（mounting）"></a>挂载（mounting）</h1><p>一块物理磁盘可以划分成多个<strong>分区</strong>。对操作系统而言，每个分区都可以作为一个独立的<strong>逻辑设备</strong>；逻辑卷等虽然不一定直接对应某个磁盘分区，也可以作为逻辑设备使用。逻辑设备只给出一段可读写的块空间，其中还没有文件和目录的组织规则。</p>
+<p>在逻辑设备上进行逻辑格式化，就是在这段块空间中创建文件系统。文件系统创建后，设备中已经有目录、文件和空闲空间管理结构，但它还没有接入操作系统正在使用的目录树，因而不能通过普通路径访问其中的文件。</p>
+<p><strong>挂载</strong>把该文件系统的根目录连接到现有目录树中的一个目录，这个目录称为<strong>挂载点</strong>。例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sdb1 /mnt/data</span><br></pre></td></tr></table></figure>
+
+<p>若 <code>/dev/sdb1</code> 是一个已经建立文件系统的逻辑设备，挂载后，该文件系统根目录中的 <code>report.txt</code> 就可以通过 <code>/mnt/data/report.txt</code> 访问。路径查找到达 <code>/mnt/data</code> 时，会从原文件系统切换到 <code>/dev/sdb1</code> 上的文件系统并继续查找。由此，多个逻辑设备上的文件系统被组织成一棵统一的目录树。</p>
+<p>挂载点原有内容没有被删除，只是在挂载期间被新文件系统遮住；卸载后会重新显现。卸载则解除这条连接，因此应先完成脏数据写回，并确保其中的文件不再被占用。</p>
+<h1 id="文件系统的性能"><a href="#文件系统的性能" class="headerlink" title="文件系统的性能"></a>文件系统的性能</h1><p>文件访问的主要开销来自外存 I&#x2F;O，因此优化重点是减少 I&#x2F;O 次数并让相邻访问尽量落在相邻块上。</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>做法</th>
+<th>作用与代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dentry、inode 缓存</td>
+<td>保留近期路径查找和文件元数据</td>
+<td>减少重复目录检索和元数据读取，占用内存</td>
+</tr>
+<tr>
+<td>页缓存</td>
+<td>用主存缓存文件内容</td>
+<td>命中时不访问外存；一致性和回写更复杂</td>
+</tr>
+<tr>
+<td>预读</td>
+<td>顺序访问时提前读取后续文件页</td>
+<td>提高顺序吞吐量；随机访问时可能读入无用数据</td>
+</tr>
+<tr>
+<td>延迟写回</td>
+<td>先修改缓存中的页，稍后合并写入外存</td>
+<td>减少零散写 I&#x2F;O；断电前未落盘的数据可能丢失</td>
+</tr>
+<tr>
+<td>延迟分配与相邻分配</td>
+<td>聚集写请求后再选择连续或相近的空闲块</td>
+<td>改善空间局部性并减少寻道</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/03/File-System/">https://eliano64.github.io/2026/07/03/File-System/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/Directory/" title="Directory"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Directory</div></div><div class="info-2"><div class="info-item-1">目录定义目录是一种特殊的有结构文件。目录中的每条记录对应一个文件或子目录，这条记录称为目录项。 一个 FCB 就是一个文件目录项，FCB 的有序集合就是文件目录。 !457 目录结构单级目录整个系统只有一张目录表。它实现简单，但所有文件共享同一命名空间，不允许重名，不适合多用户系统。 两级目录两级目录分为：  MFD：主文件目录，记录用户名及其用户文件目录位置。 UFD：用户文件目录，由该用户文件的 FCB 组成。  两级目录允许不同用户使用相同文件名，也可以在用户目录层面做访问限制。但用户仍不能灵活分类自己的文件。 树形目录树形目录也称多级目录。目录之间形成层次关系，既便于分类，也允许不同目录中出现同名文件。 文件路径名是从某个起点出发，依次写出沿途各级目录名和目标文件名所形成的名称序列。操作系统按照这个序列逐级查找目录项，最终定位文件。 绝对路径以根目录为起点，路径的开头是 /。无论进程当前位于哪个目录，同一绝对路径都指向同一位置。例如： 1/照片/2015-08/自拍.jpg  相对路径以进程的当前工作目录为起点。例如当前目录是 /照片...</div></div></div></a><a class="pagination-related" href="/2026/07/03/File/" title="File"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">File</div></div><div class="info-2"><div class="info-item-1">文件定义文件是一组有意义的信息或数据集合。用户通常通过文件名、路径和应用程序来使用文件；操作系统则需要进一步记录文件的属性、外存位置、访问权限和打开状态。 常见文件属性：    属性 含义    文件名 由用户创建，便于用户查找；同一目录下通常不允许重名   标识符 系统内部唯一标识，对用户不要求可读   类型 指明文件类型，如文本、图片、目录、链接文件等   位置 用户看到的是路径；操作系统还要记录文件在外存中的位置   大小 文件当前占用的数据量   时间 创建时间、上次修改时间等   所有者 文件所属用户或用户组   保护信息 访问权限、口令、加密信息等   文件元数据与索引节点FCBFCB 是文件控制块。每一个文件对应一个 FCB 。 FCB...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%AE%9A%E4%B9%89"><span class="toc-text">文件系统定义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%AD%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">文件系统在磁盘中的结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">文件系统在内存中的结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%96%E5%AD%98%E7%A9%BA%E9%97%B2%E7%A9%BA%E9%97%B4%E7%AE%A1%E7%90%86"><span class="toc-text">外存空闲空间管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#FAT-%E8%A1%A8"><span class="toc-text">FAT 表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E9%97%B2%E8%A1%A8%E6%B3%95"><span class="toc-text">空闲表法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8%E6%B3%95"><span class="toc-text">空闲链表法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A9%BA%E9%97%B2%E7%9B%98%E5%9D%97%E9%93%BE"><span class="toc-text">空闲盘块链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A9%BA%E9%97%B2%E7%9B%98%E5%8C%BA%E9%93%BE"><span class="toc-text">空闲盘区链</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8D%E7%A4%BA%E5%9B%BE%E6%B3%95"><span class="toc-text">位示图法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%90%E7%BB%84%E9%93%BE%E6%8E%A5%E6%B3%95"><span class="toc-text">成组链接法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#VFS"><span class="toc-text">VFS</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%82%E8%BD%BD%EF%BC%88mounting%EF%BC%89"><span class="toc-text">挂载（mounting）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%80%A7%E8%83%BD"><span class="toc-text">文件系统的性能</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/09/Multivariable-Function-Property-Relations/" title="Multivariable Function Property Relations">Multivariable Function Property Relations</a><time datetime="2026-08-09T05:10:35.000Z" title="发表于 2026-08-09 13:10:35">2026-08-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/08/Gamma-Function/" title="Gamma Function">Gamma Function</a><time datetime="2026-08-08T09:53:48.000Z" title="发表于 2026-08-08 17:53:48">2026-08-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/05/LAN/" title="LAN">LAN</a><time datetime="2026-08-05T08:25:25.000Z" title="发表于 2026-08-05 16:25:25">2026-08-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Basic-Graphs-Of-A-Function/" title="Basic Graphs Of A Function">Basic Graphs Of A Function</a><time datetime="2026-07-26T07:46:23.000Z" title="发表于 2026-07-26 15:46:23">2026-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Improper-integral/" title="Improper integral">Improper integral</a><time datetime="2026-07-26T05:22:43.000Z" title="发表于 2026-07-26 13:22:43">2026-07-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

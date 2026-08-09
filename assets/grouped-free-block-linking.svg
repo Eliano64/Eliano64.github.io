@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" role="img" aria-labelledby="title desc">
+  <title id="title">成组链接法中的空闲盘块号栈</title>
+  <desc id="desc">内存中的空闲盘块号栈保存当前组的块号，栈底元素是作链接块的盘块的块号。该盘块保存下一组的块数和块号。分配该块时先把下一组块号装入栈；回收时栈满，则由回收块保存当前组的块号并成为新链接块。</desc>
+  <defs>
+    <marker id="blue-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#4f8cff"/>
+    </marker>
+    <marker id="green-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#18b78b"/>
+    </marker>
+    <style>
+      svg {
+        color-scheme: light dark;
+        --bg: #f5f7fa;
+        --card: #ffffff;
+        --border: #c9d1dc;
+        --text: #182230;
+        --muted: #52606d;
+      }
+      @media (prefers-color-scheme: dark) {
+        svg {
+          --bg: #18212b;
+          --card: #111923;
+          --border: #394655;
+          --text: #eef3f8;
+          --muted: #b9c6d3;
+        }
+      }
+      .panel { fill: var(--bg); stroke: var(--border); stroke-width: 2; }
+      .card { fill: var(--card); stroke: #4f8cff; stroke-width: 2.5; }
+      .green-card { fill: var(--card); stroke: #18b78b; stroke-width: 2.5; }
+      .cell { fill: var(--card); stroke: var(--border); stroke-width: 1.5; }
+      .link-cell { fill: rgba(154,125,225,.16); stroke: #9a7de1; stroke-width: 2; }
+      .title { fill: var(--text); font: 700 25px system-ui, sans-serif; }
+      .heading { fill: var(--text); font: 700 20px system-ui, sans-serif; }
+      .label { fill: var(--text); font: 700 17px system-ui, sans-serif; }
+      .body { fill: var(--muted); font: 16px system-ui, sans-serif; }
+      .small { fill: var(--muted); font: 14px system-ui, sans-serif; }
+      .blue-line { fill: none; stroke: #4f8cff; stroke-width: 3; marker-end: url(#blue-arrow); }
+      .green-line { fill: none; stroke: #18b78b; stroke-width: 3; marker-end: url(#green-arrow); }
+    </style>
+  </defs>
+
+  <rect class="panel" x="20" y="20" width="1060" height="480" rx="18"/>
+  <text class="title" x="55" y="62">成组链接法：当前组的块号在栈中，下一组的块号在链接块中</text>
+
+  <rect class="card" x="55" y="90" width="275" height="225" rx="15"/>
+  <text class="heading" x="192.5" y="122" text-anchor="middle">空闲盘块号栈</text>
+  <text class="small" x="82" y="153">每个元素是一个空闲盘块号</text>
+  <rect class="cell" x="82" y="166" width="220" height="42" rx="6"/>
+  <rect class="cell" x="82" y="208" width="220" height="42" rx="6"/>
+  <rect class="link-cell" x="82" y="250" width="220" height="42" rx="6"/>
+  <text class="label" x="192" y="193" text-anchor="middle">普通空闲盘块号</text>
+  <text class="label" x="192" y="235" text-anchor="middle">…</text>
+  <text class="label" x="192" y="277" text-anchor="middle">作链接块的盘块的块号</text>
+  <text class="small" x="192.5" y="306" text-anchor="middle">栈顶块号下一次被分配</text>
+
+  <rect class="card" x="415" y="105" width="280" height="190" rx="15"/>
+  <text class="heading" x="555" y="139" text-anchor="middle">链接块的内容</text>
+  <rect class="cell" x="447" y="160" width="216" height="44" rx="6"/>
+  <rect class="cell" x="447" y="204" width="216" height="44" rx="6"/>
+  <text class="label" x="555" y="188" text-anchor="middle">下一组的盘块数量</text>
+  <text class="label" x="555" y="232" text-anchor="middle">下一组的全部块号</text>
+  <text class="small" x="555" y="274" text-anchor="middle">该块本身仍然可以分配</text>
+
+  <rect class="card" x="780" y="120" width="265" height="160" rx="15"/>
+  <text class="heading" x="912.5" y="158" text-anchor="middle">再下一组的块号</text>
+  <text class="body" x="912.5" y="202" text-anchor="middle">仍保存在下一链接块中</text>
+  <text class="body" x="912.5" y="235" text-anchor="middle">直到遇到链尾标志</text>
+
+  <path class="blue-line" d="M302 271 H390 Q405 271 405 256 V135 Q405 120 415 120"/>
+  <path class="blue-line" d="M695 226 H755 Q770 226 770 211 V150 Q770 135 780 135"/>
+  <text class="small" x="374" y="259" text-anchor="middle">读取</text>
+  <text class="small" x="739" y="215" text-anchor="middle">继续链接</text>
+
+  <rect class="card" x="55" y="345" width="500" height="115" rx="15"/>
+  <text class="heading" x="82" y="380">当前组用完</text>
+  <text class="body" x="82" y="410">栈中只剩：作链接块的盘块号</text>
+  <text class="body" x="82" y="443">读取该盘块</text>
+  <path class="blue-line" d="M185 437 H230"/>
+  <text class="body" x="245" y="443">下一组块号入栈</text>
+  <path class="blue-line" d="M390 437 H430"/>
+  <text class="body" x="445" y="443">分配该盘块</text>
+
+  <rect class="green-card" x="590" y="345" width="455" height="115" rx="15"/>
+  <text class="heading" x="617" y="380">回收时栈已满</text>
+  <text class="body" x="617" y="410">栈已满，并回收一个盘块</text>
+  <text class="body" x="617" y="443">当前组块号写入该盘块</text>
+  <path class="green-line" d="M812 437 H852"/>
+  <text class="body" x="867" y="443">栈清空，只压入该块号</text>
+
+  <text class="small" x="55" y="482">普通情况只出栈或入栈；跨组时才读写链接块。</text>
+</svg>

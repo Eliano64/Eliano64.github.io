@@ -1,59 +1,121 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="680" viewBox="0 0 980 680" role="img" aria-labelledby="title desc">
-  <title id="title">进程地址空间与线程栈</title>
-  <desc id="desc">同一进程从单线程变为多线程后，代码、数据、堆和映射区共享，每个线程在共享地址空间中拥有独立用户栈。</desc>
-  <style>
-    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#ffffff;--fg:#111827;--muted:#64748b;--line:#94a3b8;--shared:#dbeafe;--heap:#dcfce7;--map:#fef3c7;--stack:#ede9fe;--accent:#2563eb}
-    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--line:#64748b;--shared:#1e3a8a;--heap:#14532d;--map:#713f12;--stack:#4c1d95;--accent:#60a5fa}}
-    .bg{fill:var(--bg)}.panel{fill:var(--panel);stroke:var(--line);stroke-width:2}.shared{fill:var(--shared)}.heap{fill:var(--heap)}.map{fill:var(--map)}.stack{fill:var(--stack)}.seg{stroke:var(--line);stroke-width:1.5}
-    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--fg)}.title{font-size:24px;font-weight:700}.h{font-size:19px;font-weight:700}.t{font-size:16px}.small{font-size:16px;fill:var(--muted)}.arrow{stroke:var(--accent);stroke-width:3;fill:none;marker-end:url(#arrow)}
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="760" viewBox="0 0 1120 760" role="img" aria-labelledby="title desc">
+  <title id="title">一个进程的用户虚拟地址空间</title>
+  <desc id="desc">用户空间包含代码、只读数据、数据段、BSS、堆、映射区和用户栈。多线程共享地址空间映射，但各线程拥有独立用户栈。</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 10 5 0 10z" fill="var(--accent)"/></marker>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#64748b"/>
+    </marker>
+    <style>
+      svg{background:#f8fafc}
+      .panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}
+      .title{font:700 28px "Microsoft YaHei",sans-serif;fill:#0f172a}
+      .subtitle{font:500 15px "Microsoft YaHei",sans-serif;fill:#64748b}
+      .head{font:700 20px "Microsoft YaHei",sans-serif;fill:#0f172a;text-anchor:middle}
+      .body{font:500 15px "Microsoft YaHei",sans-serif;fill:#334155;text-anchor:middle}
+      .small{font:500 13px "Microsoft YaHei",sans-serif;fill:#64748b;text-anchor:middle}
+      .addr{font:700 14px "Microsoft YaHei",sans-serif;fill:#475569}
+      .segment{stroke-width:1.8}
+      .stack{fill:#f3e8ff;stroke:#8b5cf6}
+      .map{fill:#fff7ed;stroke:#f59e0b}
+      .heap{fill:#ecfdf5;stroke:#10b981}
+      .data{fill:#eff6ff;stroke:#3b82f6}
+      .code{fill:#eef2ff;stroke:#6366f1}
+      .gap{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:7 6}
+      .card{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.5}
+      .cardHead{font:700 17px "Microsoft YaHei",sans-serif;fill:#0f172a}
+      .cardBody{font:500 14px "Microsoft YaHei",sans-serif;fill:#475569}
+      .perm{font:700 13px Consolas,monospace;fill:#2563eb;text-anchor:end}
+      .grow{stroke:#64748b;stroke-width:2;fill:none;marker-end:url(#arrow)}
+      .foot{fill:#eef2ff;stroke:#818cf8;stroke-width:1.5}
+      .footText{font:700 15px "Microsoft YaHei",sans-serif;fill:#3730a3;text-anchor:middle}
+      @media(prefers-color-scheme:dark){
+        svg{background:#0b1020}
+        .panel{fill:#111827;stroke:#334155}
+        .title,.head,.cardHead{fill:#f8fafc}
+        .subtitle,.body,.small,.addr,.cardBody{fill:#cbd5e1}
+        .stack{fill:#3b1d5a;stroke:#c084fc}
+        .map{fill:#3b2a12;stroke:#fbbf24}
+        .heap{fill:#12372a;stroke:#34d399}
+        .data{fill:#172554;stroke:#60a5fa}
+        .code{fill:#24245f;stroke:#818cf8}
+        .gap,.card{fill:#0f172a;stroke:#475569}
+        .perm{fill:#60a5fa}
+        .grow{stroke:#94a3b8}
+        #arrow path{fill:#94a3b8}
+        .foot{fill:#24245f;stroke:#818cf8}
+        .footText{fill:#c7d2fe}
+      }
+    </style>
   </defs>
-  <rect class="bg" width="980" height="680"/>
-  <text class="title" x="490" y="38" text-anchor="middle">同一进程：共享地址空间，线程各有用户栈</text>
-  <text class="small" x="490" y="63" text-anchor="middle">区域位置只作示意，不代表固定地址</text>
 
-  <text class="h" x="235" y="104" text-anchor="middle">单线程</text>
-  <rect class="panel" x="55" y="120" width="360" height="480" rx="12"/>
-  <text class="small" x="70" y="146">高地址</text>
-  <rect class="seg stack" x="85" y="160" width="300" height="76" rx="8"/>
-  <text class="h" x="235" y="191" text-anchor="middle">线程 T1 的用户栈</text>
-  <text class="small" x="235" y="216" text-anchor="middle">栈指针 SP → 当前栈顶</text>
-  <rect class="seg map" x="85" y="250" width="300" height="82" rx="8"/>
-  <text class="h" x="235" y="282" text-anchor="middle">映射区</text>
-  <text class="small" x="235" y="307" text-anchor="middle">共享库 / mmap / 共享内存</text>
-  <rect class="seg heap" x="85" y="346" width="300" height="72" rx="8"/>
-  <text class="h" x="235" y="389" text-anchor="middle">堆</text>
-  <rect class="seg shared" x="85" y="432" width="300" height="62" rx="8"/>
-  <text class="h" x="235" y="470" text-anchor="middle">数据段 / BSS</text>
-  <rect class="seg shared" x="85" y="508" width="300" height="62" rx="8"/>
-  <text class="h" x="235" y="546" text-anchor="middle">代码 / 只读区</text>
-  <text class="small" x="70" y="588">低地址</text>
+  <text class="title" x="50" y="50">一个进程的用户虚拟地址空间</text>
+  <text class="subtitle" x="50" y="78">区域位置只表示常见布局；每个区域由一段虚拟地址及其权限和映射组成</text>
 
-  <path class="arrow" d="M435 350 L535 350"/>
-  <text class="t" x="485" y="324" text-anchor="middle">创建线程</text>
+  <rect class="panel" x="50" y="105" width="650" height="575" rx="18"/>
+  <text class="addr" x="73" y="137">高地址</text>
+  <text class="addr" x="73" y="657">低地址</text>
 
-  <text class="h" x="745" y="104" text-anchor="middle">多线程</text>
-  <rect class="panel" x="565" y="120" width="360" height="480" rx="12"/>
-  <text class="small" x="580" y="146">高地址</text>
-  <rect class="seg stack" x="585" y="160" width="96" height="76" rx="8"/>
-  <rect class="seg stack" x="697" y="160" width="96" height="76" rx="8"/>
-  <rect class="seg stack" x="809" y="160" width="96" height="76" rx="8"/>
-  <text class="h" x="633" y="191" text-anchor="middle">T1 栈</text>
-  <text class="h" x="745" y="191" text-anchor="middle">T2 栈</text>
-  <text class="h" x="857" y="191" text-anchor="middle">T3 栈</text>
-  <rect class="seg map" x="585" y="250" width="320" height="82" rx="8"/>
-  <text class="h" x="745" y="282" text-anchor="middle">映射区</text>
-  <text class="small" x="745" y="307" text-anchor="middle">共享库 / mmap / 共享内存</text>
-  <rect class="seg heap" x="585" y="346" width="320" height="72" rx="8"/>
-  <text class="h" x="745" y="389" text-anchor="middle">共享堆</text>
-  <rect class="seg shared" x="585" y="432" width="320" height="62" rx="8"/>
-  <text class="h" x="745" y="470" text-anchor="middle">共享数据段 / BSS</text>
-  <rect class="seg shared" x="585" y="508" width="320" height="62" rx="8"/>
-  <text class="h" x="745" y="546" text-anchor="middle">共享代码 / 只读区</text>
-  <text class="small" x="580" y="588">低地址</text>
+  <rect class="segment stack" x="115" y="130" width="545" height="92" rx="12"/>
+  <text class="head" x="250" y="166">T1 用户栈</text>
+  <text class="body" x="250" y="194">调用帧 · 局部变量 · 返回地址</text>
+  <rect class="segment stack" x="395" y="145" width="112" height="58" rx="9"/>
+  <text class="head" x="451" y="180">T2 栈</text>
+  <rect class="segment stack" x="525" y="145" width="112" height="58" rx="9"/>
+  <text class="head" x="581" y="180">T3 栈</text>
+  <text class="perm" x="648" y="215">rw-</text>
 
-  <text class="small" x="490" y="634" text-anchor="middle">寄存器不在地址空间中：运行时位于 CPU，切换时保存到线程控制信息中。</text>
-  <text class="small" x="490" y="658" text-anchor="middle">内核级线程通常另有内核栈，用户态不能访问。</text>
+  <rect class="gap" x="115" y="237" width="545" height="58" rx="10"/>
+  <text class="small" x="387.5" y="271">尚未映射或为区域增长保留的虚拟地址</text>
+  <path class="grow" d="M250 235 V211"/>
+  <text class="small" x="305" y="229">栈按需扩展</text>
+
+  <rect class="segment map" x="115" y="310" width="545" height="86" rx="12"/>
+  <text class="head" x="387.5" y="345">映射区</text>
+  <text class="body" x="387.5" y="373">共享库 · 映射文件 · 共享内存 · 匿名映射</text>
+  <text class="perm" x="648" y="388">按用途</text>
+
+  <rect class="segment heap" x="115" y="411" width="545" height="75" rx="12"/>
+  <text class="head" x="387.5" y="443">堆</text>
+  <text class="body" x="387.5" y="469">动态分配对象</text>
+  <text class="perm" x="648" y="478">rw-</text>
+  <path class="grow" d="M250 410 V388"/>
+  <text class="small" x="305" y="404">分配时增长</text>
+
+  <rect class="segment data" x="115" y="501" width="265" height="67" rx="12"/>
+  <text class="head" x="247.5" y="530">数据段</text>
+  <text class="body" x="247.5" y="554">有初值的全局/静态变量</text>
+  <rect class="segment data" x="395" y="501" width="265" height="67" rx="12"/>
+  <text class="head" x="527.5" y="530">BSS</text>
+  <text class="body" x="527.5" y="554">零初始化全局/静态变量</text>
+
+  <rect class="segment code" x="115" y="583" width="265" height="58" rx="12"/>
+  <text class="head" x="247.5" y="619">代码段　r-x</text>
+  <rect class="segment code" x="395" y="583" width="265" height="58" rx="12"/>
+  <text class="head" x="527.5" y="619">只读区　r--</text>
+
+  <rect class="panel" x="735" y="105" width="335" height="445" rx="18"/>
+  <text class="head" x="902.5" y="145">这些区域从哪里来</text>
+
+  <rect class="card" x="765" y="170" width="275" height="100" rx="12"/>
+  <text class="cardHead" x="790" y="201">装入程序建立</text>
+  <text class="cardBody" x="790" y="229">代码、只读区、数据段、BSS</text>
+  <text class="cardBody" x="790" y="252">内容和权限来自可执行文件</text>
+
+  <rect class="card" x="765" y="287" width="275" height="112" rx="12"/>
+  <text class="cardHead" x="790" y="318">运行过程中建立</text>
+  <text class="cardBody" x="790" y="346">内存分配器扩展堆</text>
+  <text class="cardBody" x="790" y="370">动态链接器和 mmap 建立映射</text>
+  <text class="cardBody" x="790" y="393">线程创建时分配用户栈</text>
+
+  <rect class="card" x="765" y="416" width="275" height="105" rx="12"/>
+  <text class="cardHead" x="790" y="447">页表决定实际去向</text>
+  <text class="cardBody" x="790" y="475">物理页 · 文件内容 · 换出数据</text>
+  <text class="cardBody" x="790" y="499">页面可以暂时不驻留主存</text>
+
+  <rect class="foot" x="735" y="575" width="335" height="105" rx="16"/>
+  <text class="footText" x="902.5" y="610">一个进程只有一套用户空间映射</text>
+  <text class="footText" x="902.5" y="640">线程共享各区域</text>
+  <text class="footText" x="902.5" y="667">但各自使用独立用户栈</text>
+
+  <text class="subtitle" x="560" y="724" text-anchor="middle">虚拟地址连续不代表物理页连续；共享物理页也不会合并两个进程的地址空间</text>
 </svg>

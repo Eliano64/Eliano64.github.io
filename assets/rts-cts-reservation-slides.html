@@ -188,7 +188,7 @@
           </g>
           <g id="nav" opacity="0">
             <rect x="438" y="268" width="222" height="34" rx="7" fill="var(--nav)" opacity=".20" stroke="var(--nav)" stroke-width="2"/>
-            <text x="549" y="290" text-anchor="middle" fill="var(--nav)" font-size="15" font-weight="700">NAV：C 推迟发送</text>
+            <text x="549" y="290" text-anchor="middle" fill="var(--nav)" font-size="15" font-weight="700">C 的 NAV：376 μs → 0</text>
           </g>
         </svg>
         <div class="caption" id="caption"></div>
@@ -202,11 +202,11 @@
   <script>
     const slides = [
       { title: "1. 等待 DIFS", nav: "A 先监听并等待 DIFS。", body: "源站 A 要发送长数据帧，先监听信道。信道空闲后，A 等待 DIFS，准备发出预约请求。", show: ["difs"] },
-      { title: "2. 发送 RTS", nav: "A 用短控制帧预约。", body: "A 发送 RTS 给 B。RTS 很短，其中包含本次通信预计占用信道的持续时间。", show: ["difs", "rts"] },
-      { title: "3. 返回 CTS", nav: "B 用 CTS 回复预约。", body: "B 正确收到 RTS 后，等待 SIFS，返回 CTS。隐藏站 C 虽然听不到 A 的 RTS，但可以听到 B 的 CTS。", show: ["difs", "rts", "sifs", "cts"] },
-      { title: "4. 设置 NAV", nav: "C 听到 CTS 后沉默。", body: "C 根据 CTS 中的持续时间设置 NAV。在 NAV 结束前，C 不争用信道，因此不会干扰 B 接收 A 的数据。", show: ["difs", "rts", "sifs", "cts", "nav"] },
-      { title: "5. 发送 DATA", nav: "A 等 SIFS 后发数据。", body: "A 收到 CTS 后，等待 SIFS，发送 DATA。RTS/CTS 的意义就是先用短帧预约，再发送较长的数据帧。", show: ["difs", "rts", "sifs", "cts", "nav", "data"] },
-      { title: "6. 返回 ACK", nav: "B 等 SIFS 后确认。", body: "B 正确收到 DATA 后，等待 SIFS，返回 ACK。若 A 没收到 ACK，就会退避后重传。", show: ["difs", "rts", "sifs", "cts", "nav", "data", "ack"] }
+      { title: "2. 发送 RTS", nav: "A 请求发送。", body: "A 发送 RTS 给 B，请求完成后续数据传输。", show: ["difs", "rts"] },
+      { title: "3. 返回 CTS", nav: "B 回复 CTS。", body: "B 等待 SIFS 后返回 CTS。隐藏站 C 虽然听不到 A，却能听到 B。", show: ["difs", "rts", "sifs", "cts"] },
+      { title: "4. 设置 NAV", nav: "C 的 NAV = 376 μs", body: "C 听完 CTS 后，NAV = 2×SIFS + DATA + ACK = 2×16 + 300 + 44 = 376 μs。", show: ["difs", "rts", "sifs", "cts", "nav"] },
+      { title: "5. 发送 DATA", nav: "C 继续倒计时。", body: "A 等待 SIFS 后发送 DATA；C 在 NAV 归零前不发送。", show: ["difs", "rts", "sifs", "cts", "nav", "data"] },
+      { title: "6. 返回 ACK", nav: "NAV 归零。", body: "B 等待 SIFS 后返回 ACK。ACK 结束时，C 的 NAV 也归零。", show: ["difs", "rts", "sifs", "cts", "nav", "data", "ack"] }
     ];
 
     const params = new URLSearchParams(location.search);

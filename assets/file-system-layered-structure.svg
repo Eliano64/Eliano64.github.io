@@ -1,30 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" role="img" aria-labelledby="title desc">
-  <title id="title">File System Layered Structure</title>
-  <desc id="desc">Layered file system structure from user interface to device management.</desc>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-    :root{--bg:#fff;--fg:#111827;--muted:#475569;--line:#cbd5e1;--panel:#f8fafc;--blue:#2563eb;--green:#059669;--orange:#d97706;--purple:#7c3aed}
-    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#475569;--panel:#111827;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--purple:#c084fc}}
-    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#arrow)}.chip{fill:var(--blue);opacity:.12;stroke:var(--blue);stroke-width:1.5}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 620" role="img" aria-labelledby="title desc">
+  <title id="title">文件访问的分层路径</title>
+  <desc id="desc">用户进程的文件系统调用依次经过系统调用接口、VFS、具体文件系统、页缓存与块IO层、设备驱动，最后到达存储设备。</desc>
+  <style>
+    svg{background:#f8fafc}
+    @media(prefers-color-scheme:dark){svg{background:#0b1020}}
+    :root{--bg:#f8fafc;--fg:#0f172a;--muted:#475569;--line:#94a3b8;--panel:#fff;--blue:#2563eb;--blueFill:#dbeafe;--green:#059669;--greenFill:#d1fae5;--orange:#d97706;--orangeFill:#ffedd5}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e5e7eb;--muted:#cbd5e1;--line:#64748b;--panel:#111827;--blue:#60a5fa;--blueFill:#172554;--green:#34d399;--greenFill:#052e2b;--orange:#fbbf24;--orangeFill:#422006}}
+    .bg{fill:var(--bg)}.box{fill:var(--panel);stroke:var(--line);stroke-width:2}.vfs{fill:var(--blueFill);stroke:var(--blue);stroke-width:3}.cache{fill:var(--greenFill);stroke:var(--green);stroke-width:2}.device{fill:var(--orangeFill);stroke:var(--orange);stroke-width:2}.t{fill:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.m{fill:var(--muted);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}.a{stroke:var(--blue);stroke-width:3;fill:none;marker-end:url(#arrow)}
   </style>
   <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="var(--blue)"/></marker></defs>
-  <rect class="bg" width="980" height="580"/>
-  <text class="t" x="490" y="38" text-anchor="middle" font-size="24" font-weight="700">文件系统的层次结构</text>
-  <text class="m" x="490" y="66" text-anchor="middle" font-size="15">路径名、权限、逻辑地址、物理地址和磁盘 I/O 分层处理</text>
-  <g transform="translate(180,98)">
-    <rect class="box" x="0" y="0" width="660" height="54" rx="8"/><text class="t" x="220" y="34" text-anchor="middle" font-size="17" font-weight="700">用户接口</text><text class="m" x="440" y="34" text-anchor="middle" font-size="14">read / write / open / close</text>
-    <rect class="box" x="0" y="68" width="660" height="54" rx="8"/><text class="t" x="220" y="102" text-anchor="middle" font-size="17" font-weight="700">文件目录系统</text><text class="m" x="440" y="102" text-anchor="middle" font-size="14">按路径查找 FCB / inode</text>
-    <rect class="box" x="0" y="136" width="660" height="54" rx="8"/><text class="t" x="220" y="170" text-anchor="middle" font-size="17" font-weight="700">存取控制模块</text><text class="m" x="440" y="170" text-anchor="middle" font-size="14">验证访问权限</text>
-    <rect class="box" x="0" y="204" width="660" height="54" rx="8"/><text class="t" x="220" y="238" text-anchor="middle" font-size="17" font-weight="700">逻辑文件系统与文件信息缓冲区</text><text class="m" x="440" y="238" text-anchor="middle" font-size="14">记录号 -> 逻辑地址</text>
-    <rect class="box" x="0" y="272" width="660" height="54" rx="8"/><text class="t" x="220" y="306" text-anchor="middle" font-size="17" font-weight="700">物理文件系统</text><text class="m" x="440" y="306" text-anchor="middle" font-size="14">逻辑块号 -> 物理块号</text>
-    <rect class="box" x="0" y="340" width="660" height="54" rx="8"/><text class="t" x="220" y="374" text-anchor="middle" font-size="17" font-weight="700">设备管理模块</text><text class="m" x="440" y="374" text-anchor="middle" font-size="14">磁盘调度、启动设备</text>
-    <rect class="box" x="0" y="408" width="660" height="54" rx="8"/><text class="t" x="220" y="442" text-anchor="middle" font-size="17" font-weight="700">辅助分配模块</text><text class="m" x="440" y="442" text-anchor="middle" font-size="14">分配/回收磁盘块</text>
-    <path class="a" d="M330 54 V68"/><path class="a" d="M330 122 V136"/><path class="a" d="M330 190 V204"/><path class="a" d="M330 258 V272"/><path class="a" d="M330 326 V340"/><path class="a" d="M330 394 V408"/>
-  </g>
-  <rect class="chip" x="50" y="112" width="110" height="70" rx="10"/><text class="t" x="105" y="143" text-anchor="middle" font-size="16">用户进程</text><text class="m" x="105" y="166" text-anchor="middle" font-size="13">路径 + 操作</text>
-  <path class="a" d="M160 147 H178"/>
-  <rect class="chip" x="855" y="440" width="90" height="66" rx="10"/><text class="t" x="900" y="468" text-anchor="middle" font-size="15">磁盘设备</text><text class="m" x="900" y="490" text-anchor="middle" font-size="12">块读写</text>
-  <path class="a" d="M840 462 H855"/>
+  <rect class="bg" width="1100" height="620"/>
+  <text class="t" x="550" y="42" text-anchor="middle" font-size="26" font-weight="700">文件访问的分层路径</text>
+  <text class="m" x="550" y="70" text-anchor="middle" font-size="15">VFS 位于内核系统调用接口与具体文件系统之间</text>
+
+  <rect class="box" x="205" y="96" width="690" height="64" rx="10"/>
+  <text class="t" x="390" y="124" text-anchor="middle" font-size="18" font-weight="700">用户进程</text>
+  <text class="m" x="675" y="124" text-anchor="middle" font-size="15">open / read / write / close</text>
+  <text class="m" x="550" y="148" text-anchor="middle" font-size="13">路径名、文件描述符、缓冲区</text>
+
+  <rect class="box" x="205" y="190" width="690" height="58" rx="10"/>
+  <text class="t" x="390" y="226" text-anchor="middle" font-size="18" font-weight="700">系统调用接口</text>
+  <text class="m" x="675" y="226" text-anchor="middle" font-size="14">进入内核并检查参数</text>
+
+  <rect class="vfs" x="205" y="278" width="690" height="70" rx="10"/>
+  <text class="t" x="390" y="309" text-anchor="middle" font-size="20" font-weight="700">VFS</text>
+  <text class="m" x="675" y="304" text-anchor="middle" font-size="14">统一的 file / dentry / inode / superblock 对象</text>
+  <text class="m" x="675" y="328" text-anchor="middle" font-size="14">把通用操作分派给具体文件系统</text>
+
+  <rect class="box" x="205" y="378" width="690" height="64" rx="10"/>
+  <text class="t" x="390" y="407" text-anchor="middle" font-size="18" font-weight="700">具体文件系统</text>
+  <text class="m" x="675" y="404" text-anchor="middle" font-size="14">ext4 / FAT / NTFS</text>
+  <text class="m" x="675" y="427" text-anchor="middle" font-size="14">目录、权限、块映射、空闲空间</text>
+
+  <rect class="cache" x="205" y="472" width="690" height="58" rx="10"/>
+  <text class="t" x="390" y="508" text-anchor="middle" font-size="18" font-weight="700">页缓存与块 I/O 层</text>
+  <text class="m" x="675" y="508" text-anchor="middle" font-size="14">缓存文件页，生成块设备请求</text>
+
+  <rect class="device" x="205" y="560" width="690" height="46" rx="10"/>
+  <text class="t" x="390" y="589" text-anchor="middle" font-size="17" font-weight="700">设备驱动与存储设备</text>
+  <text class="m" x="675" y="589" text-anchor="middle" font-size="14">提交并完成实际读写</text>
+
+  <path class="a" d="M550 160 V188"/><path class="a" d="M550 248 V276"/><path class="a" d="M550 348 V376"/><path class="a" d="M550 442 V470"/><path class="a" d="M550 530 V558"/>
 </svg>

@@ -1,183 +1,397 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
   <title>页面置换算法过程</title>
   <style>
     :root {
       color-scheme: light dark;
-      --bg: #ffffff;
-      --panel: #f8fafc;
-      --ink: #172033;
-      --muted: #607086;
-      --line: #40516b;
-      --chip: #ffffff;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --ink: #182235;
+      --muted: #66758b;
+      --line: #cbd5e1;
       --blue: #2563eb;
+      --blue-soft: #dbeafe;
       --green: #15803d;
+      --green-soft: #dcfce7;
+      --amber: #b45309;
+      --amber-soft: #fef3c7;
       --red: #b91c1c;
-      --orange: #c2410c;
+      --red-soft: #fee2e2;
       --purple: #7c3aed;
-      --shadow: rgba(15, 23, 42, .12);
+      --shadow: rgba(15, 23, 42, .10);
     }
+
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0f172a;
-        --panel: #172033;
-        --ink: #e5e7eb;
-        --muted: #aab6c8;
-        --line: #b6c2d3;
-        --chip: #111827;
+        --bg: #0b1220;
+        --panel: #111c2d;
+        --panel-soft: #162235;
+        --ink: #e7edf6;
+        --muted: #a9b6c8;
+        --line: #40506a;
         --blue: #60a5fa;
+        --blue-soft: #18365e;
         --green: #4ade80;
-        --red: #f87171;
-        --orange: #fb923c;
-        --purple: #a78bfa;
+        --green-soft: #143d2a;
+        --amber: #fbbf24;
+        --amber-soft: #4a3510;
+        --red: #fb7185;
+        --red-soft: #4a1f2a;
+        --purple: #c4b5fd;
         --shadow: rgba(0, 0, 0, .28);
       }
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
+      min-width: 680px;
       background: var(--bg);
       color: var(--ink);
       font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
     }
+
+    button { font: inherit; }
+
     .deck {
+      width: min(1180px, 100%);
       min-height: 100vh;
-      padding: 22px;
+      margin: 0 auto;
+      padding: 18px;
       display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      gap: 14px;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
     }
+
     header {
       display: flex;
-      justify-content: space-between;
       align-items: flex-start;
+      justify-content: space-between;
       gap: 18px;
     }
-    h1 { margin: 0; font-size: 24px; }
-    .subtitle { margin-top: 6px; color: var(--muted); font-size: 14px; }
-    .tabs, .controls { display: flex; gap: 8px; flex-wrap: wrap; }
-    button {
-      border: 1px solid color-mix(in srgb, var(--line), transparent 30%);
-      background: var(--chip);
-      color: var(--ink);
-      border-radius: 7px;
-      padding: 8px 11px;
+
+    h1 {
+      margin: 0;
+      font-size: clamp(22px, 2.3vw, 30px);
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
       font-size: 14px;
+    }
+
+    .tabs,
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: var(--panel);
+      color: var(--ink);
       cursor: pointer;
     }
+
+    button:hover:not(:disabled) { border-color: var(--blue); }
+
     button.active {
       border-color: var(--blue);
-      background: color-mix(in srgb, var(--blue), transparent 86%);
+      background: var(--blue-soft);
+      color: var(--blue);
       font-weight: 700;
     }
-    button:disabled { opacity: .45; cursor: not-allowed; }
+
+    button:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+    }
+
     main {
+      min-height: 570px;
       display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
-      min-height: 520px;
+      grid-template-columns: minmax(0, 1.18fr) minmax(300px, .82fr);
+      gap: 14px;
     }
-    .stage, .side {
+
+    .stage,
+    .side {
+      border: 1px solid var(--line);
+      border-radius: 12px;
       background: var(--panel);
-      border: 1px solid color-mix(in srgb, var(--line), transparent 45%);
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 8px 24px var(--shadow);
+      box-shadow: 0 10px 28px var(--shadow);
     }
+
+    .stage {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
     .sequence {
       display: grid;
-      grid-template-columns: repeat(20, minmax(28px, 1fr));
+      grid-template-columns: repeat(10, minmax(30px, 1fr));
       gap: 5px;
-      margin-bottom: 14px;
     }
-    .ref {
-      min-height: 32px;
+
+    .reference {
+      min-height: 31px;
       display: grid;
       place-items: center;
-      border: 1px solid color-mix(in srgb, var(--line), transparent 50%);
+      border: 1px solid var(--line);
       border-radius: 6px;
-      background: var(--chip);
+      background: var(--panel-soft);
+      font-size: 13px;
       font-weight: 700;
-      font-size: 14px;
     }
-    .ref.past { opacity: .45; }
-    .ref.now {
+
+    .reference.past { opacity: .42; }
+
+    .reference.current {
       border-color: var(--blue);
-      outline: 2px solid color-mix(in srgb, var(--blue), transparent 55%);
+      background: var(--blue-soft);
+      color: var(--blue);
+      outline: 2px solid color-mix(in srgb, var(--blue), transparent 62%);
     }
+
     .frames {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin: 18px 0;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding-top: 27px;
     }
+
     .frame {
-      min-height: 112px;
-      border: 2px solid var(--line);
-      border-radius: 8px;
-      background: var(--chip);
+      min-height: 128px;
+      position: relative;
       display: grid;
       grid-template-rows: auto 1fr auto;
       align-items: center;
       justify-items: center;
+      gap: 5px;
       padding: 10px;
-      position: relative;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel-soft);
+      transition: border-color .15s, background .15s;
     }
-    .frame.empty { opacity: .62; }
-    .frame.hit { border-color: var(--green); }
-    .frame.evict { border-color: var(--red); }
-    .frame.pointer::after {
-      content: "指针";
+
+    .frame.empty { opacity: .7; }
+    .frame.focus { border-color: var(--green); background: var(--green-soft); }
+    .frame.inspected { border-color: var(--amber); background: var(--amber-soft); }
+    .frame.victim { border-color: var(--red); background: var(--red-soft); }
+
+    .frame.pointer::before {
+      content: "▼ hand：待检查";
       position: absolute;
-      top: -13px;
-      right: 8px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      color: var(--bg);
-      background: var(--purple);
+      top: -27px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--purple);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .frame-label {
+      color: var(--muted);
       font-size: 12px;
     }
-    .slotLabel { font-size: 12px; color: var(--muted); }
-    .page { font-size: 34px; font-weight: 800; line-height: 1; }
-    .bits { font-size: 12px; color: var(--muted); }
+
+    .page {
+      font-size: 38px;
+      font-weight: 850;
+      line-height: 1;
+    }
+
+    .frame-meta {
+      min-height: 25px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .bits {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .bit {
+      min-width: 44px;
+      padding: 3px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 750;
+    }
+
+    .scan-panel {
+      min-height: 76px;
+      padding: 10px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 9px;
+      background: var(--panel-soft);
+    }
+
+    .scan-panel.hidden {
+      visibility: hidden;
+    }
+
+    .scan-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .scan-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pending-page {
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-weight: 750;
+    }
+
+    .pending-page:empty { display: none; }
+
+    .scan-heading strong {
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .trail {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trail-item {
+      padding: 4px 7px;
+      border-radius: 6px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      font-size: 12px;
+    }
+
+    .trail-arrow {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
     .metrics {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-top: 14px;
+      margin-top: auto;
     }
+
     .metric {
-      background: var(--chip);
-      border: 1px solid color-mix(in srgb, var(--line), transparent 50%);
-      border-radius: 7px;
-      padding: 10px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      color: var(--muted);
+      font-size: 12px;
     }
-    .metric strong { display: block; font-size: 20px; margin-top: 4px; }
-    .side h2 { margin: 0 0 12px; font-size: 21px; }
-    .side p { margin: 0 0 12px; line-height: 1.7; }
-    .side ul { margin: 0; padding-left: 1.2em; line-height: 1.75; }
+
+    .metric strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 19px;
+    }
+
+    .side {
+      padding: 17px;
+      overflow: hidden;
+    }
+
     .badge {
       display: inline-flex;
+      min-height: 25px;
       align-items: center;
-      min-height: 26px;
       padding: 0 9px;
       border-radius: 999px;
-      background: color-mix(in srgb, var(--blue), transparent 84%);
-      margin-bottom: 10px;
-      font-size: 13px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
     }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
-    th, td { border: 1px solid color-mix(in srgb, var(--line), transparent 45%); padding: 7px; text-align: center; }
-    th { background: color-mix(in srgb, var(--line), transparent 86%); }
-    .belady { display: none; }
-    .belady.show { display: block; }
+
+    .side h2 {
+      margin: 12px 0 10px;
+      font-size: 21px;
+      line-height: 1.35;
+    }
+
+    .explain {
+      min-height: 112px;
+      line-height: 1.68;
+      font-size: 14px;
+    }
+
+    .explain p { margin: 0 0 10px; }
+
+    .movement {
+      margin: 10px 0 14px;
+      padding: 9px 11px;
+      border-left: 4px solid var(--purple);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--purple), transparent 90%);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .movement:empty { display: none; }
+
+    .rule {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-soft);
+    }
+
+    .rule h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .rule ol,
+    .rule ul {
+      margin: 0;
+      padding-left: 1.25em;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
     @media (max-width: 900px) {
       main { grid-template-columns: 1fr; }
-      .frames { grid-template-columns: repeat(3, 1fr); }
-      .sequence { grid-template-columns: repeat(10, minmax(28px, 1fr)); }
+      .side { min-height: 360px; }
     }
   </style>
 </head>
@@ -186,7 +400,7 @@
     <header>
       <div>
         <h1>页面置换算法过程</h1>
-        <div class="subtitle">按访问串逐步模拟驻留集变化，区分命中、缺页和真正发生置换。</div>
+        <div class="subtitle">“下一步”推进一个可见动作；CLOCK 的扫描和指针移动不会被跳过。</div>
       </div>
       <div class="controls">
         <button id="prev" type="button">上一步</button>
@@ -194,230 +408,589 @@
         <button id="reset" type="button">重置</button>
       </div>
     </header>
+
     <nav class="tabs" aria-label="算法选择">
       <button data-algo="OPT" class="active" type="button">OPT</button>
       <button data-algo="FIFO" type="button">FIFO</button>
       <button data-algo="LRU" type="button">LRU</button>
       <button data-algo="CLOCK" type="button">CLOCK</button>
       <button data-algo="ICLOCK" type="button">改进 CLOCK</button>
-      <button data-algo="BELADY" type="button">Belady 异常</button>
     </nav>
+
     <main>
       <section class="stage">
         <div id="sequence" class="sequence"></div>
         <div id="frames" class="frames"></div>
+        <div id="scanPanel" class="scan-panel hidden">
+          <div class="scan-heading">
+            <strong id="scanTitle">扫描过程</strong>
+            <div class="scan-status">
+              <span id="scanRule"></span>
+              <span id="pendingPage" class="pending-page"></span>
+            </div>
+          </div>
+          <div id="trail" class="trail"></div>
+        </div>
         <div class="metrics">
-          <div class="metric">当前访问<strong id="cur">-</strong></div>
+          <div class="metric">当前访问<strong id="currentPage">-</strong></div>
           <div class="metric">缺页次数<strong id="faults">0</strong></div>
           <div class="metric">置换次数<strong id="replacements">0</strong></div>
           <div class="metric">缺页率<strong id="rate">0%</strong></div>
         </div>
-        <div id="belady" class="belady"></div>
       </section>
+
       <aside class="side">
-        <div id="badge" class="badge">步骤 0</div>
-        <h2 id="title">准备开始</h2>
-        <div id="explain"></div>
+        <div id="badge" class="badge">准备开始</div>
+        <h2 id="eventTitle">选择算法并逐步执行</h2>
+        <div id="explain" class="explain"></div>
+        <div id="movement" class="movement"></div>
+        <div class="rule">
+          <h3 id="ruleTitle">本算法只观察什么？</h3>
+          <div id="ruleBody"></div>
+        </div>
       </aside>
     </main>
   </div>
-  <script>
-    const baseSeq = [7,0,1,2,0,3,0,4,2,3,0,3,2,1,2,0,1,7,0,1];
-    const beladySeq = [3,2,1,0,3,2,4,3,2,1,0,4];
-    const frameCount = 3;
-    const dirtyPages = new Set([2, 4, 7]);
-    const intro = {
-      OPT: "OPT 看未来：如果必须淘汰，就换出未来最晚才会再次访问，或以后不再访问的页。",
-      FIFO: "FIFO 看进入时间：命中不改变队列顺序，缺页且满时淘汰最早进入主存的页。",
-      LRU: "LRU 看过去：命中后更新最近使用顺序，缺页且满时淘汰最近最长时间未使用的页。",
-      CLOCK: "CLOCK 用访问位近似 LRU：R=1 的页获得第二次机会，扫描时改为 0；R=0 的页被淘汰。",
-      ICLOCK: "改进 CLOCK 同时看访问位 R 和修改位 M，优先淘汰不需要写回的页。",
-      BELADY: "FIFO 可能出现页框更多但缺页更多的反直觉现象。"
-    };
-    let algo = "OPT";
-    let step = 0;
 
-    function simulate(kind, seq = baseSeq, framesN = frameCount) {
-      const frames = Array(framesN).fill(null);
-      const fifo = [];
-      const recent = [];
-      let hand = 0;
-      let faults = 0;
-      let replacements = 0;
-      const rows = [];
-      for (let i = 0; i < seq.length; i++) {
-        const page = seq[i];
-        let hitIndex = frames.findIndex(f => f && f.page === page);
-        let hit = hitIndex >= 0;
-        let evicted = null;
-        let message = "";
-        if (hit) {
-          if (kind === "LRU") {
-            const pos = recent.indexOf(page);
-            if (pos >= 0) recent.splice(pos, 1);
-            recent.unshift(page);
-            message = `页 ${page} 命中，更新为最近使用。`;
-          } else if (kind === "CLOCK" || kind === "ICLOCK") {
-            frames[hitIndex].r = 1;
-            if (kind === "ICLOCK" && dirtyPages.has(page)) frames[hitIndex].m = 1;
-            message = `页 ${page} 命中，将访问位 R 置为 1。`;
-          } else {
-            message = `页 ${page} 命中，不发生缺页。`;
-          }
-        } else {
-          faults++;
-          const empty = frames.findIndex(f => !f);
-          if (empty >= 0) {
-            frames[empty] = { page, r: 1, m: dirtyPages.has(page) ? 1 : 0, loadedAt: i };
-            if (kind === "FIFO") fifo.push(page);
-            if (kind === "LRU") recent.unshift(page);
-            message = `页 ${page} 不在主存，发生缺页；还有空闲页框，直接调入。`;
-          } else {
-            replacements++;
-            let victimIndex = 0;
-            if (kind === "OPT") {
-              let best = -1;
-              for (let j = 0; j < frames.length; j++) {
-                const next = seq.slice(i + 1).indexOf(frames[j].page);
-                const score = next < 0 ? Number.POSITIVE_INFINITY : next;
-                if (score > best) { best = score; victimIndex = j; }
-              }
-              message = `页 ${page} 缺页且无空闲页框；OPT 淘汰未来最晚再访问的页 ${frames[victimIndex].page}。`;
-            } else if (kind === "FIFO") {
-              const victim = fifo.shift();
-              victimIndex = frames.findIndex(f => f.page === victim);
-              message = `页 ${page} 缺页且无空闲页框；FIFO 淘汰最早进入的页 ${victim}。`;
-            } else if (kind === "LRU") {
-              const victim = recent.pop();
-              victimIndex = frames.findIndex(f => f.page === victim);
-              message = `页 ${page} 缺页且无空闲页框；LRU 淘汰最近最长时间未使用的页 ${victim}。`;
-            } else if (kind === "CLOCK") {
-              const visited = [];
-              while (true) {
-                visited.push(`${frames[hand].page}(R=${frames[hand].r})`);
-                if (frames[hand].r === 0) { victimIndex = hand; break; }
-                frames[hand].r = 0;
-                hand = (hand + 1) % frames.length;
-              }
-              message = `页 ${page} 缺页；CLOCK 扫描 ${visited.join(" -> ")}，淘汰页 ${frames[victimIndex].page}。`;
-            } else if (kind === "ICLOCK") {
-              const scans = [];
-              let found = false;
-              for (let pass = 1; pass <= 4 && !found; pass++) {
-                for (let k = 0; k < frames.length; k++) {
-                  const f = frames[hand];
-                  scans.push(`${f.page}(${f.r},${f.m})`);
-                  if ((pass === 1 || pass === 3) && f.r === 0 && f.m === 0) { victimIndex = hand; found = true; break; }
-                  if ((pass === 2 || pass === 4) && f.r === 0 && f.m === 1) { victimIndex = hand; found = true; break; }
-                  if (pass === 2) f.r = 0;
-                  hand = (hand + 1) % frames.length;
-                }
-              }
-              message = `页 ${page} 缺页；改进 CLOCK 按 (R,M) 扫描 ${scans.join(" -> ")}，淘汰页 ${frames[victimIndex].page}。`;
-            }
-            evicted = frames[victimIndex].page;
-            frames[victimIndex] = { page, r: 1, m: dirtyPages.has(page) ? 1 : 0, loadedAt: i };
-            if (kind === "FIFO") fifo.push(page);
-            if (kind === "LRU") recent.unshift(page);
-            if (kind === "CLOCK" || kind === "ICLOCK") hand = (victimIndex + 1) % frames.length;
-          }
-        }
-        rows.push({
-          i, page, hit, evicted, faults, replacements, hand,
-          frames: frames.map(f => f ? { ...f } : null),
-          message
-        });
-      }
-      return rows;
+  <script>
+    const sequence = [7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1];
+    const frameCount = 3;
+    // 改进型 CLOCK 必须知道每一次访问是读还是写。
+    // W 会把当前驻留副本的 M 置为 1；页面被重新调入时，M 重新由本次访问决定。
+    const writeAccesses = new Set([0, 3, 7, 12, 17]);
+
+    function isWrite(refIndex) {
+      return writeAccesses.has(refIndex);
     }
 
-    function renderSequence(seq, idx) {
-      const wrap = document.getElementById("sequence");
-      wrap.innerHTML = "";
-      seq.forEach((p, i) => {
-        const el = document.createElement("div");
-        el.className = "ref" + (i < idx ? " past" : "") + (i === idx ? " now" : "");
-        el.textContent = p;
-        wrap.appendChild(el);
+    const introductions = {
+      OPT: "OPT 只比较各页下一次被访问的时间；以后不再访问的页最适合淘汰。",
+      FIFO: "FIFO 只比较页面进入主存的先后；命中不会改变先后次序。",
+      LRU: "LRU 只比较页面上一次被访问的时间；命中会更新最近使用次序。",
+      CLOCK: "指针 hand 始终指向待检查页框。本例令 hand 初值为 0，页框按 0→1→2→0 构成环。",
+      ICLOCK: "指针 hand 始终指向待检查页框，初值为 0。访问串中的 R 表示读，W 表示写；只有写访问才会把当前驻留页的 M 置为 1。"
+    };
+
+    const ruleBodies = {
+      OPT: "<ul><li>命中：页框不变。</li><li>缺页且已满：淘汰未来最晚再访问的页。</li></ul>",
+      FIFO: "<ul><li>命中：进入次序不变。</li><li>缺页且已满：淘汰最早调入的页。</li></ul>",
+      LRU: "<ul><li>命中：把该页更新为最近使用。</li><li>缺页且已满：淘汰最久未访问的页。</li></ul>",
+      CLOCK: "<ol><li>hand 始终指向待检查页框；本例 hand=0，环为 0→1→2→0。</li><li>有空页框：在 hand 处装入，然后 hand 后移。</li><li>命中：把该页的 R 置为 1，hand 不动。</li><li>置换：检查 hand 所指页框；R=1 时清零并后移，R=0 时淘汰。</li><li>装入完成后，hand 移到下一待检查页框。</li></ol>",
+      ICLOCK: "<ol><li>hand 始终指向待检查页框；本例初值为 0，环为 0→1→2→0。</li><li>访问串中 R 表示读，W 表示写；写访问把该页的 M 置为 1。</li><li>第 1 轮找 (0,0)，不清 R。</li><li>第 2 轮找 (0,1)，同时把越过页面的 R 清为 0。</li><li>仍未找到时，再依次找 (0,0)、(0,1)；装入后 hand 指向下一待检查页框。</li></ol>"
+    };
+
+    let algorithm = "OPT";
+    let cursor = 0;
+    let events = [];
+
+    function cloneFrames(frames) {
+      return frames.map(function (frame) {
+        return frame ? Object.assign({}, frame) : null;
       });
     }
 
-    function renderFrames(row, kind) {
+    function makeEvent(state, details) {
+      const event = Object.assign({
+        refIndex: state.refIndex,
+        page: state.page,
+        faults: state.faults,
+        replacements: state.replacements,
+        frames: cloneFrames(state.frames),
+        pointer: null,
+        inspected: null,
+        focus: null,
+        victim: null,
+        trail: [],
+        scanTitle: "",
+        scanRule: "",
+        pending: false,
+        movement: "",
+        title: "",
+        message: ""
+      }, details);
+      event.trail = (event.trail || []).slice();
+      return event;
+    }
+
+    function simulateBasic(kind) {
+      const frames = Array(frameCount).fill(null);
+      const fifo = [];
+      const recent = [];
+      const result = [];
+      let faults = 0;
+      let replacements = 0;
+
+      sequence.forEach(function (page, refIndex) {
+        const state = { frames, page, refIndex, faults, replacements };
+        let index = frames.findIndex(function (frame) { return frame && frame.page === page; });
+
+        if (index >= 0) {
+          if (kind === "LRU") {
+            const old = recent.indexOf(page);
+            if (old >= 0) recent.splice(old, 1);
+            recent.unshift(page);
+            frames[index].lastUsed = refIndex;
+          }
+          state.faults = faults;
+          state.replacements = replacements;
+          result.push(makeEvent(state, {
+            focus: index,
+            title: "页 " + page + " 命中",
+            message: kind === "LRU"
+              ? "页已在主存中，更新它的最近访问时间；页框内容不变。"
+              : "页已在主存中，不发生缺页，页框内容不变。",
+            movement: "本次没有页面换入、换出。"
+          }));
+          return;
+        }
+
+        faults++;
+        let target = frames.findIndex(function (frame) { return !frame; });
+        let evicted = null;
+
+        if (target < 0) {
+          replacements++;
+          if (kind === "OPT") {
+            let farthest = -1;
+            frames.forEach(function (frame, frameIndex) {
+              const later = sequence.slice(refIndex + 1).indexOf(frame.page);
+              const distance = later < 0 ? Number.POSITIVE_INFINITY : later;
+              if (distance > farthest) {
+                farthest = distance;
+                target = frameIndex;
+              }
+            });
+          } else if (kind === "FIFO") {
+            const victimPage = fifo.shift();
+            target = frames.findIndex(function (frame) { return frame.page === victimPage; });
+          } else {
+            const victimPage = recent.pop();
+            target = frames.findIndex(function (frame) { return frame.page === victimPage; });
+          }
+          evicted = frames[target].page;
+        }
+
+        frames[target] = {
+          page,
+          loadedAt: refIndex,
+          lastUsed: refIndex,
+          r: 1,
+          m: isWrite(refIndex) ? 1 : 0
+        };
+        if (kind === "FIFO") fifo.push(page);
+        if (kind === "LRU") recent.unshift(page);
+
+        state.faults = faults;
+        state.replacements = replacements;
+        result.push(makeEvent(state, {
+          focus: target,
+          title: evicted === null ? "缺页：直接调入页 " + page : "缺页：换入页 " + page,
+          message: evicted === null
+            ? "主存还有空闲页框，页 " + page + " 直接装入页框 " + target + "。"
+            : algorithmName(kind) + " 选择页 " + evicted + "，用页 " + page + " 替换它。",
+          movement: evicted === null
+            ? "空闲页框 " + target + " ← 页 " + page
+            : "页框 " + target + "：" + evicted + " → " + page
+        }));
+      });
+      return result;
+    }
+
+    function simulateClock(improved) {
+      const frames = Array(frameCount).fill(null);
+      const result = [];
+      let hand = 0;
+      let faults = 0;
+      let replacements = 0;
+
+      sequence.forEach(function (page, refIndex) {
+        const state = { frames, page, refIndex, faults, replacements };
+        const hitIndex = frames.findIndex(function (frame) { return frame && frame.page === page; });
+
+        if (hitIndex >= 0) {
+          frames[hitIndex].r = 1;
+          if (improved && isWrite(refIndex)) frames[hitIndex].m = 1;
+          state.faults = faults;
+          state.replacements = replacements;
+          result.push(makeEvent(state, {
+            pointer: hand,
+            focus: hitIndex,
+            title: "页 " + page + " 命中",
+            message: improved
+              ? (isWrite(refIndex)
+                  ? "本次是写访问：把该页的 R 和 M 都置为 1。"
+                  : "本次是读访问：把该页的 R 置为 1，M 保持原值。")
+              : "把该页的访问位 R 置为 1。",
+            movement: "命中不会移动扫描指针；指针仍指向页框 " + hand + "。"
+          }));
+          return;
+        }
+
+        faults++;
+        state.faults = faults;
+        const empty = frames.findIndex(function (frame) { return !frame; });
+        if (empty >= 0) {
+          const target = frames[hand] ? empty : hand;
+          frames[target] = {
+            page,
+            loadedAt: refIndex,
+            lastUsed: refIndex,
+            r: 1,
+            m: isWrite(refIndex) ? 1 : 0
+          };
+          hand = (target + 1) % frameCount;
+          state.replacements = replacements;
+          result.push(makeEvent(state, {
+            pointer: hand,
+            focus: target,
+            title: "缺页：直接调入页 " + page,
+            message: improved
+              ? "页框 " + target + " 为空，装入页面；本次为" + (isWrite(refIndex) ? "写" : "读") + "访问，因此设置 (R,M)=(1," + (isWrite(refIndex) ? 1 : 0) + ")。"
+              : "页框 " + target + " 为空，装入页面并把 R 置为 1。",
+            movement: "页 " + page + " 装入页框 " + target + "；指针移到页框 " + hand + "。"
+          }));
+          return;
+        }
+
+        state.replacements = replacements;
+        let trail = [];
+        result.push(makeEvent(state, {
+          pointer: hand,
+          title: "缺页：从指针处开始扫描",
+          message: "页框已满，当前不能直接调入页 " + page + "。",
+          movement: "扫描从页框 " + hand + " 开始。",
+          scanTitle: improved ? "改进 CLOCK：准备第 1 轮" : "CLOCK：准备扫描",
+          scanRule: improved ? "本轮目标 (R,M)=(0,0)" : "寻找 R=0",
+          pending: true,
+          trail
+        }));
+
+        if (!improved) {
+          while (true) {
+            const inspected = hand;
+            const frame = frames[inspected];
+            if (frame.r === 0) {
+              trail.push("页框" + inspected + "：" + frame.page + "，R=0 ✓");
+              result.push(makeEvent(state, {
+                pointer: inspected,
+                inspected,
+                victim: inspected,
+                title: "找到 R=0：选择页 " + frame.page,
+                message: "页框 " + inspected + " 的 R=0，不再给第二次机会。",
+                movement: "指针停在页框 " + inspected + "，准备在这里完成置换。",
+                scanTitle: "CLOCK：扫描路径",
+                scanRule: "R=0，停止",
+                pending: true,
+                trail: trail.slice()
+              }));
+              const oldPage = frame.page;
+              frames[inspected] = {
+                page,
+                loadedAt: refIndex,
+                lastUsed: refIndex,
+                r: 1,
+                m: isWrite(refIndex) ? 1 : 0
+              };
+              hand = (inspected + 1) % frameCount;
+              replacements++;
+              state.replacements = replacements;
+              result.push(makeEvent(state, {
+                pointer: hand,
+                focus: inspected,
+                title: "置换完成：页 " + oldPage + " → 页 " + page,
+                message: "新页装入后 R=1。下一次扫描不从这里重来，而从下一页框开始。",
+                movement: "页框 " + inspected + " 完成置换；指针移到页框 " + hand + "。",
+                scanTitle: "CLOCK：本次扫描完成",
+                scanRule: "hand：页框 " + hand,
+                trail: trail.slice()
+              }));
+              break;
+            }
+
+            frames[inspected].r = 0;
+            hand = (inspected + 1) % frameCount;
+            trail.push("页框" + inspected + "：" + frame.page + "，R 1→0");
+            result.push(makeEvent(state, {
+              pointer: hand,
+              inspected,
+              title: "R=1：给页 " + frame.page + " 第二次机会",
+              message: "清除页框 " + inspected + " 的 R，然后继续检查下一页框。",
+              movement: "指针：页框 " + inspected + " → 页框 " + hand,
+              scanTitle: "CLOCK：扫描路径",
+              scanRule: "R=1 时清零并后移",
+              pending: true,
+              trail: trail.slice()
+            }));
+          }
+          return;
+        }
+
+        let chosen = -1;
+        let chosenPass = 0;
+        for (let pass = 1; pass <= 4 && chosen < 0; pass++) {
+          const targetR = 0;
+          const targetM = pass % 2 === 1 ? 0 : 1;
+          const clearR = pass % 2 === 0;
+          const passStart = hand;
+
+          for (let count = 0; count < frameCount; count++) {
+            const inspected = hand;
+            const frame = frames[inspected];
+            const beforeR = frame.r;
+            const beforeM = frame.m;
+
+            if (beforeR === targetR && beforeM === targetM) {
+              trail.push("第" + pass + "轮·页框" + inspected + "：(" + beforeR + "," + beforeM + ") ✓");
+              chosen = inspected;
+              chosenPass = pass;
+              result.push(makeEvent(state, {
+                pointer: inspected,
+                inspected,
+                victim: inspected,
+                title: "第 " + pass + " 轮找到 (" + targetR + "," + targetM + ")",
+                message: "页 " + frame.page + " 符合本轮目标，停止扫描并选择该页。",
+                movement: "指针停在页框 " + inspected + "，准备完成置换。",
+                scanTitle: "改进 CLOCK：扫描路径",
+                scanRule: "第 " + pass + " 轮目标 (" + targetR + "," + targetM + ")",
+                pending: true,
+                trail: trail.slice()
+              }));
+              break;
+            }
+
+            let action = "不符合，越过";
+            if (clearR && frame.r === 1) {
+              frame.r = 0;
+              action = "不符合，R 1→0";
+            }
+            hand = (inspected + 1) % frameCount;
+            trail.push("第" + pass + "轮·页框" + inspected + "：(" + beforeR + "," + beforeM + ") " + action);
+            result.push(makeEvent(state, {
+              pointer: hand,
+              inspected,
+              title: "第 " + pass + " 轮：页框 " + inspected + " 不符合",
+              message: clearR
+                ? "本轮寻找 (" + targetR + "," + targetM + ")；越过页面时把 R=1 清为 0。"
+                : "本轮只寻找 (" + targetR + "," + targetM + ")，不修改访问位。",
+              movement: "指针：页框 " + inspected + " → 页框 " + hand,
+              scanTitle: "改进 CLOCK：扫描路径",
+              scanRule: "第 " + pass + " 轮目标 (" + targetR + "," + targetM + ")",
+              pending: true,
+              trail: trail.slice()
+            }));
+          }
+
+          if (chosen < 0 && hand !== passStart) hand = passStart;
+        }
+
+        const oldPage = frames[chosen].page;
+        frames[chosen] = {
+          page,
+          loadedAt: refIndex,
+          lastUsed: refIndex,
+          r: 1,
+          m: isWrite(refIndex) ? 1 : 0
+        };
+        hand = (chosen + 1) % frameCount;
+        replacements++;
+        state.replacements = replacements;
+        result.push(makeEvent(state, {
+          pointer: hand,
+          focus: chosen,
+          title: "置换完成：页 " + oldPage + " → 页 " + page,
+          message: "在第 " + chosenPass + " 轮选中页框 " + chosen + "。新页因本次" + (isWrite(refIndex) ? "写" : "读") + "访问而设置 (R,M)=(1," + (isWrite(refIndex) ? 1 : 0) + ")。",
+          movement: "页框 " + chosen + " 完成置换；指针移到页框 " + hand + "。",
+          scanTitle: "改进 CLOCK：本次扫描完成",
+          scanRule: "hand：页框 " + hand,
+          trail: trail.slice()
+        }));
+      });
+      return result;
+    }
+
+    function algorithmName(kind) {
+      return kind === "OPT" ? "OPT" : kind === "FIFO" ? "FIFO" : "LRU";
+    }
+
+    function buildEvents(kind) {
+      if (kind === "CLOCK") return simulateClock(false);
+      if (kind === "ICLOCK") return simulateClock(true);
+      return simulateBasic(kind);
+    }
+
+    function frameMeta(frame, index, event) {
+      if (!frame) return "空闲";
+      if (algorithm === "CLOCK") {
+        return '<div class="bits"><span class="bit">R=' + frame.r + "</span></div>";
+      }
+      if (algorithm === "ICLOCK") {
+        return '<div class="bits"><span class="bit">R=' + frame.r + '</span><span class="bit">M=' + frame.m + "</span></div>";
+      }
+      if (algorithm === "FIFO") {
+        return "第 " + (frame.loadedAt + 1) + " 次访问时调入";
+      }
+      if (algorithm === "LRU") {
+        return "最近访问：第 " + (frame.lastUsed + 1) + " 项";
+      }
+      const later = sequence.slice(event.refIndex + 1).indexOf(frame.page);
+      return later < 0 ? "以后不再访问" : "下次访问：+" + (later + 1);
+    }
+
+    function renderSequence(refIndex) {
+      const wrap = document.getElementById("sequence");
+      wrap.innerHTML = "";
+      sequence.forEach(function (page, index) {
+        const item = document.createElement("div");
+        item.className = "reference";
+        if (index < refIndex) item.classList.add("past");
+        if (index === refIndex) item.classList.add("current");
+        item.textContent = algorithm === "ICLOCK"
+          ? page + (isWrite(index) ? "W" : "R")
+          : page;
+        wrap.appendChild(item);
+      });
+    }
+
+    function renderFrames(event) {
       const wrap = document.getElementById("frames");
       wrap.innerHTML = "";
-      const n = kind === "BELADY" ? 0 : frameCount;
-      for (let i = 0; i < n; i++) {
-        const f = row && row.frames[i];
+      const showInitialHand = !event && (algorithm === "CLOCK" || algorithm === "ICLOCK");
+      for (let index = 0; index < frameCount; index++) {
+        const frame = event ? event.frames[index] : null;
         const el = document.createElement("div");
-        el.className = "frame" + (!f ? " empty" : "") + (f && f.page === row.page && row.hit ? " hit" : "") + (f && f.page === row.evicted ? " evict" : "") + ((kind === "CLOCK" || kind === "ICLOCK") && row.hand === i ? " pointer" : "");
-        el.innerHTML = `<div class="slotLabel">页框 ${i}</div><div class="page">${f ? f.page : "-"}</div><div class="bits">${f ? `R=${f.r} M=${f.m}` : "空"}</div>`;
+        el.className = "frame";
+        if (!frame) el.classList.add("empty");
+        if (event && event.focus === index) el.classList.add("focus");
+        if (event && event.inspected === index) el.classList.add("inspected");
+        if (event && event.victim === index) el.classList.add("victim");
+        if ((event && event.pointer === index && (algorithm === "CLOCK" || algorithm === "ICLOCK")) || (showInitialHand && index === 0)) {
+          el.classList.add("pointer");
+        }
+        el.innerHTML =
+          '<div class="frame-label">页框 ' + index + "</div>" +
+          '<div class="page">' + (frame ? frame.page : "—") + "</div>" +
+          '<div class="frame-meta">' + frameMeta(frame, index, event || { refIndex: -1 }) + "</div>";
         wrap.appendChild(el);
       }
     }
 
-    function renderBelady() {
-      const box = document.getElementById("belady");
-      const rows3 = simulate("FIFO", beladySeq, 3);
-      const rows4 = simulate("FIFO", beladySeq, 4);
-      box.classList.add("show");
-      box.innerHTML = `
-        <table>
-          <thead><tr><th>页框数</th><th>访问串</th><th>缺页次数</th><th>置换次数</th><th>结论</th></tr></thead>
-          <tbody>
-            <tr><td>3</td><td>${beladySeq.join(", ")}</td><td>${rows3.at(-1).faults}</td><td>${rows3.at(-1).replacements}</td><td>较少</td></tr>
-            <tr><td>4</td><td>${beladySeq.join(", ")}</td><td>${rows4.at(-1).faults}</td><td>${rows4.at(-1).replacements}</td><td>反而更多</td></tr>
-          </tbody>
-        </table>`;
-      document.getElementById("frames").innerHTML = "";
-      document.getElementById("sequence").innerHTML = "";
-      document.getElementById("cur").textContent = "-";
-      document.getElementById("faults").textContent = "9 / 10";
-      document.getElementById("replacements").textContent = "6 / 6";
-      document.getElementById("rate").textContent = "75% / 83.3%";
-      document.getElementById("badge").textContent = "FIFO";
-      document.getElementById("title").textContent = "Belady 异常";
-      document.getElementById("explain").innerHTML = "<p>同一访问串使用 FIFO，页框从 3 增加到 4，缺页次数反而从 9 增加到 10。</p><p>原因是 FIFO 只看进入主存的先后，不关心页面未来或最近是否会被访问。</p>";
+    function renderTrail(event) {
+      const panel = document.getElementById("scanPanel");
+      const trailWrap = document.getElementById("trail");
+      const isClock = algorithm === "CLOCK" || algorithm === "ICLOCK";
+      panel.classList.toggle("hidden", !isClock);
+      if (!isClock) return;
+
+      document.getElementById("scanTitle").textContent = event && event.scanTitle ? event.scanTitle : "尚未开始扫描";
+      document.getElementById("scanRule").textContent = event && event.scanRule ? event.scanRule : "命中时指针不动";
+      document.getElementById("pendingPage").textContent = event && event.pending
+        ? "待调入页 " + event.page + (algorithm === "ICLOCK" ? (isWrite(event.refIndex) ? "W" : "R") : "")
+        : "";
+      trailWrap.innerHTML = "";
+      const items = event && event.trail ? event.trail : [];
+      if (items.length === 0) {
+        const empty = document.createElement("span");
+        empty.className = "trail-item";
+        empty.textContent = "等待缺页且页框已满";
+        trailWrap.appendChild(empty);
+        return;
+      }
+      items.forEach(function (text, index) {
+        if (index > 0) {
+          const arrow = document.createElement("span");
+          arrow.className = "trail-arrow";
+          arrow.textContent = "→";
+          trailWrap.appendChild(arrow);
+        }
+        const item = document.createElement("span");
+        item.className = "trail-item";
+        item.textContent = text;
+        trailWrap.appendChild(item);
+      });
     }
 
     function render() {
-      document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.algo === algo));
-      document.getElementById("belady").classList.remove("show");
-      if (algo === "BELADY") {
-        renderBelady();
-        document.getElementById("prev").disabled = true;
-        document.getElementById("next").disabled = true;
-        return;
-      }
-      const rows = simulate(algo);
-      const row = rows[Math.max(0, step - 1)];
-      renderSequence(baseSeq, step - 1);
-      renderFrames(row, algo);
-      document.getElementById("cur").textContent = row ? row.page : "-";
-      document.getElementById("faults").textContent = row ? row.faults : 0;
-      document.getElementById("replacements").textContent = row ? row.replacements : 0;
-      document.getElementById("rate").textContent = row ? `${Math.round(row.faults / (row.i + 1) * 1000) / 10}%` : "0%";
-      document.getElementById("badge").textContent = step === 0 ? "准备开始" : `步骤 ${step} / ${baseSeq.length}`;
-      document.getElementById("title").textContent = step === 0 ? `${algo}：准备开始` : (row.hit ? "命中" : (row.evicted === null ? "缺页，直接调入" : "缺页，并发生置换"));
-      document.getElementById("explain").innerHTML = step === 0
-        ? `<p>${intro[algo]}</p><ul><li>访问串：${baseSeq.join(", ")}</li><li>页框数：${frameCount}</li><li>点击下一步逐次执行。</li></ul>`
-        : `<p>${row.message}</p><ul><li>缺页次数：${row.faults}</li><li>置换次数：${row.replacements}</li><li>当前缺页率：${row.faults}/${row.i + 1}</li></ul>`;
-      document.getElementById("prev").disabled = step === 0;
-      document.getElementById("next").disabled = step === baseSeq.length;
+      document.querySelectorAll(".tabs button").forEach(function (button) {
+        button.classList.toggle("active", button.dataset.algo === algorithm);
+      });
+
+      const event = cursor === 0 ? null : events[cursor - 1];
+      const refIndex = event ? event.refIndex : -1;
+      renderSequence(refIndex);
+      renderFrames(event);
+      renderTrail(event);
+
+      document.getElementById("currentPage").textContent = event
+        ? event.page + (algorithm === "ICLOCK" ? (isWrite(event.refIndex) ? "W" : "R") : "")
+        : "—";
+      document.getElementById("faults").textContent = event ? event.faults : "0";
+      document.getElementById("replacements").textContent = event ? event.replacements : "0";
+      document.getElementById("rate").textContent = event
+        ? Math.round(event.faults / (event.refIndex + 1) * 1000) / 10 + "%"
+        : "0%";
+
+      const actionText = cursor === 0 ? "准备开始" : "动作 " + cursor + " / " + events.length;
+      const accessText = event ? " · 访问 " + (event.refIndex + 1) + " / " + sequence.length : "";
+      document.getElementById("badge").textContent = actionText + accessText;
+      document.getElementById("eventTitle").textContent = event ? event.title : algorithm + "：准备开始";
+      document.getElementById("explain").innerHTML = event
+        ? "<p>" + event.message + "</p>"
+        : "<p>" + introductions[algorithm] + "</p><p>点击“下一步”开始。相同页面访问可能包含多个扫描动作。</p>";
+      document.getElementById("movement").textContent = event
+        ? event.movement
+        : (algorithm === "CLOCK" || algorithm === "ICLOCK"
+            ? "hand=0：待检查页框为页框 0；命中不会移动 hand。"
+            : "");
+      document.getElementById("ruleBody").innerHTML = ruleBodies[algorithm];
+
+      document.getElementById("prev").disabled = cursor === 0;
+      document.getElementById("next").disabled = cursor === events.length;
     }
 
-    document.querySelectorAll(".tabs button").forEach(btn => btn.addEventListener("click", () => {
-      algo = btn.dataset.algo;
-      step = 0;
+    function chooseAlgorithm(nextAlgorithm) {
+      algorithm = nextAlgorithm;
+      events = buildEvents(algorithm);
+      cursor = 0;
       render();
-    }));
-    document.getElementById("prev").addEventListener("click", () => { if (step > 0) { step--; render(); } });
-    document.getElementById("next").addEventListener("click", () => { if (step < baseSeq.length) { step++; render(); } });
-    document.getElementById("reset").addEventListener("click", () => { step = 0; render(); });
-    document.addEventListener("keydown", event => {
-      if (event.key === "ArrowLeft" && step > 0) { step--; render(); }
-      if (event.key === "ArrowRight" && step < baseSeq.length && algo !== "BELADY") { step++; render(); }
+    }
+
+    document.querySelectorAll(".tabs button").forEach(function (button) {
+      button.addEventListener("click", function () {
+        chooseAlgorithm(button.dataset.algo);
+      });
     });
-    render();
+
+    document.getElementById("prev").addEventListener("click", function () {
+      if (cursor > 0) {
+        cursor--;
+        render();
+      }
+    });
+
+    document.getElementById("next").addEventListener("click", function () {
+      if (cursor < events.length) {
+        cursor++;
+        render();
+      }
+    });
+
+    document.getElementById("reset").addEventListener("click", function () {
+      cursor = 0;
+      render();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowLeft" && cursor > 0) {
+        cursor--;
+        render();
+      }
+      if (event.key === "ArrowRight" && cursor < events.length) {
+        cursor++;
+        render();
+      }
+    });
+
+    chooseAlgorithm("OPT");
   </script>
 </body>
 </html>
