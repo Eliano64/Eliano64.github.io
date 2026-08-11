@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Mobile IP | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="移动 IP普通 IP 地址同时包含两个含义：主机接口标识和所在网络位置。路由器根据地址中的网络前缀转发分组。如果主机移动到另一个网络但仍使用原地址，分组仍会被路由到原网络；如果直接换成新地址，原有通信连接又会被破坏。 移动 IP 的目标是：移动主机跨网络移动时，仍能保持原来的永久 IP 地址，并尽量不要求固定主机和普通路由器修改协议。 移动性的几种情况移动性对网络层的影响不同：    情况 是否需">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Mobile IP | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="移动 IP存在的矛盾IP 地址既标识一台主机，也通过网络前缀指出这台主机应当接在哪个网络。路由器只看目的地址的网络前缀，因此发往某个 IP 地址的分组，总会被送到该地址所属的网络。 假设移动主机原来接在网络 A，长期使用地址 H。网络 A 是它的归属网络，H 是它的归属地址。当主机移动到网络 B 时，普通 IP 面临两种选择：  继续使用 H：通信对端仍能使用原地址，但普通路由会把分组送回网络 A">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Mobile IP">
 <meta property="og:url" content="https://eliano64.github.io/2026/07/08/Mobile-IP/index.html">
 <meta property="og:site_name" content="Elian&#39;s blog page">
-<meta property="og:description" content="移动 IP普通 IP 地址同时包含两个含义：主机接口标识和所在网络位置。路由器根据地址中的网络前缀转发分组。如果主机移动到另一个网络但仍使用原地址，分组仍会被路由到原网络；如果直接换成新地址，原有通信连接又会被破坏。 移动 IP 的目标是：移动主机跨网络移动时，仍能保持原来的永久 IP 地址，并尽量不要求固定主机和普通路由器修改协议。 移动性的几种情况移动性对网络层的影响不同：    情况 是否需">
+<meta property="og:description" content="移动 IP存在的矛盾IP 地址既标识一台主机，也通过网络前缀指出这台主机应当接在哪个网络。路由器只看目的地址的网络前缀，因此发往某个 IP 地址的分组，总会被送到该地址所属的网络。 假设移动主机原来接在网络 A，长期使用地址 H。网络 A 是它的归属网络，H 是它的归属地址。当主机移动到网络 B 时，普通 IP 面临两种选择：  继续使用 H：通信对端仍能使用原地址，但普通路由会把分组送回网络 A">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
 <meta property="article:published_time" content="2026-07-08T08:05:00.000Z">
-<meta property="article:modified_time" content="2026-07-24T10:50:29.337Z">
+<meta property="article:modified_time" content="2026-08-10T12:58:18.261Z">
 <meta property="article:author" content="Eliano">
 <meta property="article:tag" content="InternetLayer">
 <meta name="twitter:card" content="summary">
@@ -18,7 +18,7 @@
   "url": "https://eliano64.github.io/2026/07/08/Mobile-IP/",
   "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
   "datePublished": "2026-07-08T08:05:00.000Z",
-  "dateModified": "2026-07-24T10:50:29.337Z",
+  "dateModified": "2026-08-10T12:58:18.261Z",
   "author": [
     {
       "@type": "Person",
@@ -168,113 +168,101 @@ btf.addGlobalFn('pjaxSend', () => {
   Pace.restart()
 }, 'pace_restart')
 
-</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Mobile IP</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Mobile IP</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-08T08:05:00.000Z" title="发表于 2026-07-08 16:05:00">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-24T10:50:29.337Z" title="更新于 2026-07-24 18:50:29">2026-07-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="移动-IP"><a href="#移动-IP" class="headerlink" title="移动 IP"></a>移动 IP</h1><p>普通 IP 地址同时包含两个含义：主机接口标识和所在网络位置。路由器根据地址中的网络前缀转发分组。如果主机移动到另一个网络但仍使用原地址，分组仍会被路由到原网络；如果直接换成新地址，原有通信连接又会被破坏。</p>
-<p>移动 IP 的目标是：移动主机跨网络移动时，仍能保持原来的永久 IP 地址，并尽量不要求固定主机和普通路由器修改协议。</p>
-<h1 id="移动性的几种情况"><a href="#移动性的几种情况" class="headerlink" title="移动性的几种情况"></a>移动性的几种情况</h1><p>移动性对网络层的影响不同：</p>
-<table>
-<thead>
-<tr>
-<th>情况</th>
-<th>是否需要移动 IP</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>只在同一 Wi-Fi 覆盖区内移动，网络层地址不变</td>
-<td>不需要</td>
-</tr>
-<tr>
-<td>换地点重新接入，地址改变，但不要求保持原连接</td>
-<td>不需要</td>
-</tr>
-<tr>
-<td>跨网络移动，仍要求保持原地址和通信连续性</td>
-<td>需要移动 IP 这类机制</td>
-</tr>
-</tbody></table>
-<p>移动 IP 解决的是第三种情况。</p>
-<h1 id="基本术语"><a href="#基本术语" class="headerlink" title="基本术语"></a>基本术语</h1><p><img src="/assets/mobile-ip-terms.svg" alt="900"></p>
-<table>
-<thead>
-<tr>
-<th>术语</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>移动主机</td>
-<td>可以从一个网络移动到另一个网络的主机</td>
-</tr>
-<tr>
-<td>归属网络</td>
-<td>移动主机默认所属的网络</td>
-</tr>
-<tr>
-<td>归属地址</td>
-<td>移动主机在归属网络中的永久地址</td>
-</tr>
-<tr>
-<td>归属代理</td>
-<td>归属网络中代表移动主机执行移动管理的实体，通常是路由器</td>
-</tr>
-<tr>
-<td>外地网络</td>
-<td>移动主机当前接入的非归属网络</td>
-</tr>
-<tr>
-<td>外地代理</td>
-<td>外地网络中协助移动主机接入的实体</td>
-</tr>
-<tr>
-<td>转交地址</td>
-<td>移动主机当前所在位置对应的地址，常由外地代理提供</td>
-</tr>
-</tbody></table>
-<p>移动主机对外仍使用归属地址。转交地址用于让归属代理知道移动主机当前在哪里，并把数据通过隧道送过去。</p>
-<h1 id="代理发现和注册"><a href="#代理发现和注册" class="headerlink" title="代理发现和注册"></a>代理发现和注册</h1><p>移动主机进入外地网络后，需要发现外地代理，并向归属代理注册当前转交地址。</p>
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">291</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Mobile IP</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Mobile IP</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-08T08:05:00.000Z" title="发表于 2026-07-08 16:05:00">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-10T12:58:18.261Z" title="更新于 2026-08-10 20:58:18">2026-08-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Computer-Network/">Computer Network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.8k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="移动-IP"><a href="#移动-IP" class="headerlink" title="移动 IP"></a>移动 IP</h1><h2 id="存在的矛盾"><a href="#存在的矛盾" class="headerlink" title="存在的矛盾"></a>存在的矛盾</h2><p>IP 地址既标识一台主机，也通过网络前缀指出这台主机应当接在哪个网络。路由器只看目的地址的网络前缀，因此发往某个 IP 地址的分组，总会被送到该地址所属的网络。</p>
+<p>假设移动主机原来接在网络 A，长期使用地址 <code>H</code>。网络 A 是它的<strong>归属网络</strong>，<code>H</code> 是它的<strong>归属地址</strong>。当主机移动到网络 B 时，普通 IP 面临两种选择：</p>
+<ul>
+<li>继续使用 <code>H</code>：通信对端仍能使用原地址，但普通路由会把分组送回网络 A，找不到已经移动到网络 B 的主机。</li>
+<li>换用网络 B 的地址：分组可以直接到达新位置，但主机的 IP 地址已经改变，以原地址建立的 TCP 连接等通信状态难以继续使用。</li>
+</ul>
+<p>移动 IP 把这两个需求分开处理：</p>
+<ul>
+<li><strong>归属地址保持不变</strong>，继续代表“这是谁”。</li>
+<li>主机离开归属网络后取得一个<strong>转交地址</strong>，代表“现在在哪里”。</li>
+</ul>
+<p>归属网络中的<strong>归属代理</strong>保存两者的对应关系。当发往归属地址的分组仍按普通路由到达网络 A 时，归属代理代为接收，再把分组通过隧道送到转交地址。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">Important</span></div>
+<div class="callout-content"><p>移动 IP 并没有要求全网路由器把归属地址改路由到新位置。发往归属地址的分组仍先到归属网络，只是在那里由归属代理接手并转送。</p>
+</div>
+</div>
+<h2 id="哪些设备需要知道主机正在移动"><a href="#哪些设备需要知道主机正在移动" class="headerlink" title="哪些设备需要知道主机正在移动"></a>哪些设备需要知道主机正在移动</h2><p>通信对端仍把移动主机当成地址为 <code>H</code> 的普通主机，不需要查询它当前在哪个网络。普通路由器也不运行移动 IP：</p>
+<ul>
+<li>从通信对端到归属网络，普通路由器照常按目的地址 <code>H</code> 转发。</li>
+<li>从归属代理到转交地址，普通路由器只把封装后的分组当作普通 IP 数据报转发。</li>
+</ul>
+<p>需要执行移动管理的只有移动主机和归属代理；使用外地代理转交地址时，当前网络中的<strong>外地代理</strong>也参与注册、解封和交付。所谓“不要求通信对端和普通路由器修改协议”，指的就是它们不必识别移动状态，也不必增加移动 IP 的登记和隧道处理逻辑。</p>
+<h1 id="移动后的完整通信过程"><a href="#移动后的完整通信过程" class="headerlink" title="移动后的完整通信过程"></a>移动后的完整通信过程</h1><h2 id="1-在外地网络登记当前位置"><a href="#1-在外地网络登记当前位置" class="headerlink" title="1. 在外地网络登记当前位置"></a>1. 在外地网络登记当前位置</h2><p>移动主机接入归属网络以外的网络时，这个网络称为<strong>外地网络</strong>。它先通过代理通告或代理请求发现外地代理，并取得当前的转交地址。教材常见的情形是把外地代理的地址用作转交地址；移动主机也可以自己取得一个位于外地网络的地址作为转交地址。</p>
+<p>随后进行注册：</p>
+<ol>
+<li>移动主机把“归属地址 <code>H</code>、当前转交地址 <code>C</code>、注册有效期”等信息交给外地代理。</li>
+<li>外地代理把注册请求转交给归属代理。</li>
+<li>归属代理验证请求，记录绑定关系 <code>H → C</code>，再返回注册结果。</li>
+</ol>
+<p>完成注册后，归属代理知道地址为 <code>H</code> 的移动主机当前应当从转交地址 <code>C</code> 接收分组。归属地址没有改变，改变的只是归属代理保存的位置绑定。</p>
 <div class="html-card-embed">
 <div class="html-card-controls">
 <button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
-<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||570)+80)+'px'">+</button>
-<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||570)-80))+'px'">−</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button>
 </div>
-<iframe src="/assets/mobile-ip-process-slides.html" style="width:100%;height:570px;border:0" loading="lazy"></iframe>
+<iframe src="/assets/mobile-ip-process-slides.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe>
 </div>
 
-<p>基本过程是：</p>
+<h2 id="2-通信对端向移动主机发送"><a href="#2-通信对端向移动主机发送" class="headerlink" title="2. 通信对端向移动主机发送"></a>2. 通信对端向移动主机发送</h2><p>假设通信对端向移动主机发送数据，原 IP 数据报为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">源地址：通信对端地址</span><br><span class="line">目的地址：归属地址 H</span><br></pre></td></tr></table></figure>
+
+<p>接收过程如下：</p>
 <ol>
-<li>移动主机到达外地网络。</li>
-<li>移动主机通过代理发现协议找到外地代理。</li>
-<li>移动主机从外地代理获得转交地址。</li>
-<li>移动主机通过外地代理向归属代理注册。</li>
-<li>归属代理记录“归属地址 → 转交地址”的绑定关系。</li>
+<li>通信对端不知道移动主机已经离开，仍以 <code>H</code> 为目的地址发送。</li>
+<li>普通路由器根据 <code>H</code> 的网络前缀，把原数据报送到归属网络。</li>
+<li>归属代理发现 <code>H → C</code> 的绑定，代替移动主机接收该数据报。</li>
+<li>归属代理把整个原数据报装入一个新的 IP 数据报。外层目的地址为转交地址 <code>C</code>，因此普通路由器会把它送到当前外地网络。</li>
+<li>隧道终点删除外层首部，取出目的地址仍为 <code>H</code> 的原数据报，再交给移动主机。</li>
 </ol>
-<p>注册完成后，归属代理就能把发往移动主机归属地址的数据报转发到当前外地网络。</p>
-<h1 id="固定主机到移动主机"><a href="#固定主机到移动主机" class="headerlink" title="固定主机到移动主机"></a>固定主机到移动主机</h1><p>固定主机不知道移动主机已经离开归属网络，它仍把 IP 数据报发往移动主机的归属地址。</p>
-<p>移动 IP 的间接路由过程是：</p>
-<ol>
-<li>固定主机发送目的地址为移动主机归属地址的 IP 数据报。</li>
-<li>普通路由机制把该数据报送到移动主机的归属网络。</li>
-<li>归属代理代替移动主机接收或截获该数据报。</li>
-<li>归属代理把原 IP 数据报封装到一个新的 IP 数据报中。</li>
-<li>新 IP 数据报的目的地址是转交地址。</li>
-<li>外地代理收到外层数据报后解封，取出原 IP 数据报。</li>
-<li>外地代理把原 IP 数据报交付给外地网络中的移动主机。</li>
-</ol>
-<p>这里使用的是 IP 隧道思想：原数据报没有被修改，而是作为新数据报的数据部分穿过因特网。</p>
-<h1 id="移动主机到固定主机"><a href="#移动主机到固定主机" class="headerlink" title="移动主机到固定主机"></a>移动主机到固定主机</h1><p>移动主机向固定主机发送数据时，可以直接按照普通 IP 转发机制发给固定主机。源地址仍可使用移动主机的归属地址，目的地址是固定主机地址。</p>
-<p>这样会形成路径不对称：固定主机发往移动主机的数据要先到归属代理，再隧道转发到外地代理；移动主机发回固定主机的数据可以直接走普通路由。</p>
+<p>若 <code>C</code> 是外地代理的地址，外地代理就是隧道终点，负责解封并在本地交付；若移动主机使用自己取得的转交地址，则可以由移动主机自己解封。</p>
+<table>
+<thead>
+<tr>
+<th>数据报</th>
+<th>源地址</th>
+<th>目的地址</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原数据报</td>
+<td>通信对端地址</td>
+<td>归属地址 <code>H</code></td>
+<td>保持通信双方看到的地址不变</td>
+</tr>
+<tr>
+<td>隧道外层数据报</td>
+<td>归属代理地址</td>
+<td>转交地址 <code>C</code></td>
+<td>把原数据报送到移动主机的当前位置</td>
+</tr>
+</tbody></table>
+<p>这就是移动 IP 的关键：<strong>原数据报负责维持原来的通信关系，外层数据报只负责把它运到当前位置。</strong></p>
+<h2 id="3-移动主机向通信对端发送"><a href="#3-移动主机向通信对端发送" class="headerlink" title="3. 移动主机向通信对端发送"></a>3. 移动主机向通信对端发送</h2><p>移动主机回发时，可以仍以归属地址 <code>H</code> 为源地址，把目的地址写成通信对端地址，然后按普通 IP 路由直接发出。返回分组不必先绕回归属代理。</p>
 <p><img src="/assets/mobile-ip-triangle-routing.svg" alt="900"></p>
-<p>这种路径称为三角形路由。它能保持对固定主机透明，但路径可能不是最短路径。</p>
-<h1 id="透明性"><a href="#透明性" class="headerlink" title="透明性"></a>透明性</h1><p>移动 IP 对固定主机和大多数普通路由器是透明的。固定主机仍按移动主机的永久地址通信，不需要知道移动主机当前在哪个网络。</p>
-<h1 id="局限"><a href="#局限" class="headerlink" title="局限"></a>局限</h1><p>它的局限包括：</p>
+<p>于是两个方向经过的路径不同：</p>
 <ul>
-<li>固定主机到移动主机的路径可能绕远。</li>
-<li>发往移动主机的数据通常要先经过归属代理。若归属代理故障、过载或绑定表出错，固定主机到移动主机的通信就会受影响。</li>
-<li>代理发现、注册、隧道和安全认证增加复杂性。</li>
-<li>在整个因特网范围内大规模部署困难。</li>
+<li>通信对端 → 归属代理 → 转交地址 → 移动主机；</li>
+<li>移动主机 → 通信对端。</li>
 </ul>
-<p>移动 IP 的思想与蜂窝移动通信中的位置管理有相似之处，但后者通常在 IP 层以下或运营商核心网中使用更复杂的机制。</p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/08/Mobile-IP/">https://eliano64.github.io/2026/07/08/Mobile-IP/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/08/IPv6/" title="IPv6"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">IPv6</div></div><div class="info-2"><div class="info-item-1">IPv6IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网规模增长。IPv6 把地址长度扩展到 128 bit，同时调整首部结构、扩展首部、地址类型和控制协议。 IPv6 仍提供无连接、尽最大努力交付的不可靠数据报服务。它不是把 IP 变成可靠协议，而是在地址空间和转发机制上做了新设计。 主要变化IPv6 的主要变化包括：  地址长度从 32 bit 增加到 128 bit。 基本首部固定为 40 字节。 取消 IPv4 首部中的首部长度、首部检验和、标识、标志、片偏移等字段。 使用扩展首部承载选项和分片等功能。 使用“下一个首部”字段串联扩展首部或上层协议。 引入流标号，便于标识同一类需要特殊处理的数据报序列。 不使用广播，把广播看作多播的特殊情形。 不使用 ARP，邻站发现由 ICMPv6 完成。   基本首部IPv6 基本首部固定 40 字节。  IPv6 基本首部字段如下：    字段 长度 作用    版本 4 bit IPv6 中取值为 6   通信量类 8...</div></div></div></a><a class="pagination-related" href="/2026/07/09/Transport-Layer/" title="Transport Layer Overview"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Transport Layer Overview</div></div><div class="info-2"><div class="info-item-1">运输层解决什么问题网络层把 IP 数据报从一台主机送到另一台主机，运输层则把数据交给正确的应用进程。换句话说：    层次 通信范围 标识对象    网络层 主机到主机 IP 地址   运输层 进程到进程 端口号    进程到进程通信是逻辑通信。两端运输层看起来像是在水平通信，但数据实际仍要向下交给网络层、数据链路层和物理层，再在接收端逐层向上交付。 在 TCP&#x2F;IP 体系中，运输层最重要的两个协议是 UDP 和 TCP：    协议 运输层数据单元 基本服务    UDP UDP 用户数据报 无连接、不可靠、首部小   TCP TCP 报文段 面向连接、可靠、面向字节流   端口号一台主机上可能同时运行很多网络应用。运输层用端口号区分这些应用进程。 端口号长度为 16 bit，取值范围是...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8-IP"><span class="toc-text">移动 IP</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8%E6%80%A7%E7%9A%84%E5%87%A0%E7%A7%8D%E6%83%85%E5%86%B5"><span class="toc-text">移动性的几种情况</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%9C%AF%E8%AF%AD"><span class="toc-text">基本术语</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%90%86%E5%8F%91%E7%8E%B0%E5%92%8C%E6%B3%A8%E5%86%8C"><span class="toc-text">代理发现和注册</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BA%E5%AE%9A%E4%B8%BB%E6%9C%BA%E5%88%B0%E7%A7%BB%E5%8A%A8%E4%B8%BB%E6%9C%BA"><span class="toc-text">固定主机到移动主机</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8%E4%B8%BB%E6%9C%BA%E5%88%B0%E5%9B%BA%E5%AE%9A%E4%B8%BB%E6%9C%BA"><span class="toc-text">移动主机到固定主机</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%8F%E6%98%8E%E6%80%A7"><span class="toc-text">透明性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B1%80%E9%99%90"><span class="toc-text">局限</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/09/Multivariable-Function-Property-Relations/" title="Multivariable Function Property Relations">Multivariable Function Property Relations</a><time datetime="2026-08-09T05:10:35.000Z" title="发表于 2026-08-09 13:10:35">2026-08-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/08/Gamma-Function/" title="Gamma Function">Gamma Function</a><time datetime="2026-08-08T09:53:48.000Z" title="发表于 2026-08-08 17:53:48">2026-08-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/05/LAN/" title="LAN">LAN</a><time datetime="2026-08-05T08:25:25.000Z" title="发表于 2026-08-05 16:25:25">2026-08-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Basic-Graphs-Of-A-Function/" title="Basic Graphs Of A Function">Basic Graphs Of A Function</a><time datetime="2026-07-26T07:46:23.000Z" title="发表于 2026-07-26 15:46:23">2026-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Improper-integral/" title="Improper integral">Improper integral</a><time datetime="2026-07-26T05:22:43.000Z" title="发表于 2026-07-26 13:22:43">2026-07-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+<p>这种不对称路径称为<strong>三角形路由</strong>。它换来了对通信对端的透明性，但通信对端到移动主机的路径可能明显绕远。某些网络还会因入口过滤等原因要求移动主机把回程分组反向隧道到归属代理，再由归属代理发出。</p>
+<h2 id="4-再次移动或返回归属网络"><a href="#4-再次移动或返回归属网络" class="headerlink" title="4. 再次移动或返回归属网络"></a>4. 再次移动或返回归属网络</h2><p>移动主机从一个外地网络移动到另一个外地网络后，要取得新的转交地址并重新注册。归属代理把原来的 <code>H → C</code> 更新为 <code>H → C&#39;</code>，此后新分组就被隧道送往新位置；通信对端仍然只使用 <code>H</code>。</p>
+<p>移动主机返回归属网络时，撤销外地注册。归属代理停止为它建立隧道，发往 <code>H</code> 的分组重新在归属网络中直接交付。</p>
+<h1 id="作用范围与代价"><a href="#作用范围与代价" class="headerlink" title="作用范围与代价"></a>作用范围与代价</h1><p>移动 IP 解决的是主机跨 IP 子网移动后仍保持归属地址的问题。若主机只在同一子网的不同接入点之间移动，通常由链路层切换机制处理，不需要移动 IP。</p>
+<p>移动 IP 的代价包括：</p>
+<ul>
+<li>三角形路由可能使去程绕远。</li>
+<li>归属代理必须持续维护绑定并转发入站分组，因而会成为性能和可靠性上的关键节点。</li>
+<li>代理发现、注册、认证、封装和解封增加了控制与处理开销。</li>
+<li>位置注册必须经过认证，否则攻击者可能伪造转交地址，把分组重定向到错误位置。</li>
+</ul>
+<p>可以把整个机制压缩为一句话：<strong>归属地址保持通信身份，转交地址表示当前位置，归属代理用绑定和隧道把两者接起来。</strong></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/07/08/Mobile-IP/">https://eliano64.github.io/2026/07/08/Mobile-IP/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/08/IPv6/" title="IPv6"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">IPv6</div></div><div class="info-2"><div class="info-item-1">IPv6IPv6 引入的根本原因是 IPv4 地址空间不足。IPv4 地址只有 32 bit，地址总量和分配方式都无法长期支撑因特网规模增长。IPv6 把地址长度扩展到 128 bit，同时调整首部结构、扩展首部、地址类型和控制协议。 IPv6 仍提供无连接、尽最大努力交付的不可靠数据报服务。 主要变化IPv6 的主要变化包括：  地址长度从 32 bit 增加到 128 bit。 基本首部固定为 40 字节。 取消 IPv4 首部中的首部长度、首部检验和、标识、标志、片偏移等字段。 使用扩展首部承载选项和分片等功能。 使用“下一个首部”字段串联扩展首部或上层协议。 引入流标号，便于标识同一类需要特殊处理的数据报序列。 不使用广播，把广播看作多播的特殊情形。 不使用 ARP，邻站发现由 ICMPv6 完成。   基本首部IPv6 基本首部固定 40 字节。  IPv6 基本首部字段如下：    字段 长度 作用    版本 4 bit IPv6 中取值为 6   通信量类 8 bit 区分不同类型或优先级的数据报   流标号 20 bit 标识同一流中的 IPv6...</div></div></div></a><a class="pagination-related" href="/2026/07/09/Transport-Layer/" title="Transport Layer Overview"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Transport Layer Overview</div></div><div class="info-2"><div class="info-item-1">运输层解决什么问题网络层把 IP 数据报从一台主机送到另一台主机，运输层则把数据交给正确的应用进程。换句话说：    层次 通信范围 标识对象    网络层 主机到主机 IP 地址   运输层 进程到进程 端口号    进程到进程通信是逻辑通信。两端运输层看起来像是在水平通信，但数据实际仍要向下交给网络层、数据链路层和物理层，再在接收端逐层向上交付。 在 TCP&#x2F;IP 体系中，运输层最重要的两个协议是 UDP 和 TCP：    协议 运输层数据单元 基本服务    UDP UDP 用户数据报 无连接、不可靠、首部小   TCP TCP 报文段 面向连接、可靠、面向字节流   端口号一台主机上可能同时运行很多网络应用。运输层用端口号区分这些应用进程。 端口号长度为 16 bit，取值范围是...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">291</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8-IP"><span class="toc-text">移动 IP</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E5%9C%A8%E7%9A%84%E7%9F%9B%E7%9B%BE"><span class="toc-text">存在的矛盾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%AA%E4%BA%9B%E8%AE%BE%E5%A4%87%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E4%B8%BB%E6%9C%BA%E6%AD%A3%E5%9C%A8%E7%A7%BB%E5%8A%A8"><span class="toc-text">哪些设备需要知道主机正在移动</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8%E5%90%8E%E7%9A%84%E5%AE%8C%E6%95%B4%E9%80%9A%E4%BF%A1%E8%BF%87%E7%A8%8B"><span class="toc-text">移动后的完整通信过程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%9C%A8%E5%A4%96%E5%9C%B0%E7%BD%91%E7%BB%9C%E7%99%BB%E8%AE%B0%E5%BD%93%E5%89%8D%E4%BD%8D%E7%BD%AE"><span class="toc-text">1. 在外地网络登记当前位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%80%9A%E4%BF%A1%E5%AF%B9%E7%AB%AF%E5%90%91%E7%A7%BB%E5%8A%A8%E4%B8%BB%E6%9C%BA%E5%8F%91%E9%80%81"><span class="toc-text">2. 通信对端向移动主机发送</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%A7%BB%E5%8A%A8%E4%B8%BB%E6%9C%BA%E5%90%91%E9%80%9A%E4%BF%A1%E5%AF%B9%E7%AB%AF%E5%8F%91%E9%80%81"><span class="toc-text">3. 移动主机向通信对端发送</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%86%8D%E6%AC%A1%E7%A7%BB%E5%8A%A8%E6%88%96%E8%BF%94%E5%9B%9E%E5%BD%92%E5%B1%9E%E7%BD%91%E7%BB%9C"><span class="toc-text">4. 再次移动或返回归属网络</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%9C%E7%94%A8%E8%8C%83%E5%9B%B4%E4%B8%8E%E4%BB%A3%E4%BB%B7"><span class="toc-text">作用范围与代价</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/09/Multivariable-Function-Property-Relations/" title="Multivariable Function Property Relations">Multivariable Function Property Relations</a><time datetime="2026-08-09T05:10:35.000Z" title="发表于 2026-08-09 13:10:35">2026-08-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/08/Gamma-Function/" title="Gamma Function">Gamma Function</a><time datetime="2026-08-08T09:53:48.000Z" title="发表于 2026-08-08 17:53:48">2026-08-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/05/LAN/" title="LAN">LAN</a><time datetime="2026-08-05T08:25:25.000Z" title="发表于 2026-08-05 16:25:25">2026-08-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Basic-Graphs-Of-A-Function/" title="Basic Graphs Of A Function">Basic Graphs Of A Function</a><time datetime="2026-07-26T07:46:23.000Z" title="发表于 2026-07-26 15:46:23">2026-07-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/26/Improper-integral/" title="Improper integral">Improper integral</a><time datetime="2026-07-26T05:22:43.000Z" title="发表于 2026-07-26 13:22:43">2026-07-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
   const loadMathjax = () => {
     if (!window.MathJax) {
       window.MathJax = {

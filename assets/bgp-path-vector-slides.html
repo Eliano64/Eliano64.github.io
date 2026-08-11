@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>BGP Path Vector Process</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f8fc;--panel:#fff;--panel2:#eef4ff;--text:#182235;--muted:#59677c;--border:#cbd5e1;--line:#94a3b8;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626;--shadow:0 10px 28px rgba(30,41,59,.08)}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1220;--panel:#121c2b;--panel2:#18263a;--text:#e7edf7;--muted:#a9b6c8;--border:#33445c;--line:#6f819a;--blue:#60a5fa;--green:#34d399;--orange:#fbbf24;--red:#fb7185;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+.wrap{max-width:1040px;margin:auto;padding:18px 20px 14px}
+h1{margin:0;text-align:center;font-size:25px;line-height:1.35}.lead{margin:5px 0 15px;text-align:center;color:var(--muted);font-size:14px}
+.layout{display:grid;grid-template-columns:225px minmax(0,1fr);gap:16px;align-items:stretch}
+.steps{display:grid;gap:8px}.step{width:100%;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);padding:9px 11px;text-align:left;cursor:pointer;transition:.15s}.step:hover{border-color:var(--blue)}.step.active{border-color:var(--blue);box-shadow:inset 4px 0 0 var(--blue);background:var(--panel2)}.step b{display:block;font-size:15px;margin-bottom:2px}.step span{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+.stage{min-width:0;border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:10px 12px;box-shadow:var(--shadow)}
+svg{display:block;width:100%;height:320px}.base{stroke:var(--line);stroke-width:2.5}.node rect{fill:var(--panel2);stroke:var(--border);stroke-width:2}.node text{fill:var(--text);font-weight:800;font-size:18px}.node .sub{fill:var(--muted);font-weight:400;font-size:12px}.flow{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}.flow.blue{stroke:var(--blue)}.flow.green{stroke:var(--green)}.flow.orange{stroke:var(--orange)}.flow.red{stroke:var(--red);stroke-dasharray:9 6}.hidden{display:none}.label rect{fill:var(--panel);stroke:var(--border)}.label text{fill:var(--text);font-size:13px;font-weight:700}.label.red text{fill:var(--red)}
+.packet{margin-top:2px;border-radius:9px;background:var(--panel2);padding:9px 12px;min-height:58px}.packet b{color:var(--blue)}.packet code{font-family:Consolas,monospace;color:var(--text);font-size:13px}.packet p{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
+.controls{display:flex;justify-content:center;gap:10px;margin-top:10px}.controls button{border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);padding:7px 18px;cursor:pointer}.controls button:hover{border-color:var(--blue)}
+@media(max-width:860px){.wrap{padding:14px}.layout{grid-template-columns:180px minmax(0,1fr);gap:10px}.step{padding:7px 8px}.step span{font-size:11.5px}svg{height:290px}.stage{padding:8px}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BGP 路径向量怎样传播</h1>
+  <p class="lead">前缀随 AS_PATH 一起传播；每经过一个 AS，路径前端就增加一个 AS 号。</p>
+  <div class="layout">
+    <div class="steps" id="steps"></div>
+    <section class="stage">
+      <svg viewBox="0 0 700 330" role="img" aria-label="BGP 路由在四个自治系统之间通告、选路、判环和撤销的过程">
+        <defs>
+          <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto-start-reverse"><path d="M0 0L0 6L9 3Z" fill="var(--blue)"/></marker>
+          <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L0 6L9 3Z" fill="var(--green)"/></marker>
+          <marker id="arrowOrange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L0 6L9 3Z" fill="var(--orange)"/></marker>
+          <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L0 6L9 3Z" fill="var(--red)"/></marker>
+        </defs>
+
+        <line class="base" x1="180" y1="145" x2="285" y2="87"/>
+        <line class="base" x1="180" y1="185" x2="285" y2="263"/>
+        <line class="base" x1="415" y1="87" x2="520" y2="145"/>
+        <line class="base" x1="415" y1="263" x2="520" y2="185"/>
+
+        <g class="node"><rect x="40" y="130" width="140" height="70" rx="12"/><text x="110" y="159" text-anchor="middle">AS1</text><text class="sub" x="110" y="181" text-anchor="middle">接收两条候选路径</text></g>
+        <g class="node"><rect x="285" y="45" width="130" height="70" rx="12"/><text x="350" y="74" text-anchor="middle">AS2</text><text class="sub" x="350" y="96" text-anchor="middle">中转 AS</text></g>
+        <g class="node"><rect x="285" y="225" width="130" height="70" rx="12"/><text x="350" y="254" text-anchor="middle">AS4</text><text class="sub" x="350" y="276" text-anchor="middle">另一条路径</text></g>
+        <g class="node"><rect x="520" y="130" width="140" height="70" rx="12"/><text x="590" y="159" text-anchor="middle">AS3</text><text class="sub" x="590" y="181" text-anchor="middle">发布目的前缀</text></g>
+
+        <g id="s1" class="scene hidden">
+          <path class="flow blue" d="M420 88L520 145" marker-start="url(#arrowBlue)" marker-end="url(#arrowBlue)"/>
+          <g class="label"><rect x="423" y="53" width="96" height="27" rx="7"/><text x="471" y="72" text-anchor="middle">TCP 179</text></g>
+        </g>
+
+        <g id="s2" class="scene hidden">
+          <path class="flow blue" d="M520 145L420 88" marker-end="url(#arrowBlue)"/>
+          <path class="flow green" d="M520 188L420 260" marker-end="url(#arrowGreen)"/>
+          <g class="label"><rect x="442" y="103" width="98" height="27" rx="7"/><text x="491" y="122" text-anchor="middle">AS_PATH AS3</text></g>
+          <g class="label"><rect x="438" y="217" width="98" height="27" rx="7"/><text x="487" y="236" text-anchor="middle">AS_PATH AS3</text></g>
+        </g>
+
+        <g id="s3" class="scene hidden">
+          <path class="flow blue" d="M285 87L184 143" marker-end="url(#arrowBlue)"/>
+          <path class="flow green" d="M285 262L184 187" marker-end="url(#arrowGreen)"/>
+          <g class="label"><rect x="170" y="82" width="126" height="28" rx="7"/><text x="233" y="101" text-anchor="middle">AS2 AS3</text></g>
+          <g class="label"><rect x="166" y="235" width="126" height="28" rx="7"/><text x="229" y="254" text-anchor="middle">AS4 AS3</text></g>
+        </g>
+
+        <g id="s4" class="scene hidden">
+          <path class="flow orange" d="M285 87L184 143" marker-end="url(#arrowOrange)"/>
+          <path class="flow green" d="M285 262L184 187" marker-end="url(#arrowGreen)" opacity=".35"/>
+          <g class="label"><rect x="176" y="83" width="116" height="28" rx="7"/><text x="234" y="102" text-anchor="middle">采用 via AS2</text></g>
+        </g>
+
+        <g id="s5" class="scene hidden">
+          <path class="flow red" d="M180 144L280 89" marker-end="url(#arrowRed)"/>
+          <g class="label red"><rect x="153" y="76" width="146" height="30" rx="7"/><text x="226" y="96" text-anchor="middle">AS1 AS2 AS3</text></g>
+          <g class="label red"><rect x="283" y="123" width="135" height="30" rx="7"/><text x="350" y="143" text-anchor="middle">含 AS2，拒绝</text></g>
+        </g>
+
+        <g id="s6" class="scene hidden">
+          <path class="flow red" d="M520 145L420 88" marker-end="url(#arrowRed)"/>
+          <path class="flow red" d="M415 78L185 143" marker-end="url(#arrowRed)"/>
+          <g class="label red"><rect x="419" y="103" width="112" height="29" rx="7"/><text x="475" y="123" text-anchor="middle">撤销前缀</text></g>
+        </g>
+      </svg>
+      <div class="packet" id="packet"></div>
+    </section>
+  </div>
+  <div class="controls"><button id="prev" type="button">上一步</button><button id="next" type="button">下一步</button></div>
+</div>
+<script>
+const data=[
+  {title:"建立会话",short:"TCP 连接后交换 OPEN",head:"OPEN / KEEPALIVE",code:"TCP 179",note:"对等体先建立 TCP 连接；OPEN 协商成功后，KEEPALIVE 确认并维持会话。"},
+  {title:"发布前缀",short:"AS3 发出 UPDATE",head:"UPDATE",code:"NLRI 203.0.113.0/24  |  AS_PATH AS3",note:"NLRI 指明哪个前缀可达；AS_PATH 记录通告已经经过的自治系统。"},
+  {title:"加上本 AS",short:"AS2、AS4 继续通告",head:"传播后的 UPDATE",code:"via AS2: AS2 AS3  |  via AS4: AS4 AS3",note:"向外部 AS 继续通告时，发送方把自己的 AS 号加在 AS_PATH 前端。"},
+  {title:"按策略选路",short:"AS1 比较候选路径",head:"AS1 的选择",code:"203.0.113.0/24 → via AS2",note:"AS1 根据本地策略和路径属性选择路线；AS_PATH 长度只是可能使用的因素之一。"},
+  {title:"发现环路",short:"路径中出现自身 AS",head:"AS2 的检查",code:"AS1 AS2 AS3  →  reject",note:"AS2 在 AS_PATH 中看见自己的 AS 号，立即拒绝该路由，从而阻止 AS 级环路。"},
+  {title:"撤销与维护",short:"变化仍由 UPDATE 传播",head:"UPDATE",code:"Withdrawn: 203.0.113.0/24",note:"前缀失效时用 UPDATE 撤销；平时由 KEEPALIVE 维持会话，协议错误则用 NOTIFICATION 报告并关闭连接。"}
+];
+let current=0;
+const steps=document.getElementById("steps"),packet=document.getElementById("packet");
+data.forEach((item,index)=>{const button=document.createElement("button");button.type="button";button.className="step";button.innerHTML=`<b>${index+1}. ${item.title}</b><span>${item.short}</span>`;button.addEventListener("click",()=>{current=index;render()});steps.appendChild(button)});
+function render(){
+  [...steps.children].forEach((button,index)=>button.classList.toggle("active",index===current));
+  document.querySelectorAll(".scene").forEach((scene,index)=>scene.classList.toggle("hidden",index!==current));
+  const item=data[current];
+  packet.innerHTML=`<b>${item.head}</b>　<code>${item.code}</code><p>${item.note}</p>`;
+}
+document.getElementById("prev").addEventListener("click",()=>{current=(current+data.length-1)%data.length;render()});
+document.getElementById("next").addEventListener("click",()=>{current=(current+1)%data.length;render()});
+render();
+</script>
+</body>
+</html>

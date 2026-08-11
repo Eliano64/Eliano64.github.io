@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="540" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">稀疏矩阵的三元组与十字链表存储</title>
+  <desc id="desc">同一个四行五列稀疏矩阵转换为三元组表，并用行链和列链同时连接非零结点。</desc>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#ffffff;--text:#172033;--muted:#5b6876;--border:#94a3b8;--grid:#cbd5e1;--zero:#eef2f7;--value:#dbeafe;--value-stroke:#2563eb;--row:#2563eb;--col:#059669;--head:#e2e8f0}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#111827;--text:#e5e7eb;--muted:#a8b3c5;--border:#64748b;--grid:#334155;--zero:#182233;--value:#18345f;--value-stroke:#60a5fa;--row:#60a5fa;--col:#34d399;--head:#253247}}
+    svg{background:var(--bg)}
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;fill:var(--text)}
+    .title{font-size:25px;font-weight:800}.section{font-size:19px;font-weight:700}.small{font-size:13px;fill:var(--muted)}.label{font-size:14px}.valueText{font-size:16px;font-weight:800}
+    .panel{fill:var(--panel);stroke:var(--border);stroke-width:1.6}.cell{fill:var(--zero);stroke:var(--grid);stroke-width:1.2}.nonzero{fill:var(--value);stroke:var(--value-stroke);stroke-width:2}.header{fill:var(--head);stroke:var(--border);stroke-width:1.3}.node{fill:var(--panel);stroke:var(--value-stroke);stroke-width:2}
+    .rowLink{fill:none;stroke:var(--row);stroke-width:2.8;stroke-linecap:round;marker-end:url(#rowArrow)}.colLink{fill:none;stroke:var(--col);stroke-width:2.8;stroke-linecap:round;marker-end:url(#colArrow)}
+  </style>
+  <defs>
+    <marker id="rowArrow" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L8 3Z" style="fill:var(--row)"/></marker>
+    <marker id="colArrow" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L8 3Z" style="fill:var(--col)"/></marker>
+  </defs>
+
+  <text x="600" y="34" text-anchor="middle" class="title">同一个稀疏矩阵的两种存储表示</text>
+
+  <!-- Original matrix -->
+  <rect x="28" y="62" width="294" height="392" rx="13" class="panel"/>
+  <text x="175" y="92" text-anchor="middle" class="section">原矩阵 A（4 × 5）</text>
+  <text x="79" y="129" text-anchor="middle" class="small">列 1</text><text x="125" y="129" text-anchor="middle" class="small">列 2</text><text x="171" y="129" text-anchor="middle" class="small">列 3</text><text x="217" y="129" text-anchor="middle" class="small">列 4</text><text x="263" y="129" text-anchor="middle" class="small">列 5</text>
+  <text x="47" y="163" text-anchor="middle" class="small">行 1</text><text x="47" y="209" text-anchor="middle" class="small">行 2</text><text x="47" y="255" text-anchor="middle" class="small">行 3</text><text x="47" y="301" text-anchor="middle" class="small">行 4</text>
+  <g transform="translate(56 140)">
+    <!-- row 1 -->
+    <rect x="0" y="0" width="46" height="46" class="cell"/><rect x="46" y="0" width="46" height="46" class="cell"/><rect x="92" y="0" width="46" height="46" class="nonzero"/><rect x="138" y="0" width="46" height="46" class="cell"/><rect x="184" y="0" width="46" height="46" class="cell"/>
+    <!-- row 2 -->
+    <rect x="0" y="46" width="46" height="46" class="nonzero"/><rect x="46" y="46" width="46" height="46" class="cell"/><rect x="92" y="46" width="46" height="46" class="cell"/><rect x="138" y="46" width="46" height="46" class="cell"/><rect x="184" y="46" width="46" height="46" class="nonzero"/>
+    <!-- row 3 -->
+    <rect x="0" y="92" width="46" height="46" class="cell"/><rect x="46" y="92" width="46" height="46" class="cell"/><rect x="92" y="92" width="46" height="46" class="cell"/><rect x="138" y="92" width="46" height="46" class="cell"/><rect x="184" y="92" width="46" height="46" class="cell"/>
+    <!-- row 4 -->
+    <rect x="0" y="138" width="46" height="46" class="cell"/><rect x="46" y="138" width="46" height="46" class="nonzero"/><rect x="92" y="138" width="46" height="46" class="cell"/><rect x="138" y="138" width="46" height="46" class="nonzero"/><rect x="184" y="138" width="46" height="46" class="cell"/>
+    <text x="23" y="29" text-anchor="middle" class="label">0</text><text x="69" y="29" text-anchor="middle" class="label">0</text><text x="115" y="29" text-anchor="middle" class="valueText">8</text><text x="161" y="29" text-anchor="middle" class="label">0</text><text x="207" y="29" text-anchor="middle" class="label">0</text>
+    <text x="23" y="75" text-anchor="middle" class="valueText">5</text><text x="69" y="75" text-anchor="middle" class="label">0</text><text x="115" y="75" text-anchor="middle" class="label">0</text><text x="161" y="75" text-anchor="middle" class="label">0</text><text x="207" y="75" text-anchor="middle" class="valueText">6</text>
+    <text x="23" y="121" text-anchor="middle" class="label">0</text><text x="69" y="121" text-anchor="middle" class="label">0</text><text x="115" y="121" text-anchor="middle" class="label">0</text><text x="161" y="121" text-anchor="middle" class="label">0</text><text x="207" y="121" text-anchor="middle" class="label">0</text>
+    <text x="23" y="167" text-anchor="middle" class="label">0</text><text x="69" y="167" text-anchor="middle" class="valueText">9</text><text x="115" y="167" text-anchor="middle" class="label">0</text><text x="161" y="167" text-anchor="middle" class="valueText">7</text><text x="207" y="167" text-anchor="middle" class="label">0</text>
+  </g>
+  <text x="175" y="356" text-anchor="middle" class="label">20 个位置中只有 5 个非零元素</text>
+  <text x="175" y="382" text-anchor="middle" class="small">压缩时保存非零元素及其位置</text>
+
+  <!-- Triple table -->
+  <path d="M322 244H354" class="rowLink"/>
+  <rect x="360" y="62" width="226" height="392" rx="13" class="panel"/>
+  <text x="473" y="92" text-anchor="middle" class="section">三元组表</text>
+  <g transform="translate(393 118)">
+    <rect x="0" y="0" width="53" height="38" class="header"/><rect x="53" y="0" width="53" height="38" class="header"/><rect x="106" y="0" width="73" height="38" class="header"/>
+    <text x="26" y="25" text-anchor="middle" class="label">行</text><text x="79" y="25" text-anchor="middle" class="label">列</text><text x="142" y="25" text-anchor="middle" class="label">值</text>
+    <g class="label">
+      <rect x="0" y="38" width="53" height="38" class="panel"/><rect x="53" y="38" width="53" height="38" class="panel"/><rect x="106" y="38" width="73" height="38" class="panel"/><text x="26" y="63" text-anchor="middle">1</text><text x="79" y="63" text-anchor="middle">3</text><text x="142" y="63" text-anchor="middle">8</text>
+      <rect x="0" y="76" width="53" height="38" class="panel"/><rect x="53" y="76" width="53" height="38" class="panel"/><rect x="106" y="76" width="73" height="38" class="panel"/><text x="26" y="101" text-anchor="middle">2</text><text x="79" y="101" text-anchor="middle">1</text><text x="142" y="101" text-anchor="middle">5</text>
+      <rect x="0" y="114" width="53" height="38" class="panel"/><rect x="53" y="114" width="53" height="38" class="panel"/><rect x="106" y="114" width="73" height="38" class="panel"/><text x="26" y="139" text-anchor="middle">2</text><text x="79" y="139" text-anchor="middle">5</text><text x="142" y="139" text-anchor="middle">6</text>
+      <rect x="0" y="152" width="53" height="38" class="panel"/><rect x="53" y="152" width="53" height="38" class="panel"/><rect x="106" y="152" width="73" height="38" class="panel"/><text x="26" y="177" text-anchor="middle">4</text><text x="79" y="177" text-anchor="middle">2</text><text x="142" y="177" text-anchor="middle">9</text>
+      <rect x="0" y="190" width="53" height="38" class="panel"/><rect x="53" y="190" width="53" height="38" class="panel"/><rect x="106" y="190" width="73" height="38" class="panel"/><text x="26" y="215" text-anchor="middle">4</text><text x="79" y="215" text-anchor="middle">4</text><text x="142" y="215" text-anchor="middle">7</text>
+    </g>
+  </g>
+  <text x="473" y="376" text-anchor="middle" class="label">每个非零元素占一条记录</text>
+  <text x="473" y="402" text-anchor="middle" class="small">记录本身可按行、列顺序排列</text>
+
+  <!-- Orthogonal list -->
+  <path d="M586 244H618" class="rowLink"/>
+  <rect x="624" y="62" width="548" height="430" rx="13" class="panel"/>
+  <text x="898" y="92" text-anchor="middle" class="section">十字链表</text>
+
+  <!-- headers -->
+  <g class="label">
+    <rect x="648" y="142" width="54" height="36" rx="7" class="header"/><text x="675" y="165" text-anchor="middle">行 1</text>
+    <rect x="648" y="212" width="54" height="36" rx="7" class="header"/><text x="675" y="235" text-anchor="middle">行 2</text>
+    <rect x="648" y="282" width="54" height="36" rx="7" class="header"/><text x="675" y="305" text-anchor="middle">行 3</text>
+    <rect x="648" y="352" width="54" height="36" rx="7" class="header"/><text x="675" y="375" text-anchor="middle">行 4</text>
+    <rect x="724" y="105" width="58" height="32" rx="7" class="header"/><text x="753" y="126" text-anchor="middle">列 1</text>
+    <rect x="812" y="105" width="58" height="32" rx="7" class="header"/><text x="841" y="126" text-anchor="middle">列 2</text>
+    <rect x="900" y="105" width="58" height="32" rx="7" class="header"/><text x="929" y="126" text-anchor="middle">列 3</text>
+    <rect x="988" y="105" width="58" height="32" rx="7" class="header"/><text x="1017" y="126" text-anchor="middle">列 4</text>
+    <rect x="1076" y="105" width="58" height="32" rx="7" class="header"/><text x="1105" y="126" text-anchor="middle">列 5</text>
+  </g>
+
+  <!-- links behind nodes -->
+  <path d="M702 160H897" class="rowLink"/><path d="M702 230H721" class="rowLink"/><path d="M785 230H1073" class="rowLink"/><path d="M702 370H809" class="rowLink"/><path d="M873 370H985" class="rowLink"/>
+  <path d="M753 137V209" class="colLink"/><path d="M841 137V349" class="colLink"/><path d="M929 137V139" class="colLink"/><path d="M1017 137V349" class="colLink"/><path d="M1105 137V209" class="colLink"/>
+  <text x="725" y="305" class="small">∅</text>
+
+  <!-- nonzero nodes -->
+  <g>
+    <rect x="897" y="139" width="64" height="42" rx="8" class="node"/><text x="929" y="155" text-anchor="middle" class="small">(1,3)</text><text x="929" y="174" text-anchor="middle" class="valueText">8</text>
+    <rect x="721" y="209" width="64" height="42" rx="8" class="node"/><text x="753" y="225" text-anchor="middle" class="small">(2,1)</text><text x="753" y="244" text-anchor="middle" class="valueText">5</text>
+    <rect x="1073" y="209" width="64" height="42" rx="8" class="node"/><text x="1105" y="225" text-anchor="middle" class="small">(2,5)</text><text x="1105" y="244" text-anchor="middle" class="valueText">6</text>
+    <rect x="809" y="349" width="64" height="42" rx="8" class="node"/><text x="841" y="365" text-anchor="middle" class="small">(4,2)</text><text x="841" y="384" text-anchor="middle" class="valueText">9</text>
+    <rect x="985" y="349" width="64" height="42" rx="8" class="node"/><text x="1017" y="365" text-anchor="middle" class="small">(4,4)</text><text x="1017" y="384" text-anchor="middle" class="valueText">7</text>
+  </g>
+
+  <line x1="675" y1="430" x2="735" y2="430" class="rowLink"/><text x="745" y="435" class="small">同行的下一个非零结点</text>
+  <line x1="920" y1="430" x2="920" y2="466" class="colLink"/><text x="932" y="456" class="small">同列的下一个非零结点</text>
+</svg>
