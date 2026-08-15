@@ -1,21 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" role="img" aria-labelledby="title desc">
-  <title id="title">HTTP 1.0 请求一个对象的两 RTT 时序</title><desc id="desc">时间向下，第一个 RTT 用于 TCP 三次握手，第二个 RTT 从发送 HTTP 请求到响应首字节到达，之后还需对象传输时延。</desc>
-  <defs><marker id="blueArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker><marker id="greenArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#059669"/></marker></defs>
-  <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-:root{color-scheme:light dark}.title{font:700 24px "Microsoft YaHei",sans-serif;fill:#172033}.label{font:700 17px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:14px "Microsoft YaHei",sans-serif;fill:#526174}.small{font:13px "Microsoft YaHei",sans-serif;fill:#526174}.box{fill:#fff;stroke:#64748b;stroke-width:2}.client{fill:#ecfdf5;stroke:#059669}.server{fill:#eff6ff;stroke:#2563eb}.panel{fill:#f8fafc;stroke:#cbd5e1}.life{stroke:#94a3b8;stroke-width:2}.tcp{stroke:#64748b;stroke-width:2;marker-end:url(#blueArrow)}.request{stroke:#2563eb;stroke-width:3;marker-end:url(#blueArrow)}.response{stroke:#059669;stroke-width:3;marker-end:url(#greenArrow)}.transfer{stroke:#059669;stroke-width:8;opacity:.35}.brace{fill:none;stroke:#dc2626;stroke-width:2}.red{fill:#dc2626}.blue{fill:#2563eb}.green{fill:#059669}@media(prefers-color-scheme:dark){.title,.label{fill:#e5edf5}.sub,.small{fill:#a9b7c6}.box{fill:#121b25}.client{fill:#123d2d}.server{fill:#17345a}.panel{fill:#121b25;stroke:#344354}.life{stroke:#526174}.red{fill:#fca5a5}.blue{fill:#93c5fd}.green{fill:#6ee7b7}}</style>
-  <text x="480" y="36" text-anchor="middle" class="title">HTTP/1.0 非持续连接：请求一个对象的时间</text>
-  <rect x="90" y="58" width="190" height="54" rx="7" class="box client"/><text x="185" y="82" text-anchor="middle" class="label">浏览器（HTTP 客户）</text><text x="185" y="102" text-anchor="middle" class="sub">时间向下</text>
-  <rect x="680" y="58" width="190" height="54" rx="7" class="box server"/><text x="775" y="82" text-anchor="middle" class="label">万维网服务器</text><text x="775" y="102" text-anchor="middle" class="sub">TCP 80</text>
-  <line x1="185" y1="112" x2="185" y2="382" class="life"/><line x1="775" y1="112" x2="775" y2="382" class="life"/>
-  <line x1="185" y1="132" x2="775" y2="154" class="tcp"/><text x="480" y="137" text-anchor="middle" class="small">SYN</text>
-  <line x1="775" y1="174" x2="185" y2="196" class="tcp"/><text x="480" y="177" text-anchor="middle" class="small">SYN + ACK</text>
-  <line x1="185" y1="216" x2="775" y2="238" class="tcp"/><text x="480" y="221" text-anchor="middle" class="small">ACK</text>
-  <path d="M157 129H143V238H157" class="brace"/><text x="130" y="187" text-anchor="end" class="label red">RTT 1</text><text x="130" y="207" text-anchor="end" class="sub">建立 TCP 连接</text>
-  <line x1="185" y1="266" x2="775" y2="288" class="request"/><text x="480" y="269" text-anchor="middle" class="label blue">HTTP 请求</text>
-  <line x1="775" y1="316" x2="185" y2="338" class="response"/><text x="480" y="319" text-anchor="middle" class="label green">HTTP 响应首字节</text>
-  <path d="M157 263H143V338H157" class="brace"/><text x="130" y="297" text-anchor="end" class="label red">RTT 2</text><text x="130" y="317" text-anchor="end" class="sub">请求至首字节</text>
-  <line x1="775" y1="338" x2="185" y2="370" class="transfer"/><text x="480" y="372" text-anchor="middle" class="sub green">对象其余字节持续到达：文档传输时延</text>
-  <rect x="300" y="388" width="360" height="34" rx="6" class="panel"/><text x="480" y="411" text-anchor="middle" class="label">总时间 = 2 RTT + 对象传输时延</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1160" viewBox="0 0 1100 1160" role="img" aria-labelledby="title desc">
+  <title id="title">HTTP 1.0 非持续连接请求两个对象的完整过程</title>
+  <desc id="desc">浏览器先用一条 TCP 连接请求 HTML，完成三次握手、HTTP 请求响应和四次挥手；解析 HTML 后，再用另一条 TCP 连接请求图片并完成相同过程。</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#059669"/></marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#64748b"/></marker>
+  </defs>
+  <style>
+    svg{background:#f8fafc;color-scheme:light dark}text{font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    .title{font-size:26px;font-weight:700;fill:#172033}.head{font-size:18px;font-weight:700;fill:#172033}.label{font-size:14px;fill:#526174}.small{font-size:12px;fill:#526174}
+    .actor{fill:#fff;stroke:#64748b;stroke-width:2}.client{fill:#ecfdf5;stroke:#059669}.server{fill:#eff6ff;stroke:#2563eb}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:1.5}.phase{fill:#f8fafc;stroke:#cbd5e1;stroke-dasharray:6 4}.life{stroke:#94a3b8;stroke-width:2;stroke-dasharray:5 5}
+    .tcp{stroke:#64748b;stroke-width:2;marker-end:url(#arrow-slate)}.http-q{stroke:#2563eb;stroke-width:3;marker-end:url(#arrow-blue)}.http-r{stroke:#059669;stroke-width:5;marker-end:url(#arrow-green)}.divider{stroke:#d97706;stroke-width:2;stroke-dasharray:8 5}
+    .blue{fill:#2563eb}.green{fill:#059669}.orange{fill:#b45309}.badge-blue{fill:#dbeafe}.badge-green{fill:#d1fae5}.badge-orange{fill:#ffedd5}
+    @media(prefers-color-scheme:dark){svg{background:#0b1020}.title,.head{fill:#e5edf5}.label,.small{fill:#a9b7c6}.actor,.panel{fill:#121b25;stroke:#526174}.client{fill:#123d2d;stroke:#34d399}.server{fill:#17345a;stroke:#60a5fa}.phase{fill:#101923;stroke:#344354}.life{stroke:#526174}.blue{fill:#93c5fd}.green{fill:#6ee7b7}.orange{fill:#fdba74}.badge-blue{fill:#17345a}.badge-green{fill:#123d2d}.badge-orange{fill:#4a2a13}}
+  </style>
+  <text x="550" y="38" text-anchor="middle" class="title">HTTP/1.0 非持续连接：两个对象，两条完整 TCP 连接</text>
+  <rect x="90" y="62" width="220" height="58" rx="9" class="actor client"/><text x="200" y="88" text-anchor="middle" class="head">浏览器</text><text x="200" y="109" text-anchor="middle" class="label">HTTP 客户</text>
+  <rect x="790" y="62" width="220" height="58" rx="9" class="actor server"/><text x="900" y="88" text-anchor="middle" class="head">Web 服务器</text><text x="900" y="109" text-anchor="middle" class="label">TCP 80</text>
+  <line x1="200" y1="120" x2="200" y2="1100" class="life"/><line x1="900" y1="120" x2="900" y2="1100" class="life"/>
+
+  <rect x="58" y="142" width="984" height="444" rx="12" class="panel"/>
+  <rect x="78" y="158" width="226" height="30" rx="6" class="badge-blue"/><text x="191" y="179" text-anchor="middle" class="head blue">连接 1：请求 /index.html</text>
+  <rect x="330" y="158" width="160" height="30" rx="6" class="badge-orange"/><text x="410" y="178" text-anchor="middle" class="label orange">RTT 1：建立连接</text>
+  <line x1="200" y1="206" x2="900" y2="226" class="tcp"/><text x="550" y="207" text-anchor="middle" class="label">SYN</text>
+  <line x1="900" y1="244" x2="200" y2="264" class="tcp"/><text x="550" y="245" text-anchor="middle" class="label">SYN + ACK</text>
+  <line x1="200" y1="282" x2="900" y2="302" class="tcp"/><text x="550" y="283" text-anchor="middle" class="label">ACK</text>
+  <rect x="330" y="314" width="214" height="30" rx="6" class="badge-green"/><text x="437" y="334" text-anchor="middle" class="label green">RTT 2：请求至响应首字节</text>
+  <line x1="200" y1="358" x2="900" y2="378" class="http-q"/><text x="550" y="359" text-anchor="middle" class="head blue">GET /index.html</text>
+  <line x1="900" y1="402" x2="200" y2="430" class="http-r"/><text x="550" y="407" text-anchor="middle" class="head green">200 OK + HTML 对象</text>
+  <rect x="676" y="442" width="230" height="26" rx="6" class="phase"/><text x="791" y="460" text-anchor="middle" class="small">服务器主动关闭：四报文挥手</text>
+  <line x1="900" y1="482" x2="200" y2="498" class="tcp"/><text x="550" y="481" text-anchor="middle" class="label">FIN</text>
+  <line x1="200" y1="514" x2="900" y2="530" class="tcp"/><text x="550" y="513" text-anchor="middle" class="label">ACK</text>
+  <line x1="200" y1="542" x2="900" y2="558" class="tcp"/><text x="435" y="546" text-anchor="middle" class="label">FIN</text>
+  <line x1="900" y1="562" x2="200" y2="578" class="tcp"/><text x="665" y="565" text-anchor="middle" class="label">ACK</text>
+
+  <line x1="85" y1="600" x2="1015" y2="600" class="divider"/>
+  <rect x="300" y="584" width="500" height="34" rx="7" class="badge-orange"/><text x="550" y="607" text-anchor="middle" class="head orange">浏览器解析 HTML，发现引用对象 /logo.png</text>
+
+  <rect x="58" y="630" width="984" height="444" rx="12" class="panel"/>
+  <rect x="78" y="646" width="226" height="30" rx="6" class="badge-blue"/><text x="191" y="667" text-anchor="middle" class="head blue">连接 2：请求 /logo.png</text>
+  <rect x="330" y="646" width="160" height="30" rx="6" class="badge-orange"/><text x="410" y="666" text-anchor="middle" class="label orange">RTT 1：建立连接</text>
+  <line x1="200" y1="694" x2="900" y2="714" class="tcp"/><text x="550" y="695" text-anchor="middle" class="label">SYN</text>
+  <line x1="900" y1="732" x2="200" y2="752" class="tcp"/><text x="550" y="733" text-anchor="middle" class="label">SYN + ACK</text>
+  <line x1="200" y1="770" x2="900" y2="790" class="tcp"/><text x="550" y="771" text-anchor="middle" class="label">ACK</text>
+  <rect x="330" y="802" width="214" height="30" rx="6" class="badge-green"/><text x="437" y="822" text-anchor="middle" class="label green">RTT 2：请求至响应首字节</text>
+  <line x1="200" y1="846" x2="900" y2="866" class="http-q"/><text x="550" y="847" text-anchor="middle" class="head blue">GET /logo.png</text>
+  <line x1="900" y1="890" x2="200" y2="918" class="http-r"/><text x="550" y="895" text-anchor="middle" class="head green">200 OK + 图片对象</text>
+  <rect x="676" y="930" width="230" height="26" rx="6" class="phase"/><text x="791" y="948" text-anchor="middle" class="small">服务器主动关闭：四报文挥手</text>
+  <line x1="900" y1="970" x2="200" y2="986" class="tcp"/><text x="550" y="969" text-anchor="middle" class="label">FIN</text>
+  <line x1="200" y1="1002" x2="900" y2="1018" class="tcp"/><text x="550" y="1001" text-anchor="middle" class="label">ACK</text>
+  <line x1="200" y1="1030" x2="900" y2="1046" class="tcp"/><text x="435" y="1034" text-anchor="middle" class="label">FIN</text>
+  <line x1="900" y1="1050" x2="200" y2="1066" class="tcp"/><text x="665" y="1053" text-anchor="middle" class="label">ACK</text>
+
+  <rect x="160" y="1092" width="780" height="46" rx="8" class="phase"/>
+  <text x="550" y="1112" text-anchor="middle" class="head">每个对象约需 2 RTT + 对象传输时延</text>
+  <text x="550" y="1131" text-anchor="middle" class="small">挥手发生在对象交付之后，不属于经典 2 RTT 取对象时延</text>
 </svg>

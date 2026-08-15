@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>scanf 字符输入时间线</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--fg:#172033;--muted:#5b687a;--line:#cbd5e1;--blue:#2563eb;--green:#059669;--orange:#d97706;--violet:#7c3aed;--soft-blue:#dbeafe;--soft-green:#d1fae5;--soft-orange:#ffedd5;--soft-violet:#ede9fe;--shadow:0 12px 30px rgba(15,23,42,.10)}
+    @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#121b2a;--fg:#e5edf5;--muted:#a9b7c6;--line:#344354;--blue:#93c5fd;--green:#6ee7b7;--orange:#fdba74;--violet:#c4b5fd;--soft-blue:#17345a;--soft-green:#123d2d;--soft-orange:#4a2a13;--soft-violet:#2d2350;--shadow:0 16px 34px rgba(0,0,0,.32)}}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:"Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif}.app{max-width:1180px;margin:auto;padding:22px 24px 18px}header{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:14px}h1{font-size:25px;margin:0 0 4px}.sub{color:var(--muted);font-size:13px}.counter{font-weight:700;color:var(--blue);white-space:nowrap}
+    .rail{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin:12px 0 18px}.step{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:8px;padding:8px 4px;min-height:48px;font-size:11px;cursor:pointer}.step strong{display:block;font-size:13px;color:var(--fg);margin-bottom:2px}.step.active{border-color:var(--blue);background:var(--soft-blue);color:var(--blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 20%,transparent)}
+    .stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px}.stage-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:13px}.badge{display:inline-block;padding:4px 9px;border-radius:999px;background:var(--soft-blue);color:var(--blue);font-weight:700;font-size:12px}.stage h2{font-size:22px;margin:8px 0 0}.event{max-width:440px;text-align:right;color:var(--muted);font-size:14px;line-height:1.65}
+    .axes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}.axis{border:1px solid var(--line);border-radius:11px;padding:14px;min-height:118px}.axis .k{font-size:12px;font-weight:700;margin-bottom:8px}.axis .v{font-size:17px;font-weight:700;line-height:1.5}.axis .hint{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5}.cpu{background:var(--soft-blue)}.cpu .k{color:var(--blue)}.state{background:var(--soft-orange)}.state .k{color:var(--orange)}.data{background:var(--soft-green)}.data .k{color:var(--green)}
+    .chain{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;background:color-mix(in srgb,var(--panel) 75%,var(--soft-violet));border:1px dashed var(--violet);border-radius:10px;padding:11px}.node{font-size:12px;color:var(--muted)}.node.on{font-weight:700;color:var(--violet)}.arrow{color:var(--muted)}
+    footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px}.controls{display:flex;gap:8px}button.nav{border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700}button.nav:hover{border-color:var(--blue)}button.nav:disabled{opacity:.4;cursor:not-allowed}.rule{font-size:12px;color:var(--muted)}
+    @media(max-width:760px){.app{padding:16px}.rail{grid-template-columns:repeat(3,1fr)}.axes{grid-template-columns:1fr}.stage-top{display:block}.event{text-align:left;margin-top:8px}.rule{display:none}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div><h1><code>scanf("%c", &amp;ch)</code>：字符进入变量的时间线</h1><div class="sub">每一步同时定位 CPU、原进程状态和字符位置</div></div>
+    <div class="counter" id="counter">阶段 1 / 9</div>
+  </header>
+  <nav class="rail" id="rail" aria-label="输入阶段"></nav>
+  <section class="stage" aria-live="polite">
+    <div class="stage-top">
+      <div><span class="badge" id="badge">用户态</span><h2 id="title"></h2></div>
+      <div class="event" id="event"></div>
+    </div>
+    <div class="axes">
+      <article class="axis cpu"><div class="k">CPU 正在执行谁</div><div class="v" id="cpu"></div><div class="hint" id="cpuHint"></div></article>
+      <article class="axis state"><div class="k">发起 I/O 的进程状态</div><div class="v" id="state"></div><div class="hint" id="stateHint"></div></article>
+      <article class="axis data"><div class="k">字符现在在哪里</div><div class="v" id="data"></div><div class="hint" id="dataHint"></div></article>
+    </div>
+    <div class="chain" id="chain" aria-label="输入数据位置"></div>
+  </section>
+  <footer>
+    <div class="controls"><button class="nav" id="prev">← 上一步</button><button class="nav" id="next">下一步 →</button></div>
+    <div class="rule">唤醒只到就绪态；调度后才重新运行</div>
+  </footer>
+</main>
+<script>
+  const stages = [
+    {short:"scanf",badge:"用户态",title:"进入 scanf",event:"C 库检查已有输入并解析格式串；当前库缓冲没有可用字符。",cpu:"本进程的 C 库代码",cpuHint:"普通函数调用，尚未进入内核。",state:"运行",stateHint:"进程正在占用 CPU。",data:"尚未产生",dataHint:"ch 仍是调用前的值。",pos:0},
+    {short:"read",badge:"状态切换",title:"请求操作系统读取",event:"C 库发起 read 类请求，系统调用入口使 CPU 受控进入内核。",cpu:"本进程的系统调用处理",cpuHint:"先执行用户态入口，随后执行内核代码。",state:"运行",stateHint:"进入内核不等于阻塞。",data:"尚未产生",dataHint:"用户缓冲尚无新字符。",pos:0},
+    {short:"阻塞",badge:"内核态",title:"没有可交付输入",event:"内核记录等待关系，把原进程放入阻塞队列，再调度其他进程。",cpu:"内核调度 → 其他进程",cpuHint:"CPU 不需要停在读取请求上忙等。",state:"阻塞",stateHint:"即使得到 CPU 也无法继续。",data:"尚未产生",dataHint:"键盘还没有生成字符。",pos:0},
+    {short:"按键",badge:"设备侧",title:"用户按下键盘",event:"键盘产生输入信息，控制器暂存数据并提出中断请求。",cpu:"任意当前代码",cpuHint:"可能是另一个进程，也可能是 idle。",state:"阻塞",stateHint:"原进程仍在等待输入条件。",data:"设备 / 控制器",dataHint:"尚未进入操作系统输入区。",pos:1},
+    {short:"中断",badge:"内核态",title:"CPU 响应中断",event:"CPU 暂停当时的正常指令流，转入内核的中断与驱动处理。",cpu:"中断入口与驱动代码",cpuHint:"它不等于原进程恢复运行。",state:"仍未运行",stateHint:"通常仍阻塞，或即将被唤醒。",data:"控制器 → 内核",dataHint:"驱动正在接收设备信息。",pos:2},
+    {short:"接收",badge:"内核态",title:"数据进入内核输入区",event:"中断处理与驱动读取控制器状态和数据，更新内核输入缓冲或队列。",cpu:"中断处理 / 驱动代码",cpuHint:"具体系统可能把部分工作延后。",state:"阻塞或待唤醒",stateHint:"用户代码还没有继续。",data:"内核管理的输入区",dataHint:"绝不是用户变量 ch。",pos:3},
+    {short:"唤醒",badge:"调度边界",title:"等待条件满足",event:"内核把原进程从阻塞队列移到就绪队列；是否立刻运行由调度决定。",cpu:"内核或其他当前代码",cpuHint:"被唤醒者不一定马上获得 CPU。",state:"就绪",stateHint:"已经具备运行条件，只差 CPU。",data:"内核管理的输入区",dataHint:"等待 read 继续完成。",pos:3},
+    {short:"返回",badge:"内核 → 用户",title:"read 交付数据",event:"原进程被调度后继续系统调用，内核把字节交付到用户缓冲并返回用户态。",cpu:"原进程：内核 → C 库",cpuHint:"系统调用返回后才重新执行用户态库代码。",state:"运行",stateHint:"原进程重新占用 CPU。",data:"用户空间输入缓冲",dataHint:"scanf 已能读取，但 ch 尚未必赋值。",pos:4},
+    {short:"赋值",badge:"用户态",title:"scanf 写入 ch",event:"C 库按 %c 取一个字符，并写入 &ch 指向的用户变量。",cpu:"本进程的 C 库与用户代码",cpuHint:"源代码层面的效果在此完成。",state:"运行",stateHint:"scanf 返回后继续执行下一条语句。",data:"变量 ch",dataHint:"ch 等于用户输入字符对应的值。",pos:5}
+  ];
+  const places = ["尚未产生","设备 / 控制器","接收中","内核输入区","用户缓冲","ch"];
+  let current = 0;
+  const $ = id => document.getElementById(id);
+
+  // The same stage object drives all three axes so the displayed states cannot drift apart.
+  function render(){
+    const s = stages[current];
+    $("counter").textContent = `阶段 ${current + 1} / ${stages.length}`;
+    ["badge","title","event","cpu","cpuHint","state","stateHint","data","dataHint"].forEach(key => $(key).textContent = s[key]);
+    $("prev").disabled = current === 0;
+    $("next").disabled = current === stages.length - 1;
+    document.querySelectorAll(".step").forEach((el,i) => el.classList.toggle("active", i === current));
+    $("chain").innerHTML = places.map((p,i) => `<span class="node ${i === s.pos ? "on" : ""}">${p}</span>${i < places.length - 1 ? '<span class="arrow">→</span>' : ''}`).join("");
+  }
+  const rail = $("rail");
+  stages.forEach((s,i) => {
+    const b = document.createElement("button");
+    b.className = "step"; b.innerHTML = `<strong>${i + 1}</strong>${s.short}`; b.addEventListener("click", () => {current = i; render();}); rail.appendChild(b);
+  });
+  $("prev").addEventListener("click", () => {if(current > 0){current--; render();}});
+  $("next").addEventListener("click", () => {if(current < stages.length - 1){current++; render();}});
+  document.addEventListener("keydown", e => {if(e.key === "ArrowLeft") $("prev").click(); if(e.key === "ArrowRight") $("next").click();});
+  render();
+</script>
+</body>
+</html>

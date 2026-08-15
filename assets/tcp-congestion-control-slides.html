@@ -180,7 +180,7 @@ while (no_loss) {           // 12→13→14→...
   <section class="slide">
     <div class="panel">
       <h2><span class="tag p">快重传</span>收到 3 个重复 ACK → 立即重传</h2>
-      <p>接收方收到失序报文段时，<strong>立即发送重复 ACK</strong>（不延迟）。发送方据此判断：</p>
+      <p>接收方收到失序报文段时，<strong>立即发送重复 ACK</strong>（不延迟）。第一次出现某确认号是正常 ACK；此后没有确认新数据、仍返回相同确认号，才计为重复 ACK。</p>
       <table>
         <tr class="td-hd"><td>事件</td><td>发送方动作</td></tr>
         <tr><td>收到 ACK(M1)</td><td>正常确认 M1 ✓</td></tr>
@@ -189,7 +189,7 @@ while (no_loss) {           // 12→13→14→...
         <tr><td>收到 ACK(M2) ×2</td><td>dup ACK #2 — 注意</td></tr>
         <tr><td>收到 ACK(M2) <strong>×3</strong></td><td><span class="val-r">dup ACK #3 → 立即重传 M3！不等超时</span></td></tr>
       </table>
-      <p style="margin-top:8px;"><span class="val-g">意义</span>：收到 3 个重复 ACK 意味着"M3 丢了，但 M4/M5/M6 都到了" → 网络并未拥塞，只是个别丢包。</p>
+      <p style="margin-top:8px;"><span class="val-g">意义</span>：收到 3 个重复 ACK 意味着“M3 前出现缺口，但 M4/M5/M6 仍在到达” → 不必像超时那样把 cwnd 降到 1。</p>
     </div>
     <pre><code>/* 快重传算法 */
 int dup_count = 0;
@@ -210,36 +210,27 @@ void on_ack(int ack_num) {
     }
 }
 
-/* 快重传避免了等待超时，使
-   整个网络吞吐量提高约 20% */</code></pre>
+/* 第 3 个重复 ACK 到达时触发快重传 */</code></pre>
   </section>
 
-  <!-- Page 5: Fast Recovery (Reno) and Summary -->
+  <!-- Page 5: Fast Recovery and Summary -->
   <section class="slide">
     <div class="panel">
-      <h2><span class="tag d">快恢复</span>Reno：跳过慢开始，直接线性增长</h2>
-      <p>快重传后，Reno 不把 cwnd 降到 1，而是执行快恢复：</p>
+      <h2><span class="tag d">快恢复</span>3 个重复 ACK：降到门限，直接线性增长</h2>
+      <p>本页采用 408 题目常用的简化规则。快重传后不把 cwnd 降到 1，而是把它降到新的 ssthresh：</p>
       <table>
-        <tr class="td-hd"><td>步骤</td><td>Tahoe</td><td>Reno（快恢复）</td></tr>
+        <tr class="td-hd"><td>丢包信号</td><td>超时</td><td>3 个重复 ACK</td></tr>
         <tr><td>ssthresh</td><td class="val-a">cwnd/2</td><td class="val-a">cwnd/2</td></tr>
-        <tr><td>cwnd</td><td class="val-r">1</td><td class="val-g">ssthresh + 3</td></tr>
-        <tr><td>收到 dup ACK</td><td>—</td><td>cwnd += 1（临时扩大）</td></tr>
-        <tr><td>收到新 ACK</td><td>慢开始 1→2→4→...</td><td class="val-g">cwnd = ssthresh，进入拥塞避免</td></tr>
+        <tr><td>cwnd</td><td class="val-r">1</td><td class="val-g">ssthresh</td></tr>
+        <tr><td>后续阶段</td><td>重新慢开始</td><td class="val-g">直接拥塞避免</td></tr>
       </table>
       <p style="margin-top:10px;"><strong>总结</strong>：拥塞控制的四个算法是逐步演进的——慢开始和拥塞避免是基础（Tahoe, 1988），快重传和快恢复是改进（Reno, 1990）。核心思想：<strong>试探着增加，丢包了就减，但不该减过头</strong>。</p>
     </div>
-    <pre><code>/* Reno: 快重传 + 快恢复 */
+    <pre><code>/* 408 简化模型：快重传 + 快恢复 */
 void on_3_dup_ack() {
     ssthresh = cwnd / 2;
-    cwnd = ssthresh + 3;
-    // 快恢复阶段
+    cwnd = ssthresh;
     retransmit_lost_segment();
-}
-void on_dup_ack_during_recovery() {
-    cwnd += 1;  // 每额外 dup ACK +1
-}
-void on_new_ack() {
-    cwnd = ssthresh;  // 结束快恢复
     // 直接进入拥塞避免（线性增长）
 }
 

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1040" height="680" viewBox="0 0 1040 680" role="img">
-  <title>TCP congestion window cwnd curve — slow start + congestion avoidance + timeout</title>
+  <title>TCP congestion window cwnd curve with timeout and three duplicate ACK events</title>
   <style>/* paired-theme-canvas */
 svg{background:#f8fafc}
 @media(prefers-color-scheme:dark){svg{background:#0b1020}}
@@ -17,11 +17,13 @@ svg{background:#f8fafc}
     .cv-ss{fill:none;stroke:#059669;stroke-width:3}
     .cv-ca{fill:none;stroke:#2563eb;stroke-width:3}
     .cv-to{fill:none;stroke:#dc2626;stroke-width:1.5;stroke-dasharray:6,3}
+    .cv-fast{fill:none;stroke:#7c3aed;stroke-width:2.5}
     .cv-ss2{fill:none;stroke:#059669;stroke-width:3}
     .cv-ca2{fill:none;stroke:#2563eb;stroke-width:3}
     .dot{fill:#059669}
     .dot-b{fill:#2563eb}
     .dot-r{fill:#dc2626}
+    .dot-p{fill:#7c3aed}
     .tag-g{fill:#059669}
     .tag-b{fill:#2563eb}
     .tag-r{fill:#dc2626}
@@ -44,9 +46,11 @@ svg{background:#f8fafc}
       .cv-ss2{stroke:#10b981}
       .cv-ca2{stroke:#3b82f6}
       .cv-to{stroke:#f87171}
+      .cv-fast{stroke:#c4b5fd}
       .dot{fill:#10b981}
       .dot-b{fill:#3b82f6}
       .dot-r{fill:#f87171}
+      .dot-p{fill:#c4b5fd}
       .tag-g{fill:#047857}
       .tag-b{fill:#1d4ed8}
       .tag-r{fill:#b91c1c}
@@ -63,7 +67,7 @@ svg{background:#f8fafc}
   .contrast-label{fill:#fff;paint-order:stroke fill;stroke:#065f46;stroke-width:2px}@media(prefers-color-scheme:dark){.contrast-label{stroke:#052e16}}
   </style>
 
-  <text x="520" y="34" text-anchor="middle" class="t">TCP 拥塞窗口 cwnd 变化曲线 — 慢开始 + 拥塞避免（单位：MSS）</text>
+  <text x="520" y="34" text-anchor="middle" class="t">TCP 拥塞窗口 cwnd 变化曲线 — 超时与 3 个重复 ACK（单位：MSS）</text>
 
   <!-- Plot area: x in [80,960], y in [70,450] → X maps 0-28 to 880px, Y maps 0-28 to 380px -->
   <!-- Axes -->
@@ -104,6 +108,13 @@ svg{background:#f8fafc}
   <text x="334" y="468" text-anchor="middle" class="ss">8</text>
   <text x="398" y="468" text-anchor="middle" class="ss">10</text>
   <text x="462" y="468" text-anchor="middle" class="ss">12</text>
+  <text x="526" y="468" text-anchor="middle" class="ss">14</text>
+  <text x="590" y="468" text-anchor="middle" class="ss">16</text>
+  <text x="654" y="468" text-anchor="middle" class="ss">18</text>
+  <text x="718" y="468" text-anchor="middle" class="ss">20</text>
+  <text x="782" y="468" text-anchor="middle" class="ss">22</text>
+  <text x="846" y="468" text-anchor="middle" class="ss">24</text>
+  <text x="910" y="468" text-anchor="middle" class="ss">26</text>
 
   <!-- === PHASE 1: Slow Start === -->
   <!-- cwnd: 1→2 (r0→r1), 2→4 (r1→r2), 4→8 (r2→r3), 8→16 (r3→r4) -->
@@ -196,16 +207,23 @@ svg{background:#f8fafc}
   <!-- r22: cwnd=17 → (826, 219) -->
   <!-- r23: cwnd=18 → (860, 206) -->
 
-  <polyline points="656,287 690,274 724,260 758,246 792,233 826,219 860,206" class="cv-ca2"/>
+  <polyline points="656,287 690,274 724,260 758,246 792,233 826,219 860,206 894,192" class="cv-ca2"/>
   <circle cx="690" cy="274" r="4" class="dot-b"/>
   <circle cx="724" cy="260" r="4" class="dot-b"/>
   <circle cx="758" cy="246" r="4" class="dot-b"/>
   <circle cx="792" cy="233" r="4" class="dot-b"/>
   <circle cx="826" cy="219" r="4" class="dot-b"/>
   <circle cx="860" cy="206" r="4" class="dot-b"/>
+  <circle cx="894" cy="192" r="5" class="dot-p"/>
 
-  <!-- Dotted continuation -->
-  <line x1="860" y1="206" x2="920" y2="190" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <!-- Three duplicate ACKs: ssthresh <- cwnd/2, cwnd <- ssthresh, then congestion avoidance -->
+  <line x1="894" y1="192" x2="922" y2="318" class="cv-fast"/>
+  <circle cx="922" cy="318" r="5" class="dot-p"/>
+  <line x1="922" y1="318" x2="954" y2="304" class="cv-fast"/>
+  <rect x="785" y="86" width="180" height="66" rx="5" class="f-blue"/>
+  <text x="875" y="106" text-anchor="middle" class="sh" fill="#7c3aed">3 个重复 ACK</text>
+  <text x="875" y="126" text-anchor="middle" class="ss">ssthresh ← cwnd/2</text>
+  <text x="875" y="144" text-anchor="middle" class="ss">cwnd ← ssthresh，拥塞避免</text>
 
   <!-- Algorithm zone labels at bottom -->
   <rect x="80" y="488" width="800" height="44" rx="5" class="box"/>
@@ -227,13 +245,15 @@ svg{background:#f8fafc}
 
   <!-- Summary rules at bottom -->
   <rect x="80" y="548" width="880" height="52" rx="5" class="f-amber"/>
-  <text x="520" y="572" text-anchor="middle" class="sh" fill="#92400e">超时后的统一动作（Tahoe）</text>
-  <text x="520" y="592" text-anchor="middle" class="sm">ssthresh ← max( cwnd/2, 2×MSS )  ·  cwnd ← 1 MSS  ·  重新执行慢开始</text>
+  <text x="300" y="572" text-anchor="middle" class="sh" fill="#92400e">超时</text>
+  <text x="300" y="592" text-anchor="middle" class="sm">ssthresh ← cwnd/2 · cwnd ← 1 · 慢开始</text>
+  <text x="740" y="572" text-anchor="middle" class="sh" fill="#7c3aed">3 个重复 ACK</text>
+  <text x="740" y="592" text-anchor="middle" class="sm">ssthresh ← cwnd/2 · cwnd ← ssthresh · 拥塞避免</text>
 
   <!-- Legend -->
   <rect x="80" y="615" width="880" height="48" rx="5" class="box"/>
   <line x1="110" y1="639" x2="140" y2="639" class="cv-ss"/><circle cx="125" cy="639" r="3" class="dot"/><text x="148" y="643" class="ss">慢开始（指数）</text>
   <line x1="280" y1="639" x2="310" y2="639" class="cv-ca"/><circle cx="295" cy="639" r="3" class="dot-b"/><text x="318" y="643" class="ss">拥塞避免（线性）</text>
   <line x1="460" y1="639" x2="490" y2="639" class="cv-to"/><circle cx="475" cy="639" r="3" class="dot-r"/><text x="498" y="643" class="ss">超时后 cwnd 骤降</text>
-  <text x="700" y="643" class="ss">注意：讨论拥塞控制时 swnd = cwnd，窗口单位用 MSS 简化计算</text>
+  <line x1="675" y1="639" x2="705" y2="639" class="cv-fast"/><circle cx="690" cy="639" r="3" class="dot-p"/><text x="713" y="643" class="ss">3 个重复 ACK 后 cwnd 减半</text>
 </svg>
