@@ -1,0 +1,328 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>How To Calculate Integrals | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="本节着重于介绍计算常规的不定积分&#x2F;定积分&#x2F;重积分时可以采用的技巧，不讨论基本概念。  不定积分有理分式如果分子的最高次数大于等于分母最高次数，先采用多项式除法，提出整式部分。整式部分的积分相较容易，此处不讨论。以下的前提全是分子的最高次数小于分母最高次数。 有理分式的拆解任何多项式都可以写成\prod_{i&#x3D;1}^{n_{1}}(A_{i}x+B_{i})^{m_{i}}\p">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How To Calculate Integrals">
+<meta property="og:url" content="https://eliano64.github.io/2026/08/09/How-To-Calculate-Integrals/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="本节着重于介绍计算常规的不定积分&#x2F;定积分&#x2F;重积分时可以采用的技巧，不讨论基本概念。  不定积分有理分式如果分子的最高次数大于等于分母最高次数，先采用多项式除法，提出整式部分。整式部分的积分相较容易，此处不讨论。以下的前提全是分子的最高次数小于分母最高次数。 有理分式的拆解任何多项式都可以写成\prod_{i&#x3D;1}^{n_{1}}(A_{i}x+B_{i})^{m_{i}}\p">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-08-09T12:51:50.000Z">
+<meta property="article:modified_time" content="2026-08-18T06:44:31.932Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="Integral">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "How To Calculate Integrals",
+  "url": "https://eliano64.github.io/2026/08/09/How-To-Calculate-Integrals/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-08-09T12:51:50.000Z",
+  "dateModified": "2026-08-18T06:44:31.932Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/08/09/How-To-Calculate-Integrals/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'How To Calculate Integrals',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">299</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">How To Calculate Integrals</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">How To Calculate Integrals</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-09T12:51:50.000Z" title="发表于 2026-08-09 20:51:50">2026-08-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-18T06:44:31.932Z" title="更新于 2026-08-18 14:44:31">2026-08-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Calculus/">Calculus</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><blockquote>
+<p>本节着重于介绍计算常规的不定积分&#x2F;定积分&#x2F;重积分时可以采用的技巧，不讨论基本概念。</p>
+</blockquote>
+<h1 id="不定积分"><a href="#不定积分" class="headerlink" title="不定积分"></a>不定积分</h1><h2 id="有理分式"><a href="#有理分式" class="headerlink" title="有理分式"></a>有理分式</h2><p>如果分子的最高次数大于等于分母最高次数，先采用多项式除法，提出整式部分。整式部分的积分相较容易，此处不讨论。以下的前提全是分子的最高次数小于分母最高次数。</p>
+<h3 id="有理分式的拆解"><a href="#有理分式的拆解" class="headerlink" title="有理分式的拆解"></a>有理分式的拆解</h3><p>任何多项式都可以写成<script type="math/tex">\prod_{i=1}^{n_{1}}(A_{i}x+B_{i})^{m_{i}}\prod_{i=1}^{n_{2}}(C_{i}x^{2}+D_{i}x+E_{i})^{m_{i}}</script>。这里定义此形式为“最简式”</p>
+<p>拆解的目标：将分母化为“最简式”，然后拆为多个分母较简单的分式相加的形式。</p>
+<h3 id="如何将分母化为“最简式”？"><a href="#如何将分母化为“最简式”？" class="headerlink" title="如何将分母化为“最简式”？"></a>如何将分母化为“最简式”？</h3><p>设分母为<script type="math/tex">P(x)</script>, 所以解法：</p>
+<ol>
+<li>首选：令<script type="math/tex">P(x)=0</script>, 拆出<script type="math/tex">x-a</script>项</li>
+<li>次选：令<script type="math/tex">u=x^{2}</script>, 则<script type="math/tex">P(x)</script>化为<script type="math/tex">Q(u)</script>。此时允许<script type="math/tex">u < 0</script>, 令<script type="math/tex">Q(u)=0</script>，拆出<script type="math/tex">u-a</script>项即<script type="math/tex">x^{2}-a</script>项</li>
+<li>前两种都不行：凑平方，即加上一个<script type="math/tex">P_{2}(x)=P_{1}^{2}(x)</script>使得存在<script type="math/tex">P_{3}^{2}(x)=P(x)+P_{2}^{2}(x)</script>, 于是分母即为<script type="math/tex">P_{3}^{2}(x)-P_{1}^{2}(x)\implies (P_{3}(x)-P_{1}(x))(P_{3}(x)+P_{1}(x))</script></li>
+</ol>
+<p>对非最简形式的部分循环使用以上策略，直到合乎标准。</p>
+<h3 id="如何将原分式拆为多个分式相加的形式？"><a href="#如何将原分式拆为多个分式相加的形式？" class="headerlink" title="如何将原分式拆为多个分式相加的形式？"></a>如何将原分式拆为多个分式相加的形式？</h3><p>设真分式的分母已分解为</p>
+<script type="math/tex; mode=display">Q(x)=
+\prod_i(A_ix+B_i)^{m_i}
+\prod_j(C_jx^2+D_jx+E_j)^{n_j},</script>
+<p>其中二次因式在实数范围内不可约。拆分时遵循两条规则：</p>
+<ul>
+<li>因式的每个幂次都要出现；</li>
+<li>分子的次数比分母对应的不可约因式低一次。</li>
+</ul>
+<p>因此</p>
+<script type="math/tex; mode=display">\frac{P(x)}{Q(x)}
+=\sum_i\sum_{k=1}^{m_i}\frac{a_{ik}}{(A_ix+B_i)^k}
++\sum_j\sum_{k=1}^{n_j}
+\frac{b_{jk}x+c_{jk}}{(C_jx^2+D_jx+E_j)^k}.</script>
+<p>也就是说：一次因式上放常数，二次因式上放一次式。</p>
+<p>遇到重复因式，必须从一次幂写到最高次幂。但分子的形式与一次幂一样。<br>例如 <script type="math/tex">(x-1)</script> ：</p>
+<script type="math/tex; mode=display">\frac{2x^2+3x+4}{(x-1)^2(x^2+1)}
+=\frac{A}{x-1}
++\frac{B}{(x-1)^2}
++\frac{Cx+D}{x^2+1}.</script>
+<p>分子的系数采用待定系数法求解：两边同乘原分母，代入一些特殊的 <script type="math/tex">x</script>，求出系数即可。</p>
+<h3 id="积分"><a href="#积分" class="headerlink" title="积分"></a>积分</h3><ol>
+<li>分子分母差一次：<script type="math/tex">\ln x</script></li>
+<li>分母可凑平方加常数，且分子比分母次数的一半少1：<script type="math/tex">\frac{1}{a}\arctan\left( \frac{x}{a} \right)</script></li>
+<li>分母可凑 <script type="math/tex">m+1</script>次方，且分子次数比分母的 <script type="math/tex">\frac{1}{m+1}</script> 少一次：<script type="math/tex">x^{-m}</script></li>
+<li>分母为<script type="math/tex">(a^{2}+x^{2})^{m}</script>式，令<script type="math/tex">x=a\tan t</script>, 三角换元。</li>
+</ol>
+<h2 id="三角有理分式"><a href="#三角有理分式" class="headerlink" title="三角有理分式"></a>三角有理分式</h2><p>处理原则：进行换元，化为有理分式。</p>
+<h3 id="如何换元？"><a href="#如何换元？" class="headerlink" title="如何换元？"></a>如何换元？</h3><ol>
+<li>最好：可以直接提出 <script type="math/tex">\mathrm{d} \cos x</script> 或 <script type="math/tex">\mathrm{d} \sin x</script> 者直接用<script type="math/tex">\cos x</script> 或 <script type="math/tex">\sin x</script>换。</li>
+</ol>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">善用“巧合”</span></div>
+<div class="callout-content"><p>事实上，能够满足上述最好的情形应是相当多的，只是有时候不会那么明显。所以我们应当留意一些“巧合之处”，例如带<script type="math/tex">1+\cos x</script>或<script type="math/tex">\cos x-\sin x</script>的分母。<br>我们应当注意到，出题人出的题目一定能够解出来，在他构造这道可以被解出来的题目的时候一定会留下暗门。所以那可能真不是巧合，而是出题人有意为之。</p>
+</div>
+</div>
+<ol start="2">
+<li>次好：用<script type="math/tex">\tan x</script>换元。因为<script type="math/tex">t=\tan x\implies\mathrm{d}x = \frac{1}{1+t^2}\mathrm{d}t</script></li>
+<li>最坏：用<script type="math/tex">\tan \frac{t}{2}</script> 换元。</li>
+</ol>
+<h2 id="无理分式"><a href="#无理分式" class="headerlink" title="无理分式"></a>无理分式</h2><p>先通过换元换为有理分式或三角有理分式。原则：不引入新的根号。</p>
+<h2 id="以上形式复合型"><a href="#以上形式复合型" class="headerlink" title="以上形式复合型"></a>以上形式复合型</h2><p>拆项、使用分部积分，拆为以上形式。</p>
+<h2 id="带e-f-x-和-ln-f-x"><a href="#带e-f-x-和-ln-f-x" class="headerlink" title="带e^f(x)和\ln(f(x))"></a>带<script type="math/tex">e^f(x)</script>和<script type="math/tex">\ln(f(x))</script></h2><h1 id="定积分"><a href="#定积分" class="headerlink" title="定积分"></a>定积分</h1><h2 id="区间再现"><a href="#区间再现" class="headerlink" title="区间再现"></a>区间再现</h2><p>一个重要性质：</p>
+<script type="math/tex; mode=display">\int_{A}^{B} f(x)\, \mathrm{d}{x}=\int_{A}^{B} f(A+B-x) \, \mathrm{d}{x}</script>
+<p>更进一步地，如果有<script type="math/tex">f(x)=f(A+B-x)</script>，那么还可以推出：</p>
+<script type="math/tex; mode=display">\int_{A}^{B} f(x)\, \mathrm{d}{x}=2\int_{A}^{\frac{A+B}{2}} f(x) \, \mathrm{d}{x}</script>
+<p>特殊地，对于<script type="math/tex">\int_{0}^{+\infty} f(x) \, \mathrm{d}{x}</script>形式的反常积分，我们可以采用<strong>倒代换<script type="math/tex">x=\frac{1}{t}</script></strong> 实现这样的效果:<br><script type="math/tex; mode=display">\int_{0}^{+\infty}f(x) \, \mathrm{d}{x}=\int_{0}^{+\infty} \frac{f\left( \frac{1}{x} \right)}{x^{2}} \, \mathrm{d}{x}</script></p>
+<h1 id="重积分"><a href="#重积分" class="headerlink" title="重积分"></a>重积分</h1><p>变换积分次序、变换坐标系、注意对称性。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/08/09/How-To-Calculate-Integrals/">https://eliano64.github.io/2026/08/09/How-To-Calculate-Integrals/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/09/Multivariable-Function-Property-Relations/" title="Multivariable Function Property Relations"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Multivariable Function Property Relations</div></div><div class="info-2"><div class="info-item-1">二元函数在一点处的极限、连续、偏导与可微设二元函数 f(x,y) 在点 P(x_0,y_0) 附近有定义。讨论以下性质：    性质 在 P 点的含义    二重极限存在 \displaystyle \lim_{(x,y)\to(x_0,y_0)}f(x,y) 存在   连续 二重极限存在，并且等于 f(x_0,y_0)   关于 x,y 分别连续 固定 y=y_0 时关于 x 连续；固定 x=x_0 时关于 y 连续   一阶偏导数存在 f_x(x_0,y_0) 与 f_y(x_0,y_0) 都存在   可微 f(x_0+\Delta x,y_0+\Delta y)-f(x_0,y_0)=f_x(P)\Delta x+fy(P)\Delta y+o(\sqrt{ \Delta x^{2}+\Delta y^{2} })   一阶偏导数连续 f_x,f_y 在 P 的某个邻域内有定义，并且在 P 连续   必然成立的推导 为什么这些箭头成立5 \Rightarrow 4：若两个一阶偏导数在 P 附近存在，并且在 P 连续，则函数在 P...</div></div></div></a><a class="pagination-related" href="/2026/08/13/IO-API/" title="IO API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">IO API</div></div><div class="info-2"><div class="info-item-1">I&#x2F;O 接口这里的 I&#x2F;O 接口是操作系统向程序提供的一组约定，用于访问文件、设备或网络端点等 I&#x2F;O 对象。它屏蔽控制器寄存器和设备时序，让程序用统一方式表达“对哪个对象做什么操作”。它不同于连接 CPU 与设备控制器的硬件接口。 一个完整的 I&#x2F;O 接口通常由以下内容组成：    组成 回答的问题 例子    操作集合 可以做什么 打开、关闭、读、写、控制   对象标识 操作谁 逻辑设备名、句柄、描述符或通信端点   参数约定 数据与要求怎样表达 缓冲区、长度、读写位置、控制参数   执行语义 请求不能立即完成时怎么办 阻塞、非阻塞、异步完成   结果约定 怎样知道完成或失败 实际传送量、就绪状态、错误码   因此，I&#x2F;O...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">299</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%8D%E5%AE%9A%E7%A7%AF%E5%88%86"><span class="toc-text">不定积分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%89%E7%90%86%E5%88%86%E5%BC%8F"><span class="toc-text">有理分式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%89%E7%90%86%E5%88%86%E5%BC%8F%E7%9A%84%E6%8B%86%E8%A7%A3"><span class="toc-text">有理分式的拆解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%B0%86%E5%88%86%E6%AF%8D%E5%8C%96%E4%B8%BA%E2%80%9C%E6%9C%80%E7%AE%80%E5%BC%8F%E2%80%9D%EF%BC%9F"><span class="toc-text">如何将分母化为“最简式”？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%B0%86%E5%8E%9F%E5%88%86%E5%BC%8F%E6%8B%86%E4%B8%BA%E5%A4%9A%E4%B8%AA%E5%88%86%E5%BC%8F%E7%9B%B8%E5%8A%A0%E7%9A%84%E5%BD%A2%E5%BC%8F%EF%BC%9F"><span class="toc-text">如何将原分式拆为多个分式相加的形式？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%AF%E5%88%86"><span class="toc-text">积分</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E8%A7%92%E6%9C%89%E7%90%86%E5%88%86%E5%BC%8F"><span class="toc-text">三角有理分式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%8D%A2%E5%85%83%EF%BC%9F"><span class="toc-text">如何换元？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E7%90%86%E5%88%86%E5%BC%8F"><span class="toc-text">无理分式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A5%E4%B8%8A%E5%BD%A2%E5%BC%8F%E5%A4%8D%E5%90%88%E5%9E%8B"><span class="toc-text">以上形式复合型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%A6e-f-x-%E5%92%8C-ln-f-x"><span class="toc-text">带e^f(x)和\ln(f(x))</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9A%E7%A7%AF%E5%88%86"><span class="toc-text">定积分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E9%97%B4%E5%86%8D%E7%8E%B0"><span class="toc-text">区间再现</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%87%8D%E7%A7%AF%E5%88%86"><span class="toc-text">重积分</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/Multivariable-Differentiation/" title="Multivariable Differentiation">Multivariable Differentiation</a><time datetime="2026-08-18T06:07:09.000Z" title="发表于 2026-08-18 14:07:09">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/Common-Trigonometric-Identities/" title="Common Trigonometric Identities">Common Trigonometric Identities</a><time datetime="2026-08-18T06:06:52.000Z" title="发表于 2026-08-18 14:06:52">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/Antiderivative-And-Riemann-Integral/" title="Antiderivative And Riemann Integral">Antiderivative And Riemann Integral</a><time datetime="2026-08-18T05:59:39.000Z" title="发表于 2026-08-18 13:59:39">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/18/First-Order-Differential-Equations/" title="First Order Differential Equations">First Order Differential Equations</a><time datetime="2026-08-17T16:06:44.000Z" title="发表于 2026-08-18 00:06:44">2026-08-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/16/Convergence-Of-Infinite-Series/" title="Convergence Of Infinite Series">Convergence Of Infinite Series</a><time datetime="2026-08-16T09:10:01.000Z" title="发表于 2026-08-16 17:10:01">2026-08-16</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

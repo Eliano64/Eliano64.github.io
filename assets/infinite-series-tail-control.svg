@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">无穷级数的尾段控制框架</title>
+  <desc id="desc">Cauchy 判别把级数收敛归结为远端有限尾段一致变小，并分为累计大小控制、绝对值控制和有序抵消三条路径。</desc>
+  <defs>
+    <style>
+      :root {
+        --bg: #f7f8fc;
+        --panel: #ffffff;
+        --ink: #18202f;
+        --muted: #58657a;
+        --line: #718096;
+        --blue: #315cbb;
+        --blue-soft: #eaf0ff;
+        --green: #24745a;
+        --green-soft: #e7f6ef;
+        --amber: #8b5a12;
+        --amber-soft: #fff3d9;
+        --violet: #6e4db2;
+        --violet-soft: #f1ebff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #17191f;
+          --panel: #222630;
+          --ink: #eef1f7;
+          --muted: #b5bece;
+          --line: #8b97aa;
+          --blue: #91adff;
+          --blue-soft: #27365d;
+          --green: #7bd5b2;
+          --green-soft: #1f4138;
+          --amber: #f4c56d;
+          --amber-soft: #49381d;
+          --violet: #c3a9ff;
+          --violet-soft: #392d55;
+        }
+      }
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: var(--ink); }
+      .title { font-size: 28px; font-weight: 700; }
+      .formula { font-family: Cambria, "Times New Roman", serif; font-size: 25px; font-style: italic; }
+      .box-title { font-size: 20px; font-weight: 700; }
+      .body { font-size: 16px; fill: var(--muted); }
+      .small { font-size: 15px; fill: var(--muted); }
+      .edge { fill: none; stroke: var(--line); stroke-width: 2.4; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="var(--line)"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="650" rx="24" fill="var(--bg)"/>
+  <text x="600" y="48" text-anchor="middle" class="title">同一个问题：怎样让远端任意有限尾段一致变小？</text>
+
+  <rect x="260" y="78" width="680" height="110" rx="18" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="2.5"/>
+  <text x="600" y="118" text-anchor="middle" class="box-title">Cauchy 判别</text>
+  <text x="600" y="157" text-anchor="middle" class="formula">∀ ε &gt; 0，∃ N：n ≥ m ≥ N ⇒ |Σₖ₌ₘⁿ aₖ| &lt; ε</text>
+  <text x="600" y="180" text-anchor="middle" class="small">控制对象是整段的净贡献，不是单个通项</text>
+
+  <path d="M600 188 L600 220 L200 220 L200 248" class="edge" marker-end="url(#arrow)"/>
+  <path d="M600 188 L600 248" class="edge" marker-end="url(#arrow)"/>
+  <path d="M600 188 L600 220 L1000 220 L1000 248" class="edge" marker-end="url(#arrow)"/>
+
+  <rect x="45" y="250" width="310" height="155" rx="16" fill="var(--green-soft)" stroke="var(--green)" stroke-width="2.2"/>
+  <text x="200" y="286" text-anchor="middle" class="box-title">无抵消：控制累计大小</text>
+  <text x="72" y="320" class="body">正项级数的部分和单调</text>
+  <text x="72" y="348" class="body">有界判别 · 比较判别</text>
+  <text x="72" y="376" class="body">极限比较 · 积分判别</text>
+
+  <rect x="445" y="250" width="310" height="155" rx="16" fill="var(--violet-soft)" stroke="var(--violet)" stroke-width="2.2"/>
+  <text x="600" y="286" text-anchor="middle" class="box-title">绝对值：压住整个尾部</text>
+  <text x="472" y="320" class="body">|Σaₖ| ≤ Σ|aₖ|</text>
+  <text x="472" y="348" class="body">比值判别 · 根值判别</text>
+  <text x="472" y="376" class="body">几何衰减提供一致上界</text>
+
+  <rect x="845" y="250" width="310" height="155" rx="16" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2.2"/>
+  <text x="1000" y="286" text-anchor="middle" class="box-title">有序抵消：控制净效应</text>
+  <text x="872" y="320" class="body">交错结构使相邻项抵消</text>
+  <text x="872" y="348" class="body">模长递减防止抵消过头</text>
+  <text x="872" y="376" class="body">Leibniz：|尾段| ≤ 首项</text>
+
+  <path d="M200 405 L200 452 L300 452 L300 474" class="edge" marker-end="url(#arrow)"/>
+  <path d="M600 405 L600 452 L500 452 L500 474" class="edge" marker-end="url(#arrow)"/>
+  <path d="M1000 405 L1000 452 L850 452 L850 474" class="edge" marker-end="url(#arrow)"/>
+
+  <rect x="165" y="476" width="470" height="120" rx="16" fill="var(--panel)" stroke="var(--green)" stroke-width="2.2"/>
+  <text x="400" y="513" text-anchor="middle" class="box-title">绝对收敛：控制不依赖抵消</text>
+  <text x="400" y="547" text-anchor="middle" class="body">任意子级数仍绝对收敛</text>
+  <text x="400" y="575" text-anchor="middle" class="body">任意重排收敛且和不变</text>
+
+  <rect x="665" y="476" width="370" height="120" rx="16" fill="var(--panel)" stroke="var(--amber)" stroke-width="2.2"/>
+  <text x="850" y="513" text-anchor="middle" class="box-title">条件收敛：依赖抵消顺序</text>
+  <text x="850" y="547" text-anchor="middle" class="body">抽取正项或负项会发散</text>
+  <text x="850" y="575" text-anchor="middle" class="body">重排可以改变级数的和</text>
+
+  <text x="600" y="630" text-anchor="middle" class="small">判别法失效，意味着现有信息不足以控制远端任意有限尾段。</text>
+</svg>
