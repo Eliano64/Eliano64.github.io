@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>异常的响应与处理过程</title>
+  <style>
+    :root{
+      color-scheme:light dark;
+      --bg:#f6f8fb;--panel:#ffffff;--text:#172033;--muted:#526174;
+      --border:#cbd5e1;--line:#64748b;--hardware:#dbeafe;--hardware-line:#2563eb;
+      --software:#d1fae5;--software-line:#059669;--band:#eef2f7;
+    }
+    @media(prefers-color-scheme:dark){
+      :root{
+        --bg:#0b1118;--panel:#121b25;--text:#e5edf5;--muted:#a9b7c6;
+        --border:#344354;--line:#94a3b8;--hardware:#17345a;--hardware-line:#60a5fa;
+        --software:#123d2d;--software-line:#34d399;--band:#0f1722;
+      }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    main{max-width:980px;margin:auto;padding:18px 20px 20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+    h1{margin:0;font-size:24px}
+    .controls{display:flex;align-items:center;gap:8px;white-space:nowrap}
+    button{border:1px solid var(--border);border-radius:7px;background:var(--panel);color:var(--text);padding:7px 11px;font:inherit;cursor:pointer}
+    button:hover{border-color:var(--hardware-line)}
+    #counter{min-width:42px;text-align:center;color:var(--muted);font-size:14px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+    svg{display:block;width:100%;height:auto;max-height:500px}
+    text{font-family:inherit;fill:var(--text)}
+    .band{fill:var(--band);stroke:var(--border);stroke-width:1.5}
+    .band-title{font-size:14px;font-weight:700;fill:var(--muted)}
+    .node rect{stroke-width:2}
+    .node.hardware rect{fill:var(--hardware);stroke:var(--hardware-line)}
+    .node.software rect{fill:var(--software);stroke:var(--software-line)}
+    .title{font-size:17px;font-weight:700;text-anchor:middle}
+    .sub{font-size:13px;fill:var(--muted);text-anchor:middle}
+    .edge{fill:none;stroke:var(--line);stroke-width:3;marker-end:url(#arrow)}
+    .node,.edge{transition:opacity .18s ease,filter .18s ease}
+    .dim{opacity:.27}
+    .node.active rect{stroke-width:4;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--hardware-line) 40%,transparent))}
+    .node.software.active rect{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--software-line) 40%,transparent))}
+    #caption{margin:12px 4px 0;min-height:50px;font-size:16px;line-height:1.6}
+    @media(max-width:620px){
+      main{padding:14px 12px 16px}header{align-items:flex-start}h1{font-size:20px}
+      .controls{gap:5px}button{padding:6px 8px;font-size:14px}.card{padding:8px}
+      #caption{min-height:72px;font-size:15px}.title{font-size:18px}.sub{font-size:14px}
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>异常的响应与处理过程</h1>
+    <div class="controls">
+      <button id="prev" type="button">上一步</button>
+      <span id="counter"></span>
+      <button id="next" type="button">下一步</button>
+    </div>
+  </header>
+  <section class="card">
+    <svg viewBox="0 0 760 470" role="img" aria-label="异常响应与处理的六个步骤">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 Z" fill="var(--line)"/></marker>
+      </defs>
+
+      <rect class="band" x="14" y="26" width="732" height="168" rx="10"/>
+      <text class="band-title" x="32" y="52">CPU 硬件响应</text>
+      <rect class="band" x="14" y="220" width="732" height="220" rx="10"/>
+      <text class="band-title" x="32" y="246">操作系统软件处理</text>
+
+      <path class="edge" data-edge="0" d="M225 126 H285"/>
+      <path class="edge" data-edge="1" d="M475 126 H535"/>
+      <path class="edge" data-edge="2" d="M630 173 V273"/>
+      <path class="edge" data-edge="3" d="M535 334 H475"/>
+      <path class="edge" data-edge="4" d="M285 334 H225"/>
+
+      <g class="node hardware" data-step="0">
+        <rect x="35" y="78" width="190" height="96" rx="9"/>
+        <text class="title" x="130" y="108">① 检测到异常</text>
+        <text class="sub" x="130" y="135">发生在当前指令的</text>
+        <text class="sub" x="130" y="156">取指、译码或执行过程中</text>
+      </g>
+
+      <g class="node hardware" data-step="1">
+        <rect x="285" y="78" width="190" height="96" rx="9"/>
+        <text class="title" x="380" y="108">② 确定类型和入口</text>
+        <text class="sub" x="380" y="135">识别异常类型</text>
+        <text class="sub" x="380" y="156">找到相应异常处理入口</text>
+      </g>
+
+      <g class="node hardware" data-step="2">
+        <rect x="535" y="78" width="190" height="96" rx="9"/>
+        <text class="title" x="630" y="108">③ 进入异常处理程序</text>
+        <text class="sub" x="630" y="135">保存必要断点和程序状态</text>
+        <text class="sub" x="630" y="156">进入内核态并转入处理程序</text>
+      </g>
+
+      <g class="node software" data-step="3">
+        <rect x="535" y="273" width="190" height="122" rx="9"/>
+        <text class="title" x="630" y="307">④ 保存其他现场</text>
+        <text class="sub" x="630" y="337">操作系统继续保存</text>
+        <text class="sub" x="630" y="360">其余必要运行状态</text>
+      </g>
+
+      <g class="node software" data-step="4">
+        <rect x="285" y="273" width="190" height="122" rx="9"/>
+        <text class="title" x="380" y="307">⑤ 执行具体处理</text>
+        <text class="sub" x="380" y="337">处理异常原因</text>
+        <text class="sub" x="380" y="360">需要等待时阻塞并调度</text>
+      </g>
+
+      <g class="node software" data-step="5">
+        <rect x="35" y="273" width="190" height="122" rx="9"/>
+        <text class="title" x="130" y="307">⑥ 恢复或终止</text>
+        <text class="sub" x="130" y="334">可恢复：恢复现场</text>
+        <text class="sub" x="130" y="357">按异常类型选择继续位置</text>
+        <text class="sub" x="130" y="380">不可恢复：终止当前进程</text>
+      </g>
+    </svg>
+    <p id="caption"></p>
+  </section>
+</main>
+<script>
+  const captions=[
+    "CPU 在当前指令的取指、译码或执行过程中检测到异常。异常与这条指令同步。",
+    "CPU 根据异常原因确定异常类型，并找到相应的异常处理入口。",
+    "CPU 保存必要的断点和程序状态等信息，进入内核态并转入异常处理程序。",
+    "进入操作系统后，软件继续保存硬件入口尚未保存的其他必要现场。",
+    "操作系统执行具体异常处理。若当前进程必须等待某个事件，就使其阻塞并调度其他进程运行。",
+    "异常可恢复时，操作系统恢复现场，并按异常类型重新执行原指令或从适当位置继续；无法恢复时，终止当前进程。"
+  ];
+  const nodes=[...document.querySelectorAll('[data-step]')];
+  const edges=[...document.querySelectorAll('[data-edge]')];
+  let index=0;
+  function render(){
+    nodes.forEach(node=>{
+      const active=Number(node.dataset.step)===index;
+      node.classList.toggle('active',active);
+      node.classList.toggle('dim',!active);
+    });
+    edges.forEach(edge=>edge.classList.toggle('dim',Number(edge.dataset.edge)!==Math.max(0,index-1)));
+    document.getElementById('caption').textContent=captions[index];
+    document.getElementById('counter').textContent=`${index+1} / ${captions.length}`;
+  }
+  document.getElementById('prev').onclick=()=>{index=(index-1+captions.length)%captions.length;render()};
+  document.getElementById('next').onclick=()=>{index=(index+1)%captions.length;render()};
+  document.addEventListener('keydown',event=>{
+    if(event.key==='ArrowLeft')document.getElementById('prev').click();
+    if(event.key==='ArrowRight')document.getElementById('next').click();
+  });
+  render();
+</script>
+</body>
+</html>

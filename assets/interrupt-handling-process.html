@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>外部中断响应与处理</title>
+  <style>
+    :root{
+      color-scheme:light dark;
+      --bg:#f6f8fb;--panel:#ffffff;--text:#172033;--muted:#526174;
+      --border:#cbd5e1;--line:#64748b;--blue:#2563eb;--green:#059669;
+      --blue-soft:#dbeafe;--green-soft:#d1fae5;--band:#eef2f7;
+    }
+    @media(prefers-color-scheme:dark){
+      :root{
+        --bg:#0b1118;--panel:#121b25;--text:#e5edf5;--muted:#a9b7c6;
+        --border:#344354;--line:#94a3b8;--blue:#60a5fa;--green:#34d399;
+        --blue-soft:#17345a;--green-soft:#123d2d;--band:#0f1722;
+      }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif}
+    main{max-width:980px;margin:auto;padding:18px 20px 20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+    h1{margin:0;font-size:24px}
+    .controls{display:flex;align-items:center;gap:8px;white-space:nowrap}
+    button{border:1px solid var(--border);border-radius:7px;background:var(--panel);color:var(--text);padding:7px 11px;font:inherit;cursor:pointer}
+    button:hover{border-color:var(--blue)}
+    #counter{min-width:42px;text-align:center;color:var(--muted);font-size:14px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+    svg{display:block;width:100%;height:auto;max-height:500px}
+    text{font-family:inherit;fill:var(--text)}
+    .band{fill:var(--band);stroke:var(--border);stroke-width:1.5}
+    .band-title{font-size:14px;font-weight:700;fill:var(--muted)}
+    .node rect{fill:var(--panel);stroke:var(--border);stroke-width:2}
+    .node.hardware rect{fill:var(--blue-soft);stroke:var(--blue)}
+    .node.software rect{fill:var(--green-soft);stroke:var(--green)}
+    .title{font-size:17px;font-weight:700;text-anchor:middle}
+    .sub{font-size:13px;fill:var(--muted);text-anchor:middle}
+    .edge{fill:none;stroke:var(--line);stroke-width:3;marker-end:url(#arrow)}
+    .node,.edge{transition:opacity .18s ease,filter .18s ease}
+    .dim{opacity:.28}
+    .active rect{stroke-width:4;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--blue) 38%,transparent))}
+    .software.active rect{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--green) 38%,transparent))}
+    #caption{margin:12px 4px 0;min-height:50px;color:var(--text);font-size:16px;line-height:1.6}
+    .key{color:var(--blue);font-weight:700}
+    @media(max-width:620px){
+      main{padding:14px 12px 16px} header{align-items:flex-start} h1{font-size:20px}
+      .controls{gap:5px} button{padding:6px 8px;font-size:14px}.card{padding:8px}
+      #caption{font-size:15px;min-height:72px}.title{font-size:18px}.sub{font-size:14px}
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>外部中断：从请求到返回</h1>
+    <div class="controls"><button id="prev" type="button">上一步</button><span id="counter"></span><button id="next" type="button">下一步</button></div>
+  </header>
+  <section class="card">
+    <svg viewBox="0 0 760 470" role="img" aria-label="外部中断响应和处理流程">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 Z" fill="var(--line)"/></marker>
+      </defs>
+      <rect class="band" x="14" y="26" width="732" height="168" rx="10"/>
+      <text class="band-title" x="32" y="52">外部请求与硬件响应</text>
+      <rect class="band" x="14" y="220" width="732" height="220" rx="10"/>
+      <text class="band-title" x="32" y="246">内核软件处理</text>
+
+      <path class="edge" data-edge="0" d="M225 126 H285"/>
+      <path class="edge" data-edge="1" d="M475 126 H535"/>
+      <path class="edge" data-edge="2" d="M630 171 V273"/>
+      <path class="edge" data-edge="3" d="M535 334 H475"/>
+      <path class="edge" data-edge="4" d="M285 334 H225"/>
+
+      <g class="node hardware" data-step="0">
+        <rect x="35" y="78" width="190" height="94" rx="9"/>
+        <text class="title" x="130" y="114">外部中断请求</text>
+        <text class="sub" x="130" y="141">设备、时钟等发出信号</text>
+      </g>
+      <g class="node hardware" data-step="1">
+        <rect x="285" y="78" width="190" height="94" rx="9"/>
+        <text class="title" x="380" y="108">指令边界检查</text>
+        <text class="sub" x="380" y="135">中断允许标志、屏蔽条件</text>
+        <text class="sub" x="380" y="156">不满足则暂不响应</text>
+      </g>
+      <g class="node hardware" data-step="2">
+        <rect x="535" y="78" width="190" height="94" rx="9"/>
+        <text class="title" x="630" y="108">判优并取得向量号</text>
+        <text class="sub" x="630" y="135">选出本次响应的中断源</text>
+        <text class="sub" x="630" y="156">控制器向 CPU 提供编号</text>
+      </g>
+      <g class="node hardware" data-step="3">
+        <rect x="535" y="273" width="190" height="122" rx="9"/>
+        <text class="title" x="630" y="304">硬件入口操作</text>
+        <text class="sub" x="630" y="330">保存下一条指令的 PC</text>
+        <text class="sub" x="630" y="352">转入内核态并查向量表</text>
+        <text class="sub" x="630" y="374">进入内核中断入口</text>
+      </g>
+      <g class="node software" data-step="4">
+        <rect x="285" y="273" width="190" height="122" rx="9"/>
+        <text class="title" x="380" y="304">保存现场并处理</text>
+        <text class="sub" x="380" y="330">公共入口保存其余寄存器</text>
+        <text class="sub" x="380" y="352">分派到设备服务程序</text>
+        <text class="sub" x="380" y="374">处理完成后确认中断</text>
+      </g>
+      <g class="node software" data-step="5">
+        <rect x="35" y="273" width="190" height="122" rx="9"/>
+        <text class="title" x="130" y="304">恢复并中断返回</text>
+        <text class="sub" x="130" y="330">恢复寄存器和程序状态</text>
+        <text class="sub" x="130" y="352">执行中断返回指令</text>
+        <text class="sub" x="130" y="374">从原程序下一条指令继续</text>
+      </g>
+    </svg>
+    <p id="caption"></p>
+  </section>
+</main>
+<script>
+  const captions=[
+    "外部中断请求与当前指令没有固定的同步关系；请求先送到 CPU 或中断控制器。",
+    "CPU 通常在一条指令结束后检查可屏蔽中断。中断被屏蔽时，请求可以保持等待，而不是立即进入内核。",
+    "多个请求同时到达时先判优。本次选中的中断源由向量号标识，随后才能找到对应入口。",
+    "CPU 自动完成硬件入口操作：保存返回所需的信息、切换执行状态，并根据向量号进入内核。这一组操作通常称为中断隐指令。",
+    "进入内核后，软件再保存完整现场并调用具体服务程序。设备状态读取、中断确认和唤醒等待进程都在这一阶段完成。",
+    "处理结束后逐项恢复现场并执行中断返回。外部中断的断点是原程序下一条将要执行的指令。"
+  ];
+  const nodes=[...document.querySelectorAll('[data-step]')];
+  const edges=[...document.querySelectorAll('[data-edge]')];
+  let index=0;
+  function render(){
+    nodes.forEach(n=>{const hit=Number(n.dataset.step)===index;n.classList.toggle('active',hit);n.classList.toggle('dim',!hit)});
+    edges.forEach(e=>e.classList.toggle('dim',Number(e.dataset.edge)!==Math.max(0,index-1)));
+    document.getElementById('caption').textContent=captions[index];
+    document.getElementById('counter').textContent=`${index+1} / ${captions.length}`;
+  }
+  document.getElementById('prev').onclick=()=>{index=(index-1+captions.length)%captions.length;render()};
+  document.getElementById('next').onclick=()=>{index=(index+1)%captions.length;render()};
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')document.getElementById('prev').click();if(e.key==='ArrowRight')document.getElementById('next').click()});
+  render();
+</script>
+</body>
+</html>
