@@ -61,7 +61,7 @@
 <body>
 <main>
   <h1>恢复余数除法运算器逻辑结构</h1>
-  <p class="sub">例：13 ÷ 3。先做入口判定；需要逐位试减时，`Y` 保存除数，`R` 保存余数，`Q` 初始保存被除数并逐步写入商。</p>
+  <p class="sub">例：13 ÷ 3。`X` 保存除数，`ACC` 初始为 0 并保存部分余数，`MQ` 初始保存被除数并逐步改写为商。</p>
   <section class="stage">
     <svg viewBox="0 0 1080 560" role="img" aria-label="恢复余数除法运算器逻辑结构">
       <defs>
@@ -74,7 +74,7 @@
       </defs>
 
       <rect id="node-y" class="box" x="360" y="26" width="260" height="62"></rect>
-      <text class="label" x="420" y="65">除数寄存器 Y</text>
+      <text class="label" x="420" y="65">除数寄存器 X</text>
       <text id="val-y" class="value" x="468" y="112">0011</text>
 
       <path id="node-alu" class="alu" d="M285 150 L470 150 L500 182 L530 150 L715 150 L660 252 L340 252 Z"></path>
@@ -82,18 +82,18 @@
       <text class="small" x="732" y="205">加 / 减</text>
 
       <rect id="node-r" class="box" x="260" y="330" width="306" height="72"></rect>
-      <text class="label" x="324" y="370">余数寄存器 R</text>
+      <text class="label" x="326" y="370">累加器 ACC</text>
       <text id="val-r" class="value" x="378" y="428">0000</text>
 
       <rect id="node-q" class="box" x="566" y="330" width="306" height="72"></rect>
-      <text class="label" x="618" y="370">余数/商寄存器 Q</text>
+      <text class="label" x="622" y="370">乘商寄存器 MQ</text>
       <text id="val-q" class="value" x="690" y="428">1101</text>
       <text class="small" x="498" y="320">64 位</text>
 
       <rect id="node-ctrl" class="ctrl" x="810" y="186" width="230" height="112" rx="28"></rect>
       <text class="label" x="856" y="224">控制逻辑</text>
       <text class="label" x="870" y="257">计数器 Cn</text>
-      <text id="val-judge" class="small" x="858" y="282">判断 R 正负</text>
+      <text id="val-judge" class="small" x="846" y="282">判断 ACC 正负</text>
 
       <path id="w-y-alu" class="wire" d="M490 88 V150"></path>
       <text class="small" x="512" y="125">32</text>
@@ -104,7 +104,7 @@
       <path id="w-shift" class="wire" d="M827 318 H300"></path>
       <text class="label" x="674" y="310">左移</text>
       <path id="w-r-ctrl" class="wire" d="M500 402 V490 H930 V298"></path>
-      <text class="small" x="535" y="490">R 正负送控制逻辑</text>
+      <text class="small" x="520" y="490">ACC 正负送控制逻辑</text>
       <path id="w-ctrl-alu" class="control" d="M810 218 H715"></path>
       <text class="small" x="744" y="208">加/减</text>
       <path id="w-ctrl-shift" class="control" d="M810 258 H872 V330"></path>
@@ -133,23 +133,23 @@
 </main>
 <script>
   const steps = [
-    { y:"0000", r:"----", q:"----", judge:"入口判定", active:["node-y","node-q","node-ctrl"], step:"入口判定 1：若除数 Y=0，除法无定义，不能启动除法运算。", state:"Y = 0\n停止" },
-    { y:"0011", r:"0000", q:"0010", judge:"直接结束", active:["node-y","node-r","node-q","node-ctrl"], step:"入口判定 2：若 |被除数| < |除数|，商为 0，余数为被除数。", state:"例：2 ÷ 3\n商 = 0000\n余数 = 0010" },
-    { y:"0011", r:"0000", q:"1101", judge:"进入迭代", active:["node-y","node-r","node-q","node-ctrl"], step:"13 ÷ 3 不属于直接结束情况，进入恢复余数除法。初始化：Y=0011，R=0000，Q=1101，Cn=4。", state:"R|Q = 0000 1101" },
-    { r:"0001", q:"1010", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 1 轮，左移：R|Q 整体左移 1 位。", state:"0000 1101 << 1\n= 0001 1010" },
-    { r:"1110", q:"1010", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 1 轮，试减：R = R - Y。结果为负，说明不够减。", state:"0001 - 0011 = 1110\nR 为负" },
-    { r:"0001", q:"1010", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 1 轮，恢复：R = R + Y，Q0 写 0。", state:"1110 + 0011 = 0001\nQ = 1010\nCn=3" },
-    { r:"0011", q:"0100", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 2 轮，左移：R|Q 整体左移 1 位。", state:"0001 1010 << 1\n= 0011 0100" },
-    { r:"0000", q:"0100", judge:"试减非负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 2 轮，试减：R = R - Y。结果非负，说明够减。", state:"0011 - 0011 = 0000\nR 非负" },
-    { r:"0000", q:"0101", judge:"写1", active:["node-q","node-ctrl","w-ctrl-q"], step:"第 2 轮，保留 R，Q0 写 1。", state:"Q = 0101\nCn=2" },
-    { r:"0000", q:"1010", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 3 轮，左移：R|Q 整体左移 1 位。", state:"0000 0101 << 1\n= 0000 1010" },
-    { r:"1101", q:"1010", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 3 轮，试减：R = R - Y。结果为负，不够减。", state:"0000 - 0011 = 1101\nR 为负" },
-    { r:"0000", q:"1010", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 3 轮，恢复 R，Q0 写 0。", state:"1101 + 0011 = 0000\nQ = 1010\nCn=1" },
-    { r:"0001", q:"0100", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 4 轮，左移：R|Q 整体左移 1 位。", state:"0000 1010 << 1\n= 0001 0100" },
-    { r:"1110", q:"0100", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 4 轮，试减：R = R - Y。结果为负，不够减。", state:"0001 - 0011 = 1110\nR 为负" },
-    { r:"0001", q:"0100", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 4 轮，恢复 R，Q0 写 0。计数器归零。", state:"1110 + 0011 = 0001\nQ = 0100\nCn=0" },
-    { r:"0001", q:"0100", judge:"结果检查", active:["node-q","node-ctrl","w-ctrl-q"], step:"结果检查：检查商是否能放入目标商寄存器。若放不下，触发商溢出异常。", state:"本例 Q=0100₂，可放入 4 位商寄存器\n无商溢出" },
-    { r:"0001", q:"0100", judge:"结束", active:["node-r","node-q"], step:"结束：Q 保存商，R 保存余数。", state:"商 Q=0100₂=4\n余数 R=0001₂=1\n13=3×4+1" }
+    { y:"0000", r:"----", q:"----", judge:"入口判定", active:["node-y","node-q","node-ctrl"], step:"入口判定 1：若除数 X=0，除法无定义，不能启动除法运算。", state:"X = 0\n停止" },
+    { y:"0011", r:"0010", q:"0000", judge:"直接结束", active:["node-y","node-r","node-q","node-ctrl"], step:"入口判定 2：若 |被除数| < |除数|，商为 0，余数为被除数。", state:"例：2 ÷ 3\nACC=0010（余数）\nMQ=0000（商）" },
+    { y:"0011", r:"0000", q:"1101", judge:"进入迭代", active:["node-y","node-r","node-q","node-ctrl"], step:"13 ÷ 3 不属于直接结束情况，进入恢复余数除法。初始化：X=0011，ACC=0000，MQ=1101，Cn=4。", state:"ACC|MQ = 0000 1101" },
+    { r:"0001", q:"1010", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 1 轮，左移：ACC|MQ 整体左移 1 位。", state:"0000 1101 << 1\n= 0001 1010" },
+    { r:"1110", q:"1010", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 1 轮，试减：ACC = ACC - X。结果为负，说明不够减。", state:"0001 - 0011 = 1110\nACC 为负" },
+    { r:"0001", q:"1010", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 1 轮，恢复：ACC = ACC + X，MQ₀ 写 0。", state:"1110 + 0011 = 0001\nMQ = 1010\nCn=3" },
+    { r:"0011", q:"0100", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 2 轮，左移：ACC|MQ 整体左移 1 位。", state:"0001 1010 << 1\n= 0011 0100" },
+    { r:"0000", q:"0100", judge:"试减非负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 2 轮，试减：ACC = ACC - X。结果非负，说明够减。", state:"0011 - 0011 = 0000\nACC 非负" },
+    { r:"0000", q:"0101", judge:"写1", active:["node-q","node-ctrl","w-ctrl-q"], step:"第 2 轮，保留 ACC，MQ₀ 写 1。", state:"MQ = 0101\nCn=2" },
+    { r:"0000", q:"1010", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 3 轮，左移：ACC|MQ 整体左移 1 位。", state:"0000 0101 << 1\n= 0000 1010" },
+    { r:"1101", q:"1010", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 3 轮，试减：ACC = ACC - X。结果为负，不够减。", state:"0000 - 0011 = 1101\nACC 为负" },
+    { r:"0000", q:"1010", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 3 轮，恢复 ACC，MQ₀ 写 0。", state:"1101 + 0011 = 0000\nMQ = 1010\nCn=1" },
+    { r:"0001", q:"0100", judge:"左移", active:["node-r","node-q","node-ctrl","w-shift","w-ctrl-shift"], step:"第 4 轮，左移：ACC|MQ 整体左移 1 位。", state:"0000 1010 << 1\n= 0001 0100" },
+    { r:"1110", q:"0100", judge:"试减为负", active:["node-y","node-r","node-alu","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-r-ctrl"], step:"第 4 轮，试减：ACC = ACC - X。结果为负，不够减。", state:"0001 - 0011 = 1110\nACC 为负" },
+    { r:"0001", q:"0100", judge:"恢复，写0", active:["node-r","node-q","node-alu","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-ctrl-alu","w-ctrl-q"], step:"第 4 轮，恢复 ACC，MQ₀ 写 0。计数器归零。", state:"1110 + 0011 = 0001\nMQ = 0100\nCn=0" },
+    { r:"0001", q:"0100", judge:"结果检查", active:["node-q","node-ctrl","w-ctrl-q"], step:"结果检查：检查商是否能放入目标商寄存器。若放不下，触发商溢出异常。", state:"本例 MQ=0100₂，可放入 4 位商寄存器\n无商溢出" },
+    { r:"0001", q:"0100", judge:"结束", active:["node-r","node-q"], step:"结束：MQ 保存商，ACC 保存余数。", state:"商 MQ=0100₂=4\n余数 ACC=0001₂=1\n13=3×4+1" }
   ];
   const ids = ["node-y","node-alu","node-r","node-q","node-ctrl","w-y-alu","w-r-alu","w-alu-r","w-shift","w-r-ctrl","w-ctrl-alu","w-ctrl-shift","w-ctrl-q"];
   let pos = 0;
