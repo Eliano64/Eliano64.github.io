@@ -1,21 +1,80 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Replacement Selection Process</title><style>
-:root{color-scheme:light dark;--bg:#fff;--ink:#142033;--muted:#64748b;--line:#cbd5e1;--card:#f8fafc;--accent:#2563eb;--good:#16a34a;--bad:#dc2626;--freeze:#f59e0b}
-@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#94a3b8;--line:#475569;--card:#111827;--accent:#60a5fa;--good:#4ade80;--bad:#f87171;--freeze:#fbbf24}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}.wrap{max-width:1060px;margin:0 auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.title{font-size:24px;font-weight:760}.sub{color:var(--muted);font-size:14px}.btns{display:flex;gap:8px}button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:8px 12px;cursor:pointer}.grid{display:grid;grid-template-columns:1.2fr .9fr;gap:16px;margin-top:16px}.panel{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px}.label{font-size:13px;color:var(--muted);margin:10px 0 6px}.row{display:flex;gap:7px;flex-wrap:wrap;min-height:44px}.cell{min-width:42px;height:38px;border:1px solid var(--line);border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font:700 14px ui-monospace,Menlo,monospace}.wa{border-color:var(--accent)}.out{background:color-mix(in srgb,var(--good),transparent 84%)}.frozen{border-color:var(--freeze);box-shadow:0 0 0 2px color-mix(in srgb,var(--freeze),transparent 75%)}.pick{border-color:var(--bad);box-shadow:0 0 0 2px color-mix(in srgb,var(--bad),transparent 75%)}.explain{line-height:1.7;color:var(--muted);font-size:15px}.formula{margin-top:10px;border-left:3px solid var(--accent);padding:8px 10px;background:color-mix(in srgb,var(--accent),transparent 90%);font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap}.step{margin-top:8px;color:var(--muted);font-size:13px}@media(max-width:840px){.grid,.top{display:block}.btns{margin-top:10px}}
-</style></head><body><main class="wrap"><div class="top"><div><div class="title">置换-选择排序：生成更长初始归并段</div><div class="sub">内存工作区容量为 3，演示冻结与换段</div></div><div class="btns"><button id="prev">上一步</button><button id="next">下一步</button></div></div><section class="grid"><div class="panel"><div class="label">FI 剩余输入</div><div class="row" id="fi"></div><div class="label">WA 内存工作区</div><div class="row" id="wa"></div><div class="label">FO 初始归并段</div><div id="fo"></div></div><div class="panel"><div class="explain" id="text"></div><div class="formula" id="formula"></div><div class="step" id="step"></div></div></section></main><script>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>置换选择排序过程</title>
+<style>
+:root{color-scheme:light dark;--bg:#fff;--ink:#162033;--muted:#5b6b82;--line:#cbd5e1;--panel:#f8fafc;--accent:#2563eb;--accent-bg:#dbeafe;--pick:#dc2626;--pick-bg:#fee2e2;--freeze:#b45309;--freeze-bg:#fef3c7}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--ink:#e5e7eb;--muted:#a8b4c7;--line:#475569;--panel:#111827;--accent:#60a5fa;--accent-bg:#172554;--pick:#f87171;--pick-bg:#450a0a;--freeze:#fbbf24;--freeze-bg:#451a03}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif}.wrap{max-width:1100px;margin:auto;padding:20px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.title{font-size:24px;font-weight:800}.sub{margin-top:5px;color:var(--muted);font-size:14px}.btns{display:flex;gap:8px;flex:none}button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 13px;cursor:pointer}.card{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:13px;vertical-align:top;text-align:left}th:last-child,td:last-child{border-right:0}th{font-size:14px;color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--panel),var(--accent) 4%)}th:nth-child(1){width:29%}th:nth-child(2){width:27%}th:nth-child(3){width:44%}.items{display:flex;gap:7px;flex-wrap:wrap;min-height:38px;align-items:center}.item{min-width:38px;height:34px;border:1px solid var(--line);border-radius:7px;background:var(--bg);display:inline-flex;align-items:center;justify-content:center;font:700 14px Consolas,monospace}.item.pick{border:2px solid var(--pick);background:var(--pick-bg)}.item.frozen{border:2px solid var(--freeze);background:var(--freeze-bg)}.item.empty{color:var(--muted);font-weight:500}.run{display:grid;grid-template-columns:34px 1fr;gap:8px;align-items:start;margin-bottom:7px}.run:last-child{margin-bottom:0}.run-name{font-weight:800;color:var(--accent);line-height:34px}.info{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:16px}.status{border:1px solid var(--line);border-radius:9px;background:var(--bg);padding:12px}.status-label{font-size:12px;color:var(--muted);margin-bottom:5px}.minimax{font:800 20px Consolas,monospace;color:var(--accent)}.explain{border-left:4px solid var(--accent);padding:10px 13px;background:color-mix(in srgb,var(--accent-bg),transparent 20%);line-height:1.75}.legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 16px;color:var(--muted);font-size:13px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.dot.pick{background:var(--pick)}.dot.freeze{background:var(--freeze)}.progress{margin-top:8px;color:var(--muted);font-size:13px}
+@media(max-width:760px){.top{display:block}.btns{margin-top:10px}.info{grid-template-columns:1fr}.title{font-size:21px}table{min-width:760px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div>
+      <div class="title">置换选择排序：逐步生成初始归并段</div>
+      <div class="sub">FI = {15, 12, 9, 20, 10, 8, 5, 22, 7, 16}，WA 容量 = 3</div>
+      <div id="progress" class="progress"></div>
+    </div>
+    <div class="btns"><button id="prev">上一步</button><button id="next">下一步</button></div>
+  </div>
+  <section class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>FI 剩余待排序记录</th><th>WA 工作区</th><th>已生成的初始归并段</th></tr></thead>
+        <tbody><tr><td><div id="fi" class="items"></div></td><td><div id="wa" class="items"></div></td><td id="runs"></td></tr></tbody>
+      </table>
+    </div>
+    <div class="info">
+      <div class="status"><div class="status-label">当前 MINIMAX</div><div id="minimax" class="minimax"></div></div>
+      <div id="explain" class="explain"></div>
+    </div>
+    <div class="legend"><span><i class="dot pick"></i>本步将输出</span><span><i class="dot freeze"></i>小于当前 MINIMAX，冻结到下一段</span></div>
+  </section>
+</main>
+<script>
+const E=null;
 const steps=[
-{fi:[7,13,11,16,14,10,22,30,2,3,19,20,17,1,23,5,36,12,18,21,39],wa:[[4,'pick'],[6,''],[9,'']],runs:[[]],t:'先读入 3 个记录到 WA。当前 MINIMAX 为 -∞，选 WA 中最小的 4 输出。',f:'输出 4，MINIMAX=4'},
-{fi:[13,11,16,14,10,22,30,2,3,19,20,17,1,23,5,36,12,18,21,39],wa:[[7,''],[6,'pick'],[9,'']],runs:[[4]],t:'读入 7 替换 4。因为 7 >= MINIMAX，可以继续参与当前归并段。选 6 输出。',f:'输出 6，MINIMAX=6'},
-{fi:[16,14,10,22,30,2,3,19,20,17,1,23,5,36,12,18,21,39],wa:[[7,'pick'],[13,''],[9,'']],runs:[[4,6]],t:'读入 13。WA 中能接在 6 后面的最小记录是 7。',f:'输出 7，MINIMAX=7'},
-{fi:[14,10,22,30,2,3,19,20,17,1,23,5,36,12,18,21,39],wa:[[11,''],[13,''],[9,'pick']],runs:[[4,6,7]],t:'读入 11。继续选择不小于 MINIMAX 的最小记录 9。',f:'输出 9，MINIMAX=9'},
-{fi:[22,30,2,3,19,20,17,1,23,5,36,12,18,21,39],wa:[[11,'pick'],[13,''],[10,'']],runs:[[4,6,7,9]],t:'读入 10 后仍可接在当前段后面。选 11 输出。',f:'输出 11，MINIMAX=11'},
-{fi:[2,3,19,20,17,1,23,5,36,12,18,21,39],wa:[[14,''],[13,'pick'],[22,'']],runs:[[4,6,7,9,11]],t:'连续读入 14、22，均可参与当前段。选 13 输出。',f:'输出 13，MINIMAX=13'},
-{fi:[3,19,20,17,1,23,5,36,12,18,21,39],wa:[[14,'pick'],[2,'frozen'],[22,'']],runs:[[4,6,7,9,11,13]],t:'读入 2，但 2 < MINIMAX，不能放入当前归并段，冻结到下一段。当前仍选 14。',f:'2 被冻结；输出 14，MINIMAX=14'},
-{fi:[1,23,5,36,12,18,21,39],wa:[[19,''],[2,'frozen'],[30,'pick']],runs:[[4,6,7,9,11,13,14,16,22]],t:'后续读入的小记录会被冻结。当前段继续输出可接上的记录，直到 30。',f:'输出到 30，第一段结束前 WA 中只剩小于 30 的记录'},
-{fi:[23,5,36,12,18,21,39],wa:[[3,'frozen'],[2,'frozen'],[1,'frozen']],runs:[[4,6,7,9,11,13,14,16,22,30],[]],t:'WA 中所有记录都小于 MINIMAX，当前归并段结束。解冻 WA，开始第二个归并段。',f:'R1 = 4 6 7 9 11 13 14 16 22 30'},
-{fi:[],wa:[[1,''],[5,''],[12,'']],runs:[[4,6,7,9,11,13,14,16,22,30],[2,3,10,17,19,20,23,36],[1,5,12,18,21,39]],t:'同样规则继续生成后续归并段。该例最终得到 3 个初始归并段。',f:'R2 = 2 3 10 17 19 20 23 36\\nR3 = 1 5 12 18 21 39'}
-];let cur=0;
-function cells(arr,cls=''){return arr.map(x=>Array.isArray(x)?`<div class="cell ${x[1]}">${x[0]}</div>`:`<div class="cell ${cls}">${x}</div>`).join('')}
-function render(){const s=steps[cur];document.getElementById('fi').innerHTML=cells(s.fi);document.getElementById('wa').innerHTML=cells(s.wa,'wa');document.getElementById('fo').innerHTML=s.runs.map((r,i)=>`<div class="label">R${i+1}</div><div class="row">${cells(r,'out')}</div>`).join('');document.getElementById('text').textContent=s.t;document.getElementById('formula').textContent=s.f;document.getElementById('step').textContent=(cur+1)+' / '+steps.length}
-document.getElementById('prev').onclick=()=>{cur=(cur+steps.length-1)%steps.length;render()};document.getElementById('next').onclick=()=>{cur=(cur+1)%steps.length;render()};render();
-</script></body></html>
+ {fi:[20,10,8,5,22,7,16],wa:[15,12,{v:9,p:1}],runs:[[]],m:"−∞",x:"初次装入 3 个记录。9 是 WA 中可输出的最小记录。"},
+ {fi:[10,8,5,22,7,16],wa:[15,{v:12,p:1},20],runs:[[9]],m:"9",x:"输出 9，并从 FI 读入 20。接着输出 12。"},
+ {fi:[8,5,22,7,16],wa:[{v:15,p:1},{v:10,f:1},20],runs:[[9,12]],m:"12",x:"输出 12 后读入 10。因为 10 < 12，10 冻结；当前可输出的最小记录是 15。"},
+ {fi:[5,22,7,16],wa:[{v:8,f:1},{v:10,f:1},{v:20,p:1}],runs:[[9,12,15]],m:"15",x:"输出 15 后读入 8。8 < 15，也被冻结；当前只能输出 20。"},
+ {fi:[22,7,16],wa:[{v:8,f:1},{v:10,f:1},{v:5,f:1}],runs:[[9,12,15,20]],m:"20",x:"输出 20 后读入 5。WA 中三个记录都小于 20，因此 R1 结束。"},
+ {fi:[22,7,16],wa:[8,10,{v:5,p:1}],runs:[[9,12,15,20],[]],m:"−∞",x:"开始 R2：解冻 WA，并重置 MINIMAX。当前最小记录是 5。"},
+ {fi:[7,16],wa:[{v:8,p:1},10,22],runs:[[9,12,15,20],[5]],m:"5",x:"输出 5，并从 FI 读入 22。接着输出 8。"},
+ {fi:[16],wa:[{v:7,f:1},{v:10,p:1},22],runs:[[9,12,15,20],[5,8]],m:"8",x:"输出 8 后读入 7。因为 7 < 8，7 冻结；接着输出 10。"},
+ {fi:[],wa:[{v:7,f:1},{v:16,p:1},22],runs:[[9,12,15,20],[5,8,10]],m:"10",x:"输出 10，并读入 FI 的最后一个记录 16。接着输出 16。"},
+ {fi:[],wa:[{v:7,f:1},E,{v:22,p:1}],runs:[[9,12,15,20],[5,8,10,16]],m:"16",x:"FI 已空。输出 16 后不再补入记录，当前仍可输出 22。"},
+ {fi:[],wa:[{v:7,f:1},E,E],runs:[[9,12,15,20],[5,8,10,16,22]],m:"22",x:"输出 22。WA 中只剩被冻结的 7，因此 R2 结束。"},
+ {fi:[],wa:[{v:7,p:1},E,E],runs:[[9,12,15,20],[5,8,10,16,22],[]],m:"−∞",x:"开始 R3：解冻 7，并重置 MINIMAX。"},
+ {fi:[],wa:[E,E,E],runs:[[9,12,15,20],[5,8,10,16,22],[7]],m:"7",x:"输出 7，FI 和 WA 都为空，全部初始归并段生成完毕。"}
+];
+let cur=0;
+function item(value){
+  if(value===null)return '<span class="item empty">—</span>';
+  const o=typeof value==='object'?value:{v:value};
+  const cls=o.p?' pick':o.f?' frozen':'';
+  return `<span class="item${cls}">${o.v}</span>`;
+}
+function list(values,showEmpty=false){
+  if(!values.length)return showEmpty?item(null):'<span class="item empty">空</span>';
+  return values.map(item).join('');
+}
+function render(){
+  const s=steps[cur];
+  fi.innerHTML=list(s.fi);
+  wa.innerHTML=list(s.wa,true);
+  runs.innerHTML=s.runs.map((r,i)=>`<div class="run"><div class="run-name">R${i+1}</div><div class="items">${list(r)}</div></div>`).join('');
+  minimax.textContent=s.m;
+  explain.textContent=s.x;
+  progress.textContent=`第 ${cur+1} / ${steps.length} 步`;
+}
+prev.onclick=()=>{cur=(cur-1+steps.length)%steps.length;render()};
+next.onclick=()=>{cur=(cur+1)%steps.length;render()};
+render();
+</script>
+</body>
+</html>

@@ -14,17 +14,17 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <div><div class="title">快速排序：循环不变量划分法</div><div id="progress" class="progress"></div></div>
+    <div><div class="title">快速排序：一次划分</div><div id="progress" class="progress"></div></div>
     <div class="btns"><button id="prev" class="btn">上一步</button><button id="next" class="btn">下一步</button></div>
   </div>
   <div class="grid">
     <div class="panel">
       <div id="array" class="array"></div>
       <div class="bands">
-        <div class="band">pivot: A[lo]</div>
-        <div class="band">[lo+1, i] &lt; pivot</div>
-        <div class="band">[i+1, j] 未确认</div>
-        <div class="band">[j+1, hi) &gt;= pivot</div>
+        <div class="band">p：首元素枢轴</div>
+        <div class="band">蓝色：已确认 &lt; p</div>
+        <div class="band">橙色：尚未确认</div>
+        <div class="band">绿色：已确认 ≥ p</div>
       </div>
     </div>
     <div class="panel"><div id="note" class="note"></div><div id="code" class="code"></div></div>
@@ -32,19 +32,19 @@
 </div>
 <script>
 const steps=[
-{a:[49,38,65,97,76,13,27,49],i:0,j:7,pivot:0,lt:[],unk:[1,2,3,4,5,6,7],ge:[],n:"处理半开区间 [lo, hi)。取 A[lo]=49 为 pivot，i=lo，j=hi-1。此时小于区为空，未知区是 [i+1, j]。",c:"pivot = A[lo];\ni = lo;\nj = hi - 1;"},
-{a:[49,38,65,97,76,13,27,49],i:1,j:6,pivot:0,lt:[1],unk:[2,3,4,5,6],ge:[7],n:"i 向右扩展小于区：38 < 49，所以 i 前进到 1。j 向左跳过 >=49 的元素，停在 27。",c:"while (i < j && A[i + 1] < pivot) i++;\nwhile (i < j && A[j] >= pivot) j--;"},
-{a:[49,38,27,97,76,13,65,49],i:1,j:6,pivot:0,lt:[1],unk:[2,3,4,5,6],ge:[7],sw:[2,6],n:"A[i+1]=65 不该在左边，A[j]=27 应进入小于区，交换 A[i+1] 与 A[j]。",c:"swap_int(&A[i + 1], &A[j]);"},
-{a:[49,38,27,97,76,13,65,49],i:2,j:5,pivot:0,lt:[1,2],unk:[3,4,5],ge:[6,7],n:"交换后，27 位于 i+1。下一轮先扩展 i：27 < 49，于是小于区变为 [lo+1, i]。j 跳过 65，停在 13。",c:"// invariant restored\n// A[lo+1..i] < pivot\n// A[j+1..hi-1] >= pivot"},
-{a:[49,38,27,13,76,97,65,49],i:2,j:5,pivot:0,lt:[1,2],unk:[3,4,5],ge:[6,7],sw:[3,5],n:"A[i+1]=97 与 A[j]=13 交换。交换的目的不是把左右两边排好序，而是维持两个区间的语义。",c:"swap_int(&A[i + 1], &A[j]);"},
-{a:[49,38,27,13,76,97,65,49],i:3,j:3,pivot:0,lt:[1,2,3],unk:[],ge:[4,5,6,7],n:"i 扩展到 13，j 向左跳过 97、76 后与 i 相遇。未知区为空。",c:"while (i < j && A[i + 1] < pivot) i++;\nwhile (i < j && A[j] >= pivot) j--;"},
-{a:[13,38,27,49,76,97,65,49],i:3,j:3,pivot:3,lt:[0,1,2],ge:[4,5,6,7],sw:[0,3],n:"把 pivot 与 A[i] 交换。pivot 到达最终位置 i；左边都小于 pivot，右边都大于等于 pivot。",c:"swap_int(&A[lo], &A[i]);\nreturn i;"},
-{a:[13,38,27,49,76,97,65,49],i:3,j:3,pivot:3,lt:[0,1,2],ge:[4,5,6,7],n:"一次划分后的合法性只要求左右区间满足大小关系，不要求左右区间内部有序。",c:"A[lo..i-1] < pivot\nA[i] == pivot\nA[i+1..hi-1] >= pivot"}
+{a:[49,38,65,97,76,13,27,49],l:1,r:7,pivot:0,lt:[],unk:[1,2,3,4,5,6,7],ge:[],n:"取首元素 49 为枢轴 p。左、右指针分别从剩余区间的两端开始。",c:"p = A[lo]\nL = lo + 1\nR = hi - 1"},
+{a:[49,38,65,97,76,13,27,49],l:2,r:6,pivot:0,lt:[1],unk:[2,3,4,5,6],ge:[7],n:"从左找第一个 ≥ p 的元素，从右找第一个 < p 的元素。左侧停在 65，右侧停在 27。",c:"while A[L] < p: L++\nwhile A[R] >= p: R--"},
+{a:[49,38,27,97,76,13,65,49],l:2,r:6,pivot:0,lt:[1],unk:[2,3,4,5,6],ge:[7],sw:[2,6],n:"65 和 27 分别放错了分区，交换二者。A、B 内部不需要有序。",c:"swap(A[L], A[R])"},
+{a:[49,38,27,97,76,13,65,49],l:3,r:5,pivot:0,lt:[1,2],unk:[3,4,5],ge:[6,7],n:"继续向中间扫描。左侧停在 97，右侧停在 13。",c:"while A[L] < p: L++\nwhile A[R] >= p: R--"},
+{a:[49,38,27,13,76,97,65,49],l:3,r:5,pivot:0,lt:[1,2],unk:[3,4,5],ge:[6,7],sw:[3,5],n:"97 和 13 也放错了分区，交换二者。",c:"swap(A[L], A[R])"},
+{a:[49,38,27,13,76,97,65,49],l:4,r:3,pivot:0,lt:[1,2,3],unk:[],ge:[4,5,6,7],n:"左右指针交叉，未确认区消失。此时结构是 p | A | B：A 中都小于 p，B 中都大于等于 p。",c:"L > R\nA[lo + 1..R] < p\nA[L..hi - 1] >= p"},
+{a:[13,38,27,49,76,97,65,49],l:null,r:null,pivot:3,lt:[0,1,2],ge:[4,5,6,7],sw:[0,3],n:"把 p 与 A 的最后一个元素交换，就得到 A | p | B。p 到达最终位置。",c:"swap(A[lo], A[R])\nreturn R"},
+{a:[13,38,27,49,76,97,65,49],l:null,r:null,pivot:3,lt:[0,1,2],ge:[4,5,6,7],n:"一次划分只保证 p 的位置正确，并保证左右两侧的大小关系；A、B 内部仍可能无序。",c:"A[lo..R-1] < p\nA[R] == p\nA[R+1..hi-1] >= p"}
 ];
 let k=0;
 function render(){
  const s=steps[k], arr=document.getElementById('array');arr.innerHTML='';
- s.a.forEach((v,idx)=>{const d=document.createElement('div');d.className='cell';if(idx===s.pivot)d.classList.add('pivot');if(idx===s.i)d.classList.add('ip');if(idx===s.j)d.classList.add('jp');if(s.lt?.includes(idx))d.classList.add('lt');if(s.ge?.includes(idx))d.classList.add('ge');if(s.unk?.includes(idx))d.classList.add('unk');if(s.sw?.includes(idx))d.classList.add('swap');let tags=[];if(idx===s.i)tags.push('i');if(idx===s.j)tags.push('j');if(idx===s.pivot)tags.push('p');d.innerHTML=`<div class="v">${v}</div><div class="idx">${idx}</div><div class="tag">${tags.join('/')}</div>`;arr.appendChild(d)});
+ s.a.forEach((v,idx)=>{const d=document.createElement('div');d.className='cell';if(idx===s.pivot)d.classList.add('pivot');if(idx===s.l)d.classList.add('ip');if(idx===s.r)d.classList.add('jp');if(s.lt?.includes(idx))d.classList.add('lt');if(s.ge?.includes(idx))d.classList.add('ge');if(s.unk?.includes(idx))d.classList.add('unk');if(s.sw?.includes(idx))d.classList.add('swap');let tags=[];if(idx===s.l)tags.push('L');if(idx===s.r)tags.push('R');if(idx===s.pivot)tags.push('p');d.innerHTML=`<div class="v">${v}</div><div class="idx">${idx}</div><div class="tag">${tags.join('/')}</div>`;arr.appendChild(d)});
  note.textContent=s.n;code.textContent=s.c;progress.textContent=`${k+1} / ${steps.length}`;
 }
 prev.onclick=()=>{k=(k-1+steps.length)%steps.length;render()};
