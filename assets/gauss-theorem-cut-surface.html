@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gauss 公式中的割面</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #ffffff;
+      --foreground: #1f2937;
+      --muted: #f3f4f6;
+      --muted-foreground: #667085;
+      --border: #cbd5e1;
+      --outer: #2563eb;
+      --inner: #dc2626;
+      --cut: #7c3aed;
+      --normal: #059669;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #181818;
+        --foreground: #f3f4f6;
+        --muted: #2b2d31;
+        --muted-foreground: #aeb4bf;
+        --border: #525866;
+        --outer: #60a5fa;
+        --inner: #fb7185;
+        --cut: #a78bfa;
+        --normal: #34d399;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    body { padding: 16px; }
+
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .hint {
+      margin-top: 3px;
+      color: var(--muted-foreground);
+      font-size: .875rem;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--foreground);
+      background: var(--muted);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover { filter: brightness(.96); }
+
+    #stage {
+      width: 100%;
+      height: clamp(420px, 68vw, 600px);
+      min-height: 420px;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #stage.dragging { cursor: grabbing; }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .outer-patch {
+      fill: var(--outer);
+      fill-opacity: .085;
+      stroke: var(--outer);
+      stroke-width: .35;
+      stroke-opacity: .12;
+    }
+
+    .outer-grid {
+      fill: none;
+      stroke: var(--outer);
+      stroke-width: 1;
+      stroke-opacity: .34;
+    }
+
+    .cut-surface {
+      fill: var(--cut);
+      fill-opacity: .24;
+      stroke: var(--cut);
+      stroke-width: 1.8;
+    }
+
+    .inner-patch {
+      fill: var(--inner);
+      fill-opacity: .17;
+      stroke: var(--inner);
+      stroke-width: .45;
+      stroke-opacity: .20;
+    }
+
+    .inner-grid {
+      fill: none;
+      stroke: var(--inner);
+      stroke-width: 1;
+      stroke-opacity: .58;
+    }
+
+    .normal {
+      stroke: var(--normal);
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      marker-end: url(#arrow-normal);
+    }
+
+    .cut-normal {
+      stroke: var(--cut);
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      marker-end: url(#arrow-cut);
+    }
+
+    .singularity { fill: var(--inner); }
+
+    svg text {
+      fill: var(--foreground);
+      font-size: 13px;
+      paint-order: stroke;
+      stroke: var(--background);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    .label-outer { fill: var(--outer); }
+    .label-inner { fill: var(--inner); }
+    .label-cut { fill: var(--cut); }
+    .label-muted { fill: var(--muted-foreground); }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+      color: var(--muted-foreground);
+      font-size: .875rem;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 18px;
+      height: 3px;
+      margin-right: 6px;
+      border-radius: 2px;
+      vertical-align: middle;
+      background: var(--swatch);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="head">
+    <div>
+      <h2>挖去奇点后的边界</h2>
+      <div class="hint">拖动旋转 · 滚轮缩放</div>
+    </div>
+    <button id="reset" type="button">重置视角</button>
+  </div>
+
+  <div id="stage">
+    <svg id="scene" viewBox="0 0 760 540" role="img" aria-labelledby="title desc">
+      <title id="title">Gauss 公式中挖去奇点并沿同一割面往返</title>
+      <desc id="desc">外曲面包围带奇点的区域。挖去小球后，用同一个割面的两侧连接外曲面与小球面；两侧法向相反，通量相消。</desc>
+      <defs>
+        <marker id="arrow-normal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--normal)"></path>
+        </marker>
+        <marker id="arrow-cut" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--cut)"></path>
+        </marker>
+      </defs>
+
+      <g id="outer-surface"></g>
+      <g id="outer-grid"></g>
+      <polygon id="cut-surface" class="cut-surface"></polygon>
+      <g id="inner-surface"></g>
+      <g id="inner-grid"></g>
+
+      <line id="outer-normal" class="normal"></line>
+      <line id="inner-normal" class="normal"></line>
+      <line id="cut-normal-a" class="cut-normal"></line>
+      <line id="cut-normal-b" class="cut-normal"></line>
+      <circle id="singularity" class="singularity" r="4"></circle>
+
+      <text id="label-outer" class="label-outer">外边界 π</text>
+      <text id="label-inner" class="label-inner">内边界 πₑ</text>
+      <text id="label-cut" class="label-cut">同一个割面 Σ</text>
+      <text id="label-cut-note" class="label-muted">割面两侧法向相反，通量相消</text>
+      <text id="label-singularity">奇点</text>
+      <text id="label-outer-normal">外法向</text>
+      <text id="label-inner-normal">Ω₁ 的外法向指向空腔</text>
+    </svg>
+  </div>
+
+  <div class="legend" aria-hidden="true">
+    <span style="--swatch:var(--outer)">外边界</span>
+    <span style="--swatch:var(--inner)">挖去的小球面</span>
+    <span style="--swatch:var(--cut)">同一个割面</span>
+  </div>
+  <div id="status" class="sr-only" aria-live="polite">三维示意图已载入。</div>
+
+  <script>
+    (() => {
+      const stage = document.getElementById("stage");
+      const reset = document.getElementById("reset");
+      const status = document.getElementById("status");
+      const outerSurface = document.getElementById("outer-surface");
+      const outerGrid = document.getElementById("outer-grid");
+      const innerSurface = document.getElementById("inner-surface");
+      const innerGrid = document.getElementById("inner-grid");
+      const cutSurface = document.getElementById("cut-surface");
+
+      const elements = {
+        outerNormal: document.getElementById("outer-normal"),
+        innerNormal: document.getElementById("inner-normal"),
+        cutNormalA: document.getElementById("cut-normal-a"),
+        cutNormalB: document.getElementById("cut-normal-b"),
+        singularity: document.getElementById("singularity"),
+        labelOuter: document.getElementById("label-outer"),
+        labelInner: document.getElementById("label-inner"),
+        labelCut: document.getElementById("label-cut"),
+        labelCutNote: document.getElementById("label-cut-note"),
+        labelSingularity: document.getElementById("label-singularity"),
+        labelOuterNormal: document.getElementById("label-outer-normal"),
+        labelInnerNormal: document.getElementById("label-inner-normal")
+      };
+
+      const state = {
+        yaw: .58,
+        pitch: -.48,
+        zoom: 1,
+        dragging: false,
+        lastX: 0,
+        lastY: 0
+      };
+
+      const outerRadius = 2.25;
+      const innerRadius = .68;
+
+      function rotate(point) {
+        const cy = Math.cos(state.yaw);
+        const sy = Math.sin(state.yaw);
+        const cp = Math.cos(state.pitch);
+        const sp = Math.sin(state.pitch);
+        const x1 = cy * point[0] - sy * point[1];
+        const y1 = sy * point[0] + cy * point[1];
+        const z1 = point[2];
+        return [x1, cp * y1 - sp * z1, sp * y1 + cp * z1];
+      }
+
+      function project(point) {
+        const p = rotate(point);
+        const perspective = 7 / (7 - p[2]);
+        const scale = 88 * state.zoom * perspective;
+        return { x: 370 + p[0] * scale, y: 276 - p[1] * scale };
+      }
+
+      function sphereCircle(radius, latitude, longitude) {
+        const points = [];
+        const count = 72;
+        for (let i = 0; i <= count; i += 1) {
+          const t = -Math.PI + (2 * Math.PI * i) / count;
+          if (latitude !== null) {
+            const c = Math.cos(latitude);
+            points.push([radius * c * Math.cos(t), radius * c * Math.sin(t), radius * Math.sin(latitude)]);
+          } else {
+            points.push([radius * Math.cos(t) * Math.cos(longitude), radius * Math.cos(t) * Math.sin(longitude), radius * Math.sin(t)]);
+          }
+        }
+        return points;
+      }
+
+      function pathData(points, closed = false) {
+        return points.map((point, index) => {
+          const p = project(point);
+          return (index ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1);
+        }).join(" ") + (closed ? " Z" : "");
+      }
+
+      function setLine(element, start, end) {
+        const a = project(start);
+        const b = project(end);
+        element.setAttribute("x1", a.x);
+        element.setAttribute("y1", a.y);
+        element.setAttribute("x2", b.x);
+        element.setAttribute("y2", b.y);
+      }
+
+      function setPoint(element, point) {
+        const p = project(point);
+        element.setAttribute("cx", p.x);
+        element.setAttribute("cy", p.y);
+      }
+
+      function setLabel(element, point, dx, dy) {
+        const p = project(point);
+        element.setAttribute("x", p.x + dx);
+        element.setAttribute("y", p.y + dy);
+      }
+
+      function addPath(group, className) {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("class", className);
+        group.appendChild(path);
+        return path;
+      }
+
+      function spherePoint(radius, latitude, longitude) {
+        const c = Math.cos(latitude);
+        return [
+          radius * c * Math.cos(longitude),
+          radius * c * Math.sin(longitude),
+          radius * Math.sin(latitude)
+        ];
+      }
+
+      function buildSurface(group, radius, className, latitudeSteps, longitudeSteps) {
+        const cells = [];
+        for (let i = 0; i < latitudeSteps; i += 1) {
+          const latitudeA = -Math.PI / 2 + (Math.PI * i) / latitudeSteps;
+          const latitudeB = -Math.PI / 2 + (Math.PI * (i + 1)) / latitudeSteps;
+          for (let j = 0; j < longitudeSteps; j += 1) {
+            const longitudeA = -Math.PI + (2 * Math.PI * j) / longitudeSteps;
+            const longitudeB = -Math.PI + (2 * Math.PI * (j + 1)) / longitudeSteps;
+            const points = [
+              spherePoint(radius, latitudeA, longitudeA),
+              spherePoint(radius, latitudeA, longitudeB),
+              spherePoint(radius, latitudeB, longitudeB),
+              spherePoint(radius, latitudeB, longitudeA)
+            ];
+            const element = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            element.setAttribute("class", className);
+            group.appendChild(element);
+            cells.push({ element, points });
+          }
+        }
+        return cells;
+      }
+
+      function renderSurface(group, cells) {
+        const ordered = cells.map((cell) => ({
+          cell,
+          depth: cell.points.reduce((sum, point) => sum + rotate(point)[2], 0) / cell.points.length
+        })).sort((a, b) => a.depth - b.depth);
+
+        ordered.forEach(({ cell }) => {
+          cell.element.setAttribute("points", cell.points.map((point) => {
+            const p = project(point);
+            return p.x.toFixed(1) + "," + p.y.toFixed(1);
+          }).join(" "));
+          group.appendChild(cell.element);
+        });
+      }
+
+      const outerPaths = [];
+      const innerPaths = [];
+      const outerCells = buildSurface(outerSurface, outerRadius, "outer-patch", 12, 24);
+      const innerCells = buildSurface(innerSurface, innerRadius, "inner-patch", 10, 20);
+      [-.65, 0, .65].forEach((latitude) => outerPaths.push({ element: addPath(outerGrid, "outer-grid"), latitude, longitude: null }));
+      [0, Math.PI / 3, 2 * Math.PI / 3].forEach((longitude) => outerPaths.push({ element: addPath(outerGrid, "outer-grid"), latitude: null, longitude }));
+      [-.45, 0, .45].forEach((latitude) => innerPaths.push({ element: addPath(innerGrid, "inner-grid"), latitude, longitude: null }));
+      [0, Math.PI / 2].forEach((longitude) => innerPaths.push({ element: addPath(innerGrid, "inner-grid"), latitude: null, longitude }));
+
+      function render() {
+        renderSurface(outerSurface, outerCells);
+        renderSurface(innerSurface, innerCells);
+
+        outerPaths.forEach((item) => {
+          item.element.setAttribute("d", pathData(sphereCircle(outerRadius, item.latitude, item.longitude)));
+        });
+        innerPaths.forEach((item) => {
+          item.element.setAttribute("d", pathData(sphereCircle(innerRadius, item.latitude, item.longitude)));
+        });
+
+        const cut = [];
+        const cutHeight = .36;
+        const cutSteps = 24;
+        for (let i = 0; i <= cutSteps; i += 1) {
+          const z = -cutHeight + (2 * cutHeight * i) / cutSteps;
+          cut.push([Math.sqrt(outerRadius ** 2 - z ** 2), 0, z]);
+        }
+        for (let i = cutSteps; i >= 0; i -= 1) {
+          const z = -cutHeight + (2 * cutHeight * i) / cutSteps;
+          cut.push([Math.sqrt(innerRadius ** 2 - z ** 2), 0, z]);
+        }
+        cutSurface.setAttribute("points", cut.map((point) => {
+          const p = project(point);
+          return p.x.toFixed(1) + "," + p.y.toFixed(1);
+        }).join(" "));
+
+        setLine(elements.outerNormal, [1.62, 1.12, .95], [2.22, 1.54, 1.30]);
+        setLine(elements.innerNormal, [.68, 0, 0], [.18, 0, 0]);
+        setLine(elements.cutNormalA, [1.42, 0, .18], [1.42, .70, .18]);
+        setLine(elements.cutNormalB, [1.42, 0, -.18], [1.42, -.70, -.18]);
+        setPoint(elements.singularity, [0, 0, 0]);
+
+        setLabel(elements.labelOuter, [-1.65, 1.20, 1.05], -18, -10);
+        setLabel(elements.labelInner, [-.55, -.18, .30], -62, -8);
+        setLabel(elements.labelCut, [1.60, 0, .42], 12, -8);
+        setLabel(elements.labelCutNote, [1.45, 0, -.58], 12, 20);
+        setLabel(elements.labelSingularity, [0, 0, 0], 10, 18);
+        setLabel(elements.labelOuterNormal, [2.22, 1.54, 1.30], 8, -5);
+        setLabel(elements.labelInnerNormal, [.18, 0, 0], -155, 40);
+      }
+
+      stage.addEventListener("pointerdown", (event) => {
+        state.dragging = true;
+        state.lastX = event.clientX;
+        state.lastY = event.clientY;
+        stage.classList.add("dragging");
+        stage.setPointerCapture(event.pointerId);
+      });
+
+      stage.addEventListener("pointermove", (event) => {
+        if (!state.dragging) return;
+        const dx = event.clientX - state.lastX;
+        const dy = event.clientY - state.lastY;
+        state.lastX = event.clientX;
+        state.lastY = event.clientY;
+        state.yaw += dx * .009;
+        state.pitch = Math.max(-1.15, Math.min(1.15, state.pitch + dy * .009));
+        render();
+      });
+
+      function stopDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        stage.classList.remove("dragging");
+        if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+      }
+
+      stage.addEventListener("pointerup", stopDrag);
+      stage.addEventListener("pointercancel", stopDrag);
+      stage.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        state.zoom = Math.max(.68, Math.min(1.42, state.zoom * Math.exp(-event.deltaY * .001)));
+        render();
+      }, { passive: false });
+
+      reset.addEventListener("click", () => {
+        state.yaw = .58;
+        state.pitch = -.48;
+        state.zoom = 1;
+        render();
+        status.textContent = "视角已重置。";
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
