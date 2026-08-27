@@ -1,138 +1,166 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title desc">
-  <title id="title">Memory system overview</title>
-  <desc id="desc">A diagram showing the memory hierarchy, address translation path, and the boundary between hardware and operating system responsibilities.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="930" viewBox="0 0 1200 930" role="img" aria-labelledby="title desc">
+  <title id="title">一次访存的完整路径</title>
+  <desc id="desc">CPU 先通过 TLB 或页表把虚拟地址转换为物理地址；若发生缺页，操作系统从辅存调页到主存并重启访问。得到物理地址后查询 Cache，命中时直接返回，未命中时访问主存并填充 Cache。</desc>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f3b52"/>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#475569"/>
     </marker>
-    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2764b5"/>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#2563eb"/>
     </marker>
-    <style>/* paired-theme-canvas */
-svg{background:#f8fafc}
-@media(prefers-color-scheme:dark){svg{background:#0b1020}}
-
-      .bg { fill: #fbfcff; }
-      .title { font: 700 28px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #152033; }
-      .subtitle { font: 400 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #5a667a; }
-      .section { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #152033; }
-      .label { font: 700 18px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #152033; }
-      .small { font: 400 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #40506a; }
-      .tiny { font: 400 12px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #5a667a; }
-      .note { font: 700 14px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #8a4b00; }
-      .box { fill: #ffffff; stroke: #9aa9bd; stroke-width: 1.6; rx: 8; }
-      .boxBlue { fill: #eef6ff; stroke: #5f92d6; stroke-width: 1.8; rx: 8; }
-      .boxGreen { fill: #effaf3; stroke: #62a87c; stroke-width: 1.8; rx: 8; }
-      .boxAmber { fill: #fff7e8; stroke: #d49a3a; stroke-width: 1.8; rx: 8; }
-      .boxRed { fill: #fff1f1; stroke: #c77777; stroke-width: 1.8; rx: 8; }
-      .line { stroke: #2f3b52; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
-      .blueLine { stroke: #2764b5; stroke-width: 2.4; fill: none; marker-end: url(#arrowBlue); }
-      .dash { stroke: #758399; stroke-width: 2; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
-      .boundary { stroke: #c9d2df; stroke-width: 1.4; stroke-dasharray: 6 6; }
-      #arrow path { fill: #2f3b52; }
-      #arrowBlue path { fill: #2764b5; }
-      @media (prefers-color-scheme: dark) {
-        .bg { fill: #111827; }
-        .title, .section, .label { fill: #f3f4f6; }
-        .subtitle, .small, .tiny { fill: #cbd5e1; }
-        .note { fill: #fbbf24; }
-        .box { fill: #1f2937; stroke: #64748b; }
-        .boxBlue { fill: #172554; stroke: #60a5fa; }
-        .boxGreen { fill: #143525; stroke: #4ade80; }
-        .boxAmber { fill: #3b2a12; stroke: #f59e0b; }
-        .boxRed { fill: #3b1d1d; stroke: #f87171; }
-        .line { stroke: #d1d5db; }
-        .blueLine { stroke: #60a5fa; }
-        .dash { stroke: #94a3b8; }
-        .boundary { stroke: #475569; }
-        #arrow path { fill: #d1d5db; }
-        #arrowBlue path { fill: #60a5fa; }
+    <style>
+      svg{background:#f8fafc}
+      .panel{fill:#ffffff;stroke:#d5deea;stroke-width:2}
+      .osBand{fill:#fffaf0;stroke:#f2c36b;stroke-width:1.6;stroke-dasharray:7 6}
+      .title{font:700 30px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#0f172a}
+      .subtitle{font:500 16px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#64748b}
+      .phase{font:700 21px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#0f172a}
+      .phaseHint{font:500 14px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#64748b}
+      .head{font:700 18px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#0f172a;text-anchor:middle}
+      .body{font:500 14px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#475569;text-anchor:middle}
+      .decision{font:700 17px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#0f172a;text-anchor:middle}
+      .edgeLabel{font:700 14px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#475569;text-anchor:middle}
+      .badgeText{font:700 13px "Microsoft YaHei","Noto Sans CJK SC",sans-serif;text-anchor:middle}
+      .node{stroke-width:2}
+      .cpu{fill:#eff6ff;stroke:#3b82f6}
+      .tlb{fill:#ecfdf5;stroke:#10b981}
+      .table{fill:#f8fafc;stroke:#94a3b8}
+      .address{fill:#eef2ff;stroke:#6366f1}
+      .memory{fill:#fff7ed;stroke:#f59e0b}
+      .storage{fill:#f5f3ff;stroke:#8b5cf6}
+      .fault{fill:#fff1f2;stroke:#f43f5e}
+      .result{fill:#ecfeff;stroke:#06b6d4}
+      .decisionShape{fill:#ffffff;stroke:#64748b;stroke-width:2}
+      .flow{fill:none;stroke:#475569;stroke-width:2.6;marker-end:url(#arrow)}
+      .primaryFlow{fill:none;stroke:#2563eb;stroke-width:3;marker-end:url(#arrowBlue)}
+      .retry{fill:none;stroke:#d97706;stroke-width:2.5;stroke-dasharray:8 7;marker-end:url(#arrow)}
+      .hardwareBadge{fill:#e0f2fe;stroke:#7dd3fc}
+      .osBadge{fill:#ffedd5;stroke:#fdba74}
+      .hardwareText{fill:#0369a1}
+      .osText{fill:#c2410c}
+      @media(prefers-color-scheme:dark){
+        svg{background:#0b1020}
+        .panel{fill:#111827;stroke:#334155}
+        .osBand{fill:#2a2115;stroke:#a16207}
+        .title,.phase,.head,.decision{fill:#f8fafc}
+        .subtitle,.phaseHint,.body,.edgeLabel{fill:#cbd5e1}
+        .cpu{fill:#172554;stroke:#60a5fa}
+        .tlb{fill:#12372a;stroke:#34d399}
+        .table{fill:#1f2937;stroke:#64748b}
+        .address{fill:#252556;stroke:#818cf8}
+        .memory{fill:#3b2a12;stroke:#fbbf24}
+        .storage{fill:#2e1f4f;stroke:#a78bfa}
+        .fault{fill:#3b1d27;stroke:#fb7185}
+        .result{fill:#14343a;stroke:#22d3ee}
+        .decisionShape{fill:#1f2937;stroke:#94a3b8}
+        .flow{stroke:#cbd5e1}
+        .primaryFlow{stroke:#60a5fa}
+        .retry{stroke:#fbbf24}
+        #arrow path{fill:#cbd5e1}
+        #arrowBlue path{fill:#60a5fa}
+        .hardwareBadge{fill:#17324d;stroke:#38bdf8}
+        .osBadge{fill:#432813;stroke:#fb923c}
+        .hardwareText{fill:#7dd3fc}
+        .osText{fill:#fdba74}
       }
     </style>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1120" height="720"/>
-  <text class="title" x="56" y="58">存储系统总览：层次结构与一次访存路径</text>
-  <text class="subtitle" x="56" y="88">左边回答“数据放在哪一层”，右边回答“CPU 给出的地址怎样变成真正的访问”。</text>
+  <text class="title" x="48" y="54">一次访存：先转换地址，再访问数据</text>
+  <text class="subtitle" x="48" y="84">TLB 与页表负责找到物理地址；Cache 与主存负责返回目标数据。</text>
 
-  <text class="section" x="70" y="138">存储层次：用局部性弥补速度、容量、成本矛盾</text>
-  <rect class="boxBlue" x="70" y="168" width="190" height="72"/>
-  <text class="label" x="165" y="198" text-anchor="middle">寄存器</text>
-  <text class="small" x="165" y="222" text-anchor="middle">CPU 内部，最快，最小</text>
+  <rect class="panel" x="40" y="110" width="1120" height="480" rx="20"/>
+  <text class="phase" x="70" y="151">① 地址转换</text>
+  <text class="phaseHint" x="214" y="151">虚拟地址 → 物理地址</text>
+  <rect class="hardwareBadge" x="1018" y="128" width="108" height="30" rx="15"/>
+  <text class="badgeText hardwareText" x="1072" y="148">硬件完成</text>
 
-  <rect class="boxGreen" x="300" y="168" width="190" height="72"/>
-  <text class="label" x="395" y="198" text-anchor="middle">Cache</text>
-  <text class="small" x="395" y="222" text-anchor="middle">缓存主存块</text>
+  <rect class="node cpu" x="72" y="196" width="168" height="76" rx="14"/>
+  <text class="head" x="156" y="226">CPU</text>
+  <text class="body" x="156" y="250">产生虚拟地址</text>
 
-  <rect class="boxAmber" x="530" y="168" width="190" height="72"/>
-  <text class="label" x="625" y="198" text-anchor="middle">主存</text>
-  <text class="small" x="625" y="222" text-anchor="middle">程序运行时直接依赖</text>
+  <polygon class="decisionShape" points="370,184 454,234 370,284 286,234"/>
+  <text class="decision" x="370" y="229">TLB</text>
+  <text class="body" x="370" y="251">命中？</text>
 
-  <rect class="boxRed" x="760" y="168" width="190" height="72"/>
-  <text class="label" x="855" y="198" text-anchor="middle">辅存</text>
-  <text class="small" x="855" y="222" text-anchor="middle">磁盘 / SSD，容量大</text>
+  <rect class="node address" x="904" y="196" width="208" height="76" rx="14"/>
+  <text class="head" x="1008" y="226">物理地址</text>
+  <text class="body" x="1008" y="250">页框号 + 页内偏移</text>
 
-  <path class="line" d="M260 204 L294 204"/>
-  <path class="line" d="M490 204 L524 204"/>
-  <path class="line" d="M720 204 L754 204"/>
+  <rect class="node table" x="282" y="325" width="176" height="72" rx="14"/>
+  <text class="head" x="370" y="353">查询页表</text>
+  <text class="body" x="370" y="377">读取对应页表项</text>
 
-  <text class="tiny" x="80" y="272">越靠左：速度越快、容量越小、单位成本越高</text>
-  <text class="tiny" x="670" y="272">越靠右：速度越慢、容量越大、单位成本越低</text>
+  <polygon class="decisionShape" points="590,311 680,361 590,411 500,361"/>
+  <text class="decision" x="590" y="356">页在主存？</text>
+  <text class="body" x="590" y="379">页表项是否有效</text>
 
-  <rect class="box" x="302" y="292" width="190" height="70"/>
-  <text class="label" x="397" y="320" text-anchor="middle">Cache - 主存</text>
-  <text class="small" x="397" y="344" text-anchor="middle">解决 CPU 与主存速度差</text>
+  <rect class="node tlb" x="738" y="325" width="176" height="72" rx="14"/>
+  <text class="head" x="826" y="353">写入 TLB</text>
+  <text class="body" x="826" y="377">缓存页表项</text>
 
-  <rect class="box" x="550" y="292" width="210" height="70"/>
-  <text class="label" x="655" y="320" text-anchor="middle">主存 - 辅存</text>
-  <text class="small" x="655" y="344" text-anchor="middle">解决主存容量不足</text>
+  <path class="primaryFlow" d="M240 234 H280"/>
+  <path class="primaryFlow" d="M454 234 H896"/>
+  <text class="edgeLabel" x="672" y="219">命中</text>
+  <path class="flow" d="M370 284 V317"/>
+  <text class="edgeLabel" x="418" y="307">未命中</text>
+  <path class="flow" d="M458 361 H492"/>
+  <path class="flow" d="M680 361 H730"/>
+  <text class="edgeLabel" x="705" y="345">是</text>
+  <path class="primaryFlow" d="M914 361 H946 V280"/>
 
-  <path class="dash" d="M395 292 C395 270 395 260 395 242"/>
-  <path class="dash" d="M655 292 C655 270 690 260 800 242"/>
+  <rect class="osBand" x="470" y="430" width="664" height="110" rx="16"/>
+  <rect class="osBadge" x="962" y="443" width="146" height="28" rx="14"/>
+  <text class="badgeText osText" x="1035" y="462">操作系统参与</text>
 
-  <line class="boundary" x1="56" y1="392" x2="1064" y2="392"/>
+  <rect class="node fault" x="500" y="480" width="168" height="46" rx="12"/>
+  <text class="head" x="584" y="509">发生缺页</text>
 
-  <text class="section" x="70" y="435">一次访存路径：地址转换和数据访问不是同一件事</text>
+  <rect class="node storage" x="736" y="480" width="150" height="46" rx="12"/>
+  <text class="head" x="811" y="509">辅存</text>
 
-  <rect class="boxBlue" x="70" y="470" width="170" height="76"/>
-  <text class="label" x="155" y="500" text-anchor="middle">CPU</text>
-  <text class="small" x="155" y="524" text-anchor="middle">发出虚拟地址</text>
+  <rect class="node memory" x="954" y="480" width="150" height="46" rx="12"/>
+  <text class="head" x="1029" y="509">调入主存</text>
 
-  <rect class="boxGreen" x="300" y="448" width="170" height="64"/>
-  <text class="label" x="385" y="476" text-anchor="middle">TLB</text>
-  <text class="small" x="385" y="498" text-anchor="middle">缓存页表项</text>
+  <path class="flow" d="M590 411 V472"/>
+  <text class="edgeLabel" x="610" y="444">否</text>
+  <path class="flow" d="M668 503 H728"/>
+  <text class="edgeLabel" x="698" y="470">读取目标页</text>
+  <path class="flow" d="M886 503 H946"/>
+  <path class="retry" d="M1029 526 V558 H156 V280"/>
+  <text class="edgeLabel" x="593" y="578">更新页表后，重启本次访存</text>
 
-  <rect class="box" x="300" y="548" width="170" height="64"/>
-  <text class="label" x="385" y="576" text-anchor="middle">页表</text>
-  <text class="small" x="385" y="598" text-anchor="middle">虚拟页 → 物理块</text>
+  <rect class="panel" x="40" y="615" width="1120" height="285" rx="20"/>
+  <text class="phase" x="70" y="656">② 数据访问</text>
+  <text class="phaseHint" x="214" y="656">用物理地址查询 Cache</text>
+  <rect class="hardwareBadge" x="1018" y="633" width="108" height="30" rx="15"/>
+  <text class="badgeText hardwareText" x="1072" y="653">硬件完成</text>
 
-  <rect class="boxGreen" x="535" y="470" width="170" height="76"/>
-  <text class="label" x="620" y="500" text-anchor="middle">Cache</text>
-  <text class="small" x="620" y="524" text-anchor="middle">用物理地址查块</text>
+  <rect class="node address" x="70" y="700" width="180" height="72" rx="14"/>
+  <text class="head" x="160" y="728">物理地址</text>
+  <text class="body" x="160" y="752">定位 Cache 块</text>
 
-  <rect class="boxAmber" x="770" y="448" width="170" height="64"/>
-  <text class="label" x="855" y="476" text-anchor="middle">主存</text>
-  <text class="small" x="855" y="498" text-anchor="middle">目标数据所在层</text>
+  <polygon class="decisionShape" points="380,686 466,736 380,786 294,736"/>
+  <text class="decision" x="380" y="731">Cache</text>
+  <text class="body" x="380" y="753">命中？</text>
 
-  <rect class="boxRed" x="770" y="548" width="170" height="64"/>
-  <text class="label" x="855" y="576" text-anchor="middle">辅存</text>
-  <text class="small" x="855" y="598" text-anchor="middle">缺页时调入</text>
+  <rect class="node memory" x="525" y="803" width="170" height="62" rx="14"/>
+  <text class="head" x="610" y="829">访问主存</text>
+  <text class="body" x="610" y="850">读取对应主存块</text>
 
-  <path class="blueLine" d="M240 498 L294 486"/>
-  <text class="tiny" x="252" y="474">先查 TLB</text>
-  <path class="dash" d="M385 512 L385 542"/>
-  <text class="tiny" x="398" y="532">TLB 未命中</text>
-  <path class="blueLine" d="M470 480 C500 480 500 508 529 508"/>
-  <path class="blueLine" d="M470 580 C506 580 502 530 529 520"/>
-  <text class="tiny" x="493" y="455">得到物理地址</text>
-  <path class="line" d="M705 508 L764 486"/>
-  <text class="tiny" x="715" y="475">Cache 未命中</text>
-  <path class="dash" d="M855 512 L855 542"/>
-  <text class="tiny" x="870" y="532">页面不在主存</text>
+  <rect class="node tlb" x="750" y="803" width="170" height="62" rx="14"/>
+  <text class="head" x="835" y="829">填充 Cache</text>
+  <text class="body" x="835" y="850">同时返回目标数据</text>
 
-  <rect class="boxAmber" x="80" y="642" width="440" height="44"/>
-  <text class="note" x="300" y="670" text-anchor="middle">Cache 缓存的是主存中的数据块 / 指令块</text>
+  <rect class="node result" x="930" y="700" width="182" height="72" rx="14"/>
+  <text class="head" x="1021" y="728">返回 CPU</text>
+  <text class="body" x="1021" y="752">得到指令或数据</text>
 
-  <rect class="boxBlue" x="590" y="642" width="440" height="44"/>
-  <text class="note" x="810" y="670" text-anchor="middle">TLB 缓存的是页表项，用来加速地址转换</text>
+  <path class="primaryFlow" d="M250 736 H286"/>
+  <path class="primaryFlow" d="M466 736 H922"/>
+  <text class="edgeLabel" x="691" y="720">命中</text>
+  <path class="flow" d="M380 786 V834 H517"/>
+  <text class="edgeLabel" x="438" y="817">未命中</text>
+  <path class="flow" d="M695 834 H742"/>
+  <path class="primaryFlow" d="M920 834 H1021 V780"/>
 </svg>
