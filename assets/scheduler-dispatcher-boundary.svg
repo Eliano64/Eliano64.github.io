@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
   <title id="title">调度、分派与返回用户态</title>
-  <desc id="desc">展示用户进程因中断或系统调用进入内核，调度器选择、分派器切换，最后通过返回指令重新进入用户态。</desc>
+  <desc id="desc">展示用户进程因中断或系统调用进入内核，调度器选择、分派器切换，被选任务可能先续接内核路径，再通过返回指令进入用户态。</desc>
   <style>
     :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--fg:#111827;--muted:#64748b;--line:#94a3b8;--user:#dbeafe;--kernel:#fef3c7;--dispatch:#dcfce7;--accent:#2563eb;--return:#059669}
     @media(prefers-color-scheme:dark){:root{--bg:#0b1020;--panel:#0f172a;--fg:#e5e7eb;--muted:#94a3b8;--line:#64748b;--user:#1e3a8a;--kernel:#713f12;--dispatch:#14532d;--accent:#60a5fa;--return:#34d399}}
@@ -19,7 +19,7 @@
   <text class="small" x="137" y="124" text-anchor="middle">正在执行用户指令</text>
   <rect class="box user" x="748" y="66" width="190" height="74" rx="12"/>
   <text class="head" x="843" y="99" text-anchor="middle">用户态：进程 P2</text>
-  <text class="small" x="843" y="124" text-anchor="middle">从保存位置继续</text>
+  <text class="small" x="843" y="124" text-anchor="middle">可能先续接自己的内核路径</text>
 
   <line class="boundary" x1="25" y1="170" x2="955" y2="170"/>
   <text class="small" x="490" y="160" text-anchor="middle">用户态 / 内核态边界</text>
@@ -43,9 +43,9 @@
   <text class="small" x="609" y="316" text-anchor="middle">切换地址空间与栈</text>
 
   <rect class="box dispatch" x="750" y="220" width="188" height="116" rx="12"/>
-  <text class="head" x="844" y="257" text-anchor="middle">返回准备</text>
-  <text class="t" x="844" y="289" text-anchor="middle">恢复 P2 用户现场</text>
-  <text class="small" x="844" y="316" text-anchor="middle">执行 iret / sysret 等</text>
+  <text class="head" x="844" y="257" text-anchor="middle">P2 继续内核路径</text>
+  <text class="t" x="844" y="289" text-anchor="middle">完成后恢复用户现场</text>
+  <text class="small" x="844" y="316" text-anchor="middle">再执行 iret / sysret 等</text>
 
   <path class="arrow" d="M232 278 L278 278"/>
   <path class="arrow" d="M468 278 L514 278"/>

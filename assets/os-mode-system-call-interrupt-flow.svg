@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1040" height="470" viewBox="0 0 1040 470" role="img" aria-labelledby="title desc">
-  <title id="title">CPU mode switch, system call, exception, and interrupt flow</title>
-  <desc id="desc">A flow diagram showing user mode code entering kernel mode by trap, exception, or interrupt, then returning to user mode.</desc>
+  <title id="title">CPU 模式切换不等于进程切换</title>
+  <desc id="desc">用户代码通过系统调用或异常进入内核态时通常仍在原线程的进程上下文中；外部中断进入中断上下文；只有调度器实际更换任务现场后才发生进程或线程切换。</desc>
   <style>/* paired-theme-canvas */
 svg{background:#f8fafc}
 @media(prefers-color-scheme:dark){svg{background:#0b1020}}
@@ -56,12 +56,12 @@ svg{background:#f8fafc}
   <rect class="bg" width="1040" height="470"/>
   <rect class="box" x="70" y="56" width="900" height="120" fill="var(--user)"/>
   <text class="title" x="105" y="92">用户态</text>
-  <text class="body" x="105" y="124">运行应用程序，只能执行非特权指令</text>
+  <text class="body" x="105" y="124">执行某个任务的用户代码，只能执行非特权指令</text>
   <text class="small" x="105" y="150">系统调用前：准备参数，执行 trap / 访管指令</text>
   <rect class="box" x="70" y="292" width="900" height="120" fill="var(--kernel)"/>
   <text class="title" x="105" y="328">内核态</text>
-  <text class="body" x="105" y="360">运行内核程序，可以执行特权指令并访问内核数据结构</text>
-  <text class="small" x="105" y="386">处理系统调用、异常、中断，再返回用户程序或切换到其他进程</text>
+  <text class="body" x="105" y="360">执行系统调用路径、中断/异常处理或内核线程代码</text>
+  <text class="small" x="105" y="386">进入内核态不自动更换任务；只有调度并切换现场后才换任务</text>
   <rect class="box" x="130" y="206" width="210" height="54" fill="var(--warn)"/>
   <text class="body" x="235" y="238" text-anchor="middle">异常 / trap</text>
   <rect class="box" x="415" y="206" width="210" height="54" fill="var(--warn)"/>
