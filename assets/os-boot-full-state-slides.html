@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>引导过程</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --panel-soft: #f1f5f9;
+      --text: #172033;
+      --muted: #607087;
+      --line: #cbd5e1;
+      --source: #4f46e5;
+      --source-soft: #eef2ff;
+      --ram: #0891b2;
+      --ram-soft: #ecfeff;
+      --cpu: #ea580c;
+      --cpu-soft: #fff7ed;
+      --complete: #64748b;
+      --shadow: rgba(15, 23, 42, 0.09);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --panel-soft: #1e293b;
+        --text: #e5e7eb;
+        --muted: #a8b3c2;
+        --line: #475569;
+        --source: #818cf8;
+        --source-soft: #1e2748;
+        --ram: #22d3ee;
+        --ram-soft: #10333b;
+        --cpu: #fb923c;
+        --cpu-soft: #3a2618;
+        --complete: #94a3b8;
+        --shadow: rgba(0, 0, 0, 0.24);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    button { font: inherit; }
+
+    .deck {
+      min-height: 720px;
+      padding: 18px 20px 14px;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    h1 {
+      flex: 0 0 auto;
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.2;
+    }
+
+    .timeline {
+      display: flex;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      gap: 3px;
+      padding: 1px;
+    }
+
+    .step-button {
+      flex: 0 0 auto;
+      padding: 6px 8px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .step-button:hover { color: var(--text); }
+
+    .step-button.active {
+      color: var(--text);
+      border-bottom-color: var(--source);
+      font-weight: 700;
+    }
+
+    .step-button:focus-visible,
+    .control:focus-visible {
+      outline: 2px solid var(--source);
+      outline-offset: 2px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: baseline;
+      column-gap: 14px;
+      padding: 10px 13px;
+      border-left: 4px solid var(--source);
+      background: var(--panel);
+      box-shadow: 0 5px 16px var(--shadow);
+    }
+
+    .stage h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .stage p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .board {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(310px, 1.36fr) minmax(235px, 1fr) minmax(170px, 0.72fr);
+      gap: 12px;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 7px 20px var(--shadow);
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .panel-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .storage-panel { border-top: 3px solid var(--source); }
+    .ram-panel { border-top: 3px solid var(--ram); }
+    .cpu-panel { border-top: 3px solid var(--cpu); }
+
+    .rom {
+      margin-bottom: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      background: var(--source-soft);
+    }
+
+    .rom-row,
+    .disk-row,
+    .file-row,
+    .ram-row {
+      position: relative;
+      transition: border-color 150ms ease, background 150ms ease, opacity 150ms ease, box-shadow 150ms ease;
+    }
+
+    .rom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .item-name {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .item-detail {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--panel);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .disk-shell {
+      padding: 10px;
+      border: 2px solid var(--source);
+      background: var(--source-soft);
+    }
+
+    .disk-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .disk-row {
+      display: grid;
+      grid-template-columns: 92px 1fr auto;
+      align-items: center;
+      gap: 7px;
+      min-height: 36px;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .partition {
+      margin-top: 7px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 82%, var(--source-soft));
+    }
+
+    .partition-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .file-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .file-row {
+      min-height: 56px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .file-row .item-name { font-size: 12px; }
+    .file-row .item-detail { margin-top: 3px; }
+
+    .other-partition {
+      margin-top: 7px;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--panel);
+      font-size: 11px;
+    }
+
+    .ram-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .ram-row {
+      min-height: 50px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      background: var(--ram-soft);
+    }
+
+    .ram-row-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .ram-row .item-detail { margin-top: 3px; }
+
+    [data-state="focus"] {
+      border-color: currentColor;
+      box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 25%, transparent);
+    }
+
+    .storage-panel [data-state="focus"] { color: var(--source); }
+    .ram-panel [data-state="focus"] { color: var(--ram); }
+
+    [data-state="focus"] .item-detail { color: currentColor; opacity: 0.8; }
+    [data-state="complete"] { opacity: 0.63; }
+    [data-state="empty"] { opacity: 0.46; background: var(--panel-soft); }
+
+    .cpu-state {
+      height: calc(100% - 34px);
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 13px;
+      padding: 18px 15px;
+      border: 2px solid var(--cpu);
+      background: var(--cpu-soft);
+      text-align: center;
+    }
+
+    .cpu-chip {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--cpu);
+      color: var(--cpu);
+      background: var(--panel);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .cpu-now {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .cpu-location,
+    .cpu-detail {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .cpu-location {
+      align-self: center;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 40px 1fr 40px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control {
+      width: 40px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .control:disabled { opacity: 0.35; cursor: default; }
+    .control svg { width: 18px; height: 18px; }
+
+    .counter {
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .deck {
+        min-height: 720px;
+        padding: 12px 13px 10px;
+        gap: 8px;
+      }
+
+      .topbar { display: block; }
+      h1 { margin-bottom: 5px; font-size: 20px; }
+      .step-button { padding: 5px 7px; font-size: 12px; }
+
+      .stage {
+        grid-template-columns: 1fr;
+        row-gap: 2px;
+        padding: 7px 10px;
+      }
+
+      .stage h2 { font-size: 16px; }
+      .stage p { font-size: 12px; line-height: 1.4; }
+
+      .board {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+        grid-template-rows: minmax(0, 1fr) 126px;
+        gap: 8px;
+      }
+
+      .panel { padding: 9px; }
+      .panel-title { margin-bottom: 6px; }
+      .panel-title h2 { font-size: 14px; }
+      .panel-title span { font-size: 10px; }
+      .storage-panel { grid-column: 1; grid-row: 1; }
+      .ram-panel { grid-column: 2; grid-row: 1; }
+      .cpu-panel { grid-column: 1 / 3; grid-row: 2; }
+
+      .rom { margin-bottom: 6px; padding: 6px 7px; }
+      .item-name { font-size: 11px; }
+      .item-detail { font-size: 9px; }
+      .badge { padding: 1px 4px; font-size: 8px; }
+      .disk-shell { padding: 6px; }
+      .disk-label { margin-bottom: 5px; font-size: 9px; }
+      .disk-row { grid-template-columns: 72px 1fr auto; min-height: 29px; padding: 4px 5px; }
+      .partition { margin-top: 5px; padding: 5px; }
+      .partition-title { margin-bottom: 4px; font-size: 9px; }
+      .file-grid { gap: 3px; }
+      .file-row { min-height: 43px; padding: 4px; }
+      .file-row .item-name { font-size: 10px; }
+      .file-row .item-detail { margin-top: 2px; }
+      .other-partition { margin-top: 5px; padding: 4px 5px; font-size: 9px; }
+      .ram-list { gap: 4px; }
+      .ram-row { min-height: 42px; padding: 5px 6px; }
+      .ram-row .item-detail { margin-top: 2px; }
+
+      .cpu-state {
+        height: calc(100% - 26px);
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 58px 1fr 1fr;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        text-align: left;
+      }
+
+      .cpu-chip { width: 50px; height: 50px; margin: 0; }
+      .cpu-now { font-size: 15px; }
+      .cpu-location { justify-self: start; }
+      .cpu-detail { grid-column: 3; grid-row: 1; }
+      .controls { grid-template-columns: 36px 1fr 36px; }
+      .control { width: 36px; height: 30px; }
+    }
+
+    @media (max-width: 520px) {
+      .deck { min-height: 760px; }
+      .board { grid-template-columns: 1fr 0.88fr; }
+      .file-grid { grid-template-columns: 1fr 1fr; }
+      .file-row:last-child { grid-column: 1 / 3; min-height: 34px; }
+      .ram-row { min-height: 45px; }
+      .cpu-state { grid-template-columns: 50px 1fr; }
+      .cpu-detail { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <header class="topbar">
+      <h1>从通电到内核运行</h1>
+      <nav class="timeline" aria-label="引导时间线"></nav>
+    </header>
+
+    <section class="stage" aria-live="polite">
+      <h2 class="stage-title"></h2>
+      <p class="stage-change"></p>
+    </section>
+
+    <section class="board" aria-label="当前完整状态">
+      <article class="panel storage-panel">
+        <div class="panel-title">
+          <h2>ROM 与整块磁盘</h2>
+          <span>内容一直存在，紫色表示本步取指或读取</span>
+        </div>
+
+        <div class="rom">
+          <div class="rom-row" id="src-bios">
+            <div>
+              <div class="item-name">BIOS ROM</div>
+              <div class="item-detail">主板固件，断电后仍保留</div>
+            </div>
+            <span class="badge source-badge">静止</span>
+          </div>
+        </div>
+
+        <div class="disk-shell">
+          <div class="disk-label">
+            <strong>整块启动磁盘</strong>
+            <span>从第 0 扇区开始</span>
+          </div>
+
+          <div class="disk-row" id="src-mbr">
+            <div class="item-name">MBR</div>
+            <div class="item-detail">引导代码＋分区表</div>
+            <span class="badge source-badge">磁盘中</span>
+          </div>
+
+          <div class="partition">
+            <div class="partition-title">
+              <strong>活动分区</strong>
+              <span>文件系统</span>
+            </div>
+            <div class="disk-row" id="src-pbr">
+              <div class="item-name">PBR</div>
+              <div class="item-detail">分区的第一个扇区</div>
+              <span class="badge source-badge">磁盘中</span>
+            </div>
+            <div class="file-grid">
+              <div class="file-row" id="src-loader">
+                <div class="item-name">启动程序</div>
+                <div class="item-detail">可解析文件系统</div>
+              </div>
+              <div class="file-row" id="src-kernel">
+                <div class="item-name">内核映像</div>
+                <div class="item-detail">操作系统核心代码</div>
+              </div>
+              <div class="file-row" id="src-rootfs">
+                <div class="item-name">系统文件</div>
+                <div class="item-detail">服务与用户程序</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="other-partition">其他分区：本次引导没有读取</div>
+        </div>
+      </article>
+
+      <article class="panel ram-panel">
+        <div class="panel-title">
+          <h2>RAM 当前内容</h2>
+          <span>青色边框表示 CPU 正在执行</span>
+        </div>
+        <div class="ram-list">
+          <div class="ram-row" id="ram-mbr">
+            <div class="ram-row-head"><span class="item-name">MBR 副本</span><span class="badge ram-badge"></span></div>
+            <div class="item-detail">典型装入地址：0x7C00</div>
+          </div>
+          <div class="ram-row" id="ram-pbr">
+            <div class="ram-row-head"><span class="item-name">PBR 副本</span><span class="badge ram-badge"></span></div>
+            <div class="item-detail">由 MBR 读入</div>
+          </div>
+          <div class="ram-row" id="ram-loader">
+            <div class="ram-row-head"><span class="item-name">启动程序</span><span class="badge ram-badge"></span></div>
+            <div class="item-detail">由 PBR 继续装入</div>
+          </div>
+          <div class="ram-row" id="ram-kernel">
+            <div class="ram-row-head"><span class="item-name">内核</span><span class="badge ram-badge"></span></div>
+            <div class="item-detail">由启动程序装入</div>
+          </div>
+          <div class="ram-row" id="ram-user">
+            <div class="ram-row-head"><span class="item-name">用户态程序</span><span class="badge ram-badge"></span></div>
+            <div class="item-detail">由内核创建或装入</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel cpu-panel">
+        <div class="panel-title">
+          <h2>CPU 当前执行</h2>
+          <span>取指位置</span>
+        </div>
+        <div class="cpu-state">
+          <div class="cpu-chip">CPU</div>
+          <div>
+            <h3 class="cpu-now"></h3>
+            <p class="cpu-location"></p>
+          </div>
+          <p class="cpu-detail"></p>
+        </div>
+      </article>
+    </section>
+
+    <footer class="controls">
+      <button class="control previous" type="button" aria-label="上一步">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5L8 12L15 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="counter"></div>
+      <button class="control next" type="button" aria-label="下一步">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5L16 12L9 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </footer>
+  </main>
+
+  <script>
+    const steps = [
+      {
+        label: "0 开机前",
+        title: "开机前：程序都在外存中",
+        change: "RAM 中没有这些程序；CPU 尚未开始取指。",
+        source: "none",
+        ram: ["empty", "empty", "empty", "empty", "empty"],
+        cpu: ["尚未执行", "未通电", "磁盘上的代码不能被 CPU 直接执行。"]
+      },
+      {
+        label: "1 BIOS",
+        title: "CPU 从 BIOS ROM 开始执行",
+        change: "CPU 的取指位置由复位规则指向 BIOS ROM；磁盘内容和 RAM 暂时不变。",
+        source: "bios",
+        ram: ["empty", "empty", "empty", "empty", "empty"],
+        cpu: ["BIOS", "BIOS ROM", "BIOS 完成自检，选择启动磁盘，并准备读取第 0 扇区。"]
+      },
+      {
+        label: "2 MBR",
+        title: "BIOS 装入并执行 MBR",
+        change: "磁盘 MBR → RAM 0x7C00；CPU 的取指位置从 BIOS ROM 转到 RAM。",
+        source: "mbr",
+        ram: ["focus", "empty", "empty", "empty", "empty"],
+        cpu: ["MBR 引导代码", "RAM 0x7C00", "MBR 检查分区表，寻找活动分区。"]
+      },
+      {
+        label: "3 PBR",
+        title: "MBR 装入并执行活动分区的 PBR",
+        change: "活动分区 PBR → RAM；MBR 已完成磁盘级选择，CPU 转去执行 PBR。",
+        source: "pbr",
+        ram: ["complete", "focus", "empty", "empty", "empty"],
+        cpu: ["PBR 引导代码", "RAM 中的 PBR", "PBR 继续寻找并装入更大的启动程序。"]
+      },
+      {
+        label: "4 启动程序",
+        title: "PBR 装入并执行启动程序",
+        change: "文件系统中的启动程序 → RAM；CPU 转去执行启动程序。",
+        source: "loader",
+        ram: ["complete", "complete", "focus", "empty", "empty"],
+        cpu: ["启动程序", "RAM 中的启动程序", "它能够解析文件系统，并找到内核映像与启动配置。"]
+      },
+      {
+        label: "5 内核",
+        title: "启动程序装入内核并跳转到内核入口",
+        change: "内核映像 → RAM；CPU 从启动程序转去执行内核。",
+        source: "kernel",
+        ram: ["complete", "complete", "complete", "focus", "empty"],
+        cpu: ["操作系统内核", "RAM 中的内核入口", "内核初始化中断、内存、进程和设备，并挂载根文件系统。"]
+      },
+      {
+        label: "6 用户态",
+        title: "内核装入并调度用户态程序",
+        change: "系统文件中的程序 → RAM；内核留在内存中，CPU 在用户程序与内核之间切换。",
+        source: "rootfs",
+        ram: ["complete", "complete", "complete", "loaded", "focus"],
+        cpu: ["用户态程序", "RAM 中的用户代码", "普通指令在用户态执行；系统调用、中断或异常发生时转入内核。"]
+      }
+    ];
+
+    const timeline = document.querySelector(".timeline");
+    const stageTitle = document.querySelector(".stage-title");
+    const stageChange = document.querySelector(".stage-change");
+    const cpuNow = document.querySelector(".cpu-now");
+    const cpuLocation = document.querySelector(".cpu-location");
+    const cpuDetail = document.querySelector(".cpu-detail");
+    const counter = document.querySelector(".counter");
+    const previous = document.querySelector(".previous");
+    const next = document.querySelector(".next");
+    const sourceIds = ["bios", "mbr", "pbr", "loader", "kernel", "rootfs"];
+    const ramIds = ["mbr", "pbr", "loader", "kernel", "user"];
+    let current = 0;
+
+    steps.forEach((step, index) => {
+      const button = document.createElement("button");
+      button.className = "step-button";
+      button.type = "button";
+      button.textContent = step.label;
+      button.addEventListener("click", () => show(index));
+      timeline.appendChild(button);
+    });
+
+    function setSourceState(active) {
+      sourceIds.forEach((id) => {
+        const element = document.getElementById(`src-${id}`);
+        element.dataset.state = id === active ? "focus" : "idle";
+        const badge = element.querySelector(".source-badge");
+        if (badge) badge.textContent = id === active ? (id === "bios" ? "正在执行" : "正在读取") : id === "bios" ? "ROM 中" : "磁盘中";
+      });
+    }
+
+    function setRamState(states) {
+      const labels = {
+        empty: "未装入",
+        focus: "正在执行",
+        complete: "已完成，可覆盖",
+        loaded: "驻留"
+      };
+
+      ramIds.forEach((id, index) => {
+        const element = document.getElementById(`ram-${id}`);
+        const state = states[index];
+        element.dataset.state = state;
+        element.querySelector(".ram-badge").textContent = labels[state];
+      });
+    }
+
+    function show(index) {
+      current = Math.max(0, Math.min(index, steps.length - 1));
+      const step = steps[current];
+
+      document.querySelectorAll(".step-button").forEach((button, buttonIndex) => {
+        button.classList.toggle("active", buttonIndex === current);
+        button.setAttribute("aria-current", buttonIndex === current ? "step" : "false");
+      });
+
+      stageTitle.textContent = step.title;
+      stageChange.textContent = step.change;
+      setSourceState(step.source);
+      setRamState(step.ram);
+      cpuNow.textContent = step.cpu[0];
+      cpuLocation.textContent = step.cpu[1];
+      cpuDetail.textContent = step.cpu[2];
+      counter.textContent = `${current + 1} / ${steps.length}`;
+      previous.disabled = current === 0;
+      next.disabled = current === steps.length - 1;
+      document.querySelectorAll(".step-button")[current].scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+
+    previous.addEventListener("click", () => show(current - 1));
+    next.addEventListener("click", () => show(current + 1));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") show(current - 1);
+      if (event.key === "ArrowRight") show(current + 1);
+    });
+
+    show(0);
+  </script>
+</body>
+</html>
