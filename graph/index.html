@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>知识图谱 | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="知识图谱       分类与标签的知识脉络                               &#x2F;                                   重置视图                       分类         标签         文章">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>知识图谱 | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="知识图谱       探索分类、标签与文章之间的联系                               &#x2F;                                   重新排列">
 <meta property="og:type" content="website">
 <meta property="og:title" content="知识图谱">
 <meta property="og:url" content="https://eliano64.github.io/graph/index.html">
 <meta property="og:site_name" content="Elian&#39;s blog page">
-<meta property="og:description" content="知识图谱       分类与标签的知识脉络                               &#x2F;                                   重置视图                       分类         标签         文章">
+<meta property="og:description" content="知识图谱       探索分类、标签与文章之间的联系                               &#x2F;                                   重新排列">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
 <meta property="article:published_time" content="2026-07-09T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-10T12:18:15.285Z">
+<meta property="article:modified_time" content="2026-09-04T02:06:34.232Z">
 <meta property="article:author" content="Eliano">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/graph/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
@@ -176,7 +176,7 @@ btf.addGlobalFn('pjaxSend', () => {
   <header class="graph-toolbar">
     <div class="graph-heading">
       <strong>知识图谱</strong>
-      <small>分类与标签的知识脉络</small>
+      <small>探索分类、标签与文章之间的联系</small>
     </div>
     <label class="graph-search">
       <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
@@ -184,15 +184,10 @@ btf.addGlobalFn('pjaxSend', () => {
       <kbd>/</kbd>
     </label>
     <div class="toolbar-actions">
-      <button id="reset-view" type="button" title="重置视图">
+      <button id="reset-view" type="button" title="重新排列图谱">
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6"></path><path d="M5.6 15a8 8 0 0 0 13-3M18.4 9A8 8 0 0 0 5.5 12"></path></svg>
-        <span>重置视图</span>
+        <span>重新排列</span>
       </button>
-      <div class="legend" aria-label="图例">
-        <span><i class="category-dot"></i>分类</span>
-        <span><i class="tag-dot"></i>标签</span>
-        <span><i class="post-dot"></i>文章</span>
-      </div>
     </div>
   </header>
 
@@ -200,18 +195,32 @@ btf.addGlobalFn('pjaxSend', () => {
     <div id="graph-stage" class="graph-stage" aria-label="分类与标签知识图谱">
       <svg id="main-graph" role="img" aria-label="分类连接标签的图谱"></svg>
       <div class="zoom-controls" aria-label="缩放控制">
-        <button id="zoom-in" type="button" aria-label="放大">+</button>
-        <button id="zoom-out" type="button" aria-label="缩小">−</button>
-        <button id="fit-view" type="button" aria-label="适应画布">⌗</button>
+        <button id="zoom-in" type="button" aria-label="放大" title="放大">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+        <button id="zoom-out" type="button" aria-label="缩小" title="缩小">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14"></path></svg>
+        </button>
+        <button id="fit-view" type="button" aria-label="适应画布" title="适应画布">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"></path></svg>
+        </button>
       </div>
       <div id="graph-status" class="graph-status">正在整理知识脉络…</div>
-      <p class="canvas-hint">拖动画布 · 滚轮缩放 · 点击标签展开文章</p>
+      <div class="graph-overlay">
+        <div class="legend" aria-label="图例">
+          <span><i class="category-dot"></i>分类</span>
+          <span><i class="tag-dot"></i>标签</span>
+          <span><i class="post-dot"></i>文章</span>
+        </div>
+        <p id="graph-summary" class="graph-summary"></p>
+      </div>
+      <p class="canvas-hint">拖动节点或画布 · 滚轮缩放 · 点击标签查看文章</p>
     </div>
     <aside id="detail-panel" class="detail-panel" aria-live="polite">
       <div class="empty-detail">
-        <div class="empty-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="empty-graph" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <h2>选择一个标签</h2>
-        <p>点击主图中的标签，在这里查看它与文章之间的局部联系。</p>
+        <p>点击任意标签，在这里展开它与相关文章的局部图谱。</p>
       </div>
     </aside>
   </section>
