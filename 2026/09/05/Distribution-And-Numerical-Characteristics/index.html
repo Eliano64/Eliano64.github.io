@@ -1,0 +1,798 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Distribution And Numerical Characteristics | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="一维随机变量及分布一维离散型随机变量离散型随机变量由分布律刻画：列出全部可能取值 x_k 及其概率： P\{X&#x3D;x_k\}&#x3D;p_k,\qquad p_k\ge0,\qquad \sum_k p_k&#x3D;1. 常见一维离散型随机变量分布以下记 q&#x3D;1-p。    分布 含义与分布律    二项分布 B(n,p) n 次独立试验的成功次数；P\{X&#x3D;k\}&#x3D;\binom nkp^kq^{n-k}   几何">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Distribution And Numerical Characteristics">
+<meta property="og:url" content="https://eliano64.github.io/2026/09/05/Distribution-And-Numerical-Characteristics/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="一维随机变量及分布一维离散型随机变量离散型随机变量由分布律刻画：列出全部可能取值 x_k 及其概率： P\{X&#x3D;x_k\}&#x3D;p_k,\qquad p_k\ge0,\qquad \sum_k p_k&#x3D;1. 常见一维离散型随机变量分布以下记 q&#x3D;1-p。    分布 含义与分布律    二项分布 B(n,p) n 次独立试验的成功次数；P\{X&#x3D;k\}&#x3D;\binom nkp^kq^{n-k}   几何">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-09-05T08:28:30.000Z">
+<meta property="article:modified_time" content="2026-09-06T12:38:44.092Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="Distribution">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Distribution And Numerical Characteristics",
+  "url": "https://eliano64.github.io/2026/09/05/Distribution-And-Numerical-Characteristics/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-09-05T08:28:30.000Z",
+  "dateModified": "2026-09-06T12:38:44.092Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/09/05/Distribution-And-Numerical-Characteristics/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Distribution And Numerical Characteristics',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Distribution And Numerical Characteristics</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Distribution And Numerical Characteristics</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-05T08:28:30.000Z" title="发表于 2026-09-05 16:28:30">2026-09-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-06T12:38:44.092Z" title="更新于 2026-09-06 20:38:44">2026-09-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Probability-Statistics/">Probability &amp; Statistics</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">679</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="一维随机变量及分布"><a href="#一维随机变量及分布" class="headerlink" title="一维随机变量及分布"></a>一维随机变量及分布</h1><h2 id="一维离散型随机变量"><a href="#一维离散型随机变量" class="headerlink" title="一维离散型随机变量"></a>一维离散型随机变量</h2><p>离散型随机变量由分布律刻画：列出全部可能取值 <script type="math/tex">x_k</script> 及其概率：</p>
+<script type="math/tex; mode=display">P\{X=x_k\}=p_k,\qquad p_k\ge0,\qquad \sum_k p_k=1.</script>
+<h3 id="常见一维离散型随机变量分布"><a href="#常见一维离散型随机变量分布" class="headerlink" title="常见一维离散型随机变量分布"></a>常见一维离散型随机变量分布</h3><p>以下记 <script type="math/tex">q=1-p</script>。</p>
+<table>
+<thead>
+<tr>
+<th>分布</th>
+<th>含义与分布律</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>二项分布 <script type="math/tex">B(n,p)</script></td>
+<td><script type="math/tex">n</script> 次独立试验的成功次数；<script type="math/tex">P\{X=k\}=\binom nkp^kq^{n-k}</script></td>
+</tr>
+<tr>
+<td>几何分布 <script type="math/tex">G(p)</script></td>
+<td>首次成功所需试验次数；<script type="math/tex">P\{X=k\}=q^{k-1}p,\ k\ge1</script></td>
+</tr>
+<tr>
+<td>负二项分布 <script type="math/tex">NB(r,p)</script></td>
+<td>第 <script type="math/tex">r</script> 次成功出现时的试验次数；<script type="math/tex">P\{X=k\}=\binom{k-1}{r-1}p^rq^{k-r},\ k\ge r</script></td>
+</tr>
+<tr>
+<td>超几何分布 <script type="math/tex">H(N,M,n)</script></td>
+<td><script type="math/tex">N</script> 个对象中有 <script type="math/tex">M</script> 个目标，不放回抽取 <script type="math/tex">n</script> 个；<script type="math/tex">P\{X=k\}=\dfrac{\binom Mk\binom{N-M}{n-k}}{\binom Nn}</script></td>
+</tr>
+<tr>
+<td>泊松分布 <script type="math/tex">P(\lambda)</script></td>
+<td>单位区间内稀有事件的发生次数；<script type="math/tex">P\{X=k\}=e^{-\lambda}\dfrac{\lambda^k}{k!}</script></td>
+</tr>
+</tbody></table>
+<div class="callout callout-info">
+<div class="callout-title"><i class="fa-solid fa-circle-info callout-icon"></i><span class="callout-title-text">二项分布的特殊性质</span></div>
+<div class="callout-content"><p>二项分布的形式恰好是<script type="math/tex">(p+q)^{n}</script>的二项展开。即：</p>
+<script type="math/tex; mode=display">\sum_{i=0}^{n}\binom nip^{i}q^{n-i}=(p+q)^{2}</script>
+<p>对特定项求和则在这个公式的基础上进行构造。例如：</p>
+<blockquote>
+<p>[!example] 奇数项和</p>
+<script type="math/tex; mode=display">\begin{align}
+> S&=\sum_{i=0}^{n} \frac{1-(-1)^{i}}{2}\binom nip^{i}q^{n-i} \\
+> &=\frac{1}{2}(p+q)^{n}-\frac{1}{2}(q-p)^{n}
+> \end{align}</script>
+</blockquote>
+</div>
+</div>
+<h3 id="一维离散型随机变量分布的近似"><a href="#一维离散型随机变量分布的近似" class="headerlink" title="一维离散型随机变量分布的近似"></a>一维离散型随机变量分布的近似</h3><table>
+<thead>
+<tr>
+<th>原分布</th>
+<th>近似分布</th>
+<th>条件与参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><script type="math/tex">H(N,M,n)</script></td>
+<td><script type="math/tex">B(n,p)</script></td>
+<td>总体大、抽样比 <script type="math/tex">n/N</script> 小，<script type="math/tex">p=M/N</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">B(n,p)</script></td>
+<td><script type="math/tex">P(\lambda)</script></td>
+<td><script type="math/tex">n</script> 大、<script type="math/tex">p</script> 小，<script type="math/tex">\lambda=np</script> 适中</td>
+</tr>
+<tr>
+<td><script type="math/tex">B(n,p)</script></td>
+<td><script type="math/tex">N(np,npq)</script></td>
+<td><script type="math/tex">n</script> 较大而 <script type="math/tex">p</script> 不太大</td>
+</tr>
+</tbody></table>
+<h2 id="一维连续型随机变量分布"><a href="#一维连续型随机变量分布" class="headerlink" title="一维连续型随机变量分布"></a>一维连续型随机变量分布</h2><h3 id="分布函数与概率密度"><a href="#分布函数与概率密度" class="headerlink" title="分布函数与概率密度"></a>分布函数与概率密度</h3><p>分布函数定义：</p>
+<script type="math/tex; mode=display">F_X(x)=P\{X\le x\}.</script>
+<p>函数 <script type="math/tex">F</script> 是分布函数，当且仅当：</p>
+<ul>
+<li><script type="math/tex">F</script> 单调不减、右连续；</li>
+<li><script type="math/tex">\displaystyle\lim_{x\to-\infty}F(x)=0</script>，<script type="math/tex">\displaystyle\lim_{x\to+\infty}F(x)=1</script>。</li>
+</ul>
+<p>连续型随机变量若有概率密度 <script type="math/tex">f_X</script>，则满足</p>
+<script type="math/tex; mode=display">f_X(x)\ge0,\qquad
+\int_{-\infty}^{+\infty}f_X(x)\,\mathrm dx=1,\qquad
+F_X(x)=\int_{-\infty}^{x}f_X(t)\,\mathrm dt.</script>
+<p>在 <script type="math/tex">F_X</script> 可导处，<script type="math/tex">f_X(x)=F_X'(x)</script>。单点处密度值的改变不影响分布。</p>
+<h3 id="常见一维连续型随机变量分布"><a href="#常见一维连续型随机变量分布" class="headerlink" title="常见一维连续型随机变量分布"></a>常见一维连续型随机变量分布</h3><h4 id="均匀分布"><a href="#均匀分布" class="headerlink" title="均匀分布"></a>均匀分布</h4><p>设 <script type="math/tex">\displaystyle X\sim U(a,b)</script>，其中 <script type="math/tex">\displaystyle a<b</script>。密度与分布函数为：</p>
+<script type="math/tex; mode=display">f_X(x)=
+\begin{cases}
+\frac{1}{b-a},&a<x<b,\\
+0,&\text{其他},
+\end{cases}
+\qquad
+F_X(x)=
+\begin{cases}
+0,&x\le a,\\
+\frac{x-a}{b-a},&a<x<b,\\
+1,&x\ge b.
+\end{cases}</script>
+<h4 id="指数分布"><a href="#指数分布" class="headerlink" title="指数分布"></a>指数分布</h4><p>设 <script type="math/tex">\displaystyle X\sim E(\lambda)</script>，其中 <script type="math/tex">\displaystyle \lambda>0</script> 为率参数。密度与分布函数为：</p>
+<script type="math/tex; mode=display">f_X(x)=
+\begin{cases}
+\lambda e^{-\lambda x},&x\ge0,\\
+0,&x<0,
+\end{cases}
+\qquad
+F_X(x)=
+\begin{cases}
+0,&x<0,\\
+1-e^{-\lambda x},&x\ge0.
+\end{cases}</script>
+<p><strong>无记忆性</strong>：由 <script type="math/tex">\displaystyle P(X>x)=e^{-\lambda x}</script>（<script type="math/tex">\displaystyle x\ge0</script>），对 <script type="math/tex">\displaystyle s,t\ge0</script> 有：</p>
+<script type="math/tex; mode=display">P(X>s+t\mid X>s)
+=\frac{P(X>s+t)}{P(X>s)}
+=\frac{e^{-\lambda(s+t)}}{e^{-\lambda s}}
+=e^{-\lambda t}
+=P(X>t).</script>
+<h4 id="正态分布"><a href="#正态分布" class="headerlink" title="正态分布"></a>正态分布</h4><p><script type="math/tex">\displaystyle X\sim N(\mu,\sigma^2)</script>，<script type="math/tex">\displaystyle \mu\in\mathbb R</script>、<script type="math/tex">\displaystyle \sigma>0</script>，密度为：</p>
+<script type="math/tex; mode=display">f_X(x)=\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}},\qquad x\in\mathbb R.</script>
+<p>曲线关于 <script type="math/tex">\displaystyle \mu</script> 对称；<script type="math/tex">\displaystyle \sigma</script> 越大，曲线越宽、峰值越低。</p>
+<p>性质：</p>
+<p>以下 <script type="math/tex">\displaystyle \varphi,\Phi</script> 分别为标准正态密度、分布函数。</p>
+<ol>
+<li>标准化与概率计算：</li>
+</ol>
+<script type="math/tex; mode=display">Z=\frac{X-\mu}{\sigma}\sim N(0,1),\qquad F_X(x)=\Phi\left(\frac{x-\mu}{\sigma}\right).</script>
+<script type="math/tex; mode=display">P(a<X<b)=\Phi\left(\frac{b-\mu}{\sigma}\right)-\Phi\left(\frac{a-\mu}{\sigma}\right).</script>
+<ol start="2">
+<li>对称性：<script type="math/tex">\displaystyle \varphi(-z)=\varphi(z)</script>，<script type="math/tex">\displaystyle \Phi(0)=\frac12</script></li>
+<li>积分对称性：</li>
+</ol>
+<script type="math/tex; mode=display">\Phi(-z)=\int_{-\infty}^{-z}\varphi(t)\,\mathrm dt
+=\int_z^{+\infty}\varphi(t)\,\mathrm dt=1-\Phi(z).</script>
+<p>所以当 <script type="math/tex">\displaystyle z\ge0</script> 时，<script type="math/tex">\displaystyle P(\lvert Z\rvert<z)=2\Phi(z)-1</script>。</p>
+<ol start="4">
+<li>线性变换：<script type="math/tex">\displaystyle a\ne0</script> 时，<script type="math/tex">\displaystyle aX+b\sim N(a\mu+b,a^2\sigma^2)</script>。</li>
+</ol>
+<h2 id="一维随机变量X的函数的分布"><a href="#一维随机变量X的函数的分布" class="headerlink" title="一维随机变量X的函数的分布"></a>一维随机变量<script type="math/tex">X</script>的函数的分布</h2><h3 id="X-为离散型"><a href="#X-为离散型" class="headerlink" title="X 为离散型"></a><script type="math/tex">X</script> 为离散型</h3><p>若 <script type="math/tex">X</script> 为离散型，直接由分布律合并产生相同函数值的各项概率：</p>
+<script type="math/tex; mode=display">P\{Y=y\}=\sum_{x:\,G(x)=y}P\{X=x\}.</script>
+<h3 id="X-为连续型且Y-G-X-仍连续"><a href="#X-为连续型且Y-G-X-仍连续" class="headerlink" title="X 为连续型且Y=G(X)仍连续"></a><script type="math/tex">X</script> 为连续型且<script type="math/tex">Y=G(X)</script>仍连续</h3><p>若 <script type="math/tex">X</script> 为连续型且<script type="math/tex">Y=G(X)</script>仍连续，从 <script type="math/tex">F_Y(y)=P\{G(X)\le y\}</script> 出发，把事件改写成 <script type="math/tex">P\{X \in D_{y} \}</script>。</p>
+<h4 id="概率积分变换"><a href="#概率积分变换" class="headerlink" title="概率积分变换"></a>概率积分变换</h4><p><strong>若 <script type="math/tex">\displaystyle X</script> 的分布函数 <script type="math/tex">\displaystyle F_X</script> 连续</strong>，则：</p>
+<script type="math/tex; mode=display">U=F_X(X)\sim U(0,1).</script>
+<p>证明：令 <script type="math/tex">\displaystyle F_X(X)=U</script>，因此有</p>
+<script type="math/tex; mode=display">P(U\le u)=P(F_X(X)\le u)
+=P(X\le F^{-1}_{X}(u))=F_X(F_{X}^{-1}(u))=u.</script>
+<p>结合 <script type="math/tex">\displaystyle U</script> 的取值范围为 <script type="math/tex">\displaystyle [0,1]</script>，这就是 <script type="math/tex">\displaystyle U(0,1)</script> 的分布函数。</p>
+<h3 id="X-为连续型但Y-G-X-不连续"><a href="#X-为连续型但Y-G-X-不连续" class="headerlink" title="X 为连续型但Y=G(X) 不连续"></a><script type="math/tex">X</script> 为连续型但<script type="math/tex">Y=G(X)</script> 不连续</h3><p>这里的“不连续”指 <strong><script type="math/tex">\displaystyle Y</script> 的分布函数出现跳跃</strong>：某个值 <script type="math/tex">\displaystyle c</script> 满足 <script type="math/tex">\displaystyle P(Y=c)>0</script>。</p>
+<p>此时 <script type="math/tex">\displaystyle Y</script> 可能是离散型，也可能同时含有<strong>概率点</strong>和连续部分，成为混合型；不能只根据函数 <script type="math/tex">\displaystyle G</script> 是否连续来判断。</p>
+<details class="callout callout-question">
+<summary class="callout-title"><i class="fa-solid fa-circle-question callout-icon"></i><span class="callout-title-text">为什么连续型随机变量会变出概率点</span></summary>
+<div class="callout-content"><p><script type="math/tex">\displaystyle P(X=x)=0</script> 只说明每个单点的概率为零，不代表一整段取值的概率也为零。若 <script type="math/tex">\displaystyle G</script> 把一段具有正概率的取值都映成同一个 <script type="math/tex">\displaystyle c</script>，这些概率就集中在 <script type="math/tex">\displaystyle Y=c</script> 上：</p>
+<script type="math/tex; mode=display">P(Y=c)=P(G(X)=c)=\int_{\{x:G(x)=c\}}f_X(x)\,\mathrm dx.</script>
+<p>例如，将所有负数都变为零，原来 <script type="math/tex">\displaystyle X<0</script> 这一整段的概率便成为 <script type="math/tex">\displaystyle Y=0</script> 的概率。只要 <script type="math/tex">\displaystyle P(X<0)>0</script>，<script type="math/tex">\displaystyle Y</script> 就不再是有普通概率密度的连续型随机变量。</p>
+</div>
+</details>
+<p>从 <script type="math/tex">\displaystyle F_Y(y)=P(G(X)\le y)</script> 出发，根据 <script type="math/tex">\displaystyle X</script> 取值进行<a href="#$X$-连续、$Y$-离散时的-$Z&#x3D;G(X,Y)$" class="wikilink">全集分解</a>，再分别计算分布函数，最后求和。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">设 $\displaystyle X\sim N(0,1)$，$\displaystyle Y=\lfloor(X-1)^2\rfloor$，其中 $\displaystyle \lfloor u\rfloor$ 表示不超过 $\displaystyle u$ 的最大整数。求 $\displaystyle Y$ 的分布律。</span></div>
+<div class="callout-content"><p>全集分解：<script type="math/tex">\displaystyle Y</script> 的可能取值为 <script type="math/tex">\displaystyle k=0,1,2,\ldots</script>，且：</p>
+<script type="math/tex; mode=display">Y=k\iff k\le(X-1)^2<k+1
+\iff\sqrt{k}\le\lvert X-1\rvert<\sqrt{k+1}.</script>
+<p>于是得到<script type="math/tex">X</script>的取值：</p>
+<script type="math/tex; mode=display">(1-\sqrt{k+1},\,1-\sqrt{k}),\qquad
+(1+\sqrt{k},\,1+\sqrt{k+1}).</script>
+<p>分别计算，再相加：记标准正态分布函数为 <script type="math/tex">\displaystyle \Phi</script>，得到完整分布律：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+P(Y=k)
+&=\Phi(1-\sqrt{k})-\Phi(1-\sqrt{k+1})\\
+&\quad+\Phi(1+\sqrt{k+1})-\Phi(1+\sqrt{k}),
+\qquad k=0,1,2,\ldots.
+\end{aligned}</script>
+</div>
+</div>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">设 $\displaystyle X\sim U(-1,2)$，</span></div>
+<div class="callout-content"><script type="math/tex; mode=display">Y=G(X)=
+\begin{cases}
+0,&X\le0,\\
+X,&0<X<1,\\
+1,&X\ge1.
+\end{cases}</script>
+<p>所以：</p>
+<script type="math/tex; mode=display">P(Y=0)=P(X\le0)=\frac13,\qquad
+P(Y=1)=P(X\ge1)=\frac13.</script>
+<p><script type="math/tex">\displaystyle y<0</script> 时事件不可能；<script type="math/tex">\displaystyle y\ge1</script> 时事件必然发生。</p>
+<p>对于 <script type="math/tex">\displaystyle 0\le y<1</script>，<script type="math/tex">\displaystyle Y\le y</script>  <script type="math/tex">\displaystyle F_Y(y)=F_{X}(X<y)=\frac{y+1}{3}</script>。</p>
+<p>完整结果为：</p>
+<script type="math/tex; mode=display">F_Y(y)=
+\begin{cases}
+0,&y<0,\\
+\frac{y+1}{3},&0\le y<1,\\
+1,&y\ge1.
+\end{cases}</script>
+</div>
+</div>
+<h1 id="二维随机变量及分布"><a href="#二维随机变量及分布" class="headerlink" title="二维随机变量及分布"></a>二维随机变量及分布</h1><h2 id="二维离散型随机变量"><a href="#二维离散型随机变量" class="headerlink" title="二维离散型随机变量"></a>二维离散型随机变量</h2><p>设 <script type="math/tex">X</script> 有 <script type="math/tex">m</script> 个可能值 <script type="math/tex">x_1,\ldots,x_m</script>，<script type="math/tex">Y</script> 有 <script type="math/tex">n</script> 个可能值 <script type="math/tex">y_1,\ldots,y_n</script>。</p>
+<p>联合分布律由任意 <script type="math/tex">m\times n</script> 个格子组成：</p>
+<script type="math/tex; mode=display">p_{ij}=P\{X=x_i,Y=y_j\},\qquad 1\le i\le m,\ 1\le j\le n.</script>
+<script type="math/tex; mode=display">p_{i\cdot}=\sum_{j=1}^{n}p_{ij},\qquad p_{\cdot j}=\sum_{i=1}^{m}p_{ij},\qquad \sum_{i=1}^{m}\sum_{j=1}^{n}p_{ij}=1.</script>
+<table>
+<thead>
+<tr>
+<th></th>
+<th align="right"><script type="math/tex">Y=y_1</script></th>
+<th align="right"><script type="math/tex">Y=y_2</script></th>
+<th align="right"><script type="math/tex">\cdots</script></th>
+<th align="right"><script type="math/tex">Y=y_n</script></th>
+<th align="right"><script type="math/tex">P(X=x_{i})</script></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><script type="math/tex">X=x_1</script></td>
+<td align="right"><script type="math/tex">p_{11}</script></td>
+<td align="right"><script type="math/tex">p_{12}</script></td>
+<td align="right"><script type="math/tex">\cdots</script></td>
+<td align="right"><script type="math/tex">p_{1n}</script></td>
+<td align="right"><script type="math/tex">p_{1\cdot}</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">X=x_2</script></td>
+<td align="right"><script type="math/tex">p_{21}</script></td>
+<td align="right"><script type="math/tex">p_{22}</script></td>
+<td align="right"><script type="math/tex">\cdots</script></td>
+<td align="right"><script type="math/tex">p_{2n}</script></td>
+<td align="right"><script type="math/tex">p_{2\cdot}</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">\vdots</script></td>
+<td align="right"><script type="math/tex">\vdots</script></td>
+<td align="right"><script type="math/tex">\vdots</script></td>
+<td align="right"><script type="math/tex">\ddots</script></td>
+<td align="right"><script type="math/tex">\vdots</script></td>
+<td align="right"><script type="math/tex">\vdots</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">X=x_m</script></td>
+<td align="right"><script type="math/tex">p_{m1}</script></td>
+<td align="right"><script type="math/tex">p_{m2}</script></td>
+<td align="right"><script type="math/tex">\cdots</script></td>
+<td align="right"><script type="math/tex">p_{mn}</script></td>
+<td align="right"><script type="math/tex">p_{m\cdot}</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">P(Y=y_{i})</script></td>
+<td align="right"><script type="math/tex">p_{\cdot1}</script></td>
+<td align="right"><script type="math/tex">p_{\cdot2}</script></td>
+<td align="right"><script type="math/tex">\cdots</script></td>
+<td align="right"><script type="math/tex">p_{\cdot n}</script></td>
+<td align="right"><script type="math/tex">1</script></td>
+</tr>
+</tbody></table>
+<p>条件分布为：</p>
+<script type="math/tex; mode=display">P\{X=x_i\mid Y=y_j\}
+=\frac{p_{ij}}{P\{Y=y_j\}}.</script>
+<p><script type="math/tex">X,Y</script> 独立，当且仅当每个格子都满足</p>
+<script type="math/tex; mode=display">p_{ij}=P\{X=x_i\}P\{Y=y_j\}.</script>
+<h2 id="二维连续型随机变量分布"><a href="#二维连续型随机变量分布" class="headerlink" title="二维连续型随机变量分布"></a>二维连续型随机变量分布</h2><p>联合分布函数：</p>
+<script type="math/tex; mode=display">F_{X,Y}(x,y)=P\{X\le x,Y\le y\}.</script>
+<p>边缘分布函数为：</p>
+<script type="math/tex; mode=display">F_X(x)=\lim_{y\to+\infty}F_{X,Y}(x,y),\qquad F_Y(y)=\lim_{x\to+\infty}F_{X,Y}(x,y).</script>
+<p>如果 <script type="math/tex">F_{X,Y}(x,y)</script> 对 <script type="math/tex">x,y</script> 连续，并且存在连续的二阶混合偏导数，则联合概率密度函数定义为：</p>
+<script type="math/tex; mode=display">f_{X,Y}(x,y)=\frac{\partial^2F_{X,Y}(x,y)}{\partial x\,\partial y}.</script>
+<p>反过来，联合分布函数由联合密度在左下区域上的积分得到：</p>
+<script type="math/tex; mode=display">F_{X,Y}(x,y)=\int_{-\infty}^{x}\int_{-\infty}^{y}f_{X,Y}(u,v)\,\mathrm dv\,\mathrm du.</script>
+<p>由分布函数的性质，密度满足：</p>
+<script type="math/tex; mode=display">f_{X,Y}(x,y)\ge0,\qquad
+\iint_{\mathbb R^2}f_{X,Y}(x,y)\,\mathrm dx\mathrm dy=1.</script>
+<p>使用<script type="math/tex">f_{X,Y}</script>求概率更为灵活，因为：</p>
+<script type="math/tex; mode=display">P\{x,y \in D\}=\iint_{D}f_{X,Y}(x,y)\,\mathrm dx\mathrm dy.</script>
+<p>所以求例如 <script type="math/tex">\{Ax^{k}+By^{k}+C\leqslant {0}\}</script> 这样的较复杂的事件的概率，用这种方式就可以很方便地计算出来。</p>
+<p>边缘密度函数由联合密度积分得到：</p>
+<script type="math/tex; mode=display">f_X(x)=\int_{-\infty}^{+\infty}f_{X,Y}(x,y)\,\mathrm dy,\qquad
+f_Y(y)=\int_{-\infty}^{+\infty}f_{X,Y}(x,y)\,\mathrm dx.</script>
+<p>在有密度且分母为正时，条件密度为：</p>
+<script type="math/tex; mode=display">f_{Y\mid X=x}(y)=\frac{f_{X,Y}(x,y)}{f_X(x)},\qquad
+f_{X\mid Y=y}(x)=\frac{f_{X,Y}(x,y)}{f_Y(y)}.</script>
+<p>因此，条件分布函数由条件密度积分得到：</p>
+<script type="math/tex; mode=display">F_{Y\mid X=x}(y)=\int_{-\infty}^{y}f_{Y\mid X=x}(v)\,\mathrm dv,
+\qquad
+F_{X\mid Y=y}(x)=\int_{-\infty}^{x}f_{X\mid Y=y}(u)\,\mathrm du.</script>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">在线段上依次取两点，求第二点的分布</span></div>
+<div class="callout-content"><p>在线段 <script type="math/tex">\displaystyle [0,1]</script> 上均匀选一点 <script type="math/tex">\displaystyle X</script>；给定 <script type="math/tex">\displaystyle X=x</script> 后，再在 <script type="math/tex">\displaystyle [x,1]</script> 上均匀选一点 <script type="math/tex">\displaystyle Y</script>。求 <script type="math/tex">\displaystyle Y</script> 的密度与分布函数。</p>
+<p>先固定第一点：<script type="math/tex">\displaystyle X\sim U(0,1)</script>，<script type="math/tex">\displaystyle Y\mid X=x\sim U(x,1)</script>。因此：</p>
+<script type="math/tex; mode=display">f_{Y\mid X=x}(y)=
+\begin{cases}
+\frac{1}{1-x},&x<y<1,\\
+0,&\text{其他},
+\end{cases}
+\qquad 0<x<1.</script>
+<p>又因为<script type="math/tex">\displaystyle f_{X,Y}f(x,y)=f_{Y \mid X=x}(y)f_{X}(x), f_{Y}(y)=\int_{-\infty}^{+\infty} f_{X,Y}(x,y) \, \mathrm{d}x</script> ：</p>
+<script type="math/tex; mode=display">f_Y(y)=\int_{-\infty}^{+\infty} f_{Y\mid X=x}(y)f_X(x)\,\mathrm dx
+=\begin{cases} 
+\int_0^y\frac{1}{1-x}\,\mathrm dx,&0<y<1 \\
+0,&others
+\end{cases}
+=\begin{cases}
+-\ln(1-y),&0<y<1 \\ \\
+0, &others
+\end{cases}.</script>
+<p>再积分得到 <script type="math/tex">F_Y(y)</script>。</p>
+<p>完整结果为：</p>
+<script type="math/tex; mode=display">f_Y(y)=
+\begin{cases}
+-\ln(1-y),&0<y<1,\\
+0,&\text{其他},
+\end{cases}
+\qquad
+F_Y(y)=
+\begin{cases}
+0,&y\le0,\\
+y+(1-y)\ln(1-y),&0<y<1,\\
+1,&y\ge1.
+\end{cases}</script>
+</div>
+</div>
+<h3 id="常见二维型随机变量分布"><a href="#常见二维型随机变量分布" class="headerlink" title="常见二维型随机变量分布"></a>常见二维型随机变量分布</h3><h4 id="二维均匀分布"><a href="#二维均匀分布" class="headerlink" title="二维均匀分布"></a>二维均匀分布</h4><p>若 <script type="math/tex">(X,Y)</script> 在区域 <script type="math/tex">D</script> 上服从二维均匀分布，<script type="math/tex">S(D)</script>为区域面积，则：</p>
+<script type="math/tex; mode=display">f_{X,Y}(x,y)=
+\begin{cases}
+\dfrac1{S(D)},&(x,y)\in D,\\
+0,&(x,y)\notin D.
+\end{cases}</script>
+<p>如果区域是一个边均与坐标轴平行的矩形，那么易得此时<script type="math/tex">f_{X,Y}(x,y)=f_{X}(x)f_{Y}(y)</script></p>
+<h4 id="二维正态分布"><a href="#二维正态分布" class="headerlink" title="二维正态分布"></a>二维正态分布</h4><p>记为</p>
+<script type="math/tex; mode=display">(X,Y)\sim N(\mu_1,\mu_2;\sigma_1^2,\sigma_2^2;\rho),</script>
+<p>其中 <script type="math/tex">\mu_1,\mu_2</script> 是均值，<script type="math/tex">\sigma_1^2,\sigma_2^2</script> 是方差，<script type="math/tex">\rho</script> 是线性相关系数。</p>
+<p>性质：</p>
+<ol>
+<li><script type="math/tex">X\sim N(\mu_1,\sigma_1^2),\qquad Y\sim N(\mu_2,\sigma_2^2)</script></li>
+<li>在二维正态分布中，独立与线性不相关等价</li>
+<li>任意线性组合仍服从正态分布：<script type="math/tex">k_1X+k_2Y\sim N\left(k_1\mu_1+k_2\mu_2,k_1^2\sigma_1^2+k_2^2\sigma_2^2+2k_1k_2\rho\sigma_1\sigma_2\right)</script></li>
+</ol>
+<h2 id="二维随机变量-X-Y-的函数的分布"><a href="#二维随机变量-X-Y-的函数的分布" class="headerlink" title="二维随机变量(X,Y)的函数的分布"></a>二维随机变量<script type="math/tex">(X,Y)</script>的函数的分布</h2><h3 id="X-Y-均为离散型"><a href="#X-Y-均为离散型" class="headerlink" title="(X,Y) 均为离散型"></a><script type="math/tex">(X,Y)</script> 均为离散型</h3><p>离散型情形，把所有映到同一 <script type="math/tex">(u,v)</script> 的点的联合概率相加。</p>
+<h3 id="X-连续、Y-离散时的-Z-G-X-Y"><a href="#X-连续、Y-离散时的-Z-G-X-Y" class="headerlink" title="X 连续、Y 离散时的 Z=G(X,Y)"></a><script type="math/tex">X</script> 连续、<script type="math/tex">Y</script> 离散时的 <script type="math/tex">Z=G(X,Y)</script></h3><p>设 <script type="math/tex">X</script> 连续，<script type="math/tex">Y</script> 离散，研究 <script type="math/tex">Z=G(X,Y)</script> 的分布。对事件 <script type="math/tex">\{G(X,Y)\le z\}</script>，按 <script type="math/tex">Y</script> 的全部可能取值作全集分解：</p>
+<script type="math/tex; mode=display">\{G(X,Y)\le z\}=\bigcup_j\bigl(\{G(X,y_j)\le z\}\cap\{Y=y_j\}\bigr),</script>
+<p>于是有：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+F_Z(z)
+&=P\{G(X,Y)\le z\}\\
+&=\sum_jP\bigl(\{G(X,y_j)\le z\}\cap\{Y=y_j\}\bigr),
+\end{aligned}</script>
+<p>如果某些项使 <script type="math/tex">G(X,y_j)</script> 恒等于某个数 <script type="math/tex">c</script>，就在 <script type="math/tex">Z=c</script> 处计入相应概率；其余项按连续变量函数的方法计算。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">混合型分布</span></div>
+<div class="callout-content"><p>X,Y独立。 <script type="math/tex">X</script> 连续，<script type="math/tex">P\{Y=0\}=1/4</script>、<script type="math/tex">P\{Y=1\}=3/4</script>。求 <script type="math/tex">Z=YX</script> 的分布。</p>
+<p>按上述方法对样本空间作全集分解：</p>
+<script type="math/tex; mode=display">F_Z(z)=P\{X\le z,Y=1\}+P\{0\le z,Y=0\}=\frac34F_X(z)+\frac14P{\{z\ge0\}}.</script>
+<p><script type="math/tex">P{\{z\ge0\}}</script>使 <script type="math/tex">F_Z</script> 在 <script type="math/tex">0</script> 处跳跃：当<script type="math/tex">z<0</script>时<script type="math/tex">,z\geqslant{0}</script>为<script type="math/tex">\varnothing</script> 当<script type="math/tex">z\geqslant{0}</script> 时, <script type="math/tex">z >0</script> 为 <script type="math/tex">\Omega</script> 。</p>
+</div>
+</div>
+<h3 id="Z-G-X-Y-且-X-Y-均为连续型"><a href="#Z-G-X-Y-且-X-Y-均为连续型" class="headerlink" title="Z=G(X,Y) 且(X,Y) 均为连续型"></a><script type="math/tex">Z=G(X,Y)</script> 且<script type="math/tex">(X,Y)</script> 均为连续型</h3><script type="math/tex; mode=display">F_Z(z)=P\{G(X,Y)\le z\}
+=\iint_{G(x,y)\le z}f_{X,Y}(x,y)\,\mathrm dx\mathrm dy.</script>
+<p>对 <script type="math/tex">z</script> 求导即得概率密度函数。</p>
+<p>求概率密度函数也可以使用<a href="#$(X,Y)$-均为连续型且$U&#x3D;G(X,Y),V&#x3D;H(X,Y)$" class="wikilink">以下</a>的思路，令<script type="math/tex">U=Z=G(X,Y),V=Y</script> ，最后对求出的 <script type="math/tex">f_{U,V}(u,v)</script> 对 <script type="math/tex">v</script> 积分求 <script type="math/tex">U</script> 的边缘密度函数 <script type="math/tex">f_{U}(u)</script> 即可。</p>
+<h3 id="X-Y-均为连续型且U-G-X-Y-V-H-X-Y"><a href="#X-Y-均为连续型且U-G-X-Y-V-H-X-Y" class="headerlink" title="(X,Y) 均为连续型且U=G(X,Y),V=H(X,Y)"></a><script type="math/tex">(X,Y)</script> 均为连续型且<script type="math/tex">U=G(X,Y),V=H(X,Y)</script></h3><p>已知<script type="math/tex">u=G(x,y),v=H(x,y)</script>，且反函数都存在，<script type="math/tex">\displaystyle\frac{ \partial (x,y) }{ \partial (u,v) }\neq {0}</script>。</p>
+<p>则：</p>
+<script type="math/tex; mode=display">\begin{align}
+F_{U,V}(u,v)
+&=\iint_{D_{uv}} f_{X,Y}(x(u,v),y(u,v))
+\left|\frac{\partial(x,y)}{\partial(u,v)}\right|\mathrm{d}u\mathrm{d}v \\
+&=\iint_{D_{uv}} f_{X,Y}(x(u,v),y(u,v))
+\left|\left|\begin{matrix}
+\frac{ \partial u }{ \partial x } &\frac{ \partial u }{ \partial y } \\
+\frac{ \partial v }{ \partial x } &\frac{ \partial v }{ \partial y } 
+\end{matrix}\right|\right|^{-1}\mathrm{d}u\mathrm{d}v
+\end{align}</script>
+<p>概率密度即：</p>
+<script type="math/tex; mode=display">f_{X,Y}(x(u,v),y(u,v))
+\left|\left|\begin{matrix}
+\frac{ \partial u }{ \partial x } &\frac{ \partial u }{ \partial y } \\
+\frac{ \partial v }{ \partial x } &\frac{ \partial v }{ \partial y } 
+\end{matrix}\right|\right|^{-1}</script>
+<h2 id="随机变量独立同分布"><a href="#随机变量独立同分布" class="headerlink" title="随机变量独立同分布"></a>随机变量独立同分布</h2><h3 id="极值统计量的分布"><a href="#极值统计量的分布" class="headerlink" title="极值统计量的分布"></a>极值统计量的分布</h3><p>设 <script type="math/tex">X_1,\ldots,X_n</script> 独立同分布，公共分布函数为 <script type="math/tex">F</script>，记</p>
+<script type="math/tex; mode=display">M_n=\max(X_1,\ldots,X_n),\qquad m_n=\min(X_1,\ldots,X_n).</script>
+<p>对最大值，把“最大值不超过 <script type="math/tex">x</script>”改写为所有样本都不超过 <script type="math/tex">x</script>：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+F_{M_n}(x)
+&=P(M_n\le x)\\
+&=P(X_1\le x,\ldots,X_n\le x)\\
+&=\prod_{i=1}^nP(X_i\le x)\quad(\text{独立})\\
+&=\prod_{i=1}^nF(x)=F(x)^n.
+\end{aligned}</script>
+<p>对最小值，处理“最小值大于 <script type="math/tex">x</script> 取反”更简单，它等价于所有样本都大于 <script type="math/tex">x</script> 取反：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+F_{m_n}(x)
+&=P(m_n\le x)\\
+&=1-P(m_n>x)\\
+&=1-P(X_1>x,\ldots,X_n>x)\\
+&=1-\prod_{i=1}^nP(X_i>x)\\
+&=1-\prod_{i=1}^n[1-F(x)]\\
+&=1-[1-F(x)]^n.
+\end{aligned}</script>
+<p>若 <script type="math/tex">F</script> 可导且密度为 <script type="math/tex">f</script>，对上面两个分布函数分别求导：</p>
+<script type="math/tex; mode=display">f_{M_n}(x)=\frac{\mathrm d}{\mathrm dx}F(x)^n=nF(x)^{n-1}f(x).</script>
+<script type="math/tex; mode=display">f_{m_n}(x)=\frac{\mathrm d}{\mathrm dx}\{1-[1-F(x)]^n\}=n[1-F(x)]^{n-1}f(x).</script>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">不是样本最小值的概率</span></div>
+<div class="callout-content"><p>设随机变量 <script type="math/tex">X_1,X_2,\ldots,X_n</script> 独立同分布，且有相同的概率密度。求：</p>
+<script type="math/tex; mode=display">P\left\{X_n>\min(X_1,X_2,\ldots,X_{n-1})\right\}.</script>
+<p>因为随机变量连续，同一最小值出现并列的概率为 <script type="math/tex">0</script>。<script type="math/tex">X_n</script> 成为 <script type="math/tex">n</script> 个样本中最小值的概率与每个 <script type="math/tex">X_i</script> 相同，故：</p>
+<script type="math/tex; mode=display">P\left\{X_n=\min(X_1,X_2,\ldots,X_n)\right\}=\frac1n.</script>
+<p>所求事件是上述事件的补事件，所以：</p>
+<script type="math/tex; mode=display">P\left\{X_n>\min(X_1,X_2,\ldots,X_{n-1})\right\}
+=1-\frac1n=\frac{n-1}{n}.</script>
+</div>
+</div>
+<h3 id="一些在独立同分布下可加的分布"><a href="#一些在独立同分布下可加的分布" class="headerlink" title="一些在独立同分布下可加的分布"></a>一些在独立同分布下可加的分布</h3><ul>
+<li>若 <script type="math/tex">X\sim B(m,p)</script>、<script type="math/tex">Y\sim B(n,p)</script> 且独立，则 <script type="math/tex">X+Y\sim B(m+n,p)</script>。</li>
+<li>若 <script type="math/tex">X\sim P(\lambda_1)</script>、<script type="math/tex">Y\sim P(\lambda_2)</script> 且独立，则 <script type="math/tex">X+Y\sim P(\lambda_1+\lambda_2)</script>。</li>
+<li>若 <script type="math/tex">X\sim N(\mu_1,\sigma_1^2)</script>、<script type="math/tex">Y\sim N(\mu_2,\sigma_2^2)</script> 且独立，则 <script type="math/tex">X+Y\sim N(\mu_1+\mu_2,\sigma_1^2+\sigma_2^2)</script>；若 <script type="math/tex">U\sim\chi^2(m)</script>、<script type="math/tex">V\sim\chi^2(n)</script> 且独立，则 <script type="math/tex">U+V\sim\chi^2(m+n)</script>。</li>
+</ul>
+<h1 id="分布的数字特征"><a href="#分布的数字特征" class="headerlink" title="分布的数字特征"></a>分布的数字特征</h1><h2 id="期望"><a href="#期望" class="headerlink" title="期望"></a>期望</h2><blockquote>
+<p>前提条件：积分&#x2F;级数和存在。</p>
+</blockquote>
+<p>定义期望<script type="math/tex">\operatorname{E}(X)=\displaystyle\sum_{k=0}^{\infty}x_kP\{X=x_k\}</script>或<script type="math/tex">\operatorname{E}(X)=\int_{-\infty}^{+\infty}xf_X(x)\,\mathrm dx.</script> 显然期望的求解涉及<span class="wikilink-unresolved" title="Unresolved: 无穷级数的求和">无穷级数的求和</span>或<span class="wikilink-unresolved" title="Unresolved: 反常积分">反常积分</span>（但实际上<script type="math/tex">f_{X}(x)</script>非0区域可能有限，此时退化为普通的定积分）。</p>
+<p>性质：</p>
+<ol>
+<li><strong>在知道<script type="math/tex">X</script>的分布的情况下，若<script type="math/tex">Y=G(X)</script> ，则求 <script type="math/tex">EY</script> 不必先求 <script type="math/tex">Y</script> 的分布。</strong> <script type="math/tex">\operatorname{E}[G(X)]=\displaystyle\sum_{k=0}^{\infty}G(x_k)P\{X=x_k\}</script>或<script type="math/tex">\operatorname{E}[G(X)]=\int_{-\infty}^{+\infty}G(x)f_X(x)\,\mathrm dx.</script></li>
+<li><script type="math/tex">\operatorname{E}A=A</script> <script type="math/tex">A</script>为常数。</li>
+<li>期望具有线性性，不要求随机变量独立：<script type="math/tex">\operatorname{E}\left( \sum_{i=1}^{n}a_{i}X_{i} +a_{0}\right)=\sum_{i=1}^{n}a_{i}E(X_{i})+a_{0}</script></li>
+</ol>
+<details class="callout callout-example">
+<summary class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">最大值与最小值的距离的期望</span></summary>
+<div class="callout-content"><p>条件<a href="#极值统计量的分布" class="wikilink">同上</a>，则最大值与最小值的距离的期望即:</p>
+<script type="math/tex; mode=display">E(M-m)=EM-Em</script>
+</div>
+</details>
+<ol start="4">
+<li>若<script type="math/tex">X,Y</script>独立，<script type="math/tex">\operatorname{E}(XY)=\operatorname{E}X\operatorname{E}Y</script></li>
+</ol>
+<h2 id="条件期望"><a href="#条件期望" class="headerlink" title="条件期望"></a>条件期望</h2><p>若 <script type="math/tex">Y</script> 取离散值 <script type="math/tex">y_j</script>，则对每个 <script type="math/tex">y_j</script>：</p>
+<script type="math/tex; mode=display">E(X\mid Y=y_j)=\sum_i x_iP(X=x_i\mid Y=y_j).</script>
+<p>若 <script type="math/tex">X,Y</script> 有联合密度，则：</p>
+<script type="math/tex; mode=display">E(X\mid Y=y)=\int_{-\infty}^{+\infty}x f_{X\mid Y=y}(x)\,\mathrm dx,
+\qquad
+f_{X\mid Y=y}(x)=\frac{f_{X,Y}(x,y)}{f_Y(y)}.</script>
+<p>条件期望 <script type="math/tex">E(X\mid Y=y)</script> 是关于 <script type="math/tex">y</script> 的函数。</p>
+<p>先求出这个函数，再对 <script type="math/tex">Y</script> 求期望，就得到全期望公式：</p>
+<script type="math/tex; mode=display">E(X)=\sum_jE(X\mid Y=y_j)P(Y=y_j)=E(E(X\mid Y)),</script>
+<p>连续型时改为：</p>
+<script type="math/tex; mode=display">E(X)=\int_{-\infty}^{+\infty}E(X\mid Y=y)f_Y(y)\,\mathrm dy=E(E(X\mid Y)).</script>
+<h2 id="方差与标准差"><a href="#方差与标准差" class="headerlink" title="方差与标准差"></a>方差与标准差</h2><p>方差<script type="math/tex">\operatorname{D}(X)=\operatorname{E}\bigl[(X-\operatorname{E}(X))^2\bigr]=\operatorname{E}(X^2)-[\operatorname{E}(X)]^2,</script></p>
+<p>标准差<script type="math/tex">\sigma_X=\sqrt{\operatorname{D}(X)}.</script></p>
+<p>方差性质：</p>
+<ol>
+<li><script type="math/tex">\operatorname{D}X\geqslant{0}</script> 当仅当<script type="math/tex">X</script>几乎处处为常数时即<script type="math/tex">P\{X=A\}=1</script>取等，<script type="math/tex">A</script>为常数</li>
+</ol>
+<details class="callout callout-info">
+<summary class="callout-title"><i class="fa-solid fa-circle-info callout-icon"></i><span class="callout-title-text">为什么是“几乎处处”而不是严格取等</span></summary>
+<div class="callout-content"><p>因为根据几何概型，一条线上测度为 0 的点集不满足是不改变 <script type="math/tex">P\{X=A\}=1</script> 的。</p>
+</div>
+</details>
+<ol start="2">
+<li><script type="math/tex">\operatorname{D}(aX+b)=a^2\operatorname{D}(X),</script></li>
+<li><script type="math/tex">\operatorname{D}\left( \sum_{i=1}^{n}a_{i}X_{i} +a_{0}\right)=\sum_{i=1}^{n}a_{i}^{2}\operatorname{D}(X_{i})+2\sum_{1\leqslant i<j \leqslant n} a_{i}a_{j}\operatorname{Cov}(X_{i},X_{j}).</script></li>
+<li>若<script type="math/tex">X,Y</script>独立，<script type="math/tex">\operatorname{D}(XY)=\operatorname{D}X\operatorname{D}Y+\operatorname{D}X\operatorname{E}^{2}Y+\operatorname{D}Y\operatorname{E}^{2}X</script></li>
+</ol>
+<h2 id="一维分布的期望与方差总表"><a href="#一维分布的期望与方差总表" class="headerlink" title="一维分布的期望与方差总表"></a>一维分布的期望与方差总表</h2><p>记 <script type="math/tex">q=1-p</script> 。</p>
+<table>
+<thead>
+<tr>
+<th>分布</th>
+<th align="right"><script type="math/tex">E(X)</script></th>
+<th align="right"><script type="math/tex">D(X)</script></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><script type="math/tex">B(n,p)</script></td>
+<td align="right"><script type="math/tex">np</script></td>
+<td align="right"><script type="math/tex">npq</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">G(p)</script></td>
+<td align="right"><script type="math/tex">1/p</script></td>
+<td align="right"><script type="math/tex">q/p^2</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">NB(r,p)</script></td>
+<td align="right"><script type="math/tex">r/p</script></td>
+<td align="right"><script type="math/tex">rq/p^2</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">P(\lambda)</script></td>
+<td align="right"><script type="math/tex">\lambda</script></td>
+<td align="right"><script type="math/tex">\lambda</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">U(a,b)</script></td>
+<td align="right"><script type="math/tex">(a+b)/2</script></td>
+<td align="right"><script type="math/tex">(b-a)^2/12</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">E(\lambda)</script></td>
+<td align="right"><script type="math/tex">1/\lambda</script></td>
+<td align="right"><script type="math/tex">1/\lambda^2</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">N(\mu,\sigma^2)</script></td>
+<td align="right"><script type="math/tex">\mu</script></td>
+<td align="right"><script type="math/tex">\sigma^2</script></td>
+</tr>
+</tbody></table>
+<h2 id="协方差与线性相关系数"><a href="#协方差与线性相关系数" class="headerlink" title="协方差与线性相关系数"></a>协方差与线性相关系数</h2><script type="math/tex; mode=display">\operatorname{Cov}(X,Y)=E[(X-E(X))(Y-E(Y))]=E(XY)-E(X)E(Y).</script>
+<script type="math/tex; mode=display">\rho_{XY}=\frac{\operatorname{Cov}(X,Y)}{\sqrt{\operatorname{D}(X)\operatorname{D}(Y)}}.</script>
+<p>性质：</p>
+<ol>
+<li>协方差对每个变量都具有可加性：<script type="math/tex">\operatorname{Cov}(X_1+X_2,X_3)=\operatorname{Cov}(X_1,X_3)+\operatorname{Cov}(X_2,X_3)</script>。</li>
+<li>协方差对常数倍具有齐次性：<script type="math/tex">\operatorname{Cov}(aX,bY)=ab\operatorname{Cov}(X,Y)</script>。</li>
+<li>协方差具有对称性，且 <script type="math/tex">\operatorname{Cov}(X,Y)=\operatorname{Cov}(Y,X)</script>、<script type="math/tex">\operatorname{Cov}(X,X)=\operatorname{D}(X)</script>。</li>
+<li><script type="math/tex">-1\le\rho_{XY}\le1</script>。当 <script type="math/tex">\rho_{XY}=1</script> 时，存在 <script type="math/tex">a>0,b</script> 使 <script type="math/tex">Y=aX+b</script> 几乎处处成立，表示完全正线性关系；当 <script type="math/tex">\rho_{XY}=-1</script> 时，存在 <script type="math/tex">a<0,b</script> 使 <script type="math/tex">Y=aX+b</script> 几乎处处成立，表示完全负线性关系。</li>
+</ol>
+<h2 id="独立与线性相关"><a href="#独立与线性相关" class="headerlink" title="独立与线性相关"></a>独立与线性相关</h2><ol>
+<li>若 <script type="math/tex">F_{X,Y}=F_XF_Y</script>（离散型为 <script type="math/tex">p_{ij}=p_{i\cdot}p_{\cdot j}</script>；有密度时也可以为 <script type="math/tex">f_{X,Y}=f_Xf_Y</script>）此时称 <script type="math/tex">X,Y</script> 独立否则 <script type="math/tex">X,Y</script> 不独立。</li>
+<li>分别对两个独立随机变量<script type="math/tex">X,Y</script>做函数变换<script type="math/tex">f(X),g(Y)</script>，<script type="math/tex">f(X),g(Y)</script>仍然保持独立。</li>
+<li>若<script type="math/tex">\rho_{XY}</script>为 0 则称<script type="math/tex">X,Y</script> 线性无关否则<script type="math/tex">X,Y</script>线性相关。显然 <script type="math/tex">X,Y</script> 线性无关<script type="math/tex">\iff\operatorname{Cov}(X,Y)=0.</script></li>
+<li><strong>独立一定线性无关，但线性无关不一定独立</strong>。</li>
+<li>在二维正态分布中，独立就是线性无关。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/09/05/Distribution-And-Numerical-Characteristics/">https://eliano64.github.io/2026/09/05/Distribution-And-Numerical-Characteristics/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/05/Statistics/" title="Statistics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Statistics</div></div><div class="info-2"><div class="info-item-1">概率极限定理切比雪夫不等式对任意 \varepsilon>0， P\{|X-\operatorname{E}(X)|0。给定观测值(x_{1},\ldots,x_{n})后，联合似然函数为： L(\theta)=\prod_{i=1}^{n}\theta^2x_i e^{-\theta x_i} =\theta^{2n}\left(\prod_{i=1}^{n}x_i\right)e^{-\theta\sum_{i=1}^{n}x_i}. 取对数得到： \ell(\theta)=\ln L(\theta)=2n\ln\theta+\sum_{i=1}^{n}\ln x_i-\theta\sum_{i=1}^{n}x_i, \quad\theta >0 求导，并令导函数大于 0 与导函数小于 0，得到让对数似然达到极大值的值为 \displaystyle\hat\theta=\frac{2n}{\sum_{i=1}^{n}x_i}。即： \hat\theta=\frac{2n}{\sum_{i=1}^{n}x_i}=\frac{2}{\bar x}.   若 u(\theta)...</div></div></div></a><a class="pagination-related" href="/2026/09/06/Linear-Space/" title="Linear Space"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Linear Space</div></div><div class="info-2"><div class="info-item-1">基与坐标基在线性空间中，向量相加、数乘后仍在该空间内，并满足通常的线性运算规律。这里讨论有限维实线性空间。 一组基 \mathbf{e}_1,\ldots,\mathbf{e}_n 既线性无关，又能表示空间中的每个向量。因此每个向量 \mathbf{v} 都有唯一表示： \mathbf{v}=x_1\mathbf{e}_1+\cdots+x_n\mathbf{e}_n =\mathbf{E}\mathbf{x},\qquad \mathbf{E}=(\mathbf{e}_1,\ldots,\mathbf{e}_n). \mathbf{x}=(x_1,\ldots,x_n)^\top 是坐标向量，x_i 是标量。\mathbf{v} 是向量，\mathbf{x} 是它在基 \mathbf{E} 下的坐标。换基不改变向量，仅改变其坐标。 \mathbf{E} 表示一组有序的基；在 \mathbb{R}^n 中，它也可以直接看成基向量按列组成的可逆矩阵。 过渡矩阵设旧基为 \mathbf{E}，新基为...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%8F%8A%E5%88%86%E5%B8%83"><span class="toc-text">一维随机变量及分布</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E7%A6%BB%E6%95%A3%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F"><span class="toc-text">一维离散型随机变量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E4%B8%80%E7%BB%B4%E7%A6%BB%E6%95%A3%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%88%86%E5%B8%83"><span class="toc-text">常见一维离散型随机变量分布</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E7%A6%BB%E6%95%A3%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%88%86%E5%B8%83%E7%9A%84%E8%BF%91%E4%BC%BC"><span class="toc-text">一维离散型随机变量分布的近似</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E8%BF%9E%E7%BB%AD%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%88%86%E5%B8%83"><span class="toc-text">一维连续型随机变量分布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%87%BD%E6%95%B0%E4%B8%8E%E6%A6%82%E7%8E%87%E5%AF%86%E5%BA%A6"><span class="toc-text">分布函数与概率密度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E4%B8%80%E7%BB%B4%E8%BF%9E%E7%BB%AD%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%88%86%E5%B8%83"><span class="toc-text">常见一维连续型随机变量分布</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9D%87%E5%8C%80%E5%88%86%E5%B8%83"><span class="toc-text">均匀分布</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%87%E6%95%B0%E5%88%86%E5%B8%83"><span class="toc-text">指数分布</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A3%E6%80%81%E5%88%86%E5%B8%83"><span class="toc-text">正态分布</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8FX%E7%9A%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%88%86%E5%B8%83"><span class="toc-text">一维随机变量X的函数的分布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#X-%E4%B8%BA%E7%A6%BB%E6%95%A3%E5%9E%8B"><span class="toc-text">X 为离散型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#X-%E4%B8%BA%E8%BF%9E%E7%BB%AD%E5%9E%8B%E4%B8%94Y-G-X-%E4%BB%8D%E8%BF%9E%E7%BB%AD"><span class="toc-text">X 为连续型且Y&#x3D;G(X)仍连续</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A6%82%E7%8E%87%E7%A7%AF%E5%88%86%E5%8F%98%E6%8D%A2"><span class="toc-text">概率积分变换</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#X-%E4%B8%BA%E8%BF%9E%E7%BB%AD%E5%9E%8B%E4%BD%86Y-G-X-%E4%B8%8D%E8%BF%9E%E7%BB%AD"><span class="toc-text">X 为连续型但Y&#x3D;G(X) 不连续</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%8F%8A%E5%88%86%E5%B8%83"><span class="toc-text">二维随机变量及分布</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E7%A6%BB%E6%95%A3%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F"><span class="toc-text">二维离散型随机变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E8%BF%9E%E7%BB%AD%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%88%86%E5%B8%83"><span class="toc-text">二维连续型随机变量分布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E4%BA%8C%E7%BB%B4%E5%9E%8B%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E5%88%86%E5%B8%83"><span class="toc-text">常见二维型随机变量分布</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E5%9D%87%E5%8C%80%E5%88%86%E5%B8%83"><span class="toc-text">二维均匀分布</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E6%AD%A3%E6%80%81%E5%88%86%E5%B8%83"><span class="toc-text">二维正态分布</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F-X-Y-%E7%9A%84%E5%87%BD%E6%95%B0%E7%9A%84%E5%88%86%E5%B8%83"><span class="toc-text">二维随机变量(X,Y)的函数的分布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#X-Y-%E5%9D%87%E4%B8%BA%E7%A6%BB%E6%95%A3%E5%9E%8B"><span class="toc-text">(X,Y) 均为离散型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#X-%E8%BF%9E%E7%BB%AD%E3%80%81Y-%E7%A6%BB%E6%95%A3%E6%97%B6%E7%9A%84-Z-G-X-Y"><span class="toc-text">X 连续、Y 离散时的 Z&#x3D;G(X,Y)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Z-G-X-Y-%E4%B8%94-X-Y-%E5%9D%87%E4%B8%BA%E8%BF%9E%E7%BB%AD%E5%9E%8B"><span class="toc-text">Z&#x3D;G(X,Y) 且(X,Y) 均为连续型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#X-Y-%E5%9D%87%E4%B8%BA%E8%BF%9E%E7%BB%AD%E5%9E%8B%E4%B8%94U-G-X-Y-V-H-X-Y"><span class="toc-text">(X,Y) 均为连续型且U&#x3D;G(X,Y),V&#x3D;H(X,Y)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E5%8F%98%E9%87%8F%E7%8B%AC%E7%AB%8B%E5%90%8C%E5%88%86%E5%B8%83"><span class="toc-text">随机变量独立同分布</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%81%E5%80%BC%E7%BB%9F%E8%AE%A1%E9%87%8F%E7%9A%84%E5%88%86%E5%B8%83"><span class="toc-text">极值统计量的分布</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%9C%A8%E7%8B%AC%E7%AB%8B%E5%90%8C%E5%88%86%E5%B8%83%E4%B8%8B%E5%8F%AF%E5%8A%A0%E7%9A%84%E5%88%86%E5%B8%83"><span class="toc-text">一些在独立同分布下可加的分布</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E7%9A%84%E6%95%B0%E5%AD%97%E7%89%B9%E5%BE%81"><span class="toc-text">分布的数字特征</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%9F%E6%9C%9B"><span class="toc-text">期望</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E6%9C%9F%E6%9C%9B"><span class="toc-text">条件期望</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%B7%AE%E4%B8%8E%E6%A0%87%E5%87%86%E5%B7%AE"><span class="toc-text">方差与标准差</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E5%88%86%E5%B8%83%E7%9A%84%E6%9C%9F%E6%9C%9B%E4%B8%8E%E6%96%B9%E5%B7%AE%E6%80%BB%E8%A1%A8"><span class="toc-text">一维分布的期望与方差总表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E6%96%B9%E5%B7%AE%E4%B8%8E%E7%BA%BF%E6%80%A7%E7%9B%B8%E5%85%B3%E7%B3%BB%E6%95%B0"><span class="toc-text">协方差与线性相关系数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8B%AC%E7%AB%8B%E4%B8%8E%E7%BA%BF%E6%80%A7%E7%9B%B8%E5%85%B3"><span class="toc-text">独立与线性相关</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:37:28.000Z" title="发表于 2026-09-07 18:37:28">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/Linear-Space/" title="Linear Space">Linear Space</a><time datetime="2026-09-06T11:53:00.000Z" title="发表于 2026-09-06 19:53:00">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Distribution-And-Numerical-Characteristics/" title="Distribution And Numerical Characteristics">Distribution And Numerical Characteristics</a><time datetime="2026-09-05T08:28:30.000Z" title="发表于 2026-09-05 16:28:30">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Statistics/" title="Statistics">Statistics</a><time datetime="2026-09-05T08:25:12.000Z" title="发表于 2026-09-05 16:25:12">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Probability/" title="Probability">Probability</a><time datetime="2026-09-05T08:24:47.000Z" title="发表于 2026-09-05 16:24:47">2026-09-05</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/12/Best-Time-To-Buy-And-Sell-Stock/" title="Best Time To Buy And Sell Stock">Best Time To Buy And Sell Stock</a><time datetime="2026-09-08T09:17:31.608Z" title="更新于 2026-09-08 17:17:31">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/12/Binary-Constraint-Matching/" title="Binary Constraint Matching">Binary Constraint Matching</a><time datetime="2026-09-08T09:17:23.435Z" title="更新于 2026-09-08 17:17:23">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/01/Closest-Equal-Element-Queries/" title="Closest Equal Element Queries">Closest Equal Element Queries</a><time datetime="2026-09-08T09:17:16.159Z" title="更新于 2026-09-08 17:17:16">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots">Matrix Square Roots</a><time datetime="2026-09-07T12:09:10.842Z" title="更新于 2026-09-07 20:09:10">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:57:54.997Z" title="更新于 2026-09-07 18:57:54">2026-09-07</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

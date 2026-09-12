@@ -1,0 +1,437 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Rank | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="向量组的秩向量n 维实向量由 n 个有序实数组成，通常写成列向量 \mathbf{\alpha}&#x3D;(a_1,\ldots,a_n)^\top。同维向量按分量相加、数乘。 若 \mathbf{\beta}&#x3D;c_1\mathbf{\alpha}_1+\cdots+c_s\mathbf{\alpha}_s，则称 \mathbf{\beta} 可由向量组 \mathbf{\alpha}_1,\ldots,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rank">
+<meta property="og:url" content="https://eliano64.github.io/2026/09/03/Rank/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="向量组的秩向量n 维实向量由 n 个有序实数组成，通常写成列向量 \mathbf{\alpha}&#x3D;(a_1,\ldots,a_n)^\top。同维向量按分量相加、数乘。 若 \mathbf{\beta}&#x3D;c_1\mathbf{\alpha}_1+\cdots+c_s\mathbf{\alpha}_s，则称 \mathbf{\beta} 可由向量组 \mathbf{\alpha}_1,\ldots,">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-09-03T02:42:01.000Z">
+<meta property="article:modified_time" content="2026-09-07T10:25:38.782Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="Matrices">
+<meta property="article:tag" content="Vectors">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Rank",
+  "url": "https://eliano64.github.io/2026/09/03/Rank/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-09-03T02:42:01.000Z",
+  "dateModified": "2026-09-07T10:25:38.782Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/09/03/Rank/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Rank',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Rank</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Rank</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-03T02:42:01.000Z" title="发表于 2026-09-03 10:42:01">2026-09-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-07T10:25:38.782Z" title="更新于 2026-09-07 18:25:38">2026-09-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linear-Algebra/">Linear Algebra</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">848</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="向量组的秩"><a href="#向量组的秩" class="headerlink" title="向量组的秩"></a>向量组的秩</h1><h2 id="向量"><a href="#向量" class="headerlink" title="向量"></a>向量</h2><p><script type="math/tex">n</script> 维实向量由 <script type="math/tex">n</script> 个有序实数组成，通常写成列向量 <script type="math/tex">\mathbf{\alpha}=(a_1,\ldots,a_n)^\top</script>。同维向量按分量相加、数乘。</p>
+<p>若 <script type="math/tex">\mathbf{\beta}=c_1\mathbf{\alpha}_1+\cdots+c_s\mathbf{\alpha}_s</script>，则称 <script type="math/tex">\mathbf{\beta}</script> 可由向量组 <script type="math/tex">\mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_s</script> 线性表示。</p>
+<h2 id="向量组的秩-1"><a href="#向量组的秩-1" class="headerlink" title="向量组的秩"></a>向量组的秩</h2><p>向量组中，线性无关且能线性表示该组全部向量的部分组，称为<strong>极大线性无关组</strong>。各极大线性无关组所含向量个数相同，这个数称为向量组的<strong>秩</strong>，也就是该组中线性无关向量的最大个数。全零向量组的秩为 <script type="math/tex">0</script>。</p>
+<h2 id="向量组线性相关"><a href="#向量组线性相关" class="headerlink" title="向量组线性相关"></a>向量组线性相关</h2><p>当 <script type="math/tex">\mathbf{A}</script> 是由 <script type="math/tex">n</script> 个 <script type="math/tex">n</script> 维列向量组成的方阵时，列向量线性相关的等价条件为 <script type="math/tex">\det\mathbf{A}=0</script>，也即<script type="math/tex">r(\mathbf{A})<n</script>。</p>
+<h2 id="向量组线性无关"><a href="#向量组线性无关" class="headerlink" title="向量组线性无关"></a>向量组线性无关</h2><p><script type="math/tex">n</script> 个列向量线性无关，等价于 <script type="math/tex">r(\mathbf{A})=n</script> 。</p>
+<p>证明 <script type="math/tex">\mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n</script> 线性无关，可以从定义出发：设 <script type="math/tex">k_1\mathbf{\alpha}_1+\cdots+k_n\mathbf{\alpha}_n=\mathbf{0}</script>，利用题设证明所有系数均为零。</p>
+<h3 id="已知-mathbf-A-mathbf-alpha-i-mathbf-alpha-i-1-i"><a href="#已知-mathbf-A-mathbf-alpha-i-mathbf-alpha-i-1-i" class="headerlink" title="已知 \mathbf{A}\mathbf{\alpha}_i=\mathbf{\alpha}_{i+1}\ (i"></a>已知 <script type="math/tex">\mathbf{A}\mathbf{\alpha}_i=\mathbf{\alpha}_{i+1}\ (i<n)</script>，<script type="math/tex">\mathbf{A}\mathbf{\alpha}_n=\mathbf{0}</script>，且 <script type="math/tex">\mathbf{\alpha}_n\ne\mathbf{0}</script>，证明 <script type="math/tex">\mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n</script> 线性无关</h3><p>在所设线性关系两边左乘 <script type="math/tex">\mathbf{A}^{n-1}</script>，只有第一项可能非零，故 <script type="math/tex">k_1\mathbf{\alpha}_n=\mathbf{0}</script>，得到 <script type="math/tex">k_1=0</script>。消去第一项后，再左乘 <script type="math/tex">\mathbf{A}^{n-2}</script>，得到 <script type="math/tex">k_2=0</script>；依次进行，所有系数均为零。</p>
+<h3 id="已知-mathbf-alpha-1-ldots-mathbf-alpha-n-线性无关，记-mathbf-A-mathbf-alpha-1-ldots-mathbf-alpha-n-，且-mathbf-beta-i-mathbf-A-mathbf-b-i。则-mathbf-beta-1-ldots-mathbf-beta-n-线性无关的充要条件是-mathbf-b-1-ldots-mathbf-b-n-线性无关。"><a href="#已知-mathbf-alpha-1-ldots-mathbf-alpha-n-线性无关，记-mathbf-A-mathbf-alpha-1-ldots-mathbf-alpha-n-，且-mathbf-beta-i-mathbf-A-mathbf-b-i。则-mathbf-beta-1-ldots-mathbf-beta-n-线性无关的充要条件是-mathbf-b-1-ldots-mathbf-b-n-线性无关。" class="headerlink" title="已知 \mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n 线性无关，记 \mathbf{A}=(\mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n)，且 \mathbf{\beta}_i=\mathbf{A}\mathbf{b}_i。则 \mathbf{\beta}_1,\ldots,\mathbf{\beta}_n 线性无关的充要条件是 \mathbf{b}_1,\ldots,\mathbf{b}_n 线性无关。"></a>已知 <script type="math/tex">\mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n</script> 线性无关，记 <script type="math/tex">\mathbf{A}=(\mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n)</script>，且 <script type="math/tex">\mathbf{\beta}_i=\mathbf{A}\mathbf{b}_i</script>。则 <script type="math/tex">\mathbf{\beta}_1,\ldots,\mathbf{\beta}_n</script> 线性无关的充要条件是 <script type="math/tex">\mathbf{b}_1,\ldots,\mathbf{b}_n</script> 线性无关。</h3><p>设 <script type="math/tex">b_{ij}</script> 为 <script type="math/tex">\mathbf{b}_i</script> 的第 <script type="math/tex">j</script> 个分量。由 <script type="math/tex">\mathbf{\beta}_i=\sum_{j=1}^n b_{ij}\mathbf{\alpha}_j</script>，得：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+\sum_{i=1}^n k_i\mathbf{\beta}_i=\mathbf{0}
+&\iff \mathbf{A}\left(\sum_{i=1}^n k_i\mathbf{b}_i\right)=\mathbf{0}\\
+&\iff \sum_{j=1}^n\left(\sum_{i=1}^n k_i b_{ij}\right)\mathbf{\alpha}_j=\mathbf{0}\\
+&\iff \sum_{i=1}^n k_i b_{ij}=0\quad(j=1,\ldots,n)\\
+&\iff \sum_{i=1}^n k_i\mathbf{b}_i=\mathbf{0}.
+\end{aligned}</script>
+<h2 id="向量组的关系"><a href="#向量组的关系" class="headerlink" title="向量组的关系"></a>向量组的关系</h2><p>设 <script type="math/tex">\mathbf{A},\mathbf{B}</script> 分别由两组向量按列组成，两组向量的分量个数相同。</p>
+<ol>
+<li><strong>线性表示。</strong> <script type="math/tex">\mathbf{A}</script> 的列向量组能线性表示 <script type="math/tex">\mathbf{B}</script> 的列向量组，当且仅当 <script type="math/tex">r([\mathbf{A}\ \mathbf{B}])=r(\mathbf{A})</script>。</li>
+<li><strong>向量组等价。</strong> 两组向量可以相互表示，等价于 <script type="math/tex">r(\mathbf{A})=r(\mathbf{B})=r([\mathbf{A}\ \mathbf{B}])</script>。</li>
+</ol>
+<h1 id="矩阵的秩"><a href="#矩阵的秩" class="headerlink" title="矩阵的秩"></a>矩阵的秩</h1><p><script type="math/tex">r(\mathbf{A})=r</script> 表示 <script type="math/tex">\mathbf{A}</script> 的列向量组的极大无关组含 <script type="math/tex">r</script> 个向量，其余列均可由这组向量线性表示。矩阵的行秩与列秩相等。</p>
+<p>若<script type="math/tex">\mathbf{A}\neq \mathbf{O}</script>,则一定有<script type="math/tex">r(\mathbf{A})>0</script></p>
+<h2 id="矩阵等价"><a href="#矩阵等价" class="headerlink" title="矩阵等价"></a>矩阵等价</h2><p>同型矩阵 <script type="math/tex">\mathbf{A},\mathbf{B}</script> 等价，是指一者可经有限次初等行变换和列变换化为另一者，充要条件为 <script type="math/tex">r(\mathbf{A})=r(\mathbf{B})</script>。矩阵等价不蕴含列向量组等价。</p>
+<h2 id="乘积的秩"><a href="#乘积的秩" class="headerlink" title="乘积的秩"></a>乘积的秩</h2><p><script type="math/tex">\mathbf{A}\mathbf{B}</script> 的每一列都是 <script type="math/tex">\mathbf{A}</script> 的列向量的线性组合，每一行都是 <script type="math/tex">\mathbf{B}</script> 的行向量的线性组合，因此：</p>
+<script type="math/tex; mode=display">r(\mathbf{A}\mathbf{B})\le\min\{r(\mathbf{A}),r(\mathbf{B})\}.</script>
+<ol>
+<li><script type="math/tex">r(\mathbf{A}\mathbf{B})=r(\mathbf{A})</script>，当且仅当 <script type="math/tex">\mathbf{A}\mathbf{B}</script> 与 <script type="math/tex">\mathbf{A}</script> 的列向量组等价。特别地，<script type="math/tex">\mathbf{B}</script> 满行秩时成立。</li>
+<li><script type="math/tex">r(\mathbf{A}\mathbf{B})=r(\mathbf{B})</script>，当且仅当 <script type="math/tex">\mathbf{B}</script> 的列向量能表示的向量中，满足 <script type="math/tex">\mathbf{A}\mathbf{y}=\mathbf{0}</script> 的只有 <script type="math/tex">\mathbf{y}=\mathbf{0}</script>。此时 <script type="math/tex">\mathbf{A}\mathbf{B}\mathbf{x}=\mathbf{0}</script> 必能推出 <script type="math/tex">\mathbf{B}\mathbf{x}=\mathbf{0}</script>，即 <script type="math/tex">\mathbf{A}\mathbf{B}\mathbf{x}=\mathbf{0}</script> 与 <script type="math/tex">\mathbf{B}\mathbf{x}=\mathbf{0}</script> 同解。特别地，<script type="math/tex">\mathbf{A}</script> 满列秩时成立。</li>
+</ol>
+<p><script type="math/tex">r(\mathbf{A})\le r(\mathbf{B})</script> 时，乘积秩达到上界的条件为第一条；<script type="math/tex">r(\mathbf{B})\le r(\mathbf{A})</script> 时为第二条。特别地，左乘或右乘可逆矩阵不改变秩。</p>
+<p>特别地，若<script type="math/tex">\mathbf{AB=O}</script>，则<script type="math/tex; mode=display">r(\mathbf{A})+r(\mathbf{B})\leqslant n</script><br>这是因为 <script type="math/tex">\mathbf{B}</script> 的列向量在齐次方程 <script type="math/tex">\mathbf{Ax=0}</script> 的<a href="#解空间" class="wikilink">解空间</a>里。</p>
+<h2 id="拼接矩阵的秩"><a href="#拼接矩阵的秩" class="headerlink" title="拼接矩阵的秩"></a>拼接矩阵的秩</h2><p>设 <script type="math/tex">\mathbf{A},\mathbf{B}</script> 行数相同，则拼接矩阵 <script type="math/tex">[\mathbf{A}\ \mathbf{B}]</script> 的秩满足：</p>
+<script type="math/tex; mode=display">\max\{r(\mathbf{A}),r(\mathbf{B})\}
+\le r([\mathbf{A}\ \mathbf{B}])
+\le r(\mathbf{A})+r(\mathbf{B}).</script>
+<ol>
+<li><strong>下界：</strong> <script type="math/tex">\mathbf{A},\mathbf{B}</script> 均为 <script type="math/tex">[\mathbf{A}\ \mathbf{B}]</script> 的子矩阵，故拼接矩阵的秩不小于二者的秩。若 <script type="math/tex">r(\mathbf{A})\ge r(\mathbf{B})</script>，下界取等当且仅当 <script type="math/tex">\mathbf{A}</script> 的列向量能表示 <script type="math/tex">\mathbf{B}</script> 的所有列；反之交换两者。</li>
+<li><strong>上界：</strong> 两组极大无关组的并集能表示全部列。上界取等当且仅当两组列向量能共同表示的向量只有零向量；若存在两组向量均能表示的非零向量，两种表示式相减即得到两个极大无关组的并集的非平凡线性关系。</li>
+</ol>
+<p>纵向拼接时，对行向量作同样判断。对分块矩阵的两个块行应用上述结论，得：</p>
+<script type="math/tex; mode=display">\mathbf{M}=\begin{pmatrix}\mathbf{A}&\mathbf{B}\\\mathbf{C}&\mathbf{D}\end{pmatrix},</script>
+<script type="math/tex; mode=display">\max\{r([\mathbf{A}\ \mathbf{B}]),r([\mathbf{C}\ \mathbf{D}])\}
+\le r(\mathbf{M})
+\le r([\mathbf{A}\ \mathbf{B}])+r([\mathbf{C}\ \mathbf{D}]).</script>
+<h2 id="和的秩"><a href="#和的秩" class="headerlink" title="和的秩"></a>和的秩</h2><p>设 <script type="math/tex">\mathbf{A},\mathbf{B}</script> 同型。<script type="math/tex">\mathbf{A}+\mathbf{B}</script> 的每一列都能由 <script type="math/tex">[\mathbf{A}\ \mathbf{B}]</script> 的列向量表示，故：</p>
+<script type="math/tex; mode=display">r(\mathbf{A}+\mathbf{B})
+\le r([\mathbf{A}\ \mathbf{B}])
+\le r(\mathbf{A})+r(\mathbf{B}).</script>
+<p>再由 <script type="math/tex">\mathbf{A}=(\mathbf{A}+\mathbf{B})-\mathbf{B}</script> 及交换两者后的同类关系，得到：</p>
+<script type="math/tex; mode=display">|r(\mathbf{A})-r(\mathbf{B})|
+\le r(\mathbf{A}+\mathbf{B})
+\le r(\mathbf{A})+r(\mathbf{B}).</script>
+<p>矩阵和的秩可能小于两个加数的秩，例如 <script type="math/tex">\mathbf{B}=-\mathbf{A}</script> 时，<script type="math/tex">r(\mathbf{A}+\mathbf{B})=0</script>。</p>
+<h2 id="分块矩阵"><a href="#分块矩阵" class="headerlink" title="分块矩阵"></a>分块矩阵</h2><p>已知 <script type="math/tex">r(\mathbf{A})=r>0</script>，就能取出一个可逆的 <script type="math/tex">r</script> 阶子矩阵。交换行、列将它放在左上角，写成：</p>
+<script type="math/tex; mode=display">\mathbf{A}=
+\begin{pmatrix}\mathbf{C}&\mathbf{D}\\\mathbf{E}&\mathbf{F}\end{pmatrix},
+\qquad \mathbf{C}\text{ 为 }r\text{ 阶可逆矩阵}.</script>
+<p>通过可逆的分块行、列变换，有：</p>
+<script type="math/tex; mode=display">\begin{pmatrix}\mathbf{I}&\mathbf{0}\\-\mathbf{E}\mathbf{C}^{-1}&\mathbf{I}\end{pmatrix}
+\mathbf{A}
+\begin{pmatrix}\mathbf{I}&-\mathbf{C}^{-1}\mathbf{D}\\\mathbf{0}&\mathbf{I}\end{pmatrix}
+=
+\begin{pmatrix}
+\mathbf{C}&\mathbf{0}\\
+\mathbf{0}&\mathbf{F}-\mathbf{E}\mathbf{C}^{-1}\mathbf{D}
+\end{pmatrix}.</script>
+<p>由 <script type="math/tex">r(\mathbf{A})=r(\mathbf{C})=r</script>，得 <script type="math/tex">r(\mathbf{F}-\mathbf{E}\mathbf{C}^{-1}\mathbf{D})=0</script>，故 <script type="math/tex">\mathbf{F}=\mathbf{E}\mathbf{C}^{-1}\mathbf{D}</script>。若 <script type="math/tex">r=0</script>，则 <script type="math/tex">\mathbf{A}=\mathbf{0}</script>。</p>
+<h1 id="线性方程组"><a href="#线性方程组" class="headerlink" title="线性方程组"></a>线性方程组</h1><p>设 <script type="math/tex">\mathbf{A}</script> 为 <script type="math/tex">m\times n</script> 实矩阵，<script type="math/tex">r(\mathbf{A})=r</script>。</p>
+<h2 id="齐次方程组"><a href="#齐次方程组" class="headerlink" title="齐次方程组"></a>齐次方程组</h2><p><script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{0}</script> 描述列向量之间的线性关系，总有零解。有非零解当且仅当 <script type="math/tex">r<n</script>。</p>
+<p>行化简后有 <script type="math/tex">r</script> 个主元变量，其余 <script type="math/tex">n-r</script> 个变量可以自由取值。依次令一个自由变量为 <script type="math/tex">1</script>、其余自由变量为 <script type="math/tex">0</script>，就得到 <script type="math/tex">n-r</script> 个线性无关的解向量。</p>
+<p>这<script type="math/tex">n-r</script>个线性无关的解向量，组成一个向量组。这个向量组称为<strong>基础解系</strong>。</p>
+<p>记它们按列组成的矩阵为 <script type="math/tex">\mathbf{H}</script>，则：</p>
+<script type="math/tex; mode=display">r(\mathbf{A})+r(\mathbf{H})=n.</script>
+<p>所以通解为 <script type="math/tex">\mathbf{x}=\mathbf{H}\mathbf{c}</script>，其中 <script type="math/tex">\mathbf{c}</script> 是任意系数向量。</p>
+<p><script type="math/tex">r=n</script> 时，齐次方程组只有零解，基础解系为空。</p>
+<h2 id="非齐次方程组"><a href="#非齐次方程组" class="headerlink" title="非齐次方程组"></a>非齐次方程组</h2><p><script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{b}</script> 描述右端向量的线性表示。</p>
+<p>若 <script type="math/tex">\mathbf{x}_p</script> 是一个特解，则 <script type="math/tex">\mathbf{x}</script> 也是特解，当且仅当：</p>
+<script type="math/tex; mode=display">\mathbf{A}(\mathbf{x}-\mathbf{x}_p)=\mathbf{0}.</script>
+<p>所以非齐次方程的全部解为：</p>
+<script type="math/tex; mode=display">\mathbf{x}=\mathbf{x}_p+\mathbf{H}\mathbf{c}.</script>
+<table>
+<thead>
+<tr>
+<th>解的情况</th>
+<th>充要条件</th>
+<th>向量关系</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无解</td>
+<td><script type="math/tex">r([\mathbf{A}\ \mathbf{b}])>r(\mathbf{A})</script></td>
+<td><script type="math/tex">\mathbf{b}</script> 不能由各列表示</td>
+</tr>
+<tr>
+<td>唯一解</td>
+<td><script type="math/tex">r([\mathbf{A}\ \mathbf{b}])=r(\mathbf{A})=n</script></td>
+<td>可以表示，且各列线性无关</td>
+</tr>
+<tr>
+<td>无穷多解</td>
+<td><script type="math/tex">r([\mathbf{A}\ \mathbf{b}])=r(\mathbf{A})<n</script></td>
+<td>可以表示，但各列之间存在线性关系</td>
+</tr>
+</tbody></table>
+<h2 id="解空间"><a href="#解空间" class="headerlink" title="解空间"></a>解空间</h2><p><img src="/assets/strang-big-picture-original.svg" alt="Strang：The Big Picture，原书图 3.5"></p>
+<p>图中 <script type="math/tex">C(\mathbf{A}^\top)</script>、<script type="math/tex">C(\mathbf{A})</script> 分别是行空间与列空间，<script type="math/tex">N(\mathbf{A})</script>、<script type="math/tex">N(\mathbf{A}^\top)</script> 分别是两个齐次方程的解空间；<script type="math/tex">\mathrm{dim}</script> 表示维数，<script type="math/tex">\mathbf{R}</script> 是 <script type="math/tex">\mathbf{A}</script> 的行最简形矩阵。</p>
+<ol>
+<li><strong>列空间与有解性。</strong> <script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{b}</script> 有解，意味着 <script type="math/tex">\mathbf{b}</script> 位于列空间中。列空间的维数等于 <script type="math/tex">r(\mathbf{A})</script>。</li>
+<li><strong>行空间与解的自由度。</strong> 任意 <script type="math/tex">\mathbf{x}\in\mathbb{R}^n</script> 均可唯一分解为 <script type="math/tex">\mathbf{x}=\mathbf{x}_r+\mathbf{x}_0</script>，其中 <script type="math/tex">\mathbf{x}_r</script> 在行空间中，<script type="math/tex">\mathbf{A}\mathbf{x}_0=\mathbf{0}</script>。于是 <script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{A}\mathbf{x}_r</script>。对列空间中的每个 <script type="math/tex">\mathbf{b}</script>，行空间内存在唯一的 <script type="math/tex">\mathbf{x}_r</script> 满足 <script type="math/tex">\mathbf{A}\mathbf{x}_r=\mathbf{b}</script>，全部解为 <script type="math/tex">\mathbf{x}_r+\mathbf{x}_0</script>，其中 <script type="math/tex">\mathbf{x}_0</script> 为任意齐次解。</li>
+<li><strong>正交关系。</strong> <script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{0}</script> 表示 <script type="math/tex">\mathbf{x}</script> 与每一行正交，<script type="math/tex">\mathbf{A}^\top\mathbf{y}=\mathbf{0}</script> 表示 <script type="math/tex">\mathbf{y}</script> 与每一列正交。左右两侧的维数分别满足 <script type="math/tex">r+(n-r)=n</script>、<script type="math/tex">r+(m-r)=m</script>。</li>
+</ol>
+<p>因此，<script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{b}</script> 有解还等价于：对每个满足 <script type="math/tex">\mathbf{A}^\top\mathbf{y}=\mathbf{0}</script> 的 <script type="math/tex">\mathbf{y}</script>，都有 <script type="math/tex">\mathbf{y}^\top\mathbf{b}=0</script>。必要性来自 <script type="math/tex">\mathbf{y}^\top\mathbf{b}=\mathbf{y}^\top\mathbf{A}\mathbf{x}=0</script>；充分性来自两个空间正交且维数互补，与全部这样的 <script type="math/tex">\mathbf{y}</script> 正交的向量恰好组成列空间。</p>
+<h2 id="mathbf-A-top-mathbf-Ax-A-top-b"><a href="#mathbf-A-top-mathbf-Ax-A-top-b" class="headerlink" title="\mathbf{A}^{\top}\mathbf{Ax=A^{\top}b}"></a><script type="math/tex">\mathbf{A}^{\top}\mathbf{Ax=A^{\top}b}</script></h2><p>对于实矩阵 <script type="math/tex">\mathbf{A}</script>，<script type="math/tex">\mathbf{A}^\top\mathbf{A}</script> 与 <script type="math/tex">\mathbf{A}</script> 的齐次方程同解：</p>
+<script type="math/tex; mode=display">\mathbf{A}^\top\mathbf{A}\mathbf{x}=\mathbf{0}
+\ \Longrightarrow\
+\mathbf{x}^\top\mathbf{A}^\top\mathbf{A}\mathbf{x}
+=\|\mathbf{A}\mathbf{x}\|^2=0
+\ \Longrightarrow\
+\mathbf{A}\mathbf{x}=\mathbf{0}.</script>
+<p>反向显然成立。两者列数相同、基础解系相同，故 <script type="math/tex">r(\mathbf{A}^\top\mathbf{A})=r(\mathbf{A})</script>。</p>
+<p>也可直接用子式证明。设 <script type="math/tex">r(\mathbf{A})=r>0</script>，取 <script type="math/tex">r</script> 个无关列组成 <script type="math/tex">\mathbf{B}</script>。对任意非零 <script type="math/tex">\mathbf{x}</script>，都有 <script type="math/tex">\mathbf{x}^\top\mathbf{B}^\top\mathbf{B}\mathbf{x}=\|\mathbf{B}\mathbf{x}\|^2>0</script>，所以 <script type="math/tex">\mathbf{B}^\top\mathbf{B}</script> 可逆。它是 <script type="math/tex">\mathbf{A}^\top\mathbf{A}</script> 的一个 <script type="math/tex">r</script> 阶主子矩阵，因而：</p>
+<script type="math/tex; mode=display">r\le r(\mathbf{A}^\top\mathbf{A})
+\le\min\{r(\mathbf{A}^\top),r(\mathbf{A})\}=r.</script>
+<p><script type="math/tex">r=0</script> 时结论显然成立。</p>
+<p>方程 <script type="math/tex">\mathbf{A}^\top\mathbf{A}\mathbf{x}=\mathbf{A}^\top\mathbf{b}</script> 总有解。对任意相容维数的实向量 <script type="math/tex">\mathbf{b}</script>，可直接比较系数矩阵与增广矩阵的秩：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+r(\mathbf{A}^\top\mathbf{A})
+&\le r([\mathbf{A}^\top\mathbf{A}\ \ \mathbf{A}^\top\mathbf{b}])\\
+&=r\bigl(\mathbf{A}^\top[\mathbf{A}\ \mathbf{b}]\bigr)\\
+&\le r(\mathbf{A}^\top)=r(\mathbf{A})
+=r(\mathbf{A}^\top\mathbf{A}).
+\end{aligned}</script>
+<p>两端相等，系数矩阵与增广矩阵秩相等，故方程总有解；唯一解的条件是 <script type="math/tex">r(\mathbf{A})=n</script>。</p>
+<p>从原图看，<script type="math/tex">\mathbf{b}</script> 可以分成列空间内的部分与垂直于列空间的部分。方程 <script type="math/tex">\mathbf{A}^\top(\mathbf{A}\mathbf{x}-\mathbf{b})=\mathbf{0}</script> 要求误差垂直于列空间，只需使 <script type="math/tex">\mathbf{A}\mathbf{x}</script> 等于前一部分即可。因此，即使原方程无解，这个方程仍有解。</p>
+<h1 id="解集关系"><a href="#解集关系" class="headerlink" title="解集关系"></a>解集关系</h1><p>设两组方程具有相同的未知向量 <script type="math/tex">\mathbf{x}\in\mathbb{R}^n</script>，并记：</p>
+<script type="math/tex; mode=display">\mathbf{C}=\begin{pmatrix}\mathbf{A}\\\mathbf{B}\end{pmatrix}.</script>
+<h2 id="齐次解集"><a href="#齐次解集" class="headerlink" title="齐次解集"></a>齐次解集</h2><ol>
+<li><strong>有公共非零解。</strong> 两组方程的公共解集为 <script type="math/tex">\mathbf{C}\mathbf{x}=\mathbf{0}</script> 的解集，故存在公共非零解的充要条件为 <script type="math/tex">r(\mathbf{C})<n</script>。</li>
+<li><strong>解集包含。</strong> <script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{0}</script> 的解集包含于 <script type="math/tex">\mathbf{B}\mathbf{x}=\mathbf{0}</script> 的解集，当且仅当 <script type="math/tex">r(\mathbf{C})=r(\mathbf{A})</script>。等价条件为 <script type="math/tex">\mathbf{B}</script> 的行向量组可由 <script type="math/tex">\mathbf{A}</script> 的行向量组线性表示，或 <script type="math/tex">n-r(\mathbf{C})=n-r(\mathbf{A})</script>。</li>
+<li><strong>同解。</strong> 两组解集相同，当且仅当 <script type="math/tex">r(\mathbf{A})=r(\mathbf{B})=r(\mathbf{C})</script>，即两个解集相互包含。</li>
+</ol>
+<h2 id="非齐次解集"><a href="#非齐次解集" class="headerlink" title="非齐次解集"></a>非齐次解集</h2><p>对于 <script type="math/tex">\mathbf{A}\mathbf{x}=\mathbf{a}</script> 与 <script type="math/tex">\mathbf{B}\mathbf{x}=\mathbf{b}</script>，记：</p>
+<script type="math/tex; mode=display">\mathbf{d}=\begin{pmatrix}\mathbf{a}\\\mathbf{b}\end{pmatrix},\qquad
+\widehat{\mathbf{A}}=[\mathbf{A}\ \mathbf{a}],\qquad
+\widehat{\mathbf{B}}=[\mathbf{B}\ \mathbf{b}],\qquad
+\widehat{\mathbf{C}}=[\mathbf{C}\ \mathbf{d}].</script>
+<ol>
+<li><strong>有公共解。</strong> 两组方程的公共解集为 <script type="math/tex">\mathbf{C}\mathbf{x}=\mathbf{d}</script> 的解集，故有公共解的充要条件为 <script type="math/tex">r(\mathbf{C})=r(\widehat{\mathbf{C}})</script>。</li>
+<li><strong>解集包含。</strong> 第一组无解时，其空解集包含于第二组解集。第一组有解时，其解集包含于第二组解集的充要条件为 <script type="math/tex">r(\widehat{\mathbf{C}})=r(\widehat{\mathbf{A}})</script>，即存在矩阵 <script type="math/tex">\mathbf{D}</script> 使 <script type="math/tex">[\mathbf{B}\ \mathbf{b}]=\mathbf{D}[\mathbf{A}\ \mathbf{a}]</script>。若第一组的通解为 <script type="math/tex">\mathbf{x}_p+\mathbf{H}\mathbf{c}</script>，则等价条件为 <script type="math/tex">\mathbf{B}\mathbf{x}_p=\mathbf{b}</script> 且 <script type="math/tex">\mathbf{B}\mathbf{H}=\mathbf{0}</script>，即 <script type="math/tex">\mathbf{x}_p</script> 为公共特解，<script type="math/tex">\mathbf{H}</script> 的各列均为第二组对应齐次方程的解。</li>
+<li><strong>同解。</strong> 两组都无解时同解；至少一组有解时，同解的充要条件为 <script type="math/tex">r(\widehat{\mathbf{A}})=r(\widehat{\mathbf{B}})=r(\widehat{\mathbf{C}})</script>。从解的表达看，这等价于具有公共特解，且对应的齐次方程同解。</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/09/03/Rank/">https://eliano64.github.io/2026/09/03/Rank/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Matrix Square Roots</div></div><div class="info-2"><div class="info-item-1">矩阵开方矩阵开方是求矩阵 \mathbf X，使 \mathbf X^2=\mathbf A. 若 \mathbf A 可对角化，先求 \mathbf A=\mathbf P \operatorname{diag}(\lambda_1,\ldots,\lambda_n) \mathbf P^{-1}. 选择 \mu_i^2=\lambda_i，则 \mathbf X=\mathbf P \operatorname{diag}(\mu_1,\ldots,\mu_n) \mathbf P^{-1} 满足 \mathbf X^2=\mathbf A。  具体矩阵 求 \mathbf A= \begin{pmatrix} 2&1&1\\ 1&2&1\\ 1&1&2 \end{pmatrix} 的正定平方根。 取单位特征向量 \boldsymbol q_1=\frac1{\sqrt3} \begin{pmatrix}1\\1\\1\end{pmatrix},\qquad \boldsymbol...</div></div></div></a><a class="pagination-related" href="/2026/09/05/Probability/" title="Probability"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Probability</div></div><div class="info-2"><div class="info-item-1">概率的性质0\le P(A)\le1,\qquad P(\Omega)=1,\qquad P(\varnothing)=0. P(\bar{A})=1-P(A),\qquad P(A-B)=P(A)-P(AB). P(A\cup B)=P(A)+P(B)-P(AB). 若 A\subseteq B，则 P(A)\le P(B)；若 A_1,A_2,\ldots 两两互斥，则 P\left(\bigcup_i A_i\right)=\sum_iP(A_i). 处理复杂事件时，先用集合运算改写事件，再套概率公式（正难则反）。例如，至少一个发生改用对立事件一个都没有发生。 古典概型样本空间含有限个等可能的基本结果时， P(A)=\frac{|A|}{|\Omega|}. 几何概型试验结果在区域 \Omega 上均匀分布时， P(A)=\frac{m(A)}{m(\Omega)}, 其中 m 可表示长度、面积或体积。先选取能使结果均匀的参数，再把事件翻译成该参数空间中的子区域；边界通常测度为零，不影响概率。 条件概率与乘法公式当 P(B)>0 时， P(A\mid...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-07</div><div class="info-item-2">Inverse Matrix</div></div><div class="info-2"><div class="info-item-1">可逆的条件n 阶方阵 \mathbf{A} 可逆，当且仅当下列任一条件成立：  \det\mathbf{A}\ne0； r(\mathbf{A})=n，即行、列向量组均满秩；  若可逆，逆矩阵唯一，记为 \mathbf{A}^{-1}，满足 \mathbf{A}\mathbf{A}^{-1}=\mathbf{A}^{-1}\mathbf{A}=\mathbf{E}。 求逆矩阵二维矩阵法对二维矩阵，伴随矩阵法最为简洁。设 \mathbf{A}=\begin{pmatrix}a&b\\c&d\end{pmatrix}, 则 \det\mathbf{A}=ad-bc，且 \mathbf{A}^*=\begin{pmatrix}d&-b\\-c&a\end{pmatrix}, 故 \mathbf{A}^{-1} =\frac1{ad-bc} \begin{pmatrix}d&-b\\-c&a\end{pmatrix}. 2 阶矩阵几乎总用它。对 3 阶及更高阶，计算 n^2...</div></div></div></a><a class="pagination-related" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-02</div><div class="info-item-2">Matrix Square Roots</div></div><div class="info-2"><div class="info-item-1">矩阵开方矩阵开方是求矩阵 \mathbf X，使 \mathbf X^2=\mathbf A. 若 \mathbf A 可对角化，先求 \mathbf A=\mathbf P \operatorname{diag}(\lambda_1,\ldots,\lambda_n) \mathbf P^{-1}. 选择 \mu_i^2=\lambda_i，则 \mathbf X=\mathbf P \operatorname{diag}(\mu_1,\ldots,\mu_n) \mathbf P^{-1} 满足 \mathbf X^2=\mathbf A。  具体矩阵 求 \mathbf A= \begin{pmatrix} 2&1&1\\ 1&2&1\\ 1&1&2 \end{pmatrix} 的正定平方根。 取单位特征向量 \boldsymbol q_1=\frac1{\sqrt3} \begin{pmatrix}1\\1\\1\end{pmatrix},\qquad \boldsymbol...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E7%BB%84%E7%9A%84%E7%A7%A9"><span class="toc-text">向量组的秩</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91%E9%87%8F"><span class="toc-text">向量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E7%BB%84%E7%9A%84%E7%A7%A9-1"><span class="toc-text">向量组的秩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E7%BB%84%E7%BA%BF%E6%80%A7%E7%9B%B8%E5%85%B3"><span class="toc-text">向量组线性相关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E7%BB%84%E7%BA%BF%E6%80%A7%E6%97%A0%E5%85%B3"><span class="toc-text">向量组线性无关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%B2%E7%9F%A5-mathbf-A-mathbf-alpha-i-mathbf-alpha-i-1-i"><span class="toc-text">已知 \mathbf{A}\mathbf{\alpha}_i&#x3D;\mathbf{\alpha}_{i+1}\ (i&lt;n)，\mathbf{A}\mathbf{\alpha}_n&#x3D;\mathbf{0}，且 \mathbf{\alpha}_n\ne\mathbf{0}，证明 \mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n 线性无关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%B2%E7%9F%A5-mathbf-alpha-1-ldots-mathbf-alpha-n-%E7%BA%BF%E6%80%A7%E6%97%A0%E5%85%B3%EF%BC%8C%E8%AE%B0-mathbf-A-mathbf-alpha-1-ldots-mathbf-alpha-n-%EF%BC%8C%E4%B8%94-mathbf-beta-i-mathbf-A-mathbf-b-i%E3%80%82%E5%88%99-mathbf-beta-1-ldots-mathbf-beta-n-%E7%BA%BF%E6%80%A7%E6%97%A0%E5%85%B3%E7%9A%84%E5%85%85%E8%A6%81%E6%9D%A1%E4%BB%B6%E6%98%AF-mathbf-b-1-ldots-mathbf-b-n-%E7%BA%BF%E6%80%A7%E6%97%A0%E5%85%B3%E3%80%82"><span class="toc-text">已知 \mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n 线性无关，记 \mathbf{A}&#x3D;(\mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_n)，且 \mathbf{\beta}_i&#x3D;\mathbf{A}\mathbf{b}_i。则 \mathbf{\beta}_1,\ldots,\mathbf{\beta}_n 线性无关的充要条件是 \mathbf{b}_1,\ldots,\mathbf{b}_n 线性无关。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E7%BB%84%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">向量组的关系</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%9F%A9%E9%98%B5%E7%9A%84%E7%A7%A9"><span class="toc-text">矩阵的秩</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9F%A9%E9%98%B5%E7%AD%89%E4%BB%B7"><span class="toc-text">矩阵等价</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%98%E7%A7%AF%E7%9A%84%E7%A7%A9"><span class="toc-text">乘积的秩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%BC%E6%8E%A5%E7%9F%A9%E9%98%B5%E7%9A%84%E7%A7%A9"><span class="toc-text">拼接矩阵的秩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%92%8C%E7%9A%84%E7%A7%A9"><span class="toc-text">和的秩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E7%9F%A9%E9%98%B5"><span class="toc-text">分块矩阵</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E6%96%B9%E7%A8%8B%E7%BB%84"><span class="toc-text">线性方程组</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%BD%90%E6%AC%A1%E6%96%B9%E7%A8%8B%E7%BB%84"><span class="toc-text">齐次方程组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E9%BD%90%E6%AC%A1%E6%96%B9%E7%A8%8B%E7%BB%84"><span class="toc-text">非齐次方程组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E7%A9%BA%E9%97%B4"><span class="toc-text">解空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mathbf-A-top-mathbf-Ax-A-top-b"><span class="toc-text">\mathbf{A}^{\top}\mathbf{Ax&#x3D;A^{\top}b}</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A7%A3%E9%9B%86%E5%85%B3%E7%B3%BB"><span class="toc-text">解集关系</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%BD%90%E6%AC%A1%E8%A7%A3%E9%9B%86"><span class="toc-text">齐次解集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E9%BD%90%E6%AC%A1%E8%A7%A3%E9%9B%86"><span class="toc-text">非齐次解集</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:37:28.000Z" title="发表于 2026-09-07 18:37:28">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/Linear-Space/" title="Linear Space">Linear Space</a><time datetime="2026-09-06T11:53:00.000Z" title="发表于 2026-09-06 19:53:00">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Distribution-And-Numerical-Characteristics/" title="Distribution And Numerical Characteristics">Distribution And Numerical Characteristics</a><time datetime="2026-09-05T08:28:30.000Z" title="发表于 2026-09-05 16:28:30">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Statistics/" title="Statistics">Statistics</a><time datetime="2026-09-05T08:25:12.000Z" title="发表于 2026-09-05 16:25:12">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Probability/" title="Probability">Probability</a><time datetime="2026-09-05T08:24:47.000Z" title="发表于 2026-09-05 16:24:47">2026-09-05</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/12/Best-Time-To-Buy-And-Sell-Stock/" title="Best Time To Buy And Sell Stock">Best Time To Buy And Sell Stock</a><time datetime="2026-09-08T09:17:31.608Z" title="更新于 2026-09-08 17:17:31">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/12/Binary-Constraint-Matching/" title="Binary Constraint Matching">Binary Constraint Matching</a><time datetime="2026-09-08T09:17:23.435Z" title="更新于 2026-09-08 17:17:23">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/01/Closest-Equal-Element-Queries/" title="Closest Equal Element Queries">Closest Equal Element Queries</a><time datetime="2026-09-08T09:17:16.159Z" title="更新于 2026-09-08 17:17:16">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots">Matrix Square Roots</a><time datetime="2026-09-07T12:09:10.842Z" title="更新于 2026-09-07 20:09:10">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:57:54.997Z" title="更新于 2026-09-07 18:57:54">2026-09-07</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

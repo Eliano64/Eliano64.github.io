@@ -1,0 +1,367 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Inverse Matrix | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="可逆的条件n 阶方阵 \mathbf{A} 可逆，当且仅当下列任一条件成立：  \det\mathbf{A}\ne0； r(\mathbf{A})&#x3D;n，即行、列向量组均满秩；  若可逆，逆矩阵唯一，记为 \mathbf{A}^{-1}，满足 \mathbf{A}\mathbf{A}^{-1}&#x3D;\mathbf{A}^{-1}\mathbf{A}&#x3D;\mathbf{E}。 求逆矩阵二维矩阵法对二维矩阵，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Inverse Matrix">
+<meta property="og:url" content="https://eliano64.github.io/2026/09/07/Inverse-Matrix/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="可逆的条件n 阶方阵 \mathbf{A} 可逆，当且仅当下列任一条件成立：  \det\mathbf{A}\ne0； r(\mathbf{A})&#x3D;n，即行、列向量组均满秩；  若可逆，逆矩阵唯一，记为 \mathbf{A}^{-1}，满足 \mathbf{A}\mathbf{A}^{-1}&#x3D;\mathbf{A}^{-1}\mathbf{A}&#x3D;\mathbf{E}。 求逆矩阵二维矩阵法对二维矩阵，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-09-07T10:37:28.000Z">
+<meta property="article:modified_time" content="2026-09-07T10:57:54.997Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="Matrices">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Inverse Matrix",
+  "url": "https://eliano64.github.io/2026/09/07/Inverse-Matrix/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-09-07T10:37:28.000Z",
+  "dateModified": "2026-09-07T10:57:54.997Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/09/07/Inverse-Matrix/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Inverse Matrix',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Inverse Matrix</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Inverse Matrix</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-07T10:37:28.000Z" title="发表于 2026-09-07 18:37:28">2026-09-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-07T10:57:54.997Z" title="更新于 2026-09-07 18:57:54">2026-09-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linear-Algebra/">Linear Algebra</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="可逆的条件"><a href="#可逆的条件" class="headerlink" title="可逆的条件"></a>可逆的条件</h1><p><script type="math/tex">n</script> 阶方阵 <script type="math/tex">\mathbf{A}</script> 可逆，当且仅当下列任一条件成立：</p>
+<ul>
+<li><script type="math/tex">\det\mathbf{A}\ne0</script>；</li>
+<li><script type="math/tex">r(\mathbf{A})=n</script>，即行、列向量组均满秩；</li>
+</ul>
+<p>若可逆，逆矩阵唯一，记为 <script type="math/tex">\mathbf{A}^{-1}</script>，满足 <script type="math/tex">\mathbf{A}\mathbf{A}^{-1}=\mathbf{A}^{-1}\mathbf{A}=\mathbf{E}</script>。</p>
+<h1 id="求逆矩阵"><a href="#求逆矩阵" class="headerlink" title="求逆矩阵"></a>求逆矩阵</h1><h2 id="二维矩阵法"><a href="#二维矩阵法" class="headerlink" title="二维矩阵法"></a>二维矩阵法</h2><p>对二维矩阵，伴随矩阵法最为简洁。设</p>
+<script type="math/tex; mode=display">\mathbf{A}=\begin{pmatrix}a&b\\c&d\end{pmatrix},</script>
+<p>则 <script type="math/tex">\det\mathbf{A}=ad-bc</script>，且</p>
+<script type="math/tex; mode=display">\mathbf{A}^*=\begin{pmatrix}d&-b\\-c&a\end{pmatrix},</script>
+<p>故</p>
+<script type="math/tex; mode=display">\mathbf{A}^{-1}
+=\frac1{ad-bc}
+\begin{pmatrix}d&-b\\-c&a\end{pmatrix}.</script>
+<p><script type="math/tex">2</script> 阶矩阵几乎总用它。对 <script type="math/tex">3</script> 阶及更高阶，计算 <script type="math/tex">n^2</script> 个代数余子式过于繁琐，通常改用初等变换法。只有当矩阵很稀疏、多数代数余子式容易求得时，才会对高阶矩阵使用伴随矩阵法。</p>
+<h2 id="初等变换法"><a href="#初等变换法" class="headerlink" title="初等变换法"></a>初等变换法</h2><p>对 <script type="math/tex">3</script> 阶或更高阶的具体矩阵，用行初等变换把 <script type="math/tex">\mathbf{A}</script> 化为单位矩阵，同时对右侧随行的单位矩阵作相同变换：</p>
+<script type="math/tex; mode=display">[\mathbf{A}\mid\mathbf{E}]
+\xrightarrow{\text{行变换}}
+[\mathbf{E}\mid\mathbf{A}^{-1}].</script>
+<p><strong>原理</strong>：每个行初等变换都等价于左乘一个初等矩阵。设依次左乘 <script type="math/tex">\mathbf{E}_1,\ldots,\mathbf{E}_k</script> 后 <script type="math/tex">\mathbf{A}</script> 化为 <script type="math/tex">\mathbf{E}</script>，即</p>
+<script type="math/tex; mode=display">\mathbf{E}_k\cdots\mathbf{E}_1\mathbf{A}=\mathbf{E}.</script>
+<p>于是 <script type="math/tex">\mathbf{E}_k\cdots\mathbf{E}_1=\mathbf{A}^{-1}</script>。把同一序列作用到 <script type="math/tex">\mathbf{E}</script> 上，右侧得到</p>
+<script type="math/tex; mode=display">\mathbf{E}_k\cdots\mathbf{E}_1\mathbf{E}=\mathbf{A}^{-1}.</script>
+<p>所以右侧累积的就是 <script type="math/tex">\mathbf{A}^{-1}</script>。</p>
+<p>只能作行变换，不能作列变换。若行变换过程中左侧出现一整行为零，说明 <script type="math/tex">\mathbf{A}</script> 不可逆，即 <script type="math/tex">\det\mathbf{A}=0</script>。</p>
+<p>与行列式消元一样，尽量不把主元归一化，以免过早引入分式。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">三阶矩阵的逆</span></div>
+<div class="callout-content"><p>求</p>
+<script type="math/tex; mode=display">\mathbf{A}=\begin{pmatrix}1&2&3\\2&4&5\\3&5&6\end{pmatrix}</script>
+<p>的逆。写出增广矩阵并作行变换：</p>
+<script type="math/tex; mode=display">\left[\begin{array}{ccc|ccc}
+1&2&3&1&0&0\\
+2&4&5&0&1&0\\
+3&5&6&0&0&1
+\end{array}\right].</script>
+<p>先消去第二列的 <script type="math/tex">2</script> 与第三列的 <script type="math/tex">3</script>，并把第二、第三行分别归零后交换：</p>
+<script type="math/tex; mode=display">\left[\begin{array}{ccc|ccc}
+1&2&3&1&0&0\\
+0&1&3&3&0&-1\\
+0&0&1&2&-1&0
+\end{array}\right].</script>
+<p>由第三行回代消去第二、第一行的第三列，再由第二行消去第一行的第二列，化为标准形：</p>
+<script type="math/tex; mode=display">\left[\begin{array}{ccc|ccc}
+1&0&0&1&-3&2\\
+0&1&0&-3&3&-1\\
+0&0&1&2&-1&0
+\end{array}\right].</script>
+<p>故</p>
+<script type="math/tex; mode=display">\mathbf{A}^{-1}=\begin{pmatrix}1&-3&2\\-3&3&-1\\2&-1&0\end{pmatrix}.</script>
+</div>
+</div>
+<h2 id="符号矩阵"><a href="#符号矩阵" class="headerlink" title="符号矩阵"></a>符号矩阵</h2><p>符号矩阵的行、列没有具体数值，不能作行变换。此时把目标矩阵表示成已知可逆矩阵的乘积或组合，再对各个因子求逆。</p>
+<p>若 <script type="math/tex">\mathbf{A},\mathbf{B}</script> 都可逆，则 <script type="math/tex">\mathbf{A}\mathbf{B}</script> 可逆，且<script type="math/tex">(\mathbf{A}\mathbf{B})^{-1}=\mathbf{B}^{-1}\mathbf{A}^{-1}.</script>更一般地，<script type="math/tex">(\mathbf{A}_1\cdots\mathbf{A}_k)^{-1}=\mathbf{A}_k^{-1}\cdots\mathbf{A}_1^{-1}</script> 。</p>
+<p>对于求 <script type="math/tex">\mathbf{A+B}</script> 的逆，若 <script type="math/tex">\mathbf{A}</script> 可逆，可提取公因子转化为乘积：<script type="math/tex">\mathbf{A}+\mathbf{B}=\mathbf{A}\bigl(\mathbf{E}+\mathbf{A}^{-1}\mathbf{B}\bigr),</script> 故 <script type="math/tex">(\mathbf{A}+\mathbf{B})^{-1}=\bigl(\mathbf{E}+\mathbf{A}^{-1}\mathbf{B}\bigr)^{-1}\mathbf{A}^{-1}.</script></p>
+<p>若存在 <script type="math/tex">k</script> 使 <script type="math/tex">\mathbf{B}^k=\mathbf{0}</script>，则 <script type="math/tex">\mathbf{E}+\mathbf{B}</script> 可逆，且由几何级数 <script type="math/tex">(\mathbf{E}+\mathbf{B})^{-1}=\mathbf{E}-\mathbf{B}+\mathbf{B}^2-\cdots+(-1)^{k-1}\mathbf{B}^{k-1}.</script> </p>
+<h2 id="分块矩阵"><a href="#分块矩阵" class="headerlink" title="分块矩阵"></a>分块矩阵</h2><p>设</p>
+<script type="math/tex; mode=display">\mathbf{A}=\begin{pmatrix}\mathbf{P}&\mathbf{Q}\\\mathbf{R}&\mathbf{S}\end{pmatrix},</script>
+<p>其中 <script type="math/tex">\mathbf{P},\mathbf{S}</script> 为方阵。求其逆时，设未知逆矩阵</p>
+<script type="math/tex; mode=display">\mathbf{B}=\begin{pmatrix}\mathbf{X}&\mathbf{Y}\\\mathbf{Z}&\mathbf{W}\end{pmatrix},</script>
+<p>并解矩阵方程 <script type="math/tex">\mathbf{A}\mathbf{B}=\mathbf{E}</script>。按块相乘，得到四个块方程：</p>
+<script type="math/tex; mode=display">\begin{gathered}
+\mathbf{P}\mathbf{X}+\mathbf{Q}\mathbf{Z}=\mathbf{E},\qquad
+\mathbf{P}\mathbf{Y}+\mathbf{Q}\mathbf{W}=\mathbf{0},\\
+\mathbf{R}\mathbf{X}+\mathbf{S}\mathbf{Z}=\mathbf{0},\qquad
+\mathbf{R}\mathbf{Y}+\mathbf{S}\mathbf{W}=\mathbf{E}.
+\end{gathered}</script>
+<p>从中解出 <script type="math/tex">\mathbf{X},\mathbf{Y},\mathbf{Z},\mathbf{W}</script>。</p>
+<p>通常因为某一块为零或某一块易求逆而大大简化。例如下面的情况。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">分块上三角</span></div>
+<div class="callout-content"><p>设 <script type="math/tex">\mathbf{R}=\mathbf{0}</script>，即</p>
+<script type="math/tex; mode=display">\mathbf{A}=\begin{pmatrix}\mathbf{P}&\mathbf{Q}\\\mathbf{0}&\mathbf{S}\end{pmatrix}.</script>
+<p>由 <script type="math/tex">\mathbf{R}\mathbf{X}+\mathbf{S}\mathbf{Z}=\mathbf{0}</script> 得 <script type="math/tex">\mathbf{S}\mathbf{Z}=\mathbf{0}</script>，故 <script type="math/tex">\mathbf{Z}=\mathbf{0}</script>；由 <script type="math/tex">\mathbf{R}\mathbf{Y}+\mathbf{S}\mathbf{W}=\mathbf{E}</script> 得 <script type="math/tex">\mathbf{W}=\mathbf{S}^{-1}</script>。代入第一、第二式：</p>
+<script type="math/tex; mode=display">\mathbf{P}\mathbf{X}=\mathbf{E}\ \Rightarrow\ \mathbf{X}=\mathbf{P}^{-1},</script>
+<script type="math/tex; mode=display">\mathbf{P}\mathbf{Y}+\mathbf{Q}\mathbf{S}^{-1}=\mathbf{0}\ \Rightarrow\ \mathbf{Y}=-\mathbf{P}^{-1}\mathbf{Q}\mathbf{S}^{-1}.</script>
+<p>因此</p>
+<script type="math/tex; mode=display">\begin{pmatrix}\mathbf{P}&\mathbf{Q}\\\mathbf{0}&\mathbf{S}\end{pmatrix}^{-1}
+=\begin{pmatrix}\mathbf{P}^{-1}&-\mathbf{P}^{-1}\mathbf{Q}\mathbf{S}^{-1}\\\mathbf{0}&\mathbf{S}^{-1}\end{pmatrix}.</script>
+<p>分块下三角同理。</p>
+</div>
+</div>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/09/07/Inverse-Matrix/">https://eliano64.github.io/2026/09/07/Inverse-Matrix/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/09/06/Linear-Space/" title="Linear Space"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Linear Space</div></div><div class="info-2"><div class="info-item-1">基与坐标基在线性空间中，向量相加、数乘后仍在该空间内，并满足通常的线性运算规律。这里讨论有限维实线性空间。 一组基 \mathbf{e}_1,\ldots,\mathbf{e}_n 既线性无关，又能表示空间中的每个向量。因此每个向量 \mathbf{v} 都有唯一表示： \mathbf{v}=x_1\mathbf{e}_1+\cdots+x_n\mathbf{e}_n =\mathbf{E}\mathbf{x},\qquad \mathbf{E}=(\mathbf{e}_1,\ldots,\mathbf{e}_n). \mathbf{x}=(x_1,\ldots,x_n)^\top 是坐标向量，x_i 是标量。\mathbf{v} 是向量，\mathbf{x} 是它在基 \mathbf{E} 下的坐标。换基不改变向量，仅改变其坐标。 \mathbf{E} 表示一组有序的基；在 \mathbb{R}^n 中，它也可以直接看成基向量按列组成的可逆矩阵。 过渡矩阵设旧基为 \mathbf{E}，新基为...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-02</div><div class="info-item-2">Matrix Square Roots</div></div><div class="info-2"><div class="info-item-1">矩阵开方矩阵开方是求矩阵 \mathbf X，使 \mathbf X^2=\mathbf A. 若 \mathbf A 可对角化，先求 \mathbf A=\mathbf P \operatorname{diag}(\lambda_1,\ldots,\lambda_n) \mathbf P^{-1}. 选择 \mu_i^2=\lambda_i，则 \mathbf X=\mathbf P \operatorname{diag}(\mu_1,\ldots,\mu_n) \mathbf P^{-1} 满足 \mathbf X^2=\mathbf A。  具体矩阵 求 \mathbf A= \begin{pmatrix} 2&1&1\\ 1&2&1\\ 1&1&2 \end{pmatrix} 的正定平方根。 取单位特征向量 \boldsymbol q_1=\frac1{\sqrt3} \begin{pmatrix}1\\1\\1\end{pmatrix},\qquad \boldsymbol...</div></div></div></a><a class="pagination-related" href="/2026/09/03/Rank/" title="Rank"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-03</div><div class="info-item-2">Rank</div></div><div class="info-2"><div class="info-item-1">向量组的秩向量n 维实向量由 n 个有序实数组成，通常写成列向量 \mathbf{\alpha}=(a_1,\ldots,a_n)^\top。同维向量按分量相加、数乘。 若 \mathbf{\beta}=c_1\mathbf{\alpha}_1+\cdots+c_s\mathbf{\alpha}_s，则称 \mathbf{\beta} 可由向量组 \mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_s 线性表示。 向量组的秩向量组中，线性无关且能线性表示该组全部向量的部分组，称为极大线性无关组。各极大线性无关组所含向量个数相同，这个数称为向量组的秩，也就是该组中线性无关向量的最大个数。全零向量组的秩为 0。 向量组线性相关当 \mathbf{A} 是由 n 个 n 维列向量组成的方阵时，列向量线性相关的等价条件为 \det\mathbf{A}=0，也即r(\mathbf{A})0，就能取出一个可逆的 r...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%AF%E9%80%86%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="toc-text">可逆的条件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B1%82%E9%80%86%E7%9F%A9%E9%98%B5"><span class="toc-text">求逆矩阵</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E7%BB%B4%E7%9F%A9%E9%98%B5%E6%B3%95"><span class="toc-text">二维矩阵法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E7%AD%89%E5%8F%98%E6%8D%A2%E6%B3%95"><span class="toc-text">初等变换法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E7%9F%A9%E9%98%B5"><span class="toc-text">符号矩阵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E7%9F%A9%E9%98%B5"><span class="toc-text">分块矩阵</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:37:28.000Z" title="发表于 2026-09-07 18:37:28">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/Linear-Space/" title="Linear Space">Linear Space</a><time datetime="2026-09-06T11:53:00.000Z" title="发表于 2026-09-06 19:53:00">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Distribution-And-Numerical-Characteristics/" title="Distribution And Numerical Characteristics">Distribution And Numerical Characteristics</a><time datetime="2026-09-05T08:28:30.000Z" title="发表于 2026-09-05 16:28:30">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Statistics/" title="Statistics">Statistics</a><time datetime="2026-09-05T08:25:12.000Z" title="发表于 2026-09-05 16:25:12">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Probability/" title="Probability">Probability</a><time datetime="2026-09-05T08:24:47.000Z" title="发表于 2026-09-05 16:24:47">2026-09-05</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/12/Best-Time-To-Buy-And-Sell-Stock/" title="Best Time To Buy And Sell Stock">Best Time To Buy And Sell Stock</a><time datetime="2026-09-08T09:17:31.608Z" title="更新于 2026-09-08 17:17:31">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/12/Binary-Constraint-Matching/" title="Binary Constraint Matching">Binary Constraint Matching</a><time datetime="2026-09-08T09:17:23.435Z" title="更新于 2026-09-08 17:17:23">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/01/Closest-Equal-Element-Queries/" title="Closest Equal Element Queries">Closest Equal Element Queries</a><time datetime="2026-09-08T09:17:16.159Z" title="更新于 2026-09-08 17:17:16">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots">Matrix Square Roots</a><time datetime="2026-09-07T12:09:10.842Z" title="更新于 2026-09-07 20:09:10">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:57:54.997Z" title="更新于 2026-09-07 18:57:54">2026-09-07</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

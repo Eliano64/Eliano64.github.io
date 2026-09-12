@@ -1,0 +1,316 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Probability | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="概率的性质0\le P(A)\le1,\qquad P(\Omega)&#x3D;1,\qquad P(\varnothing)&#x3D;0. P(\bar{A})&#x3D;1-P(A),\qquad P(A-B)&#x3D;P(A)-P(AB). P(A\cup B)&#x3D;P(A)+P(B)-P(AB). 若 A\subseteq B，则 P(A)\le P(B)；若 A_1,A_2,\ldots 两两互斥，则 P\left(\big">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Probability">
+<meta property="og:url" content="https://eliano64.github.io/2026/09/05/Probability/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="概率的性质0\le P(A)\le1,\qquad P(\Omega)&#x3D;1,\qquad P(\varnothing)&#x3D;0. P(\bar{A})&#x3D;1-P(A),\qquad P(A-B)&#x3D;P(A)-P(AB). P(A\cup B)&#x3D;P(A)+P(B)-P(AB). 若 A\subseteq B，则 P(A)\le P(B)；若 A_1,A_2,\ldots 两两互斥，则 P\left(\big">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-09-05T08:24:47.000Z">
+<meta property="article:modified_time" content="2026-09-05T10:37:49.096Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="Probability">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Probability",
+  "url": "https://eliano64.github.io/2026/09/05/Probability/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-09-05T08:24:47.000Z",
+  "dateModified": "2026-09-05T10:37:49.096Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/09/05/Probability/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Probability',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Probability</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Probability</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-05T08:24:47.000Z" title="发表于 2026-09-05 16:24:47">2026-09-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-05T10:37:49.096Z" title="更新于 2026-09-05 18:37:49">2026-09-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Probability-Statistics/">Probability &amp; Statistics</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">429</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="概率的性质"><a href="#概率的性质" class="headerlink" title="概率的性质"></a>概率的性质</h1><script type="math/tex; mode=display">0\le P(A)\le1,\qquad P(\Omega)=1,\qquad P(\varnothing)=0.</script>
+<script type="math/tex; mode=display">P(\bar{A})=1-P(A),\qquad
+P(A-B)=P(A)-P(AB).</script>
+<script type="math/tex; mode=display">P(A\cup B)=P(A)+P(B)-P(AB).</script>
+<p>若 <script type="math/tex">A\subseteq B</script>，则 <script type="math/tex">P(A)\le P(B)</script>；若 <script type="math/tex">A_1,A_2,\ldots</script> 两两互斥，则</p>
+<script type="math/tex; mode=display">P\left(\bigcup_i A_i\right)=\sum_iP(A_i).</script>
+<p>处理复杂事件时，先用集合运算改写事件，再套概率公式（正难则反）。例如，至少一个发生改用对立事件一个都没有发生。</p>
+<h1 id="古典概型"><a href="#古典概型" class="headerlink" title="古典概型"></a>古典概型</h1><p>样本空间含有限个等可能的基本结果时，</p>
+<script type="math/tex; mode=display">P(A)=\frac{|A|}{|\Omega|}.</script>
+<h1 id="几何概型"><a href="#几何概型" class="headerlink" title="几何概型"></a>几何概型</h1><p>试验结果在区域 <script type="math/tex">\Omega</script> 上均匀分布时，</p>
+<script type="math/tex; mode=display">P(A)=\frac{m(A)}{m(\Omega)},</script>
+<p>其中 <script type="math/tex">m</script> 可表示长度、面积或体积。先选取能使结果均匀的参数，再把事件翻译成该参数空间中的子区域；边界通常测度为零，不影响概率。</p>
+<h1 id="条件概率与乘法公式"><a href="#条件概率与乘法公式" class="headerlink" title="条件概率与乘法公式"></a>条件概率与乘法公式</h1><p>当 <script type="math/tex">P(B)>0</script> 时，</p>
+<script type="math/tex; mode=display">P(A\mid B)=\frac{P(AB)}{P(B)}.</script>
+<p>条件竖线后是谁，分母就是谁。</p>
+<p>由定义立即得到</p>
+<script type="math/tex; mode=display">P(AB)=P(B)P(A\mid B)=P(A)P(B\mid A).</script>
+<p>多个事件依次发生时，</p>
+<script type="math/tex; mode=display">P(A_1A_2\cdots A_n)
+=P(A_1)P(A_2\mid A_1)\cdots
+P(A_n\mid A_1\cdots A_{n-1}).</script>
+<h1 id="全概率公式与贝叶斯公式"><a href="#全概率公式与贝叶斯公式" class="headerlink" title="全概率公式与贝叶斯公式"></a>全概率公式与贝叶斯公式</h1><p>若 <script type="math/tex">B_1,\ldots,B_n</script> 两两互斥、并为 <script type="math/tex">\Omega</script>，且 <script type="math/tex">P(B_i)>0</script>，则</p>
+<script type="math/tex; mode=display">P(A)=\sum_{i=1}^{n} P(AB_{i})=\sum_{i=1}^{n}P(B_i)P(A\mid B_i).</script>
+<p>当 <script type="math/tex">A</script> 已经发生，反求它来自第 <script type="math/tex">k</script> 种情形的概率时，</p>
+<script type="math/tex; mode=display">P(B_k\mid A)
+=\frac{P(B_k)P(A\mid B_k)}
+{\displaystyle\sum_{i=1}^{n}P(B_i)P(A\mid B_i)}.</script>
+<h1 id="事件独立性"><a href="#事件独立性" class="headerlink" title="事件独立性"></a>事件独立性</h1><p><script type="math/tex">A,B</script> 独立，即</p>
+<script type="math/tex; mode=display">P(AB)=P(A)P(B).</script>
+<p>等价于 <script type="math/tex">P(A\mid B)=P(A)</script>。</p>
+<p>独立事件取补后仍独立。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/09/05/Probability/">https://eliano64.github.io/2026/09/05/Probability/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/03/Rank/" title="Rank"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Rank</div></div><div class="info-2"><div class="info-item-1">向量组的秩向量n 维实向量由 n 个有序实数组成，通常写成列向量 \mathbf{\alpha}=(a_1,\ldots,a_n)^\top。同维向量按分量相加、数乘。 若 \mathbf{\beta}=c_1\mathbf{\alpha}_1+\cdots+c_s\mathbf{\alpha}_s，则称 \mathbf{\beta} 可由向量组 \mathbf{\alpha}_1,\ldots,\mathbf{\alpha}_s 线性表示。 向量组的秩向量组中，线性无关且能线性表示该组全部向量的部分组，称为极大线性无关组。各极大线性无关组所含向量个数相同，这个数称为向量组的秩，也就是该组中线性无关向量的最大个数。全零向量组的秩为 0。 向量组线性相关当 \mathbf{A} 是由 n 个 n 维列向量组成的方阵时，列向量线性相关的等价条件为 \det\mathbf{A}=0，也即r(\mathbf{A})0，就能取出一个可逆的 r...</div></div></div></a><a class="pagination-related" href="/2026/09/05/Statistics/" title="Statistics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Statistics</div></div><div class="info-2"><div class="info-item-1">概率极限定理切比雪夫不等式对任意 \varepsilon>0， P\{|X-\operatorname{E}(X)|0。给定观测值(x_{1},\ldots,x_{n})后，联合似然函数为： L(\theta)=\prod_{i=1}^{n}\theta^2x_i e^{-\theta x_i} =\theta^{2n}\left(\prod_{i=1}^{n}x_i\right)e^{-\theta\sum_{i=1}^{n}x_i}. 取对数得到： \ell(\theta)=\ln L(\theta)=2n\ln\theta+\sum_{i=1}^{n}\ln x_i-\theta\sum_{i=1}^{n}x_i, \quad\theta >0 求导，并令导函数大于 0 与导函数小于 0，得到让对数似然达到极大值的值为 \displaystyle\hat\theta=\frac{2n}{\sum_{i=1}^{n}x_i}。即： \hat\theta=\frac{2n}{\sum_{i=1}^{n}x_i}=\frac{2}{\bar x}.   若 u(\theta)...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A6%82%E7%8E%87%E7%9A%84%E6%80%A7%E8%B4%A8"><span class="toc-text">概率的性质</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%A4%E5%85%B8%E6%A6%82%E5%9E%8B"><span class="toc-text">古典概型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%87%A0%E4%BD%95%E6%A6%82%E5%9E%8B"><span class="toc-text">几何概型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E6%A6%82%E7%8E%87%E4%B8%8E%E4%B9%98%E6%B3%95%E5%85%AC%E5%BC%8F"><span class="toc-text">条件概率与乘法公式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%A8%E6%A6%82%E7%8E%87%E5%85%AC%E5%BC%8F%E4%B8%8E%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%85%AC%E5%BC%8F"><span class="toc-text">全概率公式与贝叶斯公式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E7%8B%AC%E7%AB%8B%E6%80%A7"><span class="toc-text">事件独立性</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:37:28.000Z" title="发表于 2026-09-07 18:37:28">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/Linear-Space/" title="Linear Space">Linear Space</a><time datetime="2026-09-06T11:53:00.000Z" title="发表于 2026-09-06 19:53:00">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Distribution-And-Numerical-Characteristics/" title="Distribution And Numerical Characteristics">Distribution And Numerical Characteristics</a><time datetime="2026-09-05T08:28:30.000Z" title="发表于 2026-09-05 16:28:30">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Statistics/" title="Statistics">Statistics</a><time datetime="2026-09-05T08:25:12.000Z" title="发表于 2026-09-05 16:25:12">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Probability/" title="Probability">Probability</a><time datetime="2026-09-05T08:24:47.000Z" title="发表于 2026-09-05 16:24:47">2026-09-05</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/12/Best-Time-To-Buy-And-Sell-Stock/" title="Best Time To Buy And Sell Stock">Best Time To Buy And Sell Stock</a><time datetime="2026-09-08T09:17:31.608Z" title="更新于 2026-09-08 17:17:31">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/12/Binary-Constraint-Matching/" title="Binary Constraint Matching">Binary Constraint Matching</a><time datetime="2026-09-08T09:17:23.435Z" title="更新于 2026-09-08 17:17:23">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/01/Closest-Equal-Element-Queries/" title="Closest Equal Element Queries">Closest Equal Element Queries</a><time datetime="2026-09-08T09:17:16.159Z" title="更新于 2026-09-08 17:17:16">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots">Matrix Square Roots</a><time datetime="2026-09-07T12:09:10.842Z" title="更新于 2026-09-07 20:09:10">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:57:54.997Z" title="更新于 2026-09-07 18:57:54">2026-09-07</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

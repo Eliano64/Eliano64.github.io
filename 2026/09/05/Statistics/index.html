@@ -1,0 +1,533 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Statistics | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="概率极限定理切比雪夫不等式对任意 \varepsilon&gt;0， P\{|X-\operatorname{E}(X)|0。给定观测值(x_{1},\ldots,x_{n})后，联合似然函数为： L(\theta)&#x3D;\prod_{i&#x3D;1}^{n}\theta^2x_i e^{-\theta x_i} &#x3D;\theta^{2n}\left(\prod_{i&#x3D;1}^{n}x_i\right)e^{-\the">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Statistics">
+<meta property="og:url" content="https://eliano64.github.io/2026/09/05/Statistics/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="概率极限定理切比雪夫不等式对任意 \varepsilon&gt;0， P\{|X-\operatorname{E}(X)|0。给定观测值(x_{1},\ldots,x_{n})后，联合似然函数为： L(\theta)&#x3D;\prod_{i&#x3D;1}^{n}\theta^2x_i e^{-\theta x_i} &#x3D;\theta^{2n}\left(\prod_{i&#x3D;1}^{n}x_i\right)e^{-\the">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-09-05T08:25:12.000Z">
+<meta property="article:modified_time" content="2026-09-06T11:01:54.997Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="Statistics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Statistics",
+  "url": "https://eliano64.github.io/2026/09/05/Statistics/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-09-05T08:25:12.000Z",
+  "dateModified": "2026-09-06T11:01:54.997Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/09/05/Statistics/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Statistics',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Statistics</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Statistics</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-05T08:25:12.000Z" title="发表于 2026-09-05 16:25:12">2026-09-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-06T11:01:54.997Z" title="更新于 2026-09-06 19:01:54">2026-09-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Probability-Statistics/">Probability &amp; Statistics</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.2k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="概率极限定理"><a href="#概率极限定理" class="headerlink" title="概率极限定理"></a>概率极限定理</h1><h2 id="切比雪夫不等式"><a href="#切比雪夫不等式" class="headerlink" title="切比雪夫不等式"></a>切比雪夫不等式</h2><p>对任意 <script type="math/tex">\varepsilon>0</script>，</p>
+<script type="math/tex; mode=display">P\{|X-\operatorname{E}(X)|<\varepsilon\}
+\geqslant 1 -\frac{\operatorname{D}(X)}{\varepsilon^2}.</script>
+<h2 id="大数定律"><a href="#大数定律" class="headerlink" title="大数定律"></a>大数定律</h2><p>前提条件： <script type="math/tex">X_1,X_2,\ldots</script> 独立同分布，<script type="math/tex">E(X_i)=\mu</script>，且方差存在。</p>
+<p>则</p>
+<script type="math/tex; mode=display">\bar X_n=\frac1n\sum_{i=1}^{n}X_i
+\xrightarrow{P}\mu.</script>
+<p><strong>样本均值会依概率收敛到期望。</strong> 使用极限形式表述：<script type="math/tex; mode=display">\lim_{ n \to \infty } P\left\{ \left| \frac{1}{n}\sum_{i=1}^{n}X_{i}-\mu \right|<\varepsilon \right\}=1</script></p>
+<h2 id="中心极限定理"><a href="#中心极限定理" class="headerlink" title="中心极限定理"></a>中心极限定理</h2><p>前提条件： <script type="math/tex">X_i</script> 独立同分布，<script type="math/tex">E(X_i)=\mu</script>，<script type="math/tex">\operatorname{D}(X_i)=\sigma^2<\infty</script></p>
+<p>则</p>
+<script type="math/tex; mode=display">\lim_{ n \to \infty } \frac{\sum_{i=1}^{n}X_i-n\mu}{\sigma\sqrt n}
+\sim N(0,1).</script>
+<script type="math/tex; mode=display">\lim_{ n \to \infty } \bar X_n\sim N\left(\mu,\frac{\sigma^2}{n}\right).</script>
+<h1 id="样本、统计量与观测值"><a href="#样本、统计量与观测值" class="headerlink" title="样本、统计量与观测值"></a>样本、统计量与观测值</h1><ul>
+<li><strong>样本</strong>：<script type="math/tex">\displaystyle X_1,\ldots,X_n</script> 是从总体独立同分布抽取的随机变量，实际观测到的数值记为 <script type="math/tex">\displaystyle x_1,\ldots,x_n</script>。</li>
+<li><strong>统计量</strong>：不含未知总体参数的样本函数 <script type="math/tex">\displaystyle T=T(X_1,\ldots,X_n)</script>，随样本变化，本身也是随机变量。</li>
+<li><strong>观测值</strong>：将观测数据代入统计量，得到具体数值 <script type="math/tex">\displaystyle t=T(x_1,\ldots,x_n)</script>。</li>
+</ul>
+<p>例如，<script type="math/tex">\displaystyle \bar X=\frac1n\sum_{i=1}^nX_i</script> 是统计量；观测到 <script type="math/tex">\displaystyle (x_1,x_2,x_3)=(2,4,6)</script> 时，<script type="math/tex">\displaystyle \bar x=4</script> 是它的观测值。若总体均值 <script type="math/tex">\displaystyle \mu</script> 未知，<script type="math/tex">\displaystyle \bar X-\mu</script> 就不是统计量，因为仅凭样本不能算出它的数值。</p>
+<h1 id="三大抽样分布"><a href="#三大抽样分布" class="headerlink" title="三大抽样分布"></a>三大抽样分布</h1><h2 id="上分位数"><a href="#上分位数" class="headerlink" title="上分位数"></a>上分位数</h2><p>对连续型随机变量 <script type="math/tex">X</script>，上 <script type="math/tex">\alpha</script> 分位数 <script type="math/tex">x_\alpha</script> 满足</p>
+<script type="math/tex; mode=display">P\{X>x_\alpha\}=\alpha.</script>
+<p>下标表示右尾面积。</p>
+<h2 id="chi-2-分布"><a href="#chi-2-分布" class="headerlink" title="\chi^2 分布"></a><script type="math/tex">\chi^2</script> 分布</h2><p><strong>若 <script type="math/tex">X_1,\ldots,X_n</script> 相互独立</strong>且均服从 <script type="math/tex">N(0,1)</script>，则</p>
+<script type="math/tex; mode=display">U=\sum_{i=1}^{n}X_i^2\sim\chi^2(n).</script>
+<p><img src="/assets/chi-square-distribution-curves.svg"></p>
+<p>性质：</p>
+<ol>
+<li><script type="math/tex">E(U)=n,\operatorname{D}(U)=2n.</script></li>
+<li>若 <script type="math/tex">U\sim\chi^2(m)</script>、<script type="math/tex">V\sim\chi^2(n)</script> 且相互独立，则 <script type="math/tex">U+V\sim\chi^2(m+n).</script></li>
+</ol>
+<h2 id="t-分布"><a href="#t-分布" class="headerlink" title="t 分布"></a><script type="math/tex">t</script> 分布</h2><p>若<script type="math/tex">Z\sim N(0,1),U\sim\chi^2(n),</script> <strong><script type="math/tex">Z</script>与<script type="math/tex">U</script>独立</strong>，则</p>
+<script type="math/tex; mode=display">T=\frac{Z}{\sqrt{U/n}}\sim t(n).</script>
+<p><img src="/assets/student-t-distribution-curves.svg"></p>
+<p>性质：</p>
+<ol>
+<li><script type="math/tex">t</script> 分布关于零对称。即<script type="math/tex">E(t)=0,t_{1-\alpha}(n)+t_{\alpha}(n)=0</script></li>
+<li><script type="math/tex">t \sim \displaystyle\lim_{ n \to \infty }t(n)\implies t \sim N(0,1)</script></li>
+</ol>
+<h2 id="F-分布"><a href="#F-分布" class="headerlink" title="F 分布"></a><script type="math/tex">F</script> 分布</h2><p>若<script type="math/tex">U\sim\chi^2(m),\qquad V\sim\chi^2(n)</script>,<script type="math/tex">U,V</script>独立,则</p>
+<script type="math/tex; mode=display">F=\frac{U/m}{V/n}\sim F(m,n).</script>
+<p><img src="/assets/f-distribution-curves.svg"></p>
+<p>性质：</p>
+<ol>
+<li>若 <script type="math/tex">F\sim F(m,n)</script>，则<script type="math/tex">\frac1F\sim F(n,m),</script> 从而上分位数满足<script type="math/tex">F_\alpha(m,n)=\frac1{F_{1-\alpha}(n,m)}</script></li>
+<li><script type="math/tex">t \sim t(n)\implies t^{2} \sim F(1,n)</script></li>
+</ol>
+<h2 id="统计量分布的标准化方法"><a href="#统计量分布的标准化方法" class="headerlink" title="统计量分布的标准化方法"></a>统计量分布的标准化方法</h2><p><strong>先拆出标准正态变量，再看平方和、平方根与比值，最后补系数。</strong></p>
+<ol>
+<li><strong>统一尺度</strong>：正态变量或正态线性组合 <script type="math/tex">\displaystyle L</script>，先化为 <script type="math/tex">\displaystyle \frac{L-E(L)}{\sqrt{D(L)}}</script>；平方项也要除以对应方差。</li>
+<li><strong>检查独立性与自由度</strong>：独立标准正态变量的平方和才直接服从卡方分布，个数就是自由度。不同线性组合可能共享原变量；若它们联合正态，可通过协方差为零证明独立。样本残差平方和的自由度为 <script type="math/tex">\displaystyle n-1</script>。</li>
+<li><strong>匹配结构</strong>：设 <script type="math/tex">\displaystyle Z\sim N(0,1)</script>、<script type="math/tex">\displaystyle U\sim\chi^2(r)</script>、<script type="math/tex">\displaystyle V\sim\chi^2(s)</script>，且相互独立，则：</li>
+</ol>
+<script type="math/tex; mode=display">U\sim\chi^2(r),\qquad
+\frac{Z}{\sqrt{\frac{U}{r}}}\sim t(r),\qquad
+\frac{\frac{U}{r}}{\frac{V}{s}}\sim F(r,s).</script>
+<p>例如，遇到 <script type="math/tex">\displaystyle Y=\frac{Z}{\sqrt U}</script>，应写 <script type="math/tex">\displaystyle \sqrt r\,Y\sim t(r)</script>；遇到 <script type="math/tex">\displaystyle Y=\frac UV</script>，应写 <script type="math/tex">\displaystyle \frac srY\sim F(r,s)</script>。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">分子、分母共享原变量时，怎样识别分布</span></div>
+<div class="callout-content"><p>设 <script type="math/tex">\displaystyle X_1,X_2,X_3</script> 独立同分布于 <script type="math/tex">\displaystyle N(0,\sigma^2)</script>，其中 <script type="math/tex">\displaystyle \sigma>0</script>。求统计量 <script type="math/tex">\displaystyle R=\frac{X_1+X_2}{\sqrt{(X_1-X_2)^2+2X_3^2}}</script> 经怎样的倍数变换服从 <script type="math/tex">\displaystyle t</script> 分布，并求 <script type="math/tex">\displaystyle R^2</script> 对应的 <script type="math/tex">\displaystyle F</script> 分布。</p>
+<p>将三个线性组合分别除以自身标准差：</p>
+<script type="math/tex; mode=display">Z=\frac{X_1+X_2}{\sqrt2\sigma},\qquad
+A=\frac{X_1-X_2}{\sqrt2\sigma},\qquad
+B=\frac{X_3}{\sigma}.</script>
+<p>三者都服从标准正态分布。由于 <script type="math/tex">\displaystyle \operatorname{Cov}(X_1+X_2,X_1-X_2)=\sigma^2-\sigma^2=0</script>，且三者联合正态，<script type="math/tex">\displaystyle Z,A</script> 独立；<script type="math/tex">\displaystyle B</script> 又与它们独立。因此 <script type="math/tex">\displaystyle U=A^2+B^2\sim\chi^2(2)</script>，且 <script type="math/tex">\displaystyle Z</script> 与 <script type="math/tex">\displaystyle U</script> 独立。</p>
+<p>代回原式，注意分母还缺少“除以自由度”：</p>
+<script type="math/tex; mode=display">R=\frac{Z}{\sqrt{A^2+B^2}}=\frac{Z}{\sqrt U},\qquad
+\sqrt2R=\frac{Z}{\sqrt{\frac U2}}\sim t(2).</script>
+<p>再平方，分子 <script type="math/tex">\displaystyle Z^2\sim\chi^2(1)</script>，所以：</p>
+<script type="math/tex; mode=display">2R^2=\frac{\frac{Z^2}{1}}{\frac U2}\sim F(1,2).</script>
+</div>
+</div>
+<h1 id="样本数字特征"><a href="#样本数字特征" class="headerlink" title="样本数字特征"></a>样本数字特征</h1><p>样本均值与样本方差、样本标准差为</p>
+<script type="math/tex; mode=display">\bar X=\frac1n\sum_{i=1}^{n}X_i,
+\qquad
+S^2=\frac1{n-1}\sum_{i=1}^{n}(X_i-\bar X)^2\qquad S=\sqrt{ S^{2} }.</script>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">样本方差分母为什么是 $n-1$</span></div>
+<div class="callout-content"><p>对每一项写成 <script type="math/tex">X_i-\mu=(X_i-\bar X)+(\bar X-\mu)</script>，平方后从 <script type="math/tex">i=1</script> 求到 <script type="math/tex">n</script>：交叉项为 <script type="math/tex">2(\bar X-\mu)\sum_{i=1}^{n}(X_i-\bar X)=0</script>，所以</p>
+<script type="math/tex; mode=display">\sum_{i=1}^{n}(X_i-\mu)^2=\sum_{i=1}^{n}(X_i-\bar X)^2+n(\bar X-\mu)^2.</script>
+<p>两边取期望，左边为 <script type="math/tex">n\sigma^2</script>，右边第二项为 <script type="math/tex">nD(\bar X)=\sigma^2</script>，因此 <script type="math/tex">E[\sum_{i=1}^{n}(X_i-\bar X)^2]=(n-1)\sigma^2</script>。所以除以 <script type="math/tex">n-1</script> 才有 <script type="math/tex">E(S^2)=\sigma^2</script>；若除以 <script type="math/tex">n</script>，期望为 <script type="math/tex">(n-1)\sigma^2/n</script>，不满足无偏性。</p>
+</div>
+</div>
+<p>若 <script type="math/tex">X_1,\ldots,X_n</script> 独立同分布，<script type="math/tex">E(X_i)=\mu</script>，<script type="math/tex">D(X_i)=\sigma^2<\infty</script>，则</p>
+<script type="math/tex; mode=display">E(\bar X)=\mu,\qquad D(\bar X)=\frac{\sigma^2}{n},\qquad E(S^2)=\sigma^2.</script>
+<p>若进一步 <script type="math/tex">X_i\sim N(\mu,\sigma^2)</script> ：</p>
+<script type="math/tex; mode=display">\frac{\bar X-\mu}{\sigma/\sqrt n}\sim N(0,1).</script>
+<script type="math/tex; mode=display">\frac{\sum_{i=1}^{n}(X_i-\mu)^2}{\sigma^2}
+\sim\chi^2(n).</script>
+<p>以已知 <script type="math/tex">\mu</script> 为中心时有 <script type="math/tex">n</script> 个独立标准正态平方项；以 <script type="math/tex">\bar X</script> 为中心时却有 <script type="math/tex">\sum_{i=1}^{n}\frac{(X_i-\bar X)}{\sigma}=0</script>，因此只剩 <script type="math/tex">n-1</script> 个线性无关的服从标准正态分布的随机变量。</p>
+<script type="math/tex; mode=display">\frac{(n-1)S^2}{\sigma^2}\sim\chi^2(n-1).</script>
+<p>在正态总体下，<script type="math/tex">\bar X</script> 与 <script type="math/tex">S^2</script> 独立，因此</p>
+<script type="math/tex; mode=display">\frac{\bar X-\mu}{S/\sqrt n}\sim t(n-1).</script>
+<h1 id="顺序统计量"><a href="#顺序统计量" class="headerlink" title="顺序统计量"></a>顺序统计量</h1><p>将样本从小到大排列：</p>
+<script type="math/tex; mode=display">X_{(1)}\le X_{(2)}\le\cdots\le X_{(n)}.</script>
+<p><script type="math/tex">X_{(k)}</script> 称为第 <script type="math/tex">k</script> 个顺序统计量；<script type="math/tex">X_{(1)}</script>、<script type="math/tex">X_{(n)}</script> 分别为样本最小值、最大值。</p>
+<p>事件 <script type="math/tex">\{X_{(k)}\le x\}</script> 表示至少有 <script type="math/tex">k</script> 个样本不超过 <script type="math/tex">x</script>，因此</p>
+<script type="math/tex; mode=display">F_{X_{(k)}}(x)=\sum_{j=k}^{n}\binom nj[F(x)]^j[1-F(x)]^{n-j}.</script>
+<p>求导有：</p>
+<script type="math/tex; mode=display">f_{X_{(k)}}(x)
+=\frac{n!}{(k-1)!(n-k)!}
+[F(x)]^{k-1}[1-F(x)]^{n-k}f(x).</script>
+<h1 id="参数的点估计"><a href="#参数的点估计" class="headerlink" title="参数的点估计"></a>参数的点估计</h1><h2 id="矩估计"><a href="#矩估计" class="headerlink" title="矩估计"></a>矩估计</h2><p><strong>原点矩</strong>以零为中心，<strong>中心矩</strong>先减去均值。假设相应矩存在，<script type="math/tex">\displaystyle k</script> 阶总体矩与样本矩分别为：</p>
+<table>
+<thead>
+<tr>
+<th>矩</th>
+<th>总体矩</th>
+<th>样本矩</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原点矩</td>
+<td><script type="math/tex">\displaystyle E(X^k)</script><br></td>
+<td><script type="math/tex">\displaystyle A_k=\frac1n\sum_{i=1}^nX_i^k</script><br></td>
+</tr>
+<tr>
+<td>中心矩</td>
+<td><script type="math/tex">\displaystyle E[(X-E(X))^k]</script><br><script type="math/tex">\displaystyle E[(X-E(X))^2]=D(X)</script></td>
+<td><script type="math/tex">\displaystyle B_k=\frac1n\sum_{i=1}^n(X_i-\bar X)^k</script><br></td>
+</tr>
+</tbody></table>
+<p><strong>估计步骤</strong>：先由总体分布算出含未知参数的总体矩，再令它等于能由样本算出的样本矩，解出参数。例如 <script type="math/tex">\displaystyle E_\theta(X^2)=g(\theta)</script>，就解 <script type="math/tex">\displaystyle g(\hat\theta)=A_2</script>；代入观测数据时，右侧是已知数 <script type="math/tex">\displaystyle \frac1n\sum_{i=1}^nx_i^2</script>。</p>
+<p>若无法直接得到对应样本矩，则利用原点矩与中心矩的关系将形式进行转化。</p>
+<p>最常用关系：<script type="math/tex; mode=display">E(X^{2})=EX^{2}+E[(X-E(X))^2]</script></p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">二阶原点矩的矩估计</span></div>
+<div class="callout-content"><p>设 <script type="math/tex">\displaystyle (X_1,X_2,\ldots,X_n)</script> 为总体 <script type="math/tex">\displaystyle X</script> 的简单随机样本。已知<script type="math/tex">\displaystyle \bar X</script>与<script type="math/tex">S^{2}</script>，求 <script type="math/tex">\displaystyle E(X^2)</script> 的矩估计量。<br>二阶总体原点矩用二阶样本原点矩。但二阶样本原点矩无法得到，于是根据<script type="math/tex">E(X^{2})=DX+E^{2}X</script>，找它们对应的样本矩进行估计：</p>
+<script type="math/tex; mode=display">\widehat{E(X^2)}
+=\bar X^2+\frac{n-1}nS^2.</script>
+<blockquote>
+<p>[!danger] 矩估计不要求无偏<br>二阶中心样本矩不是方差<script type="math/tex">S^{2}</script>，是<script type="math/tex">\displaystyle\frac{n-1}{n}S^{2}</script>。</p>
+</blockquote>
+</div>
+</div>
+<h2 id="最大似然估计"><a href="#最大似然估计" class="headerlink" title="最大似然估计"></a>最大似然估计</h2><p>把样本观测值固定，将联合概率或联合概率密度看成参数的函数：</p>
+<script type="math/tex; mode=display">L(\theta)=\prod_{i=1}^{n}f(x_i;\theta).</script>
+<p>通常改求对数似然 <script type="math/tex">\ell(\theta)=\ln L(\theta)</script> 的最大值。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">最大似然估计</span></div>
+<div class="callout-content"><p>设 <script type="math/tex">X_1,\ldots,X_n</script> 独立同分布，且密度为 <script type="math/tex">f(x;\theta)=\theta^2xe^{-\theta x}</script>，其中 <script type="math/tex">x>0</script>、<script type="math/tex">\theta>0</script>。给定观测值<script type="math/tex">(x_{1},\ldots,x_{n})</script>后，联合似然函数为：</p>
+<script type="math/tex; mode=display">L(\theta)=\prod_{i=1}^{n}\theta^2x_i e^{-\theta x_i}
+=\theta^{2n}\left(\prod_{i=1}^{n}x_i\right)e^{-\theta\sum_{i=1}^{n}x_i}.</script>
+<p>取对数得到：</p>
+<script type="math/tex; mode=display">\ell(\theta)=\ln L(\theta)=2n\ln\theta+\sum_{i=1}^{n}\ln x_i-\theta\sum_{i=1}^{n}x_i, \quad\theta >0</script>
+<p>求导，并令导函数大于 0 与导函数小于 0，得到让对数似然达到极大值的值为 <script type="math/tex">\displaystyle\hat\theta=\frac{2n}{\sum_{i=1}^{n}x_i}</script>。即：</p>
+<script type="math/tex; mode=display">\hat\theta=\frac{2n}{\sum_{i=1}^{n}x_i}=\frac{2}{\bar x}.</script>
+</div>
+</div>
+<p>若 <script type="math/tex">u(\theta)</script> 在定义域内严格单调，则 <script type="math/tex">u(\hat\theta)</script> 是 <script type="math/tex">u(\theta)</script> 的最大似然估计。</p>
+<h2 id="评价标准"><a href="#评价标准" class="headerlink" title="评价标准"></a>评价标准</h2><ul>
+<li>无偏性：先按定义展开 <script type="math/tex">E(\hat\theta)</script>；若计算结果为 <script type="math/tex">\theta</script>，就得到 <script type="math/tex">E(\hat\theta)=\theta</script>，因此 <script type="math/tex">\hat\theta</script> 无偏。</li>
+<li>有效性：先分别证明两个估计量都无偏，再计算 <script type="math/tex">D(\hat\theta_1)</script> 与 <script type="math/tex">D(\hat\theta_2)</script>；若 <script type="math/tex">D(\hat\theta_1)<D(\hat\theta_2)</script>，则 <script type="math/tex">\hat\theta_1</script> 更有效。</li>
+<li>一致性（相合性）：要证明对任意 <script type="math/tex">\varepsilon>0</script> 有 <script type="math/tex">\displaystyle\lim_{ n \to \infty }P\{|\hat\theta_n-\theta|\ge\varepsilon\}=0</script>。可利用切比雪夫不等式构造这个形式，概率的下界必然为0，再取极限将概率的上界<script type="math/tex">1 -\frac{\operatorname{D}(X)}{\varepsilon^2}</script>逼近于 0 ，根据夹逼定理得概率等于 0，于是证明依概率收敛。</li>
+</ul>
+<h1 id="参数的区间估计"><a href="#参数的区间估计" class="headerlink" title="参数的区间估计"></a>参数的区间估计</h1><p>区间估计先写出一个分布已知的统计量的中间 <script type="math/tex">1-\alpha</script> 概率区间，再把不等式反解为未知参数的范围。</p>
+<p>设总体为 <script type="math/tex">N(\mu,\sigma^2)</script>。下面分别列出已知分布的统计量，并说明如何由概率区间反解出参数区间。</p>
+<h2 id="估计-mu"><a href="#估计-mu" class="headerlink" title="估计 \mu"></a>估计 <script type="math/tex">\mu</script></h2><p>若 <script type="math/tex">\sigma^2</script> 已知，</p>
+<script type="math/tex; mode=display">\frac{\bar X-\mu}{\sigma/\sqrt n}\sim N(0,1),</script>
+<p>由 <script type="math/tex">\displaystyle P\left\{ -z_{\frac{\alpha}{2}}< Z< z_{\frac{\alpha}{2}} \right\}=1-\alpha</script>，代入 <script type="math/tex">\displaystyle Z=\frac{\bar X-\mu}{\sigma/\sqrt n}</script>，再反解 <script type="math/tex">\mu</script>，得到： </p>
+<script type="math/tex; mode=display">\left(
+\bar X-z_{\alpha/2}\frac{\sigma}{\sqrt n},
+\bar X+z_{\alpha/2}\frac{\sigma}{\sqrt n}
+\right).</script>
+<p>若 <script type="math/tex">\sigma^2</script> 未知，</p>
+<script type="math/tex; mode=display">\frac{\bar X-\mu}{S/\sqrt n}\sim t(n-1),</script>
+<p>同理反解 <script type="math/tex">\mu</script>，得到：</p>
+<script type="math/tex; mode=display">\left(
+\bar X-t_{\alpha/2}(n-1)\frac{S}{\sqrt n},
+\bar X+t_{\alpha/2}(n-1)\frac{S}{\sqrt n}
+\right).</script>
+<h2 id="估计-sigma-2"><a href="#估计-sigma-2" class="headerlink" title="估计 \sigma^2"></a>估计 <script type="math/tex">\sigma^2</script></h2><p>若 <script type="math/tex">\mu</script> 已知，</p>
+<script type="math/tex; mode=display">\frac{\sum_{i=1}^{n}(X_i-\mu)^2}{\sigma^2}\sim\chi^2(n),</script>
+<p>反解 <script type="math/tex">\sigma^2</script>，得到：</p>
+<script type="math/tex; mode=display">\left(
+\frac{\sum_{i=1}^{n}(X_i-\mu)^2}{\chi^2_{\alpha/2}(n)},
+\frac{\sum_{i=1}^{n}(X_i-\mu)^2}{\chi^2_{1-\alpha/2}(n)}
+\right).</script>
+<p>若 <script type="math/tex">\mu</script> 未知，</p>
+<script type="math/tex; mode=display">\frac{(n-1)S^2}{\sigma^2}\sim\chi^2(n-1),</script>
+<p>解得：</p>
+<script type="math/tex; mode=display">\left(
+\frac{(n-1)S^2}{\chi^2_{\alpha/2}(n-1)},
+\frac{(n-1)S^2}{\chi^2_{1-\alpha/2}(n-1)}
+\right).</script>
+<h1 id="假设检验"><a href="#假设检验" class="headerlink" title="假设检验"></a>假设检验</h1><p>假设检验用样本判断关于总体的某个说法是否应被拒绝。先提出两个相互对立的假设：</p>
+<ul>
+<li>**原假设 <script type="math/tex">\displaystyle H_0</script>**：检验时暂且认为成立的说法，是确定检验统计量分布、计算概率的依据。</li>
+<li>**备择假设 <script type="math/tex">\displaystyle H_1</script>**：与 <script type="math/tex">\displaystyle H_0</script> 对立的说法；样本提供足够证据使我们拒绝 <script type="math/tex">\displaystyle H_0</script> 时，就支持 <script type="math/tex">\displaystyle H_1</script>。</li>
+</ul>
+<p><strong>小概率原理</strong>：小概率事件在一次试验中通常不会发生。若检验统计量的观测值落入预先选定的、在原假设 <script type="math/tex">\displaystyle H_0</script> 下概率很小的区域（拒绝域），就据此拒绝 <script type="math/tex">\displaystyle H_0</script>，支持备择假设 <script type="math/tex">\displaystyle H_1</script>。</p>
+<p>这是带有犯错风险的判断，并非逻辑上的反证；未落入拒绝域时不拒绝 <script type="math/tex">\displaystyle H_0</script>，也不代表已证明 <script type="math/tex">\displaystyle H_0</script> 正确。第一类错误概率不超过显著性水平 <script type="math/tex">\displaystyle \alpha</script>。</p>
+<h2 id="两类错误"><a href="#两类错误" class="headerlink" title="两类错误"></a>两类错误</h2><ul>
+<li><strong>第一类错误</strong>：<script type="math/tex">\displaystyle H_0</script> 为真却拒绝它。显著性水平 <script type="math/tex">\displaystyle \alpha</script> 是这类错误概率的上限。</li>
+<li><strong>第二类错误</strong>：<script type="math/tex">\displaystyle H_0</script> 为假却不拒绝它。对给定的备择参数值，其概率记为 <script type="math/tex">\displaystyle \beta</script>，正确拒绝的概率（检验功效）为 <script type="math/tex">\displaystyle 1-\beta</script>。</li>
+</ul>
+<h2 id="检验统计量与拒绝域"><a href="#检验统计量与拒绝域" class="headerlink" title="检验统计量与拒绝域"></a>检验统计量与拒绝域</h2><p>这里只讨论单个正态总体的均值，设 <script type="math/tex">\displaystyle X_1,\ldots,X_n</script> 独立同分布于 <script type="math/tex">\displaystyle N(\mu,\sigma^2)</script>，以 <script type="math/tex">\displaystyle \mu_0</script> 为待检验的均值。</p>
+<p><strong>拒绝域的形式与 <script type="math/tex">\displaystyle H_1</script> 一致</strong>：<script type="math/tex">\displaystyle H_1:\mu>\mu_0</script> 对应右侧，<script type="math/tex">\displaystyle H_1:\mu<\mu_0</script> 对应左侧，<script type="math/tex">\displaystyle H_1:\mu\ne\mu_0</script> 对应双侧。拒绝域包含临界点，使用 <script type="math/tex">\displaystyle \geqslant</script> 或 <script type="math/tex">\displaystyle \leqslant</script>。</p>
+<p>先根据方差是否已知选择 <script type="math/tex">\displaystyle Z</script> 或 <script type="math/tex">\displaystyle T</script> 统计量，再按 <script type="math/tex">\displaystyle H_1</script> 选尾部，令该尾部在 <script type="math/tex">\displaystyle \mu=\mu_0</script> 时的概率为 <script type="math/tex">\displaystyle \alpha</script>，解出临界值。两种分布在此时都关于零对称：单侧取一个尾部，双侧取两尾各 <script type="math/tex">\displaystyle \frac{\alpha}{2}</script>。</p>
+<p>单侧检验的 <script type="math/tex">\displaystyle H_0</script> 包含一侧的所有均值，其第一类错误概率在边界 <script type="math/tex">\displaystyle \mu=\mu_0</script> 处最大。因此按边界计算临界值，就能保证整个 <script type="math/tex">\displaystyle H_0</script> 下的第一类错误概率都不超过 <script type="math/tex">\displaystyle \alpha</script>。</p>
+<div class="callout callout-example">
+<div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">已知方差，检验 $\displaystyle H_0:\mu\leqslant\mu_0$，$\displaystyle H_1:\mu>\mu_0$</span></div>
+<div class="callout-content"><p>在边界 <script type="math/tex">\displaystyle \mu=\mu_0</script> 处，<script type="math/tex">\displaystyle Z=\frac{\bar X-\mu_0}{\frac{\sigma}{\sqrt n}}\sim N(0,1)</script>。记此时的概率为 <script type="math/tex">\displaystyle P_0</script>，则：</p>
+<script type="math/tex; mode=display">P_0(Z\geqslant c)=\alpha
+\Rightarrow c=z_\alpha
+\Rightarrow Z\geqslant z_\alpha
+\iff \bar X\geqslant \mu_0+z_\alpha\frac{\sigma}{\sqrt n}.</script>
+<p>若改为 <script type="math/tex">\displaystyle H_0:\mu\geqslant\mu_0</script>、<script type="math/tex">\displaystyle H_1:\mu<\mu_0</script>，取左尾 <script type="math/tex">\displaystyle Z\leqslant -z_\alpha</script>；若改为 <script type="math/tex">\displaystyle H_0:\mu=\mu_0</script>、<script type="math/tex">\displaystyle H_1:\mu\ne\mu_0</script>，取双尾 <script type="math/tex">\displaystyle \lvert Z\rvert\geqslant z_{\frac{\alpha}{2}}</script>。</p>
+</div>
+</div>
+<h2 id="正态总体均值检验的六种情况"><a href="#正态总体均值检验的六种情况" class="headerlink" title="正态总体均值检验的六种情况"></a>正态总体均值检验的六种情况</h2><table>
+<thead>
+<tr>
+<th>条件与假设</th>
+<th>检验统计量及其在 <script type="math/tex">\displaystyle \mu=\mu_0</script> 时的分布</th>
+<th>临界值推导与拒绝域（<script type="math/tex">\displaystyle P_0</script> 表示 <script type="math/tex">\displaystyle \mu=\mu_0</script> 时的概率，分位数均为上分位数）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>方差已知，双侧。<br><script type="math/tex">\displaystyle H_0:\mu=\mu_0</script><br><script type="math/tex">\displaystyle H_1:\mu\ne\mu_0</script></td>
+<td><script type="math/tex">\displaystyle Z=\frac{\bar X-\mu_0}{\frac{\sigma}{\sqrt n}}\sim N(0,1)</script></td>
+<td><script type="math/tex">\displaystyle P_0(\lvert Z\rvert\geqslant c)=\alpha\Rightarrow c=z_{\frac{\alpha}{2}}</script><br>拒绝域：<script type="math/tex">\displaystyle \lvert Z\rvert\geqslant z_{\frac{\alpha}{2}}</script></td>
+</tr>
+<tr>
+<td>方差已知，右侧。<br><script type="math/tex">\displaystyle H_0:\mu\leqslant\mu_0</script><br><script type="math/tex">\displaystyle H_1:\mu>\mu_0</script></td>
+<td><script type="math/tex">\displaystyle Z=\frac{\bar X-\mu_0}{\frac{\sigma}{\sqrt n}}\sim N(0,1)</script></td>
+<td><script type="math/tex">\displaystyle P_0(Z\geqslant c)=\alpha\Rightarrow c=z_\alpha</script><br>拒绝域：<script type="math/tex">\displaystyle Z\geqslant z_\alpha</script></td>
+</tr>
+<tr>
+<td>方差已知，左侧。<br><script type="math/tex">\displaystyle H_0:\mu\geqslant\mu_0</script><br><script type="math/tex">\displaystyle H_1:\mu<\mu_0</script></td>
+<td><script type="math/tex">\displaystyle Z=\frac{\bar X-\mu_0}{\frac{\sigma}{\sqrt n}}\sim N(0,1)</script></td>
+<td><script type="math/tex">\displaystyle P_0(Z\leqslant c)=\alpha\Rightarrow c=-z_\alpha</script><br>拒绝域：<script type="math/tex">\displaystyle Z\leqslant -z_\alpha</script></td>
+</tr>
+<tr>
+<td>方差未知，双侧。<br><script type="math/tex">\displaystyle H_0:\mu=\mu_0</script><br><script type="math/tex">\displaystyle H_1:\mu\ne\mu_0</script></td>
+<td><script type="math/tex">\displaystyle T=\frac{\bar X-\mu_0}{\frac{S}{\sqrt n}}\sim t(n-1)</script><br><script type="math/tex">\displaystyle S</script> 为样本标准差</td>
+<td><script type="math/tex">\displaystyle P_0(\lvert T\rvert\geqslant c)=\alpha\Rightarrow c=t_{\frac{\alpha}{2}}(n-1)</script><br>拒绝域：<script type="math/tex">\displaystyle \lvert T\rvert\geqslant t_{\frac{\alpha}{2}}(n-1)</script></td>
+</tr>
+<tr>
+<td>方差未知，右侧。<br><script type="math/tex">\displaystyle H_0:\mu\leqslant\mu_0</script><br><script type="math/tex">\displaystyle H_1:\mu>\mu_0</script></td>
+<td><script type="math/tex">\displaystyle T=\frac{\bar X-\mu_0}{\frac{S}{\sqrt n}}\sim t(n-1)</script><br><script type="math/tex">\displaystyle S</script> 为样本标准差</td>
+<td><script type="math/tex">\displaystyle P_0(T\geqslant c)=\alpha\Rightarrow c=t_\alpha(n-1)</script><br>拒绝域：<script type="math/tex">\displaystyle T\geqslant t_\alpha(n-1)</script></td>
+</tr>
+<tr>
+<td>方差未知，左侧。<br><script type="math/tex">\displaystyle H_0:\mu\geqslant\mu_0</script><br><script type="math/tex">\displaystyle H_1:\mu<\mu_0</script></td>
+<td><script type="math/tex">\displaystyle T=\frac{\bar X-\mu_0}{\frac{S}{\sqrt n}}\sim t(n-1)</script><br><script type="math/tex">\displaystyle S</script> 为样本标准差</td>
+<td><script type="math/tex">\displaystyle P_0(T\leqslant c)=\alpha\Rightarrow c=-t_\alpha(n-1)</script><br>拒绝域：<script type="math/tex">\displaystyle T\leqslant -t_\alpha(n-1)</script></td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/09/05/Statistics/">https://eliano64.github.io/2026/09/05/Statistics/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/05/Probability/" title="Probability"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Probability</div></div><div class="info-2"><div class="info-item-1">概率的性质0\le P(A)\le1,\qquad P(\Omega)=1,\qquad P(\varnothing)=0. P(\bar{A})=1-P(A),\qquad P(A-B)=P(A)-P(AB). P(A\cup B)=P(A)+P(B)-P(AB). 若 A\subseteq B，则 P(A)\le P(B)；若 A_1,A_2,\ldots 两两互斥，则 P\left(\bigcup_i A_i\right)=\sum_iP(A_i). 处理复杂事件时，先用集合运算改写事件，再套概率公式（正难则反）。例如，至少一个发生改用对立事件一个都没有发生。 古典概型样本空间含有限个等可能的基本结果时， P(A)=\frac{|A|}{|\Omega|}. 几何概型试验结果在区域 \Omega 上均匀分布时， P(A)=\frac{m(A)}{m(\Omega)}, 其中 m 可表示长度、面积或体积。先选取能使结果均匀的参数，再把事件翻译成该参数空间中的子区域；边界通常测度为零，不影响概率。 条件概率与乘法公式当 P(B)>0 时， P(A\mid...</div></div></div></a><a class="pagination-related" href="/2026/09/05/Distribution-And-Numerical-Characteristics/" title="Distribution And Numerical Characteristics"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Distribution And Numerical Characteristics</div></div><div class="info-2"><div class="info-item-1">一维随机变量及分布一维离散型随机变量离散型随机变量由分布律刻画：列出全部可能取值 x_k 及其概率： P\{X=x_k\}=p_k,\qquad p_k\ge0,\qquad \sum_k p_k=1. 常见一维离散型随机变量分布以下记 q=1-p。    分布 含义与分布律    二项分布 B(n,p) n 次独立试验的成功次数；P\{X=k\}=\binom nkp^kq^{n-k}   几何分布 G(p) 首次成功所需试验次数；P\{X=k\}=q^{k-1}p,\ k\ge1   负二项分布 NB(r,p) 第 r 次成功出现时的试验次数；P\{X=k\}=\binom{k-1}{r-1}p^rq^{k-r},\ k\ge r   超几何分布 H(N,M,n) N 个对象中有 M 个目标，不放回抽取 n 个；P\{X=k\}=\dfrac{\binom Mk\binom{N-M}{n-k}}{\binom Nn}   泊松分布...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">296</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A6%82%E7%8E%87%E6%9E%81%E9%99%90%E5%AE%9A%E7%90%86"><span class="toc-text">概率极限定理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%87%E6%AF%94%E9%9B%AA%E5%A4%AB%E4%B8%8D%E7%AD%89%E5%BC%8F"><span class="toc-text">切比雪夫不等式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E5%AE%9A%E5%BE%8B"><span class="toc-text">大数定律</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E5%BF%83%E6%9E%81%E9%99%90%E5%AE%9A%E7%90%86"><span class="toc-text">中心极限定理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A0%B7%E6%9C%AC%E3%80%81%E7%BB%9F%E8%AE%A1%E9%87%8F%E4%B8%8E%E8%A7%82%E6%B5%8B%E5%80%BC"><span class="toc-text">样本、统计量与观测值</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E5%A4%A7%E6%8A%BD%E6%A0%B7%E5%88%86%E5%B8%83"><span class="toc-text">三大抽样分布</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E5%88%86%E4%BD%8D%E6%95%B0"><span class="toc-text">上分位数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chi-2-%E5%88%86%E5%B8%83"><span class="toc-text">\chi^2 分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#t-%E5%88%86%E5%B8%83"><span class="toc-text">t 分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#F-%E5%88%86%E5%B8%83"><span class="toc-text">F 分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1%E9%87%8F%E5%88%86%E5%B8%83%E7%9A%84%E6%A0%87%E5%87%86%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc-text">统计量分布的标准化方法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A0%B7%E6%9C%AC%E6%95%B0%E5%AD%97%E7%89%B9%E5%BE%81"><span class="toc-text">样本数字特征</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E7%BB%9F%E8%AE%A1%E9%87%8F"><span class="toc-text">顺序统计量</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E7%9A%84%E7%82%B9%E4%BC%B0%E8%AE%A1"><span class="toc-text">参数的点估计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9F%A9%E4%BC%B0%E8%AE%A1"><span class="toc-text">矩估计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1"><span class="toc-text">最大似然估计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%84%E4%BB%B7%E6%A0%87%E5%87%86"><span class="toc-text">评价标准</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E7%9A%84%E5%8C%BA%E9%97%B4%E4%BC%B0%E8%AE%A1"><span class="toc-text">参数的区间估计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%B0%E8%AE%A1-mu"><span class="toc-text">估计 \mu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%B0%E8%AE%A1-sigma-2"><span class="toc-text">估计 \sigma^2</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%81%87%E8%AE%BE%E6%A3%80%E9%AA%8C"><span class="toc-text">假设检验</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E7%B1%BB%E9%94%99%E8%AF%AF"><span class="toc-text">两类错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E9%AA%8C%E7%BB%9F%E8%AE%A1%E9%87%8F%E4%B8%8E%E6%8B%92%E7%BB%9D%E5%9F%9F"><span class="toc-text">检验统计量与拒绝域</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E6%80%81%E6%80%BB%E4%BD%93%E5%9D%87%E5%80%BC%E6%A3%80%E9%AA%8C%E7%9A%84%E5%85%AD%E7%A7%8D%E6%83%85%E5%86%B5"><span class="toc-text">正态总体均值检验的六种情况</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:37:28.000Z" title="发表于 2026-09-07 18:37:28">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/Linear-Space/" title="Linear Space">Linear Space</a><time datetime="2026-09-06T11:53:00.000Z" title="发表于 2026-09-06 19:53:00">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Distribution-And-Numerical-Characteristics/" title="Distribution And Numerical Characteristics">Distribution And Numerical Characteristics</a><time datetime="2026-09-05T08:28:30.000Z" title="发表于 2026-09-05 16:28:30">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Statistics/" title="Statistics">Statistics</a><time datetime="2026-09-05T08:25:12.000Z" title="发表于 2026-09-05 16:25:12">2026-09-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Probability/" title="Probability">Probability</a><time datetime="2026-09-05T08:24:47.000Z" title="发表于 2026-09-05 16:24:47">2026-09-05</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/12/Best-Time-To-Buy-And-Sell-Stock/" title="Best Time To Buy And Sell Stock">Best Time To Buy And Sell Stock</a><time datetime="2026-09-08T09:17:31.608Z" title="更新于 2026-09-08 17:17:31">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/12/Binary-Constraint-Matching/" title="Binary Constraint Matching">Binary Constraint Matching</a><time datetime="2026-09-08T09:17:23.435Z" title="更新于 2026-09-08 17:17:23">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/11/01/Closest-Equal-Element-Queries/" title="Closest Equal Element Queries">Closest Equal Element Queries</a><time datetime="2026-09-08T09:17:16.159Z" title="更新于 2026-09-08 17:17:16">2026-09-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/02/Matrix-Square-Roots/" title="Matrix Square Roots">Matrix Square Roots</a><time datetime="2026-09-07T12:09:10.842Z" title="更新于 2026-09-07 20:09:10">2026-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/07/Inverse-Matrix/" title="Inverse Matrix">Inverse Matrix</a><time datetime="2026-09-07T10:57:54.997Z" title="更新于 2026-09-07 18:57:54">2026-09-07</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>
