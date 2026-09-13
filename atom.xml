@@ -390,9 +390,9 @@
     <link href="https://eliano64.github.io/2026/08/15/Big-Picture-For-IO/"/>
     <id>https://eliano64.github.io/2026/08/15/Big-Picture-For-IO/</id>
     <published>2026-08-15T04:07:00.000Z</published>
-    <updated>2026-08-28T11:20:05.969Z</updated>
+    <updated>2026-09-13T09:00:08.287Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="The-Big-Picture"><a href="#The-Big-Picture" class="headerlink" title="The Big Picture"></a>The Big Picture</h1><p><img src="/assets/read-keyboard-block-wakeup-dark.png" alt="1000"></p><h1 id="为什么先使用内核输入缓冲区（键盘缓冲区）"><a href="#为什么先使用内核输入缓冲区（键盘缓冲区）" class="headerlink" title="为什么先使用内核输入缓冲区（键盘缓冲区）"></a>为什么先使用内核输入缓冲区（键盘缓冲区）</h1><p>进程使用的是虚拟地址，但对于设备得到的是物理地址。设备不能把 P 的虚拟地址直接当成稳定的物理写入位置。</p><p>内核输入缓冲区不依赖 P 当前是否运行，可以先保存异步到达的数据。P 重新获得 CPU 后，内核才在 P 的进程上下文中检查并访问其用户地址，把数据交付给它。</p>]]></content>
+    <content type="html"><![CDATA[<h1 id="The-Big-Picture"><a href="#The-Big-Picture" class="headerlink" title="The Big Picture"></a>The Big Picture</h1><p><img src="/assets/read-keyboard-block-wakeup-dark.png" alt="1000"></p><p><img src="/assets/write-screen-block-wakeup-dark.svg" alt="1000"></p><h1 id="为什么先使用内核输入缓冲区（键盘缓冲区）"><a href="#为什么先使用内核输入缓冲区（键盘缓冲区）" class="headerlink" title="为什么先使用内核输入缓冲区（键盘缓冲区）"></a>为什么先使用内核输入缓冲区（键盘缓冲区）</h1><p>进程使用的是虚拟地址，但对于设备得到的是物理地址。设备不能把 P 的虚拟地址直接当成稳定的物理写入位置。</p><p>内核输入缓冲区不依赖 P 当前是否运行，可以先保存异步到达的数据。P 重新获得 CPU 后，内核才在 P 的进程上下文中检查并访问其用户地址，把数据交付给它。</p>]]></content>
     
     
       
