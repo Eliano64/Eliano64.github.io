@@ -56,7 +56,7 @@ td { padding: 6px 8px; border: 1px solid var(--border); font-size: 14px; text-al
 </head>
 <body>
 <main>
-  <header><h1>TCP 拥塞控制 — 慢开始 · 拥塞避免 · 快重传 · 快恢复</h1></header>
+  <header><h1>TCP 拥塞控制：慢开始 · 拥塞避免 · 快重传 · 快恢复</h1></header>
 
   <!-- Page 1: Slow Start -->
   <section class="slide active">
@@ -173,7 +173,7 @@ while (no_loss) {           // 12→13→14→...
 }
 /* 问题: 如果只是个别报文段丢失
    （非拥塞），Tahoe 也会把 cwnd
-   砍到 1 —— 效率损失大 */</code></pre>
+   砍到 1：效率损失大 */</code></pre>
   </section>
 
   <!-- Page 4: Fast Retransmit -->
@@ -185,8 +185,8 @@ while (no_loss) {           // 12→13→14→...
         <tr class="td-hd"><td>事件</td><td>发送方动作</td></tr>
         <tr><td>收到 ACK(M1)</td><td>正常确认 M1 ✓</td></tr>
         <tr><td>收到 ACK(M2)</td><td>正常确认 M2 ✓</td></tr>
-        <tr><td>收到 ACK(M2) ×1</td><td>dup ACK #1 — 可能是乱序</td></tr>
-        <tr><td>收到 ACK(M2) ×2</td><td>dup ACK #2 — 注意</td></tr>
+        <tr><td>收到 ACK(M2) ×1</td><td>dup ACK #1：可能是乱序</td></tr>
+        <tr><td>收到 ACK(M2) ×2</td><td>dup ACK #2：注意</td></tr>
         <tr><td>收到 ACK(M2) <strong>×3</strong></td><td><span class="val-r">dup ACK #3 → 立即重传 M3！不等超时</span></td></tr>
       </table>
       <p style="margin-top:8px;"><span class="val-g">意义</span>：收到 3 个重复 ACK 意味着“M3 前出现缺口，但 M4/M5/M6 仍在到达” → 不必像超时那样把 cwnd 降到 1。</p>
@@ -224,7 +224,7 @@ void on_ack(int ack_num) {
         <tr><td>cwnd</td><td class="val-r">1</td><td class="val-g">ssthresh</td></tr>
         <tr><td>后续阶段</td><td>重新慢开始</td><td class="val-g">直接拥塞避免</td></tr>
       </table>
-      <p style="margin-top:10px;"><strong>总结</strong>：拥塞控制的四个算法是逐步演进的——慢开始和拥塞避免是基础（Tahoe, 1988），快重传和快恢复是改进（Reno, 1990）。核心思想：<strong>试探着增加，丢包了就减，但不该减过头</strong>。</p>
+      <p style="margin-top:10px;"><strong>总结</strong>：拥塞控制的四个算法是逐步演进的：慢开始和拥塞避免是基础（Tahoe, 1988），快重传和快恢复是改进（Reno, 1990）。核心思想：<strong>试探着增加，丢包了就减，但不该减过头</strong>。</p>
     </div>
     <pre><code>/* 408 简化模型：快重传 + 快恢复 */
 void on_3_dup_ack() {

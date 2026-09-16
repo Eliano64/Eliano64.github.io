@@ -48,7 +48,7 @@ td { padding: 8px 10px; border: 1px solid var(--border); font-size: 15px; }
 </head>
 <body>
 <main>
-  <header><h1>TCP 流量控制 — 接收窗口 rwnd 动态调整</h1></header>
+  <header><h1>TCP 流量控制：接收窗口 rwnd 动态调整</h1></header>
 
   <section class="slide active">
     <div class="panel">
@@ -78,7 +78,7 @@ usable   = 100;  // 还可发送</code></pre>
         <tr class="td-hd"><td colspan="3">B → A：ACK=201, rwnd=300</td></tr>
         <tr><td>含义</td><td colspan="2">201 之前的数据已收到；接收窗口缩小为 300</td></tr>
         <tr class="td-hd"><td colspan="3">A 的发送窗口变化</td></tr>
-        <tr><td>swnd</td><td><span class="val-b">400 → 300</span></td><td>窗口收缩 → 覆盖 201–500</td></tr>
+        <tr><td>swnd</td><td><span class="val-b">400 → 300</span></td><td>窗口收缩 → 覆盖 201-500</td></tr>
         <tr><td>201-300</td><td>已发未确认</td><td>暂留在发送缓存中</td></tr>
         <tr><td>301-500</td><td>允许发送</td><td>可用窗口 = 200</td></tr>
       </table>
@@ -121,7 +121,7 @@ inflight = 300; usable = 0;
       <table>
         <tr class="td-hd"><td>阶段</td><td>B 通告</td><td>A 响应</td></tr>
         <tr><td>第二次流量控制</td><td><span class="val-r">ACK=501, rwnd=100</span></td><td>swnd→100，覆盖 501-600</td></tr>
-        <tr><td>A 发送</td><td>—</td><td>seq=501, 100B → 可用窗口归零</td></tr>
+        <tr><td>A 发送</td><td>（无）</td><td>seq=501, 100B → 可用窗口归零</td></tr>
         <tr><td>第三次流量控制</td><td><span class="val-r">ACK=601, rwnd=0</span></td><td><span class="val-r">swnd→0</span>，停止发送</td></tr>
       </table>
       <p style="margin-top:12px;">B 的缓存已满，应用进程读取过慢 → rwnd 从 300 → 100 → 0。</p>

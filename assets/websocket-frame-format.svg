@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="480" viewBox="0 0 960 480" role="img" aria-labelledby="title desc">
+  <title id="title">WebSocket 帧格式</title><desc id="desc">帧首部的前两个字节保存 FIN、RSV、opcode、MASK 和负载长度指示；负载较长时再跟扩展长度字段，客户发送的帧还需要 4 字节掩码密钥和掩码后的负载。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+:root{color-scheme:light dark}.title{font:700 23px "Microsoft YaHei",sans-serif;fill:#172033}.label{font:700 13px "Microsoft YaHei",sans-serif;fill:#172033}.cell{font:12px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:12px "Microsoft YaHei",sans-serif;fill:#526174}.tiny{font:11px "Microsoft YaHei",sans-serif;fill:#64748b}.boxtitle{font:700 15px "Microsoft YaHei",sans-serif;fill:#172033}.neutral{fill:#fff;stroke:#64748b;stroke-width:1.6}.len{fill:#eff6ff;stroke:#2563eb;stroke-width:1.6}.mask{fill:#fef2f2;stroke:#dc2626;stroke-width:1.6}.data{fill:#ecfdf5;stroke:#059669;stroke-width:1.6}.rule{stroke:#cbd5e1;stroke-width:1.4}@media(prefers-color-scheme:dark){.title,.label,.cell,.boxtitle{fill:#e5edf5}.sub{fill:#a9b7c6}.tiny{fill:#8fa0b3}.neutral{fill:#121b25;stroke:#475569}.len{fill:#17345a;stroke:#60a5fa}.mask{fill:#3b1518;stroke:#f87171}.data{fill:#123d2d;stroke:#34d399}.rule{stroke:#334155}}</style>
+
+  <text x="480" y="36" text-anchor="middle" class="title">WebSocket 帧格式：首部字段与负载</text>
+  <text x="480" y="62" text-anchor="middle" class="sub">前两个字节保存控制位与长度指示；负载较长时再跟扩展长度字段，之后是掩码密钥和负载数据</text>
+
+  <text x="280" y="88" text-anchor="middle" class="tiny">字节 0</text>
+  <line x1="80" y1="94" x2="480" y2="94" class="rule"/>
+  <text x="680" y="88" text-anchor="middle" class="tiny">字节 1</text>
+  <line x1="480" y1="94" x2="880" y2="94" class="rule"/>
+
+  <rect x="80" y="100" width="50" height="56" class="neutral"/><text x="105" y="133" text-anchor="middle" class="cell">FIN</text>
+  <rect x="130" y="100" width="50" height="56" class="neutral"/><text x="155" y="133" text-anchor="middle" class="cell">RSV1</text>
+  <rect x="180" y="100" width="50" height="56" class="neutral"/><text x="205" y="133" text-anchor="middle" class="cell">RSV2</text>
+  <rect x="230" y="100" width="50" height="56" class="neutral"/><text x="255" y="133" text-anchor="middle" class="cell">RSV3</text>
+  <rect x="280" y="100" width="200" height="56" class="neutral"/><text x="380" y="133" text-anchor="middle" class="cell">opcode</text>
+  <rect x="480" y="100" width="50" height="56" class="mask"/><text x="505" y="133" text-anchor="middle" class="cell">MASK</text>
+  <rect x="530" y="100" width="350" height="56" class="len"/><text x="705" y="133" text-anchor="middle" class="cell">Payload len</text>
+
+  <text x="105" y="172" text-anchor="middle" class="tiny">1 位</text>
+  <text x="155" y="172" text-anchor="middle" class="tiny">1 位</text>
+  <text x="205" y="172" text-anchor="middle" class="tiny">1 位</text>
+  <text x="255" y="172" text-anchor="middle" class="tiny">1 位</text>
+  <text x="380" y="172" text-anchor="middle" class="tiny">4 位</text>
+  <text x="505" y="172" text-anchor="middle" class="tiny">1 位</text>
+  <text x="705" y="172" text-anchor="middle" class="tiny">7 位</text>
+
+  <rect x="80" y="196" width="220" height="108" rx="8" class="len"/>
+  <text x="96" y="224" class="boxtitle">扩展长度（可选）</text>
+  <text x="96" y="250" class="sub">Payload len = 126 → 16 位</text>
+  <text x="96" y="274" class="sub">Payload len = 127 → 64 位</text>
+  <text x="96" y="298" class="sub">其余情况没有此字段</text>
+
+  <rect x="330" y="196" width="220" height="108" rx="8" class="mask"/>
+  <text x="346" y="224" class="boxtitle">掩码密钥</text>
+  <text x="346" y="250" class="sub">固定 4 字节</text>
+  <text x="346" y="274" class="sub">仅当 MASK = 1 时存在</text>
+
+  <rect x="580" y="196" width="300" height="108" rx="8" class="data"/>
+  <text x="596" y="224" class="boxtitle">负载数据</text>
+  <text x="596" y="250" class="sub">应用数据或扩展数据</text>
+  <text x="596" y="274" class="sub">长度由长度字段给出</text>
+  <text x="596" y="298" class="sub">长度为 0 时也合法</text>
+
+  <rect x="80" y="324" width="380" height="108" rx="8" class="neutral"/>
+  <text x="96" y="352" class="boxtitle">方向与掩码（协议强制）</text>
+  <text x="96" y="378" class="sub">客户 → 服务器：MASK 必须为 1</text>
+  <text x="96" y="402" class="sub">服务器 → 客户：MASK 必须为 0</text>
+  <text x="96" y="426" class="sub">方向与掩码不符时以 1002 关闭</text>
+
+  <rect x="500" y="324" width="380" height="108" rx="8" class="neutral"/>
+  <text x="516" y="352" class="boxtitle">控制帧约束（0x8 / 0x9 / 0xA）</text>
+  <text x="516" y="378" class="sub">FIN 必须为 1，不能分片</text>
+  <text x="516" y="402" class="sub">负载不超过 125 字节</text>
+  <text x="516" y="426" class="sub">可以插在分片消息中间发送</text>
+
+  <text x="480" y="462" text-anchor="middle" class="tiny">掩码密钥明文写在首部里，不提供保密性；它的作用是避免中间设备把帧数据误当成 HTTP 报文处理</text>
+</svg>

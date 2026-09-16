@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" href="data:,">
+  <title>服务端推送的四种做法</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --fg: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --accent: #0369a1;
+      --active: #dbeafe;
+      --done: #ecfeff;
+      --hit: #ecfdf5;
+      --hit-border: #059669;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+      --code-bg: #f1f5f9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #020617;
+        --card: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #cbd5e1;
+        --border: #334155;
+        --accent: #67e8f9;
+        --active: #172554;
+        --done: #083344;
+        --hit: #123d2d;
+        --hit-border: #34d399;
+        --warn: #fbbf24;
+        --warn-bg: #2a1e05;
+        --code-bg: #0b1220;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    }
+    .wrap { max-width: 980px; margin: auto; padding: 12px 20px 10px; }
+    .title { text-align: center; font-size: 22px; font-weight: 700; }
+    .subtitle { text-align: center; margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .tabs { display: flex; justify-content: center; gap: 8px; margin: 9px 0 7px; flex-wrap: wrap; }
+    .tab {
+      background: var(--card);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 16px;
+      font: inherit;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+    .tab[aria-selected="true"] {
+      background: var(--active);
+      border-color: var(--accent);
+      color: var(--fg);
+      font-weight: 700;
+    }
+    .lanes {
+      display: grid;
+      grid-template-columns: 150px 1fr 150px;
+      align-items: center;
+      margin-bottom: 6px;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .lanes .line { height: 2px; background: var(--border); }
+    .resp {
+      display: grid;
+      grid-template-columns: 96px 1fr 250px;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+    }
+    .resp-label { color: var(--muted); font-size: 12.5px; font-weight: 700; }
+    .resp-body {
+      margin: 0;
+      padding: 4px 8px;
+      height: 62px;
+      border-radius: 6px;
+      background: var(--code-bg);
+      color: var(--fg);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.42;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow: hidden;
+    }
+    .resp-state { color: var(--warn); font-size: 12.5px; line-height: 1.4; }
+    .steps { display: grid; gap: 5px; margin-top: 6px; }
+    .step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--card);
+      transition: opacity .15s, border-color .15s, background .15s;
+    }
+    .step.pending { opacity: .5; }
+    .step.done { background: var(--done); opacity: .75; }
+    .step.active { background: var(--active); border: 2px solid var(--accent); opacity: 1; }
+    .step.arrived { background: var(--hit); border-color: var(--hit-border); }
+    .num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .body { display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; gap: 8px; }
+    .party { color: var(--muted); text-align: center; font-size: 12.5px; }
+    .msg { text-align: center; font-size: 13.5px; }
+    .msg strong { color: var(--accent); }
+    .arrow { font-size: 14px; line-height: 1.1; color: var(--accent); letter-spacing: 2px; }
+    .info {
+      margin-top: 6px;
+      min-height: 56px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      line-height: 1.5;
+      font-size: 13.5px;
+    }
+    .info strong { color: var(--accent); }
+    .chips { display: flex; justify-content: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      padding: 3px 12px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .chip b { color: var(--fg); font-weight: 700; }
+    .controls { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 6px; }
+    button {
+      background: var(--card);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 14px;
+      font: inherit;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .35; cursor: default; }
+    #counter { min-width: 58px; text-align: center; color: var(--muted); font-size: 13px; }
+    .note {
+      margin-top: 6px;
+      padding: 7px 12px;
+      border-left: 3px solid var(--accent);
+      background: var(--card);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="title">让服务器把数据送到浏览器：四种做法</div>
+    <div class="subtitle">关键在于这次 HTTP 应答什么时候开始、什么时候结束</div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-key="short" type="button">短轮询</button>
+      <button class="tab" role="tab" data-key="long" type="button">长轮询</button>
+      <button class="tab" role="tab" data-key="sse" type="button">SSE</button>
+      <button class="tab" role="tab" data-key="ws" type="button">WebSocket</button>
+    </div>
+
+    <div class="lanes">
+      <div>浏览器（客户）</div>
+      <div class="line"></div>
+      <div>服务器</div>
+    </div>
+
+    <div class="resp">
+      <div class="resp-label">这次 HTTP<br>应答体</div>
+      <pre id="resp-body" class="resp-body"></pre>
+      <div id="resp-state" class="resp-state"></div>
+    </div>
+
+    <section id="steps" class="steps" aria-live="polite"></section>
+    <section id="info" class="info"></section>
+    <div id="chips" class="chips"></div>
+    <div class="note" id="note"></div>
+
+    <div class="controls">
+      <button id="prev" type="button">上一步</button>
+      <span id="counter"></span>
+      <button id="next" type="button">下一步</button>
+    </div>
+  </main>
+
+  <script>
+    // dir 决定箭头方向与两端标签；arrives 标记这一步是否真正把数据送达客户
+    // resp 与 steps 一一对应，body 显示当时这条 HTTP 应答体里有什么，state 说明应答是否结束
+    const schemes = {
+      short: {
+        tabTitle: "短轮询",
+        steps: [
+          { dir: "c2s", name: "请求 1", detail: "客户按固定间隔（如每秒）发一次请求，这一轮服务器没有新数据。" },
+          { dir: "s2c", name: "空响应", detail: "服务器立刻应答，应答里什么都没有；这个回合到此结束。" },
+          { dir: "c2s", name: "请求 2", detail: "间隔时间到，客户再问一次。上一次应答早就结束了，想拿数据只能重新发起请求。" },
+          { dir: "s2c", name: "空响应", detail: "又一轮白问。" },
+          { dir: "c2s", name: "请求 3", detail: "这一次服务器已经有数据可以返回。" },
+          { dir: "s2c", name: "返回新数据", arrives: true, detail: "数据送达的延迟取决于轮询间隔，平均约为间隔的一半；间隔越短越及时，空转也越多。" }
+        ],
+        resp: [
+          { state: "服务器尚未应答", body: "（请求在途）" },
+          { state: "应答立刻发出，立刻结束", body: "（空，这一轮白问）" },
+          { state: "上一次应答早已结束，客户又发了新请求", body: "（请求在途）" },
+          { state: "应答立刻结束", body: "（空）" },
+          { state: "又一次新请求", body: "（请求在途）" },
+          { state: "应答结束，客户这才拿到数据", body: 'data: {"price":68000}' }
+        ],
+        chips: [["通信方向", "客户拉取"], ["每条消息开销", "一整套 HTTP 首部"], ["连接占用", "每条请求一条短连接"]],
+        note: "实现最简单、不需要服务器特殊支持；代价是请求次数与是否有数据无关，实时性和空转量互相矛盾。"
+      },
+      long: {
+        tabTitle: "长轮询",
+        steps: [
+          { dir: "c2s", name: "发起请求", detail: "客户发一次普通 HTTP 请求，和短轮询没有区别。" },
+          { dir: "local", name: "服务器保留请求，不应答", detail: "服务器把请求挂起，直到有新数据或到达超时。应答一旦发出就会结束，所以想继续收数据只能再发一次。" },
+          { dir: "s2c", name: "有新数据，立即应答", arrives: true, detail: "数据一到达就返回，延迟接近数据真实产生的时间。" },
+          { dir: "c2s", name: "立刻发起下一轮", detail: "客户收到响应后必须马上开始下一次长轮询，否则这段时间收不到数据。" },
+          { dir: "local", name: "超时也要重发", detail: "长时间没有数据时服务器按超时返回空响应，客户同样要重新发起，避免连接被中间设备回收。" }
+        ],
+        resp: [
+          { state: "服务器尚未应答", body: "（请求在途）" },
+          { state: "请求被挂起：应答一发出即结束，只能等真有数据", body: "（请求仍在途）" },
+          { state: "应答发出后立刻结束", body: 'data: {"price":68000}' },
+          { state: "上一次应答已结束，客户马上重发", body: "（请求在途）" },
+          { state: "无数据时按超时返回空响应，同样结束", body: "（空）" }
+        ],
+        chips: [["通信方向", "客户拉取"], ["每条消息开销", "一整套 HTTP 首部"], ["连接占用", "每个客户一条等待中的连接"]],
+        note: "实时性明显好于短轮询；但每条消息仍要付出完整的请求/响应开销，服务器要为每个在线客户维持一条挂起的请求。"
+      },
+      sse: {
+        tabTitle: "SSE",
+        steps: [
+          { dir: "c2s", name: "一次 GET 请求", detail: "客户发出请求，声明 Accept: text/event-stream。整个会话只请求这一次。" },
+          { dir: "s2c", name: "响应开始，但不结束", detail: "服务器返回 200 和 text/event-stream，然后故意不结束这个响应体，客户当初那次请求因此一直没有完成。" },
+          { dir: "s2c", name: "有事就往里写一段", arrives: true, detail: "服务器把这条响应留着，每发生一件事就追加一段 data: ... 文本并立即发出，浏览器一收到就触发回调。" },
+          { dir: "s2c", name: "再来一件事，继续追加", arrives: true, detail: "依然是同一个响应体，依然是同一条连接，不需要客户再问。" },
+          { dir: "c2s", name: "客户上行仍要新请求", detail: "这条连接的身份是“一个还没答完的请求”，只能顺着应答方向走。浏览器要上行数据，只能另发一个完整的 HTTP 请求。" },
+          { dir: "local", name: "断线由浏览器自动重连", detail: "SSE 在浏览器内置重连，并可携带 Last-Event-ID 告知服务器已收到的事件编号。" }
+        ],
+        resp: [
+          { state: "服务器尚未应答", body: "（请求在途）" },
+          { state: "应答头已发出，响应体不结束", body: "HTTP/1.1 200 OK\nContent-Type: text/event-stream\n" },
+          { state: "仍不结束：事件可以继续追加", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\n' },
+          { state: "仍不结束", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\ndata: {"price":68120}' },
+          { state: "服务器方向仍是这条响应；客户上行要另开请求", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\ndata: {"price":68120}' },
+          { state: "同一条连接，重连后由 Last-Event-ID 接上", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\ndata: {"price":68120}' }
+        ],
+        chips: [["通信方向", "服务器 → 客户单向"], ["每条消息开销", "事件文本格式"], ["连接占用", "一条长连接"]],
+        note: "只需要服务器单向推送时最省事：纯文本协议、浏览器原生支持重连。限制是客户端不能在这条通道上回发数据。"
+      },
+      ws: {
+        tabTitle: "WebSocket",
+        steps: [
+          { dir: "c2s", name: "HTTP 升级握手", detail: "用一次带 Upgrade: websocket 的 GET 请求完成协议升级。" },
+          { dir: "s2c", name: "101 Switching Protocols", detail: "这是这条连接上唯一一个 HTTP 应答，它标志着协议切换；之后不再有 HTTP 报文。" },
+          { dir: "both", name: "双向收发帧", arrives: true, detail: "任意一方都能随时发消息，帧首部最小 2 字节，不必再为每条消息重复一套 HTTP 首部。" },
+          { dir: "both", name: "Close 帧结束", detail: "交换 Close 帧后断开 TCP。断线重连、心跳与消息补发需要应用自己处理。" }
+        ],
+        resp: [
+          { state: "升级请求在途", body: "（请求在途）" },
+          { state: "唯一一个 HTTP 应答，标志协议切换", body: "HTTP/1.1 101 Switching Protocols" },
+          { state: "此后没有 HTTP 应答体，只有双向的帧", body: '浏览器→服务器  Text: {"price":68000}\n服务器→浏览器  Ping' },
+          { state: "Close 帧之后连接结束", body: "服务器→浏览器  Close (1000)" }
+        ],
+        chips: [["通信方向", "双向全双工"], ["每条消息开销", "2 字节帧首部"], ["连接占用", "一条长连接"]],
+        note: "双向、低开销、实时性最好；代价是协议状态最复杂，心跳、重连、背压与鉴权都要应用自己处理，中间代理也必须显式转发升级首部。"
+      }
+    };
+
+    const arrows = { c2s: "⟶", s2c: "⟵", both: "⇄", local: "·" };
+    const seats = {
+      c2s: ["浏览器", "服务器"],
+      s2c: ["浏览器", "服务器"],
+      both: ["浏览器", "服务器"],
+      local: ["端内处理", "端内处理"]
+    };
+
+    let currentKey = "short";
+    let current = 0;
+
+    const stepsEl = document.getElementById("steps");
+    const infoEl = document.getElementById("info");
+    const chipsEl = document.getElementById("chips");
+    const noteEl = document.getElementById("note");
+    const respBodyEl = document.getElementById("resp-body");
+    const respStateEl = document.getElementById("resp-state");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const counter = document.getElementById("counter");
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+
+    function render() {
+      const scheme = schemes[currentKey];
+      const list = scheme.steps;
+
+      stepsEl.innerHTML = list.map((item, index) => {
+        let state = index < current ? "done" : index === current ? "active" : "pending";
+        if (item.arrives && index <= current) state += " arrived";
+        const pair = seats[item.dir];
+        return `<article class="step ${state}">
+          <div class="num">${index + 1}</div>
+          <div class="body">
+            <div class="party">${pair[0]}</div>
+            <div class="msg">
+              <strong>${item.name}</strong>
+              <div class="arrow">${arrows[item.dir]}</div>
+            </div>
+            <div class="party">${pair[1]}</div>
+          </div>
+        </article>`;
+      }).join("");
+
+      const r = scheme.resp[current];
+      respBodyEl.textContent = r.body;
+      respStateEl.textContent = r.state;
+
+      infoEl.innerHTML = `<strong>第 ${current + 1} 步说明</strong><br>${list[current].detail}`;
+      chipsEl.innerHTML = scheme.chips
+        .map(([k, v]) => `<span class="chip">${k}：<b>${v}</b></span>`)
+        .join("");
+      noteEl.textContent = scheme.note;
+      counter.textContent = `${current + 1} / ${list.length}`;
+      prev.disabled = current === 0;
+      next.disabled = current === list.length - 1;
+
+      tabs.forEach((tab) => {
+        tab.setAttribute("aria-selected", tab.dataset.key === currentKey ? "true" : "false");
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        currentKey = tab.dataset.key;
+        current = 0;
+        render();
+      });
+    });
+
+    prev.addEventListener("click", () => { current = Math.max(0, current - 1); render(); });
+    next.addEventListener("click", () => { current = Math.min(schemes[currentKey].steps.length - 1, current + 1); render(); });
+    render();
+  </script>
+</body>
+</html>

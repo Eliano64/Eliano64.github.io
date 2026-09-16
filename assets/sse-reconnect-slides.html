@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" href="data:,">
+  <title>SSE 的断线重连与续传</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --fg: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --accent: #0369a1;
+      --active: #dbeafe;
+      --done: #ecfeff;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+      --dead: #dc2626;
+      --dead-bg: #fef2f2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #020617;
+        --card: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #cbd5e1;
+        --border: #334155;
+        --accent: #67e8f9;
+        --active: #172554;
+        --done: #083344;
+        --warn: #fbbf24;
+        --warn-bg: #2a1e05;
+        --dead: #f87171;
+        --dead-bg: #3b1518;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    }
+    .wrap { max-width: 980px; margin: auto; padding: 13px 20px 10px; }
+    .title { text-align: center; font-size: 23px; font-weight: 700; }
+    .subtitle { text-align: center; margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .status {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 9px 0 7px;
+      font-size: 13px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 13px;
+      background: var(--card);
+    }
+    .chip b { color: var(--accent); font-weight: 700; }
+    .chip.bad b { color: var(--dead); }
+    .lanes {
+      display: grid;
+      grid-template-columns: 150px 1fr 150px;
+      align-items: center;
+      margin-bottom: 6px;
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .lanes .line { height: 2px; background: var(--border); }
+    .steps { display: grid; gap: 6px; }
+    .step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--card);
+      transition: opacity .15s, border-color .15s, background .15s;
+    }
+    .step.pending { opacity: .5; }
+    .step.done { background: var(--done); opacity: .75; }
+    .step.active { background: var(--active); border: 2px solid var(--accent); opacity: 1; }
+    .step.active.broken { background: var(--dead-bg); border-color: var(--dead); }
+    .num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .msg { text-align: center; font-size: 13.5px; }
+    .msg strong { color: var(--accent); }
+    .detail { color: var(--muted); font-size: 12px; margin-top: 1px; }
+    .info {
+      margin-top: 7px;
+      min-height: 72px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      line-height: 1.55;
+      font-size: 13.5px;
+    }
+    .info strong { color: var(--accent); }
+    .controls { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 7px; }
+    button {
+      background: var(--card);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 14px;
+      font: inherit;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .35; cursor: default; }
+    #counter { min-width: 58px; text-align: center; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="title">SSE 的断线重连与续传</div>
+    <div class="subtitle">重连由浏览器负责，补发要服务器自己实现</div>
+
+    <div class="status">
+      <span class="chip">连接状态：<b id="ready">CONNECTING</b></span>
+      <span class="chip">最后收到的事件编号：<b id="last">（无）</b></span>
+      <span class="chip" id="hist">服务器保存了历史事件</span>
+    </div>
+
+    <div class="lanes">
+      <div>浏览器（客户）</div>
+      <div class="line"></div>
+      <div>服务器</div>
+    </div>
+
+    <section id="steps" class="steps" aria-live="polite"></section>
+    <section id="info" class="info"></section>
+
+    <div class="controls">
+      <button id="prev" type="button">上一步</button>
+      <span id="counter"></span>
+      <button id="next" type="button">下一步</button>
+    </div>
+  </main>
+
+  <script>
+    // 每一步同时更新上方的三个状态：连接状态、最后收到的事件编号、服务器是否保存历史
+    const steps = [
+      {
+        name: "建立连接",
+        detail: "一次 GET 请求，响应头声明 text/event-stream",
+        ready: "CONNECTING",
+        last: "（无）",
+        hist: true,
+        broken: false,
+        info: "客户发一次 GET，服务器回 <code>200</code> 与 <code>Content-Type: text/event-stream</code>，并让这个响应体一直不结束。到这一步，双方都还没有发出任何业务数据。"
+      },
+      {
+        name: "持续接收事件",
+        detail: "服务器每发生一件事就追加一条事件",
+        ready: "OPEN",
+        last: "42",
+        hist: true,
+        broken: false,
+        info: "服务器把每条事件写进同一个响应体。带 <code>id</code> 的事件会被浏览器记住最后编号（这里是 42），重连时要用到它。"
+      },
+      {
+        name: "连接中断",
+        detail: "网络或中间设备切断了这条连接",
+        ready: "CONNECTING",
+        last: "42",
+        hist: true,
+        broken: true,
+        info: "网络抖动、代理超时、服务器重启都会让连接断掉。浏览器触发 <code>onerror</code>，<code>readyState</code> 变回 <code>CONNECTING</code>，但最后收到的事件编号仍被保留。"
+      },
+      {
+        name: "浏览器自动重连",
+        detail: "按 retry 指定的间隔重连，并带回 Last-Event-ID",
+        ready: "OPEN",
+        last: "42",
+        hist: true,
+        broken: false,
+        info: "浏览器按 <code>retry</code> 指定的间隔（未指定时有一个默认值）重新发起请求，并自动加上请求头 <code>Last-Event-ID: 42</code>。这一切不需要应用代码参与，是 SSE 相对手写长轮询最实在的一点。"
+      },
+      {
+        name: "服务器决定怎么接",
+        detail: "有历史就补发，没历史只能从当前开始",
+        ready: "OPEN",
+        last: "45",
+        hist: true,
+        broken: false,
+        info: "续传不是自动完成的：服务器需要自己保存历史事件，才能把 43、44 这类断口之后的事件补发出去。如果没有保存，就只能从当前的新事件开始发送，断口期间产生的事件永久丢失。"
+      },
+      {
+        name: "主动关闭",
+        detail: "调用 close() 之后浏览器不再重连",
+        ready: "CLOSED",
+        last: "45",
+        hist: true,
+        broken: false,
+        info: "客户调用 <code>es.close()</code> 后，连接关闭且浏览器不会再自动重连。注意这与网络中断不同：中断会触发重连，主动关闭不会。"
+      }
+    ];
+
+    let current = 0;
+
+    const stepsEl = document.getElementById("steps");
+    const infoEl = document.getElementById("info");
+    const readyEl = document.getElementById("ready");
+    const lastEl = document.getElementById("last");
+    const histEl = document.getElementById("hist");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const counter = document.getElementById("counter");
+
+    function render() {
+      stepsEl.innerHTML = steps.map((item, index) => {
+        let cls = index < current ? "step done" : index === current ? "step active" : "step pending";
+        if (index === current && item.broken) cls += " broken";
+        return `<article class="${cls}">
+          <div class="num">${index + 1}</div>
+          <div class="msg">
+            <strong>${item.name}</strong>
+            <div class="detail">${item.detail}</div>
+          </div>
+        </article>`;
+      }).join("");
+
+      const s = steps[current];
+      readyEl.textContent = s.ready;
+      lastEl.textContent = s.last;
+      histEl.innerHTML = `服务器保存了历史事件：<b>${s.hist ? "是" : "否"}</b>`;
+      histEl.className = steps[current].hist ? "chip" : "chip bad";
+      infoEl.innerHTML = `<strong>第 ${current + 1} 步</strong><br>${s.info}`;
+      counter.textContent = `${current + 1} / ${steps.length}`;
+      prev.disabled = current === 0;
+      next.disabled = current === steps.length - 1;
+    }
+
+    prev.addEventListener("click", () => { current = Math.max(0, current - 1); render(); });
+    next.addEventListener("click", () => { current = Math.min(steps.length - 1, current + 1); render(); });
+    render();
+  </script>
+</body>
+</html>

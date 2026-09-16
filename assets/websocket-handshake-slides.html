@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" href="data:,">
+  <title>WebSocket 握手过程</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --fg: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --accent: #0369a1;
+      --active: #dbeafe;
+      --done: #ecfeff;
+      --warn: #b45309;
+      --warn-bg: #fffbeb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #020617;
+        --card: #0f172a;
+        --fg: #e5e7eb;
+        --muted: #cbd5e1;
+        --border: #334155;
+        --accent: #67e8f9;
+        --active: #172554;
+        --done: #083344;
+        --warn: #fbbf24;
+        --warn-bg: #2a1e05;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    }
+    .wrap { max-width: 980px; margin: auto; padding: 14px 20px 10px; }
+    .title { text-align: center; font-size: 23px; font-weight: 700; }
+    .subtitle { text-align: center; margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .statusbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 14px;
+      background: var(--card);
+      color: var(--warn);
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+    .lanes {
+      display: grid;
+      grid-template-columns: 150px 1fr 150px;
+      align-items: center;
+      margin-bottom: 6px;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .lanes .line { height: 2px; background: var(--border); }
+    .steps { display: grid; gap: 6px; }
+    .step {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      align-items: center;
+      gap: 12px;
+      min-height: 46px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      transition: opacity .15s, border-color .15s, background .15s;
+    }
+    .step.pending { opacity: .5; }
+    .step.done { background: var(--done); opacity: .75; }
+    .step.active { background: var(--active); border: 2px solid var(--accent); opacity: 1; }
+    .num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .body { display: grid; grid-template-columns: 110px 1fr 110px; align-items: center; gap: 8px; }
+    .party { color: var(--muted); text-align: center; font-size: 13px; }
+    .msg { text-align: center; }
+    .msg strong { color: var(--accent); }
+    .arrow { font-size: 16px; line-height: 1; color: var(--accent); letter-spacing: 2px; }
+    .divider.pending { opacity: .5; }
+    .divider.done { opacity: .75; }
+    .divider {
+      margin: 2px 0;
+      padding: 5px 10px;
+      border: 1px dashed var(--warn);
+      border-radius: 8px;
+      background: var(--warn-bg);
+      color: var(--warn);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .info {
+      margin-top: 8px;
+      min-height: 66px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      line-height: 1.5;
+      font-size: 13.5px;
+    }
+    .info strong { color: var(--accent); }
+    .controls { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 8px; }
+    button {
+      background: var(--card);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .35; cursor: default; }
+    #counter { min-width: 58px; text-align: center; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="title">WebSocket 握手：在 HTTP 连接上完成协议升级</div>
+    <div class="subtitle">握手阶段用 HTTP 报文，握手之后这条连接只跑 WebSocket 帧</div>
+
+    <div class="statusbar">当前通道：<span id="channel" class="chip">HTTP</span></div>
+
+    <div class="lanes">
+      <div>浏览器（客户）</div>
+      <div class="line"></div>
+      <div>服务器</div>
+    </div>
+
+    <section id="steps" class="steps" aria-live="polite"></section>
+    <section id="info" class="info"></section>
+
+    <div class="controls">
+      <button id="prev" type="button">上一步</button>
+      <span id="counter"></span>
+      <button id="next" type="button">下一步</button>
+    </div>
+  </main>
+
+  <script>
+    // 每一步的箭头方向：c2s 客户发往服务器，s2c 服务器发往客户，both 双向，local 端内处理
+    const steps = [
+      {
+        kind: "step",
+        name: "建立 TCP 连接",
+        dir: "both",
+        detail: "客户先与服务器建立 TCP 连接：ws 默认端口 80，wss 默认端口 443。这一步还没有任何 WebSocket 语义。"
+      },
+      {
+        kind: "step",
+        name: "发送 HTTP 升级请求",
+        dir: "c2s",
+        detail: "GET /chat HTTP/1.1，携带 Upgrade: websocket、Connection: Upgrade、Sec-WebSocket-Key 和 Sec-WebSocket-Version: 13。Sec-WebSocket-Key 是客户随机 16 字节的 Base64 编码。"
+      },
+      {
+        kind: "step",
+        name: "服务器校验请求",
+        dir: "srv",
+        detail: "服务器检查版本号是否为 13、Origin 是否在允许范围内、路径与鉴权是否通过。任一不满足就返回普通 HTTP 错误响应，连接不会升级。"
+      },
+      {
+        kind: "step",
+        name: "返回 101 Switching Protocols",
+        dir: "s2c",
+        detail: "响应包含 Upgrade、Connection 和 Sec-WebSocket-Accept。Accept 由客户的 Sec-WebSocket-Key 与固定 GUID 拼接后取 SHA-1 摘要再 Base64 编码得到。"
+      },
+      {
+        kind: "step",
+        name: "客户校验 Sec-WebSocket-Accept",
+        dir: "cli",
+        detail: "客户用同样的算法重算一遍并比对。一致才确认对面是真正理解 WebSocket 的服务器，而不是把请求当普通 HTTP 处理的中间设备。"
+      },
+      {
+        kind: "divider",
+        name: "握手前的字节按 HTTP 解析，握手后这条连接不再是 HTTP"
+      },
+      {
+        kind: "step",
+        name: "双向收发帧",
+        dir: "both",
+        detail: "双方可以随时发送文本帧、二进制帧和 Ping/Pong 帧，帧首部最小只有 2 字节；应用以消息为单位收发。"
+      },
+      {
+        kind: "step",
+        name: "Close 帧关闭连接",
+        dir: "both",
+        detail: "一方发送 Close 帧，另一方回送 Close 帧，随后才断开 TCP 连接。"
+      }
+    ];
+
+    // cli 表示客户本机处理，srv 表示服务器本机处理，两侧不出现来回箭头
+    const arrows = { c2s: "⟶", s2c: "⟵", both: "⇄", cli: "·", srv: "·" };
+    const labels = {
+      c2s: ["浏览器", "服务器"],
+      s2c: ["浏览器", "服务器"],
+      both: ["浏览器", "服务器"],
+      cli: ["浏览器本机", ""],
+      srv: ["", "服务器本机"]
+    };
+
+    let current = 0;
+    const stepsEl = document.getElementById("steps");
+    const infoEl = document.getElementById("info");
+    const channelEl = document.getElementById("channel");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const counter = document.getElementById("counter");
+
+    function channelOf(index) {
+      if (steps[index].kind === "divider") return "HTTP → WebSocket";
+      return index <= 4 ? "HTTP" : "WebSocket";
+    }
+
+    function render() {
+      // 分隔行不占用序号，因此单独维护步骤编号
+      let stepNo = 0;
+      stepsEl.innerHTML = steps.map((item, index) => {
+        const state = index < current ? "done" : index === current ? "active" : "pending";
+        if (item.kind === "divider") {
+          return `<div class="divider ${state}">${item.name}</div>`;
+        }
+        stepNo += 1;
+        const seats = labels[item.dir];
+        return `<article class="step ${state}">
+          <div class="num">${stepNo}</div>
+          <div class="body">
+            <div class="party">${seats[0]}</div>
+            <div class="msg">
+              <strong>${item.name}</strong>
+              <div class="arrow">${arrows[item.dir]}</div>
+            </div>
+            <div class="party">${seats[1]}</div>
+          </div>
+        </article>`;
+      }).join("");
+
+      const active = steps[current];
+      const activeNo = steps.slice(0, current + 1).filter((s) => s.kind !== "divider").length;
+      if (active.kind === "divider") {
+        infoEl.innerHTML = `<strong>协议切换点</strong><br>${active.name}`;
+      } else {
+        infoEl.innerHTML = `<strong>第 ${activeNo} 步说明</strong><br>${active.detail}`;
+      }
+      channelEl.textContent = channelOf(current);
+      counter.textContent = `${current + 1} / ${steps.length}`;
+      prev.disabled = current === 0;
+      next.disabled = current === steps.length - 1;
+    }
+
+    prev.addEventListener("click", () => { current = Math.max(0, current - 1); render(); });
+    next.addEventListener("click", () => { current = Math.min(steps.length - 1, current + 1); render(); });
+    render();
+  </script>
+</body>
+</html>

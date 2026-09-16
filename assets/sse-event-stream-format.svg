@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-labelledby="title desc">
+  <title id="title">SSE 的事件流格式</title><desc id="desc">响应体是一串文本行，字段行组成一条事件，空行表示事件结束；data 可以分多行，以冒号开头的行是注释。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+:root{color-scheme:light dark}.title{font:700 23px "Microsoft YaHei",sans-serif;fill:#172033}.sub{font:12.5px "Microsoft YaHei",sans-serif;fill:#526174}.code{font:13px Consolas,"Courier New",monospace;fill:#172033}.group{font:700 12.5px "Microsoft YaHei",sans-serif;fill:#0369a1}.ann{font:12.5px "Microsoft YaHei",sans-serif;fill:#526174}.cell{fill:#fff;stroke:#cbd5e1;stroke-width:1.4}.blank{fill:#fef2f2;stroke:#dc2626;stroke-width:1.4;stroke-dasharray:5 4}.note{font:12.5px "Microsoft YaHei",sans-serif;fill:#b45309}.ruler{stroke:#cbd5e1;stroke-width:1.2}@media(prefers-color-scheme:dark){.title{fill:#e5edf5}.sub,.ann{fill:#a9b7c6}.code{fill:#e5edf5}.group{fill:#67e8f9}.cell{fill:#121b25;stroke:#344354}.blank{fill:#3b1518;stroke:#f87171}.note{fill:#fbbf24}.ruler{stroke:#334155}}</style>
+
+  <text x="480" y="34" text-anchor="middle" class="title">SSE 的事件流格式：字段行如何组成一条事件</text>
+  <text x="480" y="58" text-anchor="middle" class="sub">响应体是一串文本，空行结束一条事件；客户端解析完一条才触发对应的回调</text>
+  <line x1="60" y1="74" x2="900" y2="74" class="ruler"/>
+
+  <text x="60" y="98" class="group">事件 1（event: price）</text>
+
+  <rect x="60" y="106" width="470" height="30" rx="5" class="cell"/><text x="72" y="126" class="code">event: price</text>
+  <rect x="60" y="142" width="470" height="30" rx="5" class="cell"/><text x="72" y="162" class="code">id: 42</text>
+  <rect x="60" y="178" width="470" height="30" rx="5" class="cell"/><text x="72" y="198" class="code">retry: 3000</text>
+  <rect x="60" y="214" width="470" height="30" rx="5" class="cell"/><text x="72" y="234" class="code">data: {"symbol":"BTC","price":68000}</text>
+  <rect x="60" y="250" width="470" height="30" rx="5" class="cell"/><text x="72" y="270" class="code">data: 第二行数据</text>
+  <rect x="60" y="286" width="470" height="30" rx="5" class="blank"/><text x="72" y="306" class="code">（空行）</text>
+
+  <text x="60" y="342" class="group">事件 2（缺省 message）</text>
+
+  <rect x="60" y="350" width="470" height="30" rx="5" class="cell"/><text x="72" y="370" class="code">data: 第三行数据</text>
+  <rect x="60" y="386" width="470" height="30" rx="5" class="cell"/><text x="72" y="406" class="code">: 以冒号开头，是注释行</text>
+
+  <text x="580" y="126" class="ann">事件类型，缺省为 message</text>
+  <text x="580" y="162" class="ann">事件编号，重连时由浏览器回传</text>
+  <text x="580" y="198" class="ann">建议的重连间隔，单位毫秒</text>
+  <text x="580" y="234" class="ann">事件数据，一行一条 data</text>
+  <text x="580" y="270" class="ann">同一事件的数据可以分成多行</text>
+  <text x="580" y="306" class="ann">空行：一条事件到此结束</text>
+  <text x="580" y="370" class="ann">下一件事件从空行之后开始</text>
+  <text x="580" y="406" class="ann">注释行，客户端忽略，可用来保活</text>
+
+  <text x="480" y="452" text-anchor="middle" class="note">以上各行在连接期间不断追加进同一个响应体，响应体本身始终不结束</text>
+  <text x="480" y="476" text-anchor="middle" class="sub">多行 data 在客户端按换行符拼接；没有 data 行的事件不会触发回调</text>
+</svg>

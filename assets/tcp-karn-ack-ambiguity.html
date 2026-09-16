@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Karn 算法 — ACK 歧义</title>
+  <title>Karn 算法：ACK 歧义</title>
   <style>
 :root {
   --ink: #17212b; --muted: #5b6876; --border: #dbe3ea;
@@ -80,7 +80,7 @@ td { padding: 10px; border: 1px solid var(--border); }
 </head>
 <body>
 <main>
-  <header><h1>Karn 算法 — ACK 歧义问题</h1></header>
+  <header><h1>Karn 算法：ACK 歧义问题</h1></header>
 
   <section class="slide active">
     <div class="panel">
@@ -141,11 +141,11 @@ recv(ack=201);           // 迟到 ACK 到达
 
   <section class="slide">
     <div class="panel">
-      <h2>Karn 算法 — 基本规则</h2>
+      <h2>Karn 算法：基本规则</h2>
       <p><strong>凡是重传过的报文段，不采用其 RTT 样本。</strong></p>
       <p>一旦发生重传，本轮不更新 <code>RTTₛ</code>，也不重新计算 <code>RTO</code>。宁可暂时不更新，也不要用错误样本污染 RTT 估计。</p>
       <hr style="border-color:var(--border); margin:18px 0;">
-      <h2>修正规则 — 防止 RTO 永远不更新</h2>
+      <h2>修正规则：防止 RTO 永远不更新</h2>
       <p>如果网络时延突然持续增大：RTO 太小 → 每次都超时重传 → Karn 基本规则拒绝所有 RTT 样本 → RTO 永远不变 → 反复重传。</p>
       <p><strong>修正：报文段每重传一次，RTO 翻倍。</strong></p>
       <p style="font-size:20px;text-align:center;font-weight:700;color:var(--rto);margin:16px 0;">RTOⁿᵉʷ = 2 × RTOᵒˡᵈ</p>
