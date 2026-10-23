@@ -1,0 +1,592 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JavaScript | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="1. 语言介绍1.1. 语言核心与宿主环境JavaScript 的语言核心（类型、运算符、控制流、函数）在浏览器和 Node 里是同一套，差别在宿主额外提供的能力：浏览器补上 window、document，Node 补上 process、fs。浏览器里用 &lt;script type&#x3D;&quot;module&quot; src&#x3D;&quot;app.js&quot;&gt;&lt;&#x2F;scrip">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaScript">
+<meta property="og:url" content="https://eliano64.github.io/2026/06/26/JavaScript/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="1. 语言介绍1.1. 语言核心与宿主环境JavaScript 的语言核心（类型、运算符、控制流、函数）在浏览器和 Node 里是同一套，差别在宿主额外提供的能力：浏览器补上 window、document，Node 补上 process、fs。浏览器里用 &lt;script type&#x3D;&quot;module&quot; src&#x3D;&quot;app.js&quot;&gt;&lt;&#x2F;scrip">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-06-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T14:46:56.504Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="JavaScript">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JavaScript",
+  "url": "https://eliano64.github.io/2026/06/26/JavaScript/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-06-25T16:00:00.000Z",
+  "dateModified": "2026-10-09T14:46:56.504Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/06/26/JavaScript/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JavaScript',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">293</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">JavaScript</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">JavaScript</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-25T16:00:00.000Z" title="发表于 2026-06-26 00:00:00">2026-06-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-09T14:46:56.504Z" title="更新于 2026-10-09 22:46:56">2026-10-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Frontend/">Frontend</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="1-语言介绍"><a href="#1-语言介绍" class="headerlink" title="1. 语言介绍"></a>1. 语言介绍</h1><h2 id="1-1-语言核心与宿主环境"><a href="#1-1-语言核心与宿主环境" class="headerlink" title="1.1. 语言核心与宿主环境"></a>1.1. 语言核心与宿主环境</h2><p>JavaScript 的语言核心（类型、运算符、控制流、函数）在浏览器和 Node 里是同一套，差别在宿主额外提供的能力：浏览器补上 <code>window</code>、<code>document</code>，Node 补上 <code>process</code>、<code>fs</code>。浏览器里用 <code>&lt;script type=&quot;module&quot; src=&quot;app.js&quot;&gt;&lt;/script&gt;</code> 引入脚本，放在文档头部会阻塞后续解析，除非加 <code>defer</code> 或 <code>type=&quot;module&quot;</code>；Node 在终端用 <code>node app.js</code> 执行。<code>console.log</code> 两边都能输出，浏览器在 Console 面板，Node 在终端，所以调试语句不必分环境改写。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 同一份文件在浏览器与 Node 下都能跑</span></span><br><span class="line"><span class="keyword">const</span> runtime = <span class="keyword">typeof</span> <span class="variable language_">document</span> === <span class="string">&quot;undefined&quot;</span> ? <span class="string">&quot;node&quot;</span> : <span class="string">&quot;browser&quot;</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`running in <span class="subst">$&#123;runtime&#125;</span>`</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-2-动态类型与弱类型"><a href="#1-2-动态类型与弱类型" class="headerlink" title="1.2. 动态类型与弱类型"></a>1.2. 动态类型与弱类型</h2><p>变量本身没有类型，类型属于它当前持有的值，所以同一个变量可以先存数字再存字符串。函数参数与返回值也不做类型检查，把字符串当数字用不会在赋值处报错，而是拖到参与运算或调用方法时才抛 <code>TypeError</code>。类型判断只能在运行时自己做：<code>typeof</code> 分原始类型，<code>Array.isArray</code> 分数组，<code>value === null</code> 判空。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> total = <span class="number">10</span>;</span><br><span class="line">total = total + <span class="string">&quot; items&quot;</span>;   <span class="comment">// 隐式转换，变量改存 string</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(total);         <span class="comment">// &quot;10 items&quot;</span></span><br><span class="line"><span class="comment">// (5).toUpperCase();       // TypeError：运行时才暴露类型错误</span></span><br></pre></td></tr></table></figure>
+
+<p>类型不匹配不会报错，只会由运算符按固定规则转换：<code>+</code> 有字符串操作数就拼接，其余算术运算符把操作数转数字；比较运算符（严格相等除外）在两边类型不同时转数字，两边都是字符串时按字典序比较。判等因此必须写 <code>===</code>，写 <code>==</code> 要把两边的转换路径一起推演，两条规则的细节都在第 3 节。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;1&quot;</span> + <span class="number">2</span>, <span class="string">&quot;3&quot;</span> * <span class="string">&quot;2&quot;</span>);     <span class="comment">// &quot;12&quot; 6</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;10&quot;</span> &lt; <span class="number">9</span>, <span class="string">&quot;10&quot;</span> &lt; <span class="string">&quot;9&quot;</span>);   <span class="comment">// false true：混合类型转数字，同为字符串按字典序</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-3-原始类型与对象"><a href="#1-3-原始类型与对象" class="headerlink" title="1.3. 原始类型与对象"></a>1.3. 原始类型与对象</h2><p>原始类型赋值、传参、返回都复制整个值，对象复制的是指向同一块数据的引用。<code>const</code> 只锁绑定不锁内容，<code>const user = &#123; name: &quot;a&quot; &#125;</code> 之后 <code>user.name = &quot;b&quot;</code> 合法。改任意一个变量里的对象，另一个都能看到，判断内容相同要逐字段比较。浅拷贝与 <code>this</code> 的指向问题都由这条规则产生。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> original = &#123; <span class="attr">count</span>: <span class="number">0</span> &#125;;</span><br><span class="line"><span class="keyword">const</span> alias = original;</span><br><span class="line">alias.<span class="property">count</span> = <span class="number">1</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(original.<span class="property">count</span>);      <span class="comment">// 1：同一块数据</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(&#123; <span class="attr">count</span>: <span class="number">1</span> &#125; === &#123; <span class="attr">count</span>: <span class="number">1</span> &#125;); <span class="comment">// false：不同引用</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-4-单线程与事件循环"><a href="#1-4-单线程与事件循环" class="headerlink" title="1.4. 单线程与事件循环"></a>1.4. 单线程与事件循环</h2><p>调用栈上的代码依次执行，定时器回调、事件回调、网络回调进任务队列，必须等当前同步代码全部结束才轮到。长同步计算会推迟所有定时器，所以定时器不保证准时；定时器也不会打断正在执行的代码，所以回调不会插在同步代码中间。<code>setTimeout(fn, 0)</code> 的准确含义是把 <code>fn</code> 排到当前同步代码之后。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;1&quot;</span>);</span><br><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;3&quot;</span>), <span class="number">0</span>); <span class="comment">// 0 毫秒只是尽快排队</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;2&quot;</span>);                      <span class="comment">// 输出顺序：1 2 3</span></span><br></pre></td></tr></table></figure>
+
+<p>定时器本身用 <code>setTimeout(fn, delay)</code> 与 <code>setInterval(fn, delay)</code> 创建，返回值是标识，保存下来才能用 <code>clearTimeout(id)</code> 与 <code>clearInterval(id)</code> 取消。<code>delay</code> 只是下限：回调要等当前代码跑完、主线程空闲时才执行，回调跑得比间隔还慢时下一次也不会与它重叠。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> once = <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;run once&quot;</span>), <span class="number">1000</span>);</span><br><span class="line"><span class="built_in">clearTimeout</span>(once); <span class="comment">// 在触发前取消</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> timer = <span class="built_in">setInterval</span>(<span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;tick&quot;</span>), <span class="number">1000</span>);</span><br><span class="line"><span class="built_in">clearInterval</span>(timer); <span class="comment">// 不再需要时取消</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-5-变量声明与作用域"><a href="#1-5-变量声明与作用域" class="headerlink" title="1.5. 变量声明与作用域"></a>1.5. 变量声明与作用域</h2><p><code>let</code> 是块级作用域，可以重新赋值；<code>const</code> 也是块级作用域，绑定不能重新赋值而对象内容仍可改；<code>var</code> 是函数作用域，允许重复声明并且声明提升，容易从循环和条件块里泄漏，现代代码不用。默认写 <code>const</code>，确实要重新赋值时才换 <code>let</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> config = &#123; <span class="attr">retries</span>: <span class="number">3</span> &#125;;</span><br><span class="line">config.<span class="property">retries</span> = <span class="number">5</span>;  <span class="comment">// 合法：改的是对象内容</span></span><br><span class="line"><span class="comment">// config = &#123;&#125;;      // TypeError: Assignment to constant variable.</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-6-命名与语句风格"><a href="#1-6-命名与语句风格" class="headerlink" title="1.6. 命名与语句风格"></a>1.6. 命名与语句风格</h2><p>语句以分号结尾，字符串用双引号，缩进两格，文件名小写加连字符，一个文件只导出同一组功能；标识符按种类换写法，读代码时不必先找定义：</p>
+<table>
+<thead>
+<tr>
+<th>种类</th>
+<th>写法</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>变量、函数</td>
+<td>camelCase</td>
+<td><code>userName</code>、<code>fetchData</code></td>
+</tr>
+<tr>
+<td>类、构造函数</td>
+<td>PascalCase</td>
+<td><code>DateRange</code></td>
+</tr>
+<tr>
+<td>模块级常量</td>
+<td>UPPER_SNAKE</td>
+<td><code>MAX_RETRY</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="variable constant_">MAX_RETRY</span> = <span class="number">3</span>, userName = <span class="string">&quot;Ada&quot;</span>;  <span class="comment">// 常量全大写，变量小驼峰</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="2-值与类型"><a href="#2-值与类型" class="headerlink" title="2. 值与类型"></a>2. 值与类型</h1><h2 id="2-1-typeof"><a href="#2-1-typeof" class="headerlink" title="2.1. typeof"></a>2.1. typeof</h2><p><code>typeof value</code> 返回小写字符串，对未声明的变量也安全（返回 <code>&quot;undefined&quot;</code> 而不抛错），但分不清数组与普通对象，也分不清 <code>null</code> 与对象，各值的返回结果见下表。</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th><code>typeof</code> 结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>1</code>、<code>NaN</code></td>
+<td><code>&quot;number&quot;</code></td>
+</tr>
+<tr>
+<td><code>&quot;a&quot;</code>、<code>true</code></td>
+<td><code>&quot;string&quot;</code>、<code>&quot;boolean&quot;</code></td>
+</tr>
+<tr>
+<td><code>undefined</code></td>
+<td><code>&quot;undefined&quot;</code></td>
+</tr>
+<tr>
+<td><code>null</code></td>
+<td><code>&quot;object&quot;</code>，历史遗留，<code>null</code> 不是对象</td>
+</tr>
+<tr>
+<td><code>[]</code>、<code>&#123;&#125;</code>、<code>new Date()</code></td>
+<td><code>&quot;object&quot;</code></td>
+</tr>
+<tr>
+<td><code>function () &#123;&#125;</code></td>
+<td><code>&quot;function&quot;</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">describe</span>(<span class="params">value</span>) &#123;  <span class="comment">// 先排除 null，再用 Array.isArray 排除数组</span></span><br><span class="line">  <span class="keyword">if</span> (value === <span class="literal">null</span>) <span class="keyword">return</span> <span class="string">&quot;null&quot;</span>;         <span class="comment">// typeof null 是 &quot;object&quot;</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="title class_">Array</span>.<span class="title function_">isArray</span>(value)) <span class="keyword">return</span> <span class="string">&quot;array&quot;</span>;  <span class="comment">// 数组与对象都返回 &quot;object&quot;</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">typeof</span> value;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">describe</span>(<span class="literal">null</span>), <span class="title function_">describe</span>([<span class="number">1</span>]), <span class="title function_">describe</span>(<span class="function">() =&gt;</span> &#123;&#125;)); <span class="comment">// null array function</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-值的比较"><a href="#2-2-值的比较" class="headerlink" title="2.2. 值的比较"></a>2.2. 值的比较</h2><p>原始类型按值比较、对象按引用比较：<code>5 === 5</code> 为 <code>true</code>，<code>[] === []</code> 为 <code>false</code>。<code>number</code>、<code>string</code>、<code>boolean</code>、<code>null</code>、<code>undefined</code>、<code>bigint</code> 按值比较，赋值与传参都是复制；<code>&#123;&#125;</code>、<code>[]</code>、函数、<code>Date</code>、<code>Map</code>、<code>Set</code> 是对象，按引用比较，字面量每次求值都创建新对象。整数超过 <code>2 ** 53 - 1</code> 时 <code>number</code> 不再精确，超出安全范围要用 <code>bigint</code>，它不能与 <code>number</code> 混合运算，也不能用 <code>Math</code> 方法。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> a = &#123; <span class="attr">x</span>: <span class="number">1</span> &#125;;</span><br><span class="line"><span class="keyword">const</span> b = a;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(a === b);   <span class="comment">// true：同一个引用</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="number">2</span> ** <span class="number">53</span> === <span class="number">2</span> ** <span class="number">53</span> + <span class="number">1</span>, <span class="number">9007199254740993n</span>); <span class="comment">// true 9007199254740993n：超出安全整数范围就丢精度，bigint 才精确</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-3-模板字符串"><a href="#2-3-模板字符串" class="headerlink" title="2.3. 模板字符串"></a>2.3. 模板字符串</h2><p>把变量嵌进字符串写成 <code>`hello $&#123;expression&#125;`</code>：<code>$&#123;&#125;</code> 里的表达式先求值，结果按字符串规则转换后插入，换行也能直接写在字符串里。普通引号不做插值，写 <code>$&#123;name&#125;</code> 会原样输出这几个字符。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> name = <span class="string">&quot;Ada&quot;</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`cart of <span class="subst">$&#123;name&#125;</span>: <span class="subst">$&#123;<span class="number">12</span> * <span class="number">2</span>&#125;</span> total`</span>); <span class="comment">// &quot;cart of Ada: 24 total&quot;</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;no interpolation $&#123;name&#125;&#x27;</span>);         <span class="comment">// 单引号只输出字面量</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="3-类型转换"><a href="#3-类型转换" class="headerlink" title="3. 类型转换"></a>3. 类型转换</h1><h2 id="3-1-显式转换与隐式转换"><a href="#3-1-显式转换与隐式转换" class="headerlink" title="3.1. 显式转换与隐式转换"></a>3.1. 显式转换与隐式转换</h2><p>显式转换用 <code>Number(value)</code>、<code>String(value)</code>、<code>Boolean(value)</code>；<code>parseInt(s, 10)</code> 从左往右读到不能读为止，适合 <code>&quot;12px&quot;</code> 这类输入，<code>Number(&quot;12px&quot;)</code> 则因为整串校验不通过得 <code>NaN</code>。隐式转换的触发点是算术运算符、<code>+</code> 的拼接分支、非严格比较运算符和条件位置。转换规则固定，下面两张表分别是数字与布尔的对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>转成 number</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>undefined</code></td>
+<td><code>NaN</code></td>
+</tr>
+<tr>
+<td><code>null</code></td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>true</code> &#x2F; <code>false</code></td>
+<td><code>1</code> &#x2F; <code>0</code></td>
+</tr>
+<tr>
+<td>字符串</td>
+<td>去掉两端空白后按数字字面量解析，空串为 <code>0</code>，有非法字符为 <code>NaN</code></td>
+</tr>
+<tr>
+<td>对象</td>
+<td>先用 <code>valueOf</code>，再用 <code>toString</code> 的结果解析</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>转成 boolean</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>false</code>、<code>0</code>、<code>-0</code>、<code>0n</code>、<code>&quot;&quot;</code>、<code>null</code>、<code>undefined</code>、<code>NaN</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td>其他值，含 <code>&quot;0&quot;</code>、<code>&quot; &quot;</code>、<code>[]</code>、<code>&#123;&#125;</code></td>
+<td><code>true</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Number</span>(<span class="literal">undefined</span>), <span class="title class_">Number</span>(<span class="literal">null</span>));       <span class="comment">// NaN 0</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="built_in">parseInt</span>(<span class="string">&quot;12px&quot;</span>, <span class="number">10</span>), <span class="title class_">Number</span>(<span class="string">&quot;12px&quot;</span>));  <span class="comment">// 12 NaN</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Boolean</span>(<span class="string">&quot;0&quot;</span>), <span class="title class_">Boolean</span>(<span class="string">&quot; &quot;</span>));            <span class="comment">// true true：非空字符串全为真</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-与"><a href="#3-2-与" class="headerlink" title="3.2. &#x3D;&#x3D;&#x3D; 与 &#x3D;&#x3D;"></a>3.2. &#x3D;&#x3D;&#x3D; 与 &#x3D;&#x3D;</h2><p>判等写 <code>a === b</code>（不等写 <code>a !== b</code>）：<code>===</code> 要求类型和值都相同，不做转换；<code>==</code> 按一组复杂规则先转换，<code>&quot;0&quot; == false</code>、<code>[] == false</code>、<code>undefined == null</code> 都为 <code>true</code>，读代码时必须把转换路径推一遍。<code>==</code> 唯一实用的场景是 <code>value == null</code> 同时覆盖 <code>null</code> 与 <code>undefined</code>，可读写法是 <code>value === null || value === undefined</code>。<code>NaN</code> 与任何值（含自身）用 <code>===</code> 都是 <code>false</code>，判断用 <code>Number.isNaN(value)</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;1&quot;</span> === <span class="number">1</span>, <span class="string">&quot;1&quot;</span> == <span class="number">1</span>); <span class="comment">// false true</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">NaN</span> === <span class="title class_">NaN</span>, <span class="title class_">Number</span>.<span class="built_in">isNaN</span>(<span class="title class_">NaN</span>)); <span class="comment">// false true</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="4-运算符"><a href="#4-运算符" class="headerlink" title="4. 运算符"></a>4. 运算符</h1><h2 id="4-1-与"><a href="#4-1-与" class="headerlink" title="4.1. ?? 与 ||"></a>4.1. ?? 与 ||</h2><p>给默认值有两种写法：<code>a ?? b</code> 只在左侧是 <code>null</code> 或 <code>undefined</code> 时取右侧，<code>||</code> 把所有 falsy 值（<code>0</code>、<code>&quot;&quot;</code>、<code>NaN</code>、<code>false</code>）都当作没有值。表单里的数字、计数器、分页参数、允许为空的字符串都可能合法地取 <code>0</code> 或 <code>&quot;&quot;</code>，用 <code>||</code> 会把这些输入替换掉。<code>??</code> 与 <code>||</code> 或 <code>&amp;&amp;</code> 不加括号混写是语法错误。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> page = <span class="number">0</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(page || <span class="number">1</span>, page ?? <span class="number">1</span>);   <span class="comment">// 1 0</span></span><br><span class="line"><span class="keyword">const</span> a = <span class="number">0</span>, b = <span class="literal">null</span>, c = <span class="string">&quot;fallback&quot;</span>;</span><br><span class="line"><span class="comment">// const bad = a ?? b || c;          // SyntaxError：混用必须加括号</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>((a ?? b) || c, a ?? (b || c)); <span class="comment">// &quot;fallback&quot; 0</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="5-控制流"><a href="#5-控制流" class="headerlink" title="5. 控制流"></a>5. 控制流</h1><h2 id="5-1-if-与三元表达式"><a href="#5-1-if-与三元表达式" class="headerlink" title="5.1. if 与三元表达式"></a>5.1. if 与三元表达式</h2><p><code>if (cond) &#123; ... &#125; else &#123; ... &#125;</code> 是语句，不能放在赋值右侧或参数位置；三元表达式 <code>cond ? a : b</code> 有返回值，适合在赋值和参数处二选一，嵌套超过一层就改用 <code>if</code> 或提前 <code>return</code> 展平。条件位置按布尔规则转换，<code>if ([])</code> 会进入分支，所以判数组为空要看 <code>length</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> items = [];</span><br><span class="line"><span class="keyword">if</span> (items.<span class="property">length</span> === <span class="number">0</span>) <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;empty&quot;</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(items.<span class="property">length</span> ? <span class="string">`<span class="subst">$&#123;items.length&#125;</span> items`</span> : <span class="string">&quot;empty&quot;</span>); <span class="comment">// &quot;empty&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="5-2-三种循环"><a href="#5-2-三种循环" class="headerlink" title="5.2. 三种循环"></a>5.2. 三种循环</h2><p>需要索引、倒序或步长时用计数 <code>for (let i = 0; i &lt; n; i++)</code>，循环变量用 <code>let</code>；<code>for (const v of list)</code> 按顺序取出可迭代对象的值，拿不到索引也不能遍历普通对象；<code>while</code> 用于次数未知、由条件决定退出的场景，循环变量在体外声明并在体内改变，忘记改变就是死循环。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> colors = [<span class="string">&quot;red&quot;</span>, <span class="string">&quot;green&quot;</span>];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; colors.<span class="property">length</span>; i++) <span class="variable language_">console</span>.<span class="title function_">log</span>(i, colors[i]);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> [i, color] <span class="keyword">of</span> colors.<span class="title function_">entries</span>()) <span class="variable language_">console</span>.<span class="title function_">log</span>(i, color);</span><br><span class="line"><span class="keyword">let</span> n = <span class="number">10</span>;</span><br><span class="line"><span class="keyword">while</span> (n &gt; <span class="number">1</span>) n = n % <span class="number">2</span> === <span class="number">0</span> ? n / <span class="number">2</span> : <span class="number">3</span> * n + <span class="number">1</span>; <span class="comment">// 最终落到 1</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="5-3-break、continue-与标签"><a href="#5-3-break、continue-与标签" class="headerlink" title="5.3. break、continue 与标签"></a>5.3. break、continue 与标签</h2><p><code>break</code> 结束整个循环，<code>continue</code> 结束本轮进入下一轮，两者默认只作用于最内层；<code>continue</code> 在 <code>while</code> 里直接跳到条件判断，位置写错容易死循环。多层循环要一次跳出时给外层加标签，<code>break 标签</code> 从带该标签的循环跳出，<code>continue 标签</code> 让该循环进入下一轮。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">outer</span>:</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">0</span>; j &lt; <span class="number">3</span>; j++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (i * j &gt; <span class="number">2</span>) <span class="keyword">break</span> outer; <span class="comment">// 一次跳出两层</span></span><br><span class="line">    <span class="keyword">if</span> (j === <span class="number">1</span>) <span class="keyword">continue</span>;      <span class="comment">// 只跳过本轮 j === 1</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(i, j);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="6-函数"><a href="#6-函数" class="headerlink" title="6. 函数"></a>6. 函数</h1><h2 id="6-1-函数声明与函数表达式"><a href="#6-1-函数声明与函数表达式" class="headerlink" title="6.1. 函数声明与函数表达式"></a>6.1. 函数声明与函数表达式</h2><p>函数声明 <code>function f(a, b) &#123; ... &#125;</code> 整体提升，可以在定义之前的代码里调用；函数表达式 <code>const f = function (a, b) &#123; ... &#125;;</code> 赋给 <code>const</code> 时只在赋值之后可用，提前调用抛 <code>ReferenceError</code>。两种写法产生的都是值，可以赋给变量、当作参数传递，接收函数的函数把参数称为回调。没有 <code>return</code> 的函数返回 <code>undefined</code>；函数能读外层变量，外层读不到函数内部的局部变量。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">double</span>(<span class="number">3</span>));   <span class="comment">// 6：声明可以在定义前调用</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">double</span>(<span class="params">n</span>) &#123; <span class="keyword">return</span> n * <span class="number">2</span>; &#125;</span><br><span class="line"><span class="comment">// console.log(triple(3)); // ReferenceError：表达式在赋值前不可用</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">triple</span> = (<span class="params">n</span>) =&gt; n * <span class="number">3</span>;</span><br><span class="line">[<span class="number">1</span>, <span class="number">2</span>].<span class="title function_">forEach</span>(<span class="function">(<span class="params">n</span>) =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">triple</span>(n))); <span class="comment">// 回调由 forEach 决定执行时机</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="6-2-箭头函数"><a href="#6-2-箭头函数" class="headerlink" title="6.2. 箭头函数"></a>6.2. 箭头函数</h2><p>箭头函数写成 <code>(a, b) =&gt; a + b</code>：单表达式省略 <code>&#123;&#125;</code> 与 <code>return</code>，写了花括号就必须显式 <code>return</code>，漏写返回 <code>undefined</code>；一个参数可省略括号，零个参数必须写 <code>()</code>。箭头函数没有自己的 <code>this</code>，沿用它定义位置外层的 <code>this</code>，所以不能用 <code>new</code> 调用（抛 <code>TypeError</code>）。对象方法需要随调用者变化的 <code>this</code>，用方法简写而不是箭头函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">double</span> = (<span class="params">n</span>) =&gt; &#123; <span class="keyword">return</span> n * <span class="number">2</span>; &#125;;  <span class="comment">// 有大括号必须写 return</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">double</span>(<span class="number">3</span>));</span><br><span class="line"><span class="keyword">const</span> <span class="title function_">Counter</span> = (<span class="params"></span>) =&gt; &#123;&#125;;</span><br><span class="line"><span class="comment">// new Counter();  // TypeError: Counter is not a constructor</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="7-Rest-与-Spread"><a href="#7-Rest-与-Spread" class="headerlink" title="7. Rest 与 Spread"></a>7. Rest 与 Spread</h1><h2 id="7-1-rest-参数"><a href="#7-1-rest-参数" class="headerlink" title="7.1. rest 参数"></a>7.1. rest 参数</h2><p>在参数表末尾写 <code>function f(first, ...rest) &#123; ... &#125;</code>，<code>...rest</code> 把剩余实参收进真数组，可以直接调用数组方法；它必须写在参数表最后，后面再写参数是语法错误；它不参与 <code>fn.length</code> 计数；收集到的值仍按值或按引用传入。同一个符号出现在别的位置含义相反：</p>
+<table>
+<thead>
+<tr>
+<th>出现位置</th>
+<th>名称</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>函数参数表末尾</td>
+<td>rest 参数</td>
+<td>把剩余实参收集成数组</td>
+</tr>
+<tr>
+<td>函数调用、数组或对象字面量中</td>
+<td>spread 语法</td>
+<td>把数组、可迭代对象或对象展开成列表</td>
+</tr>
+</tbody></table>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">sum</span>(<span class="params">first, ...rest</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> rest.<span class="title function_">reduce</span>(<span class="function">(<span class="params">acc, n</span>) =&gt;</span> acc + n, first);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">sum</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)); <span class="comment">// 6</span></span><br><span class="line"><span class="comment">// function broken(...rest, last) &#123;&#125; // SyntaxError：rest 必须在最后</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="7-2-spread-展开"><a href="#7-2-spread-展开" class="headerlink" title="7.2. spread 展开"></a>7.2. spread 展开</h2><p><code>fn(...args)</code> 在调用位置把可迭代对象展开成实参，<code>[...arr]</code> 与 <code>&#123; ...obj &#125;</code> 在字面量里做浅拷贝与合并，对象里后写的同名属性覆盖前面的。展开只复制一层，嵌套对象仍与原对象共享引用。在函数调用与数组字面量里展开 <code>undefined</code> 或 <code>null</code> 会抛 <code>TypeError</code>，要兜底就写 <code>...(arr ?? [])</code>；对象字面量里展开 <code>null</code> 或 <code>undefined</code> 被忽略，结果只保留其余属性。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> nums = [<span class="number">3</span>, <span class="number">5</span>, <span class="number">1</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Math</span>.<span class="title function_">max</span>(...nums));       <span class="comment">// 5：展开成参数列表</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>([<span class="number">0</span>, ...nums, <span class="number">2</span>]);         <span class="comment">// [0, 3, 5, 1, 2]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(&#123; ...&#123; <span class="attr">a</span>: <span class="number">1</span>, <span class="attr">b</span>: <span class="number">2</span> &#125;, <span class="attr">b</span>: <span class="number">9</span> &#125;); <span class="comment">// &#123; a: 1, b: 9 &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="8-对象"><a href="#8-对象" class="headerlink" title="8. 对象"></a>8. 对象</h1><h2 id="8-1-对象字面量与属性访问"><a href="#8-1-对象字面量与属性访问" class="headerlink" title="8.1. 对象字面量与属性访问"></a>8.1. 对象字面量与属性访问</h2><p>对象用字面量写 <code>const obj = &#123; key: value &#125;;</code>，属性名是字符串，数字键会被自动转成字符串，所以 <code>obj[1]</code> 与 <code>obj[&quot;1&quot;]</code> 是同一条记录。点符号用于固定的属性名，方括号用于动态名字或含空格、连字符的名字，方括号里可以写任意表达式，字面量中也能用 <code>[expr]: value</code> 直接算键。<code>delete obj.key</code> 删除属性；<code>&quot;key&quot; in obj</code> 判断属性是否存在，原型链上的属性也算命中；<code>obj.key === undefined</code> 分不清 “属性不存在” 与 “属性值就是 undefined”，要区分就用 <code>Object.hasOwn</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> key = <span class="string">&quot;like birds&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> box = &#123; <span class="number">1</span>: <span class="string">&quot;one&quot;</span>, [key]: <span class="literal">true</span> &#125;;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(box[<span class="number">1</span>] === box[<span class="string">&quot;1&quot;</span>]);  <span class="comment">// true：数字键转成字符串</span></span><br><span class="line"><span class="keyword">delete</span> box[<span class="number">1</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;1&quot;</span> <span class="keyword">in</span> box, <span class="title class_">Object</span>.<span class="title function_">hasOwn</span>(box, key)); <span class="comment">// false true</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="8-2-属性简写"><a href="#8-2-属性简写" class="headerlink" title="8.2. 属性简写"></a>8.2. 属性简写</h2><p>属性名与变量名相同时只写一次 <code>const obj = &#123; name, age &#125;;</code>，省去 <code>name: name</code>。函数属性可以写方法简写 <code>sayHi() &#123;&#125;</code>，其中的 <code>this</code> 指向调用它的对象。箭头函数属性没有自己的 <code>this</code>，不适合当对象方法。返回值是对象字面量时要用小括号包住，否则 <code>&#123;&#125;</code> 被解析成函数体。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">makeUser</span>(<span class="params">name, age</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123; name, age, <span class="title function_">label</span>(<span class="params"></span>) &#123; <span class="keyword">return</span> <span class="string">`<span class="subst">$&#123;<span class="variable language_">this</span>.name&#125;</span>:<span class="subst">$&#123;<span class="variable language_">this</span>.age&#125;</span>`</span>; &#125; &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">makeUser</span>(<span class="string">&quot;Ada&quot;</span>, <span class="number">36</span>).<span class="title function_">label</span>());  <span class="comment">// &quot;Ada:36&quot;</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">bad</span> = (<span class="params">name</span>) =&gt; &#123; name &#125;;            <span class="comment">// 这行的大括号是函数体</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title function_">bad</span>(<span class="string">&quot;Ada&quot;</span>));                   <span class="comment">// undefined</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="8-3-解构"><a href="#8-3-解构" class="headerlink" title="8.3. 解构"></a>8.3. 解构</h2><p>对象解构写 <code>const &#123; a, b: alias, c = 3 &#125; = obj;</code>，按属性名取值，可以改名并给默认值，默认值只在取到 <code>undefined</code> 时生效，<code>null</code> 不触发默认值；数组解构写 <code>const [x, , y] = arr;</code>，按位置取值，空位跳过。解构只顾取值，原对象不变。嵌套解构要求中间层存在，否则抛 <code>TypeError</code>，常见写法是给中间层默认 <code>&#123;&#125;</code> 或改用可选链；函数参数位置也能解构，传 <code>undefined</code> 才用默认值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> user = &#123; <span class="attr">name</span>: <span class="string">&quot;Ada&quot;</span>, <span class="attr">address</span>: &#123; <span class="attr">city</span>: <span class="string">&quot;London&quot;</span> &#125; &#125;;</span><br><span class="line"><span class="keyword">const</span> &#123; name, <span class="attr">address</span>: &#123; city &#125; = &#123;&#125;, role = <span class="string">&quot;guest&quot;</span> &#125; = user;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(name, city, role);        <span class="comment">// Ada London guest</span></span><br><span class="line"><span class="keyword">const</span> [first, ...others] = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(first, others);           <span class="comment">// 1 [2, 3]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="8-4-浅拷贝"><a href="#8-4-浅拷贝" class="headerlink" title="8.4. 浅拷贝"></a>8.4. 浅拷贝</h2><p>浅拷贝用 <code>&#123; ...obj &#125;</code>、<code>[...arr]</code> 或 <code>Object.assign(target, source)</code>，它产生新对象，但属性值是对象时复制的是引用，改嵌套数据两边都变。<code>Object.assign</code> 的返回值和第一个参数是同一个对象，所以 <code>Object.assign(&#123;&#125;, defaults, input)</code> 不改 <code>defaults</code>，直接写 <code>Object.assign(defaults, input)</code> 会改掉它。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> defaults = &#123; <span class="attr">retries</span>: <span class="number">3</span>, <span class="attr">timeout</span>: &#123; <span class="attr">ms</span>: <span class="number">1000</span> &#125; &#125;;</span><br><span class="line"><span class="keyword">const</span> copy = &#123; ...defaults &#125;;</span><br><span class="line">copy.<span class="property">timeout</span>.<span class="property">ms</span> = <span class="number">5000</span>;            <span class="comment">// 改的是共享的嵌套对象</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(defaults.<span class="property">timeout</span>.<span class="property">ms</span>);  <span class="comment">// 5000</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(copy.<span class="property">retries</span> === defaults.<span class="property">retries</span>); <span class="comment">// true：这一层是复制的</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="8-5-深拷贝"><a href="#8-5-深拷贝" class="headerlink" title="8.5. 深拷贝"></a>8.5. 深拷贝</h2><p>深拷贝首选 <code>structuredClone(value)</code>，它递归复制普通对象、数组、<code>Date</code>、<code>Map</code>、<code>Set</code>、<code>ArrayBuffer</code>，保留循环引用与内部的引用共享关系；遇到函数抛 <code>DataCloneError</code>；类实例会被复制成普通对象，原型上的 getter 与方法都丢失，自身的可枚举属性照抄，其中用 getter 定义的属性按取值当时的结果写成数据属性。用 <code>JSON.parse(JSON.stringify(value))</code> 做 JSON 往返只在数据是纯对象、数组、字符串、数字、布尔、<code>null</code> 时可靠，代价见下表。</p>
+<table>
+<thead>
+<tr>
+<th>原值</th>
+<th>经过 JSON 往返之后</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>undefined</code>、函数值</td>
+<td>属性整个消失；出现在数组里变成 <code>null</code></td>
+</tr>
+<tr>
+<td><code>NaN</code>、<code>Infinity</code></td>
+<td>变成 <code>null</code></td>
+</tr>
+<tr>
+<td><code>Date</code></td>
+<td>变成 ISO 字符串，不再是 <code>Date</code> 对象</td>
+</tr>
+<tr>
+<td><code>Map</code>、<code>Set</code>、类实例</td>
+<td>变成普通对象，丢失原型方法</td>
+</tr>
+<tr>
+<td>循环引用</td>
+<td><code>JSON.stringify</code> 抛 <code>TypeError</code></td>
+</tr>
+</tbody></table>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> source = &#123; <span class="attr">when</span>: <span class="keyword">new</span> <span class="title class_">Date</span>(<span class="number">0</span>), <span class="attr">nested</span>: &#123; <span class="attr">n</span>: <span class="number">1</span> &#125; &#125;;</span><br><span class="line"><span class="keyword">const</span> clone = <span class="title function_">structuredClone</span>(source);</span><br><span class="line">clone.<span class="property">nested</span>.<span class="property">n</span> = <span class="number">2</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(source.<span class="property">nested</span>.<span class="property">n</span>, clone.<span class="property">when</span> <span class="keyword">instanceof</span> <span class="title class_">Date</span>); <span class="comment">// 1 true</span></span><br><span class="line"><span class="comment">// structuredClone(&#123; fn() &#123;&#125; &#125;); // DataCloneError：函数不能克隆</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">JSON</span>.<span class="title function_">parse</span>(<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="attr">a</span>: <span class="literal">undefined</span>, <span class="attr">b</span>: <span class="title class_">NaN</span> &#125;))); <span class="comment">// &#123; b: null &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="8-6-this-与-bind"><a href="#8-6-this-与-bind" class="headerlink" title="8.6. this 与 bind"></a>8.6. this 与 bind</h2><p><code>this</code> 不在定义时确定，而由调用方式决定：<code>obj.method()</code> 指向 <code>obj</code>；把方法取出来直接调用，<code>this</code> 是 <code>undefined</code>（模块与严格模式下）；<code>fn.call(obj, x)</code>、<code>fn.apply(obj, [x])</code> 显式指定。把方法当回调传出去会丢掉调用者信息，这是 <code>this</code> 出问题的最常见来源，两种修法是 <code>bind</code> 或改成箭头函数。<code>bind</code> 返回新函数，<code>this</code> 永久固定为第一个参数，用 <code>call</code> 也改不回来，额外的绑定参数会前置到每次调用的实参之前，原函数不受影响。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> user = &#123; <span class="attr">name</span>: <span class="string">&quot;Ada&quot;</span>, <span class="title function_">sayHi</span>(<span class="params"></span>) &#123; <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">name</span>); &#125; &#125;;</span><br><span class="line">user.<span class="title function_">sayHi</span>();                  <span class="comment">// &quot;Ada&quot;</span></span><br><span class="line"><span class="keyword">const</span> detached = user.<span class="property">sayHi</span>;</span><br><span class="line"><span class="comment">// detached();                 // TypeError：严格模式下 this 是 undefined</span></span><br><span class="line"><span class="keyword">const</span> greet = user.<span class="property">sayHi</span>.<span class="title function_">bind</span>(user);</span><br><span class="line"><span class="built_in">setTimeout</span>(greet, <span class="number">0</span>);          <span class="comment">// 定时器回调里 this 仍指向 user</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="9-可选链"><a href="#9-可选链" class="headerlink" title="9. 可选链"></a>9. 可选链</h1><h2 id="9-1-可选链的写法"><a href="#9-1-可选链的写法" class="headerlink" title="9.1. 可选链的写法"></a>9.1. 可选链的写法</h2><p>可选链写成 <code>obj?.prop</code>、<code>obj?.[expr]</code>、<code>fn?.()</code>：左侧为 <code>null</code> 或 <code>undefined</code> 时整个表达式短路求值并返回 <code>undefined</code>，同一条链上后面的访问与调用都不执行，所以 <code>user.address?.street</code> 在 <code>address</code> 缺失时不抛 <code>TypeError</code>。<code>?.</code> 不能出现在赋值左侧，<code>obj?.x = 1</code> 是语法错误。只在逻辑上允许缺失的位置用：必填字段上滥用会把真正的错误变成 <code>undefined</code>，报错位置与出错位置分离。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> user = &#123;&#125;;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(user.<span class="property">address</span>?.<span class="property">street</span>);  <span class="comment">// undefined，不抛错</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(user.<span class="property">getName</span>?.());      <span class="comment">// undefined：方法缺失就跳过调用</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(&#123; <span class="attr">a</span>: <span class="number">1</span> &#125;?.[<span class="string">&quot;b&quot;</span>]);       <span class="comment">// undefined：方括号访问同样短路</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="10-数组"><a href="#10-数组" class="headerlink" title="10. 数组"></a>10. 数组</h1><h2 id="10-1-数组的声明与访问"><a href="#10-1-数组的声明与访问" class="headerlink" title="10.1. 数组的声明与访问"></a>10.1. 数组的声明与访问</h2><p>数组用 <code>const arr = [1, 2, 3];</code> 声明，它是特殊对象，通过引用传递。<code>length</code> 是最大索引加一，不是元素个数：给高索引赋值会留下空位并撑大 <code>length</code>，<code>arr.length = 0</code> 清空数组最省事。<code>arr.at(-1)</code> 按负索引取尾部元素，<code>arr[-1]</code> 读的是名为 <code>&quot;-1&quot;</code> 的属性，结果是 <code>undefined</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> arr = [];</span><br><span class="line">arr[<span class="number">3</span>] = <span class="string">&quot;x&quot;</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr.<span class="property">length</span>);  <span class="comment">// 4：中间三个位置是空位</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr.<span class="title function_">at</span>(-<span class="number">1</span>), arr[-<span class="number">1</span>]); <span class="comment">// &quot;x&quot; undefined</span></span><br><span class="line">arr.<span class="property">length</span> = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="10-2-pop、push、shift-与-unshift"><a href="#10-2-pop、push、shift-与-unshift" class="headerlink" title="10.2. pop、push、shift 与 unshift"></a>10.2. pop、push、shift 与 unshift</h2><p><code>arr.pop()</code>、<code>arr.push(v)</code>、<code>arr.shift()</code>、<code>arr.unshift(v)</code> 这四个方法都改原数组：<code>pop</code>、<code>push</code> 作用在尾部，<code>shift</code>、<code>unshift</code> 作用在头部。<code>push</code> 与 <code>unshift</code> 可一次加多个值并返回新的 <code>length</code>，<code>pop</code> 与 <code>shift</code> 返回被移除的元素，空数组上返回 <code>undefined</code>；<code>shift</code> 与 <code>unshift</code> 要移动后面所有元素的索引，大数组上比尾部操作慢。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> stack = [<span class="number">1</span>, <span class="number">2</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(stack.<span class="title function_">push</span>(<span class="number">3</span>), stack);    <span class="comment">// 3 [1, 2, 3]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(stack.<span class="title function_">pop</span>(), stack);      <span class="comment">// 3 [1, 2]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(stack.<span class="title function_">unshift</span>(<span class="number">0</span>), stack); <span class="comment">// 2 [0, 1]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="10-3-splice、slice-与-concat"><a href="#10-3-splice、slice-与-concat" class="headerlink" title="10.3. splice、slice 与 concat"></a>10.3. splice、slice 与 concat</h2><p><code>arr.splice(start, deleteCount, ...items)</code> 直接改原数组，删除若干元素并就地插入新元素，返回被删除元素组成的数组；<code>deleteCount</code> 为 <code>0</code> 时只插入，<code>splice(0, arr.length)</code> 清空原数组。<code>slice</code> 返回新数组且不改原数组，<code>end</code> 位置的元素不含在内，负索引从尾部算。<code>concat</code> 也返回新数组，参数是数组时展开一层。需要保留原数据时不能用 <code>splice</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> arr = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr.<span class="title function_">slice</span>(<span class="number">1</span>, <span class="number">3</span>));        <span class="comment">// [&quot;b&quot;, &quot;c&quot;]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr.<span class="title function_">splice</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="string">&quot;X&quot;</span>));  <span class="comment">// [&quot;b&quot;, &quot;c&quot;]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr);                    <span class="comment">// [&quot;a&quot;, &quot;X&quot;, &quot;d&quot;]：原数组已被改</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="10-4-forEach、map-与-filter"><a href="#10-4-forEach、map-与-filter" class="headerlink" title="10.4. forEach、map 与 filter"></a>10.4. forEach、map 与 filter</h2><p><code>arr.forEach(fn)</code> 只做遍历，返回 <code>undefined</code>，后面接 <code>.map</code> 会抛 <code>TypeError</code>，也不能用 <code>break</code> 提前结束。<code>map</code> 返回等长新数组，回调的返回值成为新元素，漏写 <code>return</code> 会得到一排 <code>undefined</code>。<code>filter</code> 返回新数组，回调返回真值的元素才保留，全不匹配时得到空数组。三者都不修改原数组（回调自己改除外）。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> nums = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nums.<span class="title function_">forEach</span>(<span class="function">(<span class="params">n</span>) =&gt;</span> n * <span class="number">2</span>));     <span class="comment">// undefined</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nums.<span class="title function_">map</span>(<span class="function">(<span class="params">n</span>) =&gt;</span> n * <span class="number">2</span>));         <span class="comment">// [2, 4, 6, 8]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nums.<span class="title function_">map</span>(<span class="function">(<span class="params">n</span>) =&gt;</span> &#123; n * <span class="number">2</span>; &#125;));    <span class="comment">// [undefined, undefined, undefined, undefined]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nums.<span class="title function_">filter</span>(<span class="function">(<span class="params">n</span>) =&gt;</span> n % <span class="number">2</span> === <span class="number">0</span>)); <span class="comment">// [2, 4]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="10-5-find、findIndex、indexOf-与-includes"><a href="#10-5-find、findIndex、indexOf-与-includes" class="headerlink" title="10.5. find、findIndex、indexOf 与 includes"></a>10.5. find、findIndex、indexOf 与 includes</h2><p><code>arr.find(fn)</code> 返回第一个让回调为真的元素，没有则 <code>undefined</code>；<code>findIndex</code> 返回它的索引，没有则 <code>-1</code>；两者一找到就停止遍历，适合在对象数组里按 id 取一条。<code>indexOf</code> 与 <code>includes</code> 用 <code>===</code> 比较，对象与数组只能按引用命中，<code>NaN</code> 在 <code>indexOf</code> 里找不到而 <code>includes</code> 能命中。判断 “没找到” 要比较 <code>=== undefined</code> 或 <code>=== -1</code>，因为元素本身可能是 <code>0</code> 或 <code>&quot;&quot;</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> users = [&#123; <span class="attr">id</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span> &#125;];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(users.<span class="title function_">find</span>(<span class="function">(<span class="params">u</span>) =&gt;</span> u.<span class="property">id</span> === <span class="number">2</span>), users.<span class="title function_">findIndex</span>(<span class="function">(<span class="params">u</span>) =&gt;</span> u.<span class="property">id</span> === <span class="number">3</span>)); <span class="comment">// &#123;id:2&#125; -1</span></span><br><span class="line"><span class="keyword">const</span> arr = [<span class="title class_">NaN</span>, &#123; <span class="attr">a</span>: <span class="number">1</span> &#125;];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(arr.<span class="title function_">indexOf</span>(<span class="title class_">NaN</span>), arr.<span class="title function_">includes</span>(<span class="title class_">NaN</span>)); <span class="comment">// -1 true</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="10-6-sort-与-reverse"><a href="#10-6-sort-与-reverse" class="headerlink" title="10.6. sort 与 reverse"></a>10.6. sort 与 reverse</h2><p><code>arr.sort(compareFn)</code> 与 <code>arr.reverse()</code> 都原地修改并返回同一个数组。<code>sort</code> 不传比较函数时把所有元素转成字符串按字典序比较，所以 <code>[10, 9, 1]</code> 得到 <code>[1, 10, 9]</code>；数字排序必须传 <code>(a, b) =&gt; a - b</code> 表示升序，比较函数返回负数表示 <code>a</code> 在前。按字段排序写 <code>(a, b) =&gt; a.id - b.id</code>，字符串字段用 <code>a.name.localeCompare(b.name)</code>。要保留原数组顺序就先 <code>[...arr].sort(...)</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> nums = [<span class="number">10</span>, <span class="number">9</span>, <span class="number">1</span>];</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>([...nums].<span class="title function_">sort</span>());            <span class="comment">// [1, 10, 9]：默认按字符串比较</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nums.<span class="title function_">sort</span>(<span class="function">(<span class="params">a, b</span>) =&gt;</span> a - b));  <span class="comment">// [1, 9, 10]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nums.<span class="title function_">reverse</span>());              <span class="comment">// [10, 9, 1]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="10-7-split-与-join"><a href="#10-7-split-与-join" class="headerlink" title="10.7. split 与 join"></a>10.7. split 与 join</h2><p><code>str.split(separator)</code> 把字符串切成数组：分隔符为空串时按字符切，不传参数时整串成为唯一元素，连续的分隔符会产生空串元素。<code>join</code> 用粘合符把数组拼成字符串，默认逗号，空数组得到空串。两者互逆只在不含连续分隔符的输入上成立。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;a,b,c&quot;</span>.<span class="title function_">split</span>(<span class="string">&quot;,&quot;</span>));           <span class="comment">// [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;a,b,c&quot;</span>.<span class="title function_">split</span>(<span class="string">&quot;,&quot;</span>).<span class="title function_">join</span>(<span class="string">&quot; | &quot;</span>)); <span class="comment">// &quot;a | b | c&quot;</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;a,,b&quot;</span>.<span class="title function_">split</span>(<span class="string">&quot;,&quot;</span>));            <span class="comment">// [&quot;a&quot;, &quot;&quot;, &quot;b&quot;]：空字段保留</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="10-8-Array-isArray-与-Array-from"><a href="#10-8-Array-isArray-与-Array-from" class="headerlink" title="10.8. Array.isArray 与 Array.from"></a>10.8. Array.isArray 与 Array.from</h2><p>数组是对象，<code>typeof []</code> 返回 <code>&quot;object&quot;</code>，区分数组只能用 <code>Array.isArray(value)</code>。<code>Array.from</code> 把可迭代对象（数组、字符串、<code>Map</code>、<code>Set</code>）或类数组对象（有索引和 <code>length</code>）转成真数组，之后才能调用数组方法；第二个参数是映射函数，在转换时逐个应用。<code>for...of</code> 能直接遍历任何可迭代对象，但拿不到索引。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Array</span>.<span class="title function_">isArray</span>([]), <span class="keyword">typeof</span> []);            <span class="comment">// true &quot;object&quot;</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Array</span>.<span class="title function_">from</span>(&#123; <span class="number">0</span>: <span class="string">&quot;a&quot;</span>, <span class="number">1</span>: <span class="string">&quot;b&quot;</span>, <span class="attr">length</span>: <span class="number">2</span> &#125;)); <span class="comment">// [&quot;a&quot;, &quot;b&quot;]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Array</span>.<span class="title function_">from</span>(<span class="string">&quot;hi&quot;</span>, <span class="function">(<span class="params">c</span>) =&gt;</span> c.<span class="title function_">toUpperCase</span>()));  <span class="comment">// [&quot;H&quot;, &quot;I&quot;]</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="11-Map-与-Set"><a href="#11-Map-与-Set" class="headerlink" title="11. Map 与 Set"></a>11. Map 与 Set</h1><h2 id="11-1-Map"><a href="#11-1-Map" class="headerlink" title="11.1. Map"></a>11.1. Map</h2><p><code>new Map(entries)</code> 建的键值集合里键保持原值，数字、对象、<code>NaN</code> 都能当键，<code>map.get(1)</code> 与 <code>map.get(&quot;1&quot;)</code> 是两条不同记录。迭代顺序等于插入顺序，不能按编号取元素，也不能重排。<code>get</code> 取不到时返回 <code>undefined</code>，判断存在必须用 <code>has</code>，因为值本身可能是 <code>undefined</code>；<code>set</code> 返回 map 本身，可以链式调用。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> visits = <span class="keyword">new</span> <span class="title class_">Map</span>();</span><br><span class="line">visits.<span class="title function_">set</span>(<span class="string">&quot;a&quot;</span>, <span class="number">1</span>).<span class="title function_">set</span>(<span class="number">1</span>, <span class="number">2</span>);       <span class="comment">// 字符串键与数字键各占一条</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(visits.<span class="title function_">get</span>(<span class="number">1</span>), visits.<span class="property">size</span>); <span class="comment">// 2 2</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>([...visits.<span class="title function_">keys</span>()]);    <span class="comment">// [&quot;a&quot;, 1]：保持插入顺序</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="11-2-Set"><a href="#11-2-Set" class="headerlink" title="11.2. Set"></a>11.2. Set</h2><p><code>new Set(iterable)</code> 建的集合里同一个值重复 <code>add</code> 只留一份，去重就是 <code>[...new Set(arr)]</code>。比较规则与 <code>===</code> 一致：对象按引用去重，<code>NaN</code> 视为同一个值。可迭代，能配 <code>for...of</code> 与 <code>forEach</code>，用 <code>has</code> 判断某个值在不在集合里，但没有索引，也没有对外暴露的排序手段，需要顺序时先转数组再 <code>sort</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> tags = <span class="keyword">new</span> <span class="title class_">Set</span>([<span class="string">&quot;js&quot;</span>, <span class="string">&quot;js&quot;</span>, <span class="string">&quot;web&quot;</span>]);</span><br><span class="line">tags.<span class="title function_">add</span>(<span class="string">&quot;dom&quot;</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(tags.<span class="property">size</span>, [...tags]);  <span class="comment">// 3 [&quot;js&quot;, &quot;web&quot;, &quot;dom&quot;]</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="12-Object-keys-与-values-与-entries"><a href="#12-Object-keys-与-values-与-entries" class="headerlink" title="12. Object.keys 与 values 与 entries"></a>12. Object.keys 与 values 与 entries</h1><h2 id="12-1-对象的遍历"><a href="#12-1-对象的遍历" class="headerlink" title="12.1. 对象的遍历"></a>12.1. 对象的遍历</h2><p><code>for (const key in obj)</code> 的 <code>key</code> 是字符串，它遍历自身与原型链上所有可枚举属性，继承来的属性和依赖往原型上添加的字段都会出现，遍历对象自己改用 <code>Object.keys</code> 或 <code>Object.entries</code>。数组也不要配 <code>for...in</code>：拿到的是索引字符串，还可能带上自定义属性。<code>Object.keys</code>、<code>values</code>、<code>entries</code> 都只处理对象自身的可枚举属性并返回真数组，能直接接 <code>map</code>、<code>filter</code>、<code>length</code>；<code>entries</code> 返回 <code>[key, value]</code>，可解构遍历，也能直接送给 <code>new Map()</code>，反向操作是 <code>Object.fromEntries</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = <span class="title class_">Object</span>.<span class="title function_">create</span>(&#123; <span class="attr">inherited</span>: <span class="literal">true</span> &#125;);</span><br><span class="line">obj.<span class="property">own</span> = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> obj) <span class="variable language_">console</span>.<span class="title function_">log</span>(key);  <span class="comment">// &quot;own&quot; 然后 &quot;inherited&quot;</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Object</span>.<span class="title function_">keys</span>(obj));            <span class="comment">// [&quot;own&quot;]</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Object</span>.<span class="title function_">fromEntries</span>([[<span class="string">&quot;x&quot;</span>, <span class="number">1</span>]])); <span class="comment">// &#123; x: 1 &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="13-JSON"><a href="#13-JSON" class="headerlink" title="13. JSON"></a>13. JSON</h1><h2 id="13-1-JSON-的序列化与解析"><a href="#13-1-JSON-的序列化与解析" class="headerlink" title="13.1. JSON 的序列化与解析"></a>13.1. JSON 的序列化与解析</h2><p><code>JSON.stringify(value)</code> 生成符合 JSON 规范的字符串，用于存储或传输；<code>JSON.parse(text)</code> 把它还原成普通对象。JSON 的键和字符串必须用双引号，不允许注释、尾随逗号和 <code>undefined</code>，所以 <code>JSON.parse(&quot;&#123;&#39;a&#39;:1&#125;&quot;)</code> 抛 <code>SyntaxError</code>，处理外部数据要包 <code>try/catch</code>。合法 JSON 也包括数字、字符串、布尔与 <code>null</code>，<code>parse</code> 的返回值不一定是对象；往返过程中的数据损失见 8.5 的对照表。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> text = <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(&#123; <span class="attr">page</span>: <span class="number">0</span>, <span class="attr">tags</span>: [<span class="string">&quot;js&quot;</span>] &#125;);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(text);                        <span class="comment">// &#123;&quot;page&quot;:0,&quot;tags&quot;:[&quot;js&quot;]&#125;</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">JSON</span>.<span class="title function_">parse</span>(text).<span class="property">page</span>);       <span class="comment">// 0</span></span><br><span class="line"><span class="keyword">try</span> &#123; <span class="title class_">JSON</span>.<span class="title function_">parse</span>(<span class="string">&quot;&#123;&#x27;a&#x27;:1&#125;&quot;</span>); &#125; <span class="keyword">catch</span> (e) &#123; <span class="variable language_">console</span>.<span class="title function_">log</span>(e.<span class="property">name</span>); &#125; <span class="comment">// SyntaxError</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="14-Date"><a href="#14-Date" class="headerlink" title="14. Date"></a>14. Date</h1><h2 id="14-1-创建-Date"><a href="#14-1-创建-Date" class="headerlink" title="14.1. 创建 Date"></a>14.1. 创建 Date</h2><p><code>new Date()</code> 无参得到当前时刻，其他几种参数形式分别接受毫秒数、ISO 字符串或年月日字段：数字参数被当作自 UTC 1970-01-01 起经过的毫秒数，1970 年之前的日期是负数；字符串参数按 ISO 格式解析，格式不合法得到 <code>Invalid Date</code>，取时间戳为 <code>NaN</code>。多参数形式按本地时区解释，<code>month</code> 从 <code>0</code> 开始计数，只有年和月必填，其余默认 <code>1</code> 或 <code>0</code>。只写日期的字符串（<code>&quot;2026-01-01&quot;</code>）按 UTC 零点解析，在负时区会显示成前一天。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="keyword">new</span> <span class="title class_">Date</span>(<span class="number">0</span>).<span class="title function_">toISOString</span>());       <span class="comment">// &quot;1970-01-01T00:00:00.000Z&quot;</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="keyword">new</span> <span class="title class_">Date</span>(<span class="number">2026</span>, <span class="number">0</span>, <span class="number">1</span>).<span class="title function_">getMonth</span>()); <span class="comment">// 0：0 代表一月</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="keyword">new</span> <span class="title class_">Date</span>(<span class="string">&quot;bad&quot;</span>).<span class="title function_">getTime</span>());       <span class="comment">// NaN</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="14-2-读写时间组件"><a href="#14-2-读写时间组件" class="headerlink" title="14.2. 读写时间组件"></a>14.2. 读写时间组件</h2><p><code>date.getFullYear()</code>、<code>date.getMonth()</code> 这样的 <code>get*</code> 方法按本地时区读取组件，方法名里加 <code>UTC</code> 的按 UTC+0 读取；<code>set*</code> 修改原对象并返回新的时间戳，接受超范围的数值并自动校准，可以借此做日期加减。组件含义见下表：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>getFullYear()</code></td>
+<td>四位年份</td>
+</tr>
+<tr>
+<td><code>getMonth()</code></td>
+<td>月份，0 到 11</td>
+</tr>
+<tr>
+<td><code>getDate()</code></td>
+<td>当月第几天，1 到 31</td>
+</tr>
+<tr>
+<td><code>getDay()</code></td>
+<td>星期，0（周日）到 6（周六），不受区域设置影响</td>
+</tr>
+<tr>
+<td><code>getTime()</code></td>
+<td>时间戳毫秒数，没有 UTC 变体</td>
+</tr>
+<tr>
+<td><code>getTimezoneOffset()</code></td>
+<td>UTC 与本地时区的分钟差，没有 UTC 变体</td>
+</tr>
+</tbody></table>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> d = <span class="keyword">new</span> <span class="title class_">Date</span>(<span class="number">2026</span>, <span class="number">0</span>, <span class="number">31</span>);</span><br><span class="line">d.<span class="title function_">setDate</span>(<span class="number">32</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(d.<span class="title function_">getMonth</span>(), d.<span class="title function_">getDate</span>()); <span class="comment">// 1 1：1 月 32 日校准成 2 月 1 日</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="14-3-时间戳"><a href="#14-3-时间戳" class="headerlink" title="14.3. 时间戳"></a>14.3. 时间戳</h2><p>时间戳是自 1970-01-01 UTC 起的毫秒数，1970 年之前的日期为负。<code>Date.now()</code> 直接返回当前时间戳，不必创建中间对象；<code>+date</code> 与 <code>date.getTime()</code> 等价。时间差直接相减再换算单位，比手工拆分年月日可靠，也自然处理跨月跨年。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> start = <span class="title class_">Date</span>.<span class="title function_">now</span>();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, sink = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) sink += i;  <span class="comment">// 一段同步计算</span></span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="title class_">Date</span>.<span class="title function_">now</span>() - start &gt;= <span class="number">0</span>, +<span class="keyword">new</span> <span class="title class_">Date</span>(<span class="number">1000</span>) === <span class="number">1000</span>); <span class="comment">// true true</span></span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/06/26/JavaScript/">https://eliano64.github.io/2026/06/26/JavaScript/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/24/Tarjan-Algorithm/" title="Tarjan Algorithm"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Tarjan Algorithm</div></div><div class="info-2"><div class="info-item-1">Tarjan 算法常用于求解：  有向图中的强连通分量（SCC, Strongly Connected Components）； 无向图中的割点； 无向图中的割边，又称桥。  核心思想是 DFS 时间戳和 low 数组。 1. 核心数组   数组 含义    dfn[u] 节点 u 第一次被 DFS 访问到的时间戳   low[u] 从 u 或 u 的子树出发，经过树边和返祖边能到达的最小 dfn   可以直观理解为：  dfn 记录“访问顺序”； low 记录“最多能往祖先回到哪里”。  2. 有向图强连通分量 SCC强连通分量指的是有向图中的一个最大点集，其中任意两个点都可以互相到达。 12345678910111213141516171819202122232425262728293031323334353637383940414243#include &lt;bits/stdc++.h&gt;using namespace std;const int N = 100005;vector&lt;int&gt; g[N];int dfn[N], low[N],...</div></div></div></a><a class="pagination-related" href="/2026/06/27/Agorithm-Basic-Concepts/" title="Agorithm Basic Concepts"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Agorithm Basic Concepts</div></div><div class="info-2"><div class="info-item-1">算法定义算法是对特定问题求解步骤的一种描述，是指令的有限序列，其中每条指令表示一个或多个操作。 程序可以理解为：数据结构 + 算法。数据结构负责把现实问题中的信息组织到计算机中，算法负责高效处理这些信息以解决问题。 算法必须具备的特性 有穷性：算法必须在执行有穷步后结束，且每一步都在有穷时间内完成。算法必须有穷，程序可以长期运行。 确定性：每条指令含义明确；相同输入只能得到相同输出。 可行性：算法中的操作都能通过已经实现的基本运算执行有限次完成。 输入：一个算法有零个或多个输入。 输出：一个算法有一个或多个输出。  好算法追求的目标 正确性：能正确解决问题。 可读性：便于人理解、检查和维护。 健壮性：遇到非法输入时能适当处理，而不是产生无意义结果。 高效率与低存储量需求：时间复杂度和空间复杂度尽量低。  描述方式算法可以用自然语言、伪代码、程序代码、流程图等方式描述。关键不是形式，而是步骤必须无歧义，并能在有限步骤内完成。 </div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">293</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E8%AF%AD%E8%A8%80%E4%BB%8B%E7%BB%8D"><span class="toc-text">1. 语言介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E8%AF%AD%E8%A8%80%E6%A0%B8%E5%BF%83%E4%B8%8E%E5%AE%BF%E4%B8%BB%E7%8E%AF%E5%A2%83"><span class="toc-text">1.1. 语言核心与宿主环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%BC%B1%E7%B1%BB%E5%9E%8B"><span class="toc-text">1.2. 动态类型与弱类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E5%8E%9F%E5%A7%8B%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%AF%B9%E8%B1%A1"><span class="toc-text">1.3. 原始类型与对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-%E5%8D%95%E7%BA%BF%E7%A8%8B%E4%B8%8E%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF"><span class="toc-text">1.4. 单线程与事件循环</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5-%E5%8F%98%E9%87%8F%E5%A3%B0%E6%98%8E%E4%B8%8E%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-text">1.5. 变量声明与作用域</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-6-%E5%91%BD%E5%90%8D%E4%B8%8E%E8%AF%AD%E5%8F%A5%E9%A3%8E%E6%A0%BC"><span class="toc-text">1.6. 命名与语句风格</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E5%80%BC%E4%B8%8E%E7%B1%BB%E5%9E%8B"><span class="toc-text">2. 值与类型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-typeof"><span class="toc-text">2.1. typeof</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E5%80%BC%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-text">2.2. 值的比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E6%A8%A1%E6%9D%BF%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-text">2.3. 模板字符串</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="toc-text">3. 类型转换</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E6%98%BE%E5%BC%8F%E8%BD%AC%E6%8D%A2%E4%B8%8E%E9%9A%90%E5%BC%8F%E8%BD%AC%E6%8D%A2"><span class="toc-text">3.1. 显式转换与隐式转换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E4%B8%8E"><span class="toc-text">3.2. &#x3D;&#x3D;&#x3D; 与 &#x3D;&#x3D;</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-text">4. 运算符</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E4%B8%8E"><span class="toc-text">4.1. ?? 与 ||</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-%E6%8E%A7%E5%88%B6%E6%B5%81"><span class="toc-text">5. 控制流</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-if-%E4%B8%8E%E4%B8%89%E5%85%83%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-text">5.1. if 与三元表达式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E4%B8%89%E7%A7%8D%E5%BE%AA%E7%8E%AF"><span class="toc-text">5.2. 三种循环</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-break%E3%80%81continue-%E4%B8%8E%E6%A0%87%E7%AD%BE"><span class="toc-text">5.3. break、continue 与标签</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-%E5%87%BD%E6%95%B0"><span class="toc-text">6. 函数</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-%E5%87%BD%E6%95%B0%E5%A3%B0%E6%98%8E%E4%B8%8E%E5%87%BD%E6%95%B0%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-text">6.1. 函数声明与函数表达式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-%E7%AE%AD%E5%A4%B4%E5%87%BD%E6%95%B0"><span class="toc-text">6.2. 箭头函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7-Rest-%E4%B8%8E-Spread"><span class="toc-text">7. Rest 与 Spread</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-rest-%E5%8F%82%E6%95%B0"><span class="toc-text">7.1. rest 参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-spread-%E5%B1%95%E5%BC%80"><span class="toc-text">7.2. spread 展开</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#8-%E5%AF%B9%E8%B1%A1"><span class="toc-text">8. 对象</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-%E5%AF%B9%E8%B1%A1%E5%AD%97%E9%9D%A2%E9%87%8F%E4%B8%8E%E5%B1%9E%E6%80%A7%E8%AE%BF%E9%97%AE"><span class="toc-text">8.1. 对象字面量与属性访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-%E5%B1%9E%E6%80%A7%E7%AE%80%E5%86%99"><span class="toc-text">8.2. 属性简写</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-%E8%A7%A3%E6%9E%84"><span class="toc-text">8.3. 解构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-4-%E6%B5%85%E6%8B%B7%E8%B4%9D"><span class="toc-text">8.4. 浅拷贝</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-5-%E6%B7%B1%E6%8B%B7%E8%B4%9D"><span class="toc-text">8.5. 深拷贝</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-6-this-%E4%B8%8E-bind"><span class="toc-text">8.6. this 与 bind</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#9-%E5%8F%AF%E9%80%89%E9%93%BE"><span class="toc-text">9. 可选链</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-%E5%8F%AF%E9%80%89%E9%93%BE%E7%9A%84%E5%86%99%E6%B3%95"><span class="toc-text">9.1. 可选链的写法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#10-%E6%95%B0%E7%BB%84"><span class="toc-text">10. 数组</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-1-%E6%95%B0%E7%BB%84%E7%9A%84%E5%A3%B0%E6%98%8E%E4%B8%8E%E8%AE%BF%E9%97%AE"><span class="toc-text">10.1. 数组的声明与访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-2-pop%E3%80%81push%E3%80%81shift-%E4%B8%8E-unshift"><span class="toc-text">10.2. pop、push、shift 与 unshift</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-3-splice%E3%80%81slice-%E4%B8%8E-concat"><span class="toc-text">10.3. splice、slice 与 concat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-4-forEach%E3%80%81map-%E4%B8%8E-filter"><span class="toc-text">10.4. forEach、map 与 filter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-5-find%E3%80%81findIndex%E3%80%81indexOf-%E4%B8%8E-includes"><span class="toc-text">10.5. find、findIndex、indexOf 与 includes</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-6-sort-%E4%B8%8E-reverse"><span class="toc-text">10.6. sort 与 reverse</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-7-split-%E4%B8%8E-join"><span class="toc-text">10.7. split 与 join</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-8-Array-isArray-%E4%B8%8E-Array-from"><span class="toc-text">10.8. Array.isArray 与 Array.from</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#11-Map-%E4%B8%8E-Set"><span class="toc-text">11. Map 与 Set</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-1-Map"><span class="toc-text">11.1. Map</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-2-Set"><span class="toc-text">11.2. Set</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#12-Object-keys-%E4%B8%8E-values-%E4%B8%8E-entries"><span class="toc-text">12. Object.keys 与 values 与 entries</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#12-1-%E5%AF%B9%E8%B1%A1%E7%9A%84%E9%81%8D%E5%8E%86"><span class="toc-text">12.1. 对象的遍历</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#13-JSON"><span class="toc-text">13. JSON</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#13-1-JSON-%E7%9A%84%E5%BA%8F%E5%88%97%E5%8C%96%E4%B8%8E%E8%A7%A3%E6%9E%90"><span class="toc-text">13.1. JSON 的序列化与解析</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#14-Date"><span class="toc-text">14. Date</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#14-1-%E5%88%9B%E5%BB%BA-Date"><span class="toc-text">14.1. 创建 Date</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-2-%E8%AF%BB%E5%86%99%E6%97%B6%E9%97%B4%E7%BB%84%E4%BB%B6"><span class="toc-text">14.2. 读写时间组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-3-%E6%97%B6%E9%97%B4%E6%88%B3"><span class="toc-text">14.3. 时间戳</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-22T08:35:42.000Z" title="发表于 2026-10-22 16:35:42">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/16/2024-xv6-Labs-1%201/" title="无标题">无标题</a><time datetime="2026-09-16T15:32:10.189Z" title="发表于 2026-09-16 23:32:10">2026-09-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Go-Environment-Management/" title="Go Environment Management">Go Environment Management</a><time datetime="2026-09-15T10:20:00.000Z" title="发表于 2026-09-15 18:20:00">2026-09-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Python-Environment-Management/" title="Python Environment Management">Python Environment Management</a><time datetime="2026-09-15T10:20:00.000Z" title="发表于 2026-09-15 18:20:00">2026-09-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Big-Integer-Arithmetic/" title="Big Integer Arithmetic">Big Integer Arithmetic</a><time datetime="2026-09-15T09:10:19.000Z" title="发表于 2026-09-15 17:10:19">2026-09-15</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/10/03/factory-method-abstract-factory/" title="Factory Method Abstract Factory">Factory Method Abstract Factory</a><time datetime="2026-10-23T02:56:10.836Z" title="更新于 2026-10-23 10:56:10">2026-10-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-22T14:29:22.665Z" title="更新于 2026-10-22 22:29:22">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/05/Distribution-And-Numerical-Characteristics/" title="Distribution And Numerical Characteristics">Distribution And Numerical Characteristics</a><time datetime="2026-10-17T03:01:54.151Z" title="更新于 2026-10-17 11:01:54">2026-10-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Remote-File-Transfer/" title="Remote File Transfer">Remote File Transfer</a><time datetime="2026-10-09T14:52:13.639Z" title="更新于 2026-10-09 22:52:13">2026-10-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/SSH/" title="SSH">SSH</a><time datetime="2026-10-09T14:52:12.874Z" title="更新于 2026-10-09 22:52:12">2026-10-09</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

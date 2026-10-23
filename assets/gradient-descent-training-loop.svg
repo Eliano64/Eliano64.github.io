@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="648" viewBox="0 0 720 648" role="img" aria-labelledby="t-loop d-loop">
+  <title id="t-loop">梯度下降的训练闭环</title>
+  <desc id="d-loop">前向计算、计算损失、计算梯度、更新参数、判断收敛五步自上而下依次执行，未收敛时回到前向计算。</desc>
+  <style>/* paired-theme-canvas */
+svg{background:#f8fafc}
+@media(prefers-color-scheme:dark){svg{background:#0b1020}}
+    :root { color-scheme: light dark; }
+    .bg { fill: #f8fafc; }
+    .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.4; }
+    .plot-bg { fill: #ffffff; }
+    .grid { stroke: #e2e8f0; stroke-width: 1; }
+    .iso { fill: none; stroke: #94a3b8; stroke-width: 1.1; }
+    .iso-em { fill: none; stroke: #64748b; stroke-width: 1.5; }
+    .path { fill: none; stroke: #be123c; stroke-width: 1.9; stroke-linejoin: round; stroke-linecap: round; }
+    .path-2 { fill: none; stroke: #2563eb; stroke-width: 1.9; stroke-linejoin: round; stroke-linecap: round; }
+    .path-3 { fill: none; stroke: #16a34a; stroke-width: 1.9; stroke-linejoin: round; stroke-linecap: round; }
+    .text { fill: #0f172a; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    .muted { fill: #475569; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    .mono { fill: #0f172a; font-family: Consolas, "Courier New", monospace; }
+    .step { fill: #e0f2fe; stroke: #0284c7; stroke-width: 1.8; }
+    .step-decide { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.8; }
+    .badge { fill: #ffffff; stroke: #0284c7; stroke-width: 1.4; }
+    .badge-decide { fill: #ffffff; stroke: #16a34a; stroke-width: 1.4; }
+    .flow { stroke: #64748b; stroke-width: 2; }
+    .flow-loop { stroke: #16a34a; stroke-width: 2.2; fill: none; stroke-dasharray: 7 5; }
+    .arrow-head { fill: #64748b; }
+    .arrow-head-loop { fill: #16a34a; }
+    .axis { stroke: #94a3b8; stroke-width: 1.2; }
+    .opt { fill: #16a34a; }
+    .start { fill: #0f172a; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0b1020; }
+      .panel { fill: #111827; stroke: #334155; }
+      .plot-bg { fill: #0f172a; }
+      .grid { stroke: #24334a; }
+      .iso { stroke: #64748b; }
+      .iso-em { stroke: #94a3b8; }
+      .path { stroke: #fb7185; }
+      .path-2 { stroke: #60a5fa; }
+      .path-3 { stroke: #4ade80; }
+      .text { fill: #e5e7eb; }
+      .muted { fill: #cbd5e1; }
+      .mono { fill: #e5e7eb; }
+      .axis { stroke: #64748b; }
+      .step { fill: #172554; stroke: #38bdf8; }
+      .step-decide { fill: #12351f; stroke: #4ade80; }
+      .badge { fill: #0b1020; stroke: #38bdf8; }
+      .badge-decide { fill: #0b1020; stroke: #4ade80; }
+      .flow { stroke: #94a3b8; }
+      .flow-loop { stroke: #4ade80; }
+      .arrow-head { fill: #94a3b8; }
+      .arrow-head-loop { fill: #4ade80; }
+      .start { fill: #e5e7eb; }
+    }
+  </style>
+  <rect width="720" height="648" class="bg"/>
+  <rect class="panel" x="8" y="8" width="704" height="632" rx="10"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path class="arrow-head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+    <marker id="arrg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path class="arrow-head-loop" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+  <text class="text" x="28" y="38" font-size="19" font-weight="700">梯度下降的训练闭环</text>
+  <text class="muted" x="28" y="60" font-size="12.5">五步自上而下依次执行；每轮都用同一组数据 (X, y)，改的只有参数 θ 与 b（b 的分量取同一个数）。</text>
+  <rect class="step" x="104" y="76" width="596" height="76" rx="9"/>
+  <rect class="badge" x="120" y="95" width="26" height="26" rx="7"/>
+  <text class="text" x="133" y="113" font-size="14" font-weight="700" text-anchor="middle">1</text>
+  <text class="text" x="162" y="109" font-size="15.5" font-weight="700">前向计算</text>
+  <text class="mono" x="162" y="135" font-size="13">ŷ = <tspan font-weight="700">X</tspan>θ + <tspan font-weight="700">b</tspan></text>
+  <line class="flow" x1="402" y1="152" x2="402" y2="175" marker-end="url(#arr)"/>
+  <rect class="step" x="104" y="182" width="596" height="76" rx="9"/>
+  <rect class="badge" x="120" y="201" width="26" height="26" rx="7"/>
+  <text class="text" x="133" y="219" font-size="14" font-weight="700" text-anchor="middle">2</text>
+  <text class="text" x="162" y="215" font-size="15.5" font-weight="700">计算损失</text>
+  <text class="mono" x="162" y="241" font-size="13">L(θ, b) = (1/n)‖<tspan font-weight="700">X</tspan>θ + <tspan font-weight="700">b</tspan> − y‖²</text>
+  <line class="flow" x1="402" y1="258" x2="402" y2="281" marker-end="url(#arr)"/>
+  <rect class="step" x="104" y="288" width="596" height="76" rx="9"/>
+  <rect class="badge" x="120" y="307" width="26" height="26" rx="7"/>
+  <text class="text" x="133" y="325" font-size="14" font-weight="700" text-anchor="middle">3</text>
+  <text class="text" x="162" y="321" font-size="15.5" font-weight="700">计算梯度</text>
+  <text class="mono" x="162" y="347" font-size="13">∇θL = (2/n) <tspan font-weight="700">X</tspan>ᵀr，∇bL = (2/n) <tspan font-weight="700">1</tspan>ᵀr</text>
+  <line class="flow" x1="402" y1="364" x2="402" y2="387" marker-end="url(#arr)"/>
+  <rect class="step" x="104" y="394" width="596" height="76" rx="9"/>
+  <rect class="badge" x="120" y="413" width="26" height="26" rx="7"/>
+  <text class="text" x="133" y="431" font-size="14" font-weight="700" text-anchor="middle">4</text>
+  <text class="text" x="162" y="427" font-size="15.5" font-weight="700">更新参数</text>
+  <text class="mono" x="162" y="453" font-size="13">θ ← θ − η∇θL，b ← b − η∇bL</text>
+  <line class="flow" x1="402" y1="470" x2="402" y2="493" marker-end="url(#arr)"/>
+  <rect class="step-decide" x="104" y="500" width="596" height="76" rx="9"/>
+  <rect class="badge-decide" x="120" y="519" width="26" height="26" rx="7"/>
+  <text class="text" x="133" y="537" font-size="14" font-weight="700" text-anchor="middle">5</text>
+  <text class="text" x="162" y="533" font-size="15.5" font-weight="700">判断收敛</text>
+  <text class="mono" x="162" y="559" font-size="13">‖∇L‖ &lt; ε 或 L 不再下降？是则结束，否则回到第一步</text>
+  <path class="flow-loop" d="M104 538 H64 V114 H98" marker-end="url(#arrg)"/>
+  <text class="muted" x="46" y="326" font-size="12" transform="rotate(-90 46 326)" text-anchor="middle">未收敛则重复</text>
+</svg>
