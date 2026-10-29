@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手算网络的前向与反向</title>
+<style>
+  :root {
+    --bg:#ffffff; --fg:#1f2328; --muted:#6b7280; --line:#c7ced6;
+    --in:#2f9e44; --in-bg:#eaf7ee;
+    --lin:#2f6feb; --lin-bg:#e8f0fe;
+    --relu:#c98a12; --relu-bg:#fdf3e0;
+    --out:#7a5af8; --out-bg:#f1ecff;
+    --loss:#d64545; --loss-bg:#fdeaea;
+    --bwd:#d9480f; --panel:#f6f8fa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#16181c; --fg:#e6e8eb; --muted:#9aa4b2; --line:#3a434f;
+      --in:#69db7c; --in-bg:#1d2b22;
+      --lin:#7aa7ff; --lin-bg:#1b2534;
+      --relu:#ffc078; --relu-bg:#2e2718;
+      --out:#b197fc; --out-bg:#241f33;
+      --loss:#ff8787; --loss-bg:#2f1d1d;
+      --bwd:#ff922b; --panel:#1d2026;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:12px 14px 14px;background:var(--bg);color:var(--fg);
+       font:13.5px/1.5 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  h1{font-size:14.5px;margin:0;font-weight:600}
+  header p{margin:0;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+  .controls{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0 6px}
+  button{font:inherit;font-size:11.5px;padding:4px 10px;border-radius:6px;border:1px solid var(--line);
+         background:var(--panel);color:var(--fg);cursor:pointer}
+  button:focus-visible,.stage:focus-visible{outline:2px solid var(--lin);outline-offset:2px}
+  .stage{outline:none}
+  svg{display:block;width:100%;height:auto;max-width:430px;margin:0 auto}
+  text{font-family:"Segoe UI","PingFang SC",system-ui,sans-serif}
+  .t{font-size:9.5px;fill:var(--muted)}
+  .v{font-size:10.5px;fill:var(--fg);font-variant-numeric:tabular-nums}
+  .eq{font-size:8.6px;fill:var(--fg);font-variant-numeric:tabular-nums}
+  .node-in{fill:var(--in-bg);stroke:var(--in);stroke-width:1.3}
+  .node-lin{fill:var(--lin-bg);stroke:var(--lin);stroke-width:1.3}
+  .node-relu{fill:var(--relu-bg);stroke:var(--relu);stroke-width:1.3}
+  .node-out{fill:var(--out-bg);stroke:var(--out);stroke-width:1.3}
+  .node-loss{fill:var(--loss-bg);stroke:var(--loss);stroke-width:1.3}
+  .hit{stroke-width:2.4}
+  .arrow{stroke:var(--muted);stroke-width:1.4;fill:none}
+  .arrow-on{stroke:var(--bwd);stroke-width:2}
+  .back{stroke:var(--bwd);stroke-width:1.4;fill:none;stroke-dasharray:4 3;opacity:.25}
+  .back-on{opacity:1;stroke-width:2}
+  .cache{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:3 2}
+  .cache-on{stroke:var(--bwd);stroke-width:1.8;stroke-dasharray:none}
+  .badge{font-size:9.5px;fill:var(--bwd);font-weight:600;font-variant-numeric:tabular-nums}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px}
+  .panel h2{margin:0 0 3px;font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+  .panel p{margin:2px 0;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .formula{font-size:13px}
+  .formula b{color:var(--bwd)}
+  table.fwd{margin-top:8px;border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+  table.fwd caption{caption-side:top;text-align:left;font-size:10.5px;color:var(--muted);padding-bottom:3px}
+  table.fwd th,table.fwd td{border-bottom:1px solid var(--line);padding:2px 6px;font-size:11.5px;text-align:left}
+  table.fwd tr td:nth-child(1),table.fwd tr td:nth-child(3){color:var(--muted);width:28%}
+  @media (max-width:620px){
+    /* 窄屏：汇总表恢复单列，避免四列挤压 */
+    table.fwd tr{display:table-row}
+  }
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px;border:1px solid}
+  .readout{font-size:11.5px;color:var(--muted);margin-top:5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>手算网络的前向与反向</h1>
+  <p id="params"></p>
+</header>
+<div class="controls">
+  <button id="prev">上一步</button>
+  <button id="next">下一步</button>
+  <button id="reset">重置</button>
+</div>
+<div class="stage" tabindex="0" role="slider" aria-label="前向与反向逐步演示" aria-valuemin="0" aria-valuemax="16" aria-valuenow="0">
+  <svg id="chart" viewBox="0 0 380 520" role="img" aria-label="三层标量网络的计算图：输入、权重、线性运算、ReLU、输出、目标与损失，右侧为缓存的梯度"></svg>
+</div>
+<div class="panel">
+  <h2>当前一步</h2>
+  <p class="formula" id="formula"></p>
+  <p id="numbers"></p>
+  <div class="readout" id="readout"></div>
+</div>
+<table class="fwd" id="fwdtable"><caption>前向计算汇总</caption></table>
+<div class="legend">
+  <span><i style="background:var(--in-bg);border-color:var(--in)"></i>输入与参数</span>
+  <span><i style="background:var(--lin-bg);border-color:var(--lin)"></i>线性运算</span>
+  <span><i style="background:var(--relu-bg);border-color:var(--relu)"></i>ReLU</span>
+  <span><i style="background:var(--out-bg);border-color:var(--out)"></i>输出 y = z3</span>
+  <span><i style="background:var(--loss-bg);border-color:var(--loss)"></i>损失</span>
+  <span>实线：前向　虚线：反向</span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // 唯一模型：前向、反向、图上所有数字都从这里来
+  const MODEL = { x: 1, w1: 2, w2: 3, w3: -1, t: 0 };
+  const relu = (v) => Math.max(0, v);
+  const gate = (v) => (v > 0 ? 1 : 0);
+  const F = (() => {
+    const z1 = MODEL.w1 * MODEL.x;
+    const a1 = relu(z1);
+    const z2 = MODEL.w2 * a1;
+    const a2 = relu(z2);
+    const z3 = MODEL.w3 * a2;   // y 就是 z3 的别名
+    return { x: MODEL.x, z1, a1, z2, a2, z3, y: z3, loss: 0.5 * (z3 - MODEL.t) ** 2 };
+  })();
+  const B = (() => {
+    const dy = F.y - MODEL.t;
+    const dz3 = dy;
+    const da2 = dz3 * MODEL.w3;
+    const dz2 = da2 * gate(F.z2);
+    const da1 = dz2 * MODEL.w2;
+    const dz1 = da1 * gate(F.z1);
+    return {
+      dy, dz3, da2, dz2, da1, dz1,
+      dw3: dz3 * F.a2, dw2: dz2 * F.a1, dw1: dz1 * MODEL.x,
+    };
+  })();
+
+  const N = (v) => (Math.abs(v) < 1e-9 ? "0" : String(Number(v.toFixed(3))));
+  const W = (name) => name + " = " + N(MODEL[name]);
+
+  document.getElementById("params").textContent =
+    "x = " + N(MODEL.x) + "，w1 = " + N(MODEL.w1) + "，w2 = " + N(MODEL.w2) +
+    "，w3 = " + N(MODEL.w3) + "，t = " + N(MODEL.t);
+
+  // 计算图：中央前向链，左侧权重，右侧缓存梯度，左外反向虚线
+  const BW = 128, BH = 42, LEFT = 62;
+  const NODES = [
+    { id: "x",  kind: "in",  cx: LEFT + BW / 2, cy: 26,  r: 17, label: "x", value: F.x },
+    { id: "z1", kind: "lin", x: LEFT, y: 62,  w: BW, h: BH, eq: ["z1 = w1 · x", N(MODEL.w1) + " × " + N(MODEL.x) + " = " + N(F.z1)] },
+    { id: "a1", kind: "relu", x: LEFT, y: 118, w: BW, h: BH, eq: ["a1 = ReLU(z1)", "max(0, " + N(F.z1) + ") = " + N(F.a1)] },
+    { id: "z2", kind: "lin", x: LEFT, y: 174, w: BW, h: BH, eq: ["z2 = w2 · a1", N(MODEL.w2) + " × " + N(F.a1) + " = " + N(F.z2)] },
+    { id: "a2", kind: "relu", x: LEFT, y: 230, w: BW, h: BH, eq: ["a2 = ReLU(z2)", "max(0, " + N(F.z2) + ") = " + N(F.a2)] },
+    { id: "z3", kind: "lin", x: LEFT, y: 286, w: BW, h: BH, eq: ["z3 = w3 · a2", N(MODEL.w3) + " × " + N(F.a2) + " = " + N(F.z3)] },
+    { id: "y",  kind: "out", cx: LEFT + BW / 2, cy: 356, r: 19, label: "y = z3", value: F.y },
+    { id: "L",  kind: "loss", x: LEFT, y: 392, w: BW, h: 48, eq: ["L = ½ (y − t)²", "½ (" + N(F.y) + " − " + N(MODEL.t) + ")² = " + N(F.loss)] },
+  ];
+  const WEIGHTS = [
+    { id: "w1", cy: 83,  value: MODEL.w1, grad: B.dw1 },
+    { id: "w2", cy: 195, value: MODEL.w2, grad: B.dw2 },
+    { id: "w3", cy: 307, value: MODEL.w3, grad: B.dw3 },
+  ];
+  const TARGET = { cx: LEFT + BW + 56, cy: 416, r: 17 };
+  const CACHE = [
+    { id: "z1", x: 210, y: 62,  label: "∂L/∂z1", value: B.dz1 },
+    { id: "a1", x: 210, y: 118, label: "∂L/∂a1", value: B.da1 },
+    { id: "z2", x: 210, y: 174, label: "∂L/∂z2", value: B.dz2 },
+    { id: "a2", x: 210, y: 230, label: "∂L/∂a2", value: B.da2 },
+    { id: "z3", x: 210, y: 286, label: "∂L/∂z3", value: B.dz3 },
+    { id: "y",  x: 210, y: 338, label: "∂L/∂y",  value: B.dy },
+  ];
+
+  const STEPS = [
+    { kind: "forward", id: "z1", text: "z1 = w1 · x = " + N(MODEL.w1) + " × " + N(MODEL.x), value: F.z1 },
+    { kind: "forward", id: "a1", text: "a1 = ReLU(z1) = max(0, " + N(F.z1) + ")", value: F.a1 },
+    { kind: "forward", id: "z2", text: "z2 = w2 · a1 = " + N(MODEL.w2) + " × " + N(F.a1), value: F.z2 },
+    { kind: "forward", id: "a2", text: "a2 = ReLU(z2) = max(0, " + N(F.z2) + ")", value: F.a2 },
+    { kind: "forward", id: "z3", text: "z3 = w3 · a2 = " + N(MODEL.w3) + " × " + N(F.a2) + " = y", value: F.z3 },
+    { kind: "forward", id: "L", text: "L = ½ (y − t)² = ½ (" + N(F.y) + " − " + N(MODEL.t) + ")²", value: F.loss },
+    { kind: "backward", id: "L", name: "dL/dL", up: 1, from: "起点", factor: 1, factorName: "种子", out: 1,
+      text: "反向的起点是 1，不是 dL/dy" },
+    { kind: "backward", id: "y", name: "dL/dy", up: 1, from: "dL/dL", factor: B.dy, factorName: "(y − t)", out: B.dy,
+      text: "损失对输出的导数" },
+    { kind: "backward", id: "z3", name: "dL/dz3", up: B.dy, from: "dL/dy", factor: 1, factorName: "dy/dz3", out: B.dz3,
+      text: "输出层是线性层，局部导数为 1" },
+    { kind: "backward", id: "w3", name: "dL/dw3", up: B.dz3, from: "dL/dz3", factor: F.a2, factorName: "a2", out: B.dw3,
+      text: "权重梯度是叶子结果，不再往回传" },
+    { kind: "backward", id: "a2", name: "dL/da2", up: B.dz3, from: "缓存的 dL/dz3", factor: MODEL.w3, factorName: "w3", out: B.da2,
+      text: "用的是缓存的 dL/dz3，不是上一步的 dL/dw3" },
+    { kind: "backward", id: "z2", name: "dL/dz2", up: B.da2, from: "dL/da2", factor: gate(F.z2), factorName: "ReLU′(z2)", out: B.dz2,
+      text: "z2 为正，ReLU 的局部导数为 1" },
+    { kind: "backward", id: "w2", name: "dL/dw2", up: B.dz2, from: "dL/dz2", factor: F.a1, factorName: "a1", out: B.dw2,
+      text: "第二层权重梯度" },
+    { kind: "backward", id: "a1", name: "dL/da1", up: B.dz2, from: "dL/dz2", factor: MODEL.w2, factorName: "w2", out: B.da1,
+      text: "继续往左乘本层权重" },
+    { kind: "backward", id: "z1", name: "dL/dz1", up: B.da1, from: "dL/da1", factor: gate(F.z1), factorName: "ReLU′(z1)", out: B.dz1,
+      text: "穿过第一层 ReLU" },
+    { kind: "backward", id: "w1", name: "dL/dw1", up: B.dz1, from: "dL/dz1", factor: MODEL.x, factorName: "x", out: B.dw1,
+      text: "第一层权重梯度" },
+  ];
+
+  const svg = document.getElementById("chart");
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs) => {
+    const node = document.createElementNS(NS, tag);
+    for (const key in attrs) node.setAttribute(key, attrs[key]);
+    return node;
+  };
+  const parts = new Map();
+  let index = 0;
+
+  function roundedRect(x, y, w, h) {
+    return el("rect", { x, y, width: w, height: h, rx: 6 });
+  }
+
+  function build() {
+    svg.innerHTML = "";
+    parts.clear();
+    const defs = el("defs", {});
+    for (const [id, color] of [["af", "var(--muted)"], ["ab", "var(--bwd)"]]) {
+      const marker = el("marker", { id, viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "5", markerHeight: "5", orient: "auto" });
+      marker.appendChild(el("path", { d: "M0 1 L9 5 L0 9 z", fill: color }));
+      defs.appendChild(marker);
+    }
+    svg.appendChild(defs);
+
+    // 前向箭头（向下）与反向虚线（向上，画在中央链左侧）
+    const pairs = [["x", "z1"], ["z1", "a1"], ["a1", "z2"], ["z2", "a2"], ["a2", "z3"], ["z3", "y"], ["y", "L"]];
+    pairs.forEach(([a, b], i) => {
+      const na = NODES.find((n) => n.id === a);
+      const nb = NODES.find((n) => n.id === b);
+      const y1 = na.r ? na.cy + na.r : na.y + na.h;
+      const y2 = nb.r ? nb.cy - nb.r : nb.y - 2;
+      const line = el("line", { class: "arrow", x1: LEFT + BW / 2, y1, x2: LEFT + BW / 2, y2, "marker-end": "url(#af)" });
+      svg.appendChild(line);
+      parts.set("fwd-" + i, line);
+    });
+
+    // 权重 → 线性框
+    WEIGHTS.forEach((w, i) => {
+      const box = NODES.find((n) => n.id === "z" + (i + 1));
+      const g = el("g", {});
+      g.appendChild(el("circle", { class: "node-in", cx: 26, cy: w.cy, r: 15 }));
+      const l1 = el("text", { class: "t", x: 26, y: w.cy - 3, "text-anchor": "middle" });
+      l1.textContent = "w" + (i + 1);
+      const l2 = el("text", { class: "v", x: 26, y: w.cy + 9, "text-anchor": "middle" });
+      l2.textContent = N(w.value);
+      g.append(l1, l2);
+      svg.appendChild(g);
+      parts.set("w" + (i + 1), g);
+      svg.appendChild(el("line", { class: "arrow", x1: 41, y1: w.cy, x2: LEFT - 2, y2: box.y + box.h / 2, "marker-end": "url(#af)" }));
+      const badge = el("text", { class: "badge", x: 4, y: w.cy + 27 });
+      badge.textContent = "";
+      svg.appendChild(badge);
+      parts.set("badge-w" + (i + 1), badge);
+    });
+
+    // 节点框
+    NODES.forEach((n) => {
+      if (n.r) {
+        const g = el("g", {});
+        g.appendChild(el("circle", { class: "node-" + n.kind, cx: n.cx, cy: n.cy, r: n.r }));
+        const l1 = el("text", { class: "t", x: n.cx, y: n.cy - 2, "text-anchor": "middle" });
+        l1.textContent = n.label;
+        const l2 = el("text", { class: "v", x: n.cx, y: n.cy + 11, "text-anchor": "middle" });
+        l2.textContent = "?";
+        g.append(l1, l2);
+        svg.appendChild(g);
+        parts.set(n.id, { g, value: l2, shape: g.firstChild });
+        return;
+      }
+      const g = el("g", {});
+      const rect = roundedRect(n.x, n.y, n.w, n.h);
+      rect.setAttribute("class", "node-" + n.kind);
+      const l1 = el("text", { class: "eq", x: n.x + 8, y: n.y + 16 });
+      l1.textContent = n.eq[0];
+      const l2 = el("text", { class: "eq", x: n.x + 8, y: n.y + 32 });
+      l2.textContent = "?";
+      g.append(rect, l1, l2);
+      svg.appendChild(g);
+      parts.set(n.id, { g, value: l2, shape: rect, eq: n.eq });
+    });
+
+    // 目标 t
+    const tg = el("g", {});
+    tg.appendChild(el("circle", { class: "node-in", cx: TARGET.cx, cy: TARGET.cy, r: TARGET.r }));
+    const t1 = el("text", { class: "t", x: TARGET.cx, y: TARGET.cy - 2, "text-anchor": "middle" });
+    t1.textContent = "t";
+    const t2 = el("text", { class: "v", x: TARGET.cx, y: TARGET.cy + 11, "text-anchor": "middle" });
+    t2.textContent = N(MODEL.t);
+    tg.append(t1, t2);
+    svg.appendChild(tg);
+    svg.appendChild(el("line", { class: "arrow", x1: TARGET.cx - TARGET.r, y1: TARGET.cy, x2: LEFT + BW + 2, y2: 416, "marker-end": "url(#af)" }));
+
+    // 缓存梯度框
+    CACHE.forEach((c) => {
+      const g = el("g", {});
+      g.appendChild(el("rect", { class: "cache", x: c.x, y: c.y, width: 88, height: 34, rx: 5 }));
+      const l1 = el("text", { class: "t", x: c.x + 6, y: c.y + 14 });
+      l1.textContent = c.label;
+      const l2 = el("text", { class: "v", x: c.x + 6, y: c.y + 28 });
+      l2.textContent = "?";
+      g.append(l1, l2);
+      svg.appendChild(g);
+      parts.set("cache-" + c.id, { g, value: l2, shape: g.firstChild });
+    });
+
+    // 反向虚线：沿中央链左侧向上
+    const backPairs = [["L", "y"], ["y", "z3"], ["z3", "a2"], ["a2", "z2"], ["z2", "a1"], ["a1", "z1"]];
+    backPairs.forEach(([a, b], i) => {
+      const na = NODES.find((n) => n.id === a);
+      const nb = NODES.find((n) => n.id === b);
+      const centreOf = (n) => (n.r ? n.cy : n.y + n.h / 2);
+      const y1 = centreOf(na) - 6;
+      const y2 = centreOf(nb) + (nb.r ? nb.r + 4 : nb.h / 2 + 4);
+      const line = el("line", { class: "back", x1: LEFT - 12, y1, x2: LEFT - 12, y2, "marker-end": "url(#ab)" });
+      svg.appendChild(line);
+      parts.set("back-" + i, line);
+    });
+  }
+
+  const TABLE_ROWS = [
+    ["x", () => F.x, "x"], ["z1 = w1 · x", () => F.z1, "z1"], ["a1 = ReLU(z1)", () => F.a1, "a1"],
+    ["z2 = w2 · a1", () => F.z2, "z2"], ["a2 = ReLU(z2)", () => F.a2, "a2"],
+    ["z3 = w3 · a2", () => F.z3, "z3"], ["y = z3", () => F.y, "z3"], ["t", () => MODEL.t, "x"], ["L", () => F.loss, "L"],
+  ];
+  function forwardTable(seen) {
+    const table = document.getElementById("fwdtable");
+    table.innerHTML = "<caption>前向计算汇总</caption>";
+    // 两列并排，高度减半，窄屏仍可读
+    const rows = Math.ceil(TABLE_ROWS.length / 2);
+    for (let r = 0; r < rows; r++) {
+      const tr = document.createElement("tr");
+      for (let c = 0; c < 2; c++) {
+        const item = TABLE_ROWS[r + c * rows];
+        if (!item) { tr.append(document.createElement("td"), document.createElement("td")); continue; }
+        const name = document.createElement("td");
+        name.textContent = item[0];
+        const val = document.createElement("td");
+        val.textContent = seen.has(item[2]) ? N(item[1]()) : "?";
+        tr.append(name, val);
+      }
+      table.appendChild(tr);
+    }
+  }
+
+  function render() {
+    const done = STEPS.slice(0, index);
+    const seen = new Set(done.filter((s) => s.kind === "forward").map((s) => s.id));
+    NODES.forEach((n) => {
+      const part = parts.get(n.id);
+      const known = n.id === "x" || seen.has(n.id) || (n.id === "y" && seen.has("z3"));
+      if (n.eq) {
+        part.value.textContent = known ? n.eq[1] : "?";
+      } else {
+        part.value.textContent = known ? N(n.value) : "?";
+      }
+      part.shape.setAttribute("class", "node-" + n.kind);
+    });
+    CACHE.forEach((c) => {
+      const part = parts.get("cache-" + c.id);
+      const step = done.find((s) => s.id === c.id && s.kind === "backward");
+      part.value.textContent = step ? N(c.value) : "?";
+      part.shape.setAttribute("class", "cache");
+      part.g.querySelectorAll("text").forEach((t) => t.setAttribute("fill", ""));
+    });
+    WEIGHTS.forEach((w, i) => parts.get("badge-w" + (i + 1)).textContent = "");
+    ["fwd-0","fwd-1","fwd-2","fwd-3","fwd-4","fwd-5","fwd-6"].forEach((k) => parts.get(k).setAttribute("class", "arrow"));
+    ["back-0","back-1","back-2","back-3","back-4","back-5"].forEach((k) => parts.get(k).setAttribute("class", "back"));
+
+    const current = STEPS[index - 1];
+    if (current) {
+      if (current.kind === "forward") {
+        const part = parts.get(current.id);
+        part.shape.setAttribute("class", "node-" + (NODES.find((n) => n.id === current.id).kind) + " hit");
+      } else {
+        const forwardIndex = NODES.findIndex((n) => n.id === current.id);
+        if (forwardIndex >= 0) parts.get("fwd-" + forwardIndex)?.setAttribute("class", "arrow arrow-on");
+        const backIndex = ["L", "y", "z3", "a2", "z2", "a1"].indexOf(current.id);
+        if (backIndex >= 0) parts.get("back-" + backIndex).setAttribute("class", "back back-on");
+        const nodePart = parts.get(current.id);
+        if (nodePart && nodePart.shape) nodePart.shape.setAttribute("class", "node-" + (NODES.find((n) => n.id === current.id)?.kind || "lin") + " hit");
+        const cacheStep = done.find((s) => s.kind === "backward" && s.id === current.id);
+        const cache = CACHE.find((c) => c.id === current.id);
+        if (cache && cacheStep) parts.get("cache-" + cache.id).shape.setAttribute("class", "cache cache-on");
+        if (current.id.startsWith("w")) {
+          parts.get(current.id).querySelector("circle").setAttribute("class", "node-in hit");
+          parts.get("badge-" + current.id).textContent = "dL/d" + current.id + " = " + N(current.out);
+        }
+      }
+      for (const step of done) {
+        if (step.kind === "backward" && step.id.startsWith("w")) {
+          parts.get("badge-" + step.id).textContent = "dL/d" + step.id + " = " + N(step.out);
+        }
+      }
+    }
+
+    forwardTable(new Set(["x", ...seen]));
+    const formula = document.getElementById("formula");
+    const numbers = document.getElementById("numbers");
+    const readout = document.getElementById("readout");
+    if (!current) {
+      formula.textContent = "前向还没开始：中间量未知，只看到输入与参数。";
+      numbers.textContent = "";
+      readout.textContent = "按“下一步”开始前向。";
+    } else if (current.kind === "forward") {
+      formula.textContent = current.text + " = " + N(current.value);
+      numbers.textContent = "前向只用到权重与上一层输出。";
+      readout.textContent = "第 " + index + " / " + STEPS.length + " 步 · 前向";
+    } else {
+      formula.innerHTML = current.name + " = <b>" + N(current.up) + "</b> × " + current.factorName +
+        " (" + N(current.factor) + ") = <b>" + N(current.out) + "</b>";
+      numbers.textContent = "上游 " + N(current.up) + " 取自 " + current.from + "；" + current.text;
+      readout.textContent = "第 " + index + " / " + STEPS.length + " 步 · 反向";
+    }
+    document.querySelector(".stage").setAttribute("aria-valuenow", String(index));
+  }
+
+  function go(next) {
+    index = Math.max(0, Math.min(STEPS.length, next));
+    render();
+  }
+  document.getElementById("next").addEventListener("click", () => go(index + 1));
+  document.getElementById("prev").addEventListener("click", () => go(index - 1));
+  document.getElementById("reset").addEventListener("click", () => go(0));
+  document.querySelector(".stage").addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowDown" || event.key === " ") { event.preventDefault(); go(index + 1); }
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); go(index - 1); }
+    if (event.key === "Home") { event.preventDefault(); go(0); }
+    if (event.key === "End") { event.preventDefault(); go(STEPS.length); }
+  });
+
+  build();
+  render();
+})();
+</script>
+</body>
+</html>

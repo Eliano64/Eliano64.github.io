@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>逐位置卷积观察</title>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#1b1f24; --muted:#4d5865; --line:#b9c3ce; --cell:#f4f7fa;
+    --pos:#0b6b64; --neg:#a3231c; --mark:#b45309; --mark-ink:#ffffff;
+    --cell-size:clamp(30px, 8.2vw, 42px);
+    --gap:2px;
+    color-scheme:inherit;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14171c; --ink:#e8ebf0; --muted:#a7b1be; --line:#3b434e; --cell:#1d222a;
+      --pos:#2dd4bf; --neg:#f87171; --mark:#fbbf24; --mark-ink:#111111;
+    }
+  }
+  html,body{background:var(--bg)}
+  body{
+    margin:0; padding:10px 10px 12px;
+    color:var(--ink);
+    font:14px/1.5 system-ui,-apple-system,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  main{outline:none}
+  main:focus-visible{outline:2px solid var(--mark); outline-offset:2px; border-radius:4px}
+  .title{font-size:15px; font-weight:600; margin:0 0 6px}
+  .sub{color:var(--muted); font-size:12px; margin:0 0 10px}
+  .row{display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:10px}
+  .block{min-width:0}
+  .label{color:var(--muted); font-size:12px; margin:0 0 4px}
+  .grid{display:grid; gap:var(--gap); width:max-content;
+        grid-template-columns:repeat(var(--n, 3), var(--cell-size))}
+  .cell{
+    width:var(--cell-size); height:var(--cell-size);
+    display:flex; align-items:center; justify-content:center;
+    background:var(--cell); border:1px solid var(--line);
+    font-size:calc(var(--cell-size) * 0.42);
+    font-variant-numeric:tabular-nums;
+  }
+  .cell.win{outline:2px solid var(--mark); outline-offset:-2px}
+  .cell.neg{color:var(--neg)}
+  .cell.pos{color:var(--pos)}
+  .cell.cur{background:var(--mark); border-color:var(--mark); color:var(--mark-ink)}
+  .cell.cur.neg, .cell.cur.pos{color:var(--mark-ink)}
+  .sum{display:flex; align-items:baseline; gap:6px; min-height:var(--cell-size)}
+  .sum .value{font-size:clamp(24px, 6vw, 30px); font-variant-numeric:tabular-nums}
+  .sum .eq{color:var(--muted); font-size:13px}
+  .nav{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px}
+  @media (max-width: 600px){
+    .row{flex-direction:column; gap:10px}
+    .block{width:100%}
+  }
+  button{
+    font:inherit; padding:6px 10px; border-radius:6px;
+    border:1px solid var(--line); background:var(--cell); color:var(--ink);
+    cursor:pointer;
+  }
+  button[aria-disabled="true"]{opacity:.45; cursor:default}
+  button:focus-visible{outline:2px solid var(--mark); outline-offset:2px}
+  .pos{color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums}
+  .hint{color:var(--muted); font-size:12px}
+</style>
+</head>
+<body>
+<main id="card" tabindex="0" aria-label="卷积逐位置观察：用左右箭头切换窗口，上下箭头换行">
+  <p class="title">逐位置卷积观察</p>
+  <p class="sub">偏置 0，逐项相乘后求和。方向键切换窗口位置。</p>
+
+  <div class="row">
+    <div class="block">
+      <p class="label" id="inputLabel">输入</p>
+      <div class="grid" id="input" role="grid" aria-labelledby="inputLabel"></div>
+    </div>
+    <div class="block">
+      <p class="label" id="kernelLabel">核</p>
+      <div class="grid" id="kernel" role="grid" aria-labelledby="kernelLabel"></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="block">
+      <p class="label">当前窗口逐项乘积</p>
+      <div class="grid" id="products" role="grid" aria-label="当前窗口的逐项乘积"></div>
+    </div>
+    <div class="block">
+      <p class="label">求和</p>
+      <div class="sum"><span class="eq">=</span><span class="value" id="sum">0</span></div>
+    </div>
+    <div class="block">
+      <p class="label" id="outLabel">输出</p>
+      <div class="grid" id="output" role="grid" aria-labelledby="outLabel"></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button type="button" id="prev" aria-label="上一位置">上一位置</button>
+    <button type="button" id="next" aria-label="下一位置">下一位置</button>
+    <span class="pos" id="pos" aria-live="polite"></span>
+  </div>
+  <p class="hint">← → 切换位置，↑ ↓ 换行</p>
+</main>
+
+<script>
+  const INPUT = [
+    [52, 55, 61, 66, 70, 61],
+    [63, 59, 55, 90, 109, 85],
+    [62, 59, 68, 113, 144, 104],
+    [63, 58, 71, 122, 154, 106],
+    [67, 61, 68, 104, 126, 88],
+    [60, 57, 65, 87, 108, 77]
+  ];
+  const KERNEL = [
+    [-1, -1, -1],
+    [-1, 8, -1],
+    [-1, -1, -1]
+  ];
+
+  const IN_H = INPUT.length, IN_W = INPUT[0].length;
+  const K_H = KERNEL.length, K_W = KERNEL[0].length;
+  const OUT_H = IN_H - K_H + 1, OUT_W = IN_W - K_W + 1;
+  const COUNT = OUT_H * OUT_W;
+
+  function productsAt(r, c) {
+    const out = [];
+    for (let i = 0; i < K_H; i++) {
+      const row = [];
+      for (let j = 0; j < K_W; j++) row.push(INPUT[r + i][c + j] * KERNEL[i][j]);
+      out.push(row);
+    }
+    return out;
+  }
+  const MAP = [];
+  for (let r = 0; r < OUT_H; r++) {
+    const row = [];
+    for (let c = 0; c < OUT_W; c++) {
+      row.push(productsAt(r, c).flat().reduce((a, b) => a + b, 0));
+    }
+    MAP.push(row);
+  }
+
+  let pos = 0;
+
+  function makeCell(value, extra = "", signed = false) {
+    const d = document.createElement("div");
+    d.className = "cell" + (extra ? " " + extra : "");
+    d.textContent = String(value);
+    if (signed && value < 0) d.classList.add("neg");
+    if (signed && value > 0) d.classList.add("pos");
+    return d;
+  }
+
+  function setDims() {
+    document.getElementById("inputLabel").textContent = `输入 ${IN_H}×${IN_W}`;
+    document.getElementById("kernelLabel").textContent = `核 ${K_H}×${K_W}`;
+    document.getElementById("outLabel").textContent = `输出 ${OUT_H}×${OUT_W}（高亮）`;
+    for (const [id, n] of [["input", IN_W], ["kernel", K_W], ["products", K_W], ["output", OUT_W]]) {
+      document.getElementById(id).style.setProperty("--n", n);
+    }
+  }
+
+  function render() {
+    const r = Math.floor(pos / OUT_W), c = pos % OUT_W;
+
+    const input = document.getElementById("input");
+    input.textContent = "";
+    for (let i = 0; i < IN_H; i++) {
+      for (let j = 0; j < IN_W; j++) {
+        const inWin = i >= r && i < r + K_H && j >= c && j < c + K_W;
+        input.appendChild(makeCell(INPUT[i][j], inWin ? "win" : ""));
+      }
+    }
+
+    const kernel = document.getElementById("kernel");
+    kernel.textContent = "";
+    for (const row of KERNEL) for (const v of row) kernel.appendChild(makeCell(v));
+
+    const prod = productsAt(r, c);
+    const pbox = document.getElementById("products");
+    pbox.textContent = "";
+    let total = 0;
+    for (const row of prod) for (const v of row) { pbox.appendChild(makeCell(v, "", true)); total += v; }
+    document.getElementById("sum").textContent = String(total);
+
+    const out = document.getElementById("output");
+    out.textContent = "";
+    for (let i = 0; i < OUT_H; i++) {
+      for (let j = 0; j < OUT_W; j++) {
+        out.appendChild(makeCell(MAP[i][j], i === r && j === c ? "cur" : "", true));
+      }
+    }
+
+    document.getElementById("pos").textContent = `位置 ${pos + 1}/${COUNT}（第 ${r + 1} 行，第 ${c + 1} 列）`;
+    const atStart = pos === 0, atEnd = pos === COUNT - 1;
+    const prev = document.getElementById("prev"), next = document.getElementById("next");
+    prev.setAttribute("aria-disabled", String(atStart));
+    next.setAttribute("aria-disabled", String(atEnd));
+  }
+
+  function go(delta) {
+    const nextPos = pos + delta;
+    if (nextPos < 0 || nextPos >= COUNT) return;
+    pos = nextPos;
+    render();
+  }
+
+  document.getElementById("prev").addEventListener("click", () => go(-1));
+  document.getElementById("next").addEventListener("click", () => go(1));
+  const card = document.getElementById("card");
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") { e.preventDefault(); go(-1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); go(1); }
+    if (e.key === "ArrowUp") { e.preventDefault(); go(-OUT_W); }
+    if (e.key === "ArrowDown") { e.preventDefault(); go(OUT_W); }
+  });
+
+  setDims();
+  render();
+</script>
+</body>
+</html>

@@ -139,12 +139,30 @@
     }
     button:disabled { opacity: .35; cursor: default; }
     #counter { min-width: 58px; text-align: center; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 520px) {
+      .wrap { padding: 10px 12px; }
+      .title { font-size: 19px; }
+      .lanes { grid-template-columns: 66px 1fr 66px; font-size: 13px; }
+      .step { grid-template-columns: 24px minmax(0, 1fr); gap: 8px; padding: 6px 8px; min-height: 0; }
+      .num { width: 22px; height: 22px; font-size: 12px; }
+      .body { grid-template-columns: 60px minmax(0, 1fr) 60px; gap: 4px; align-items: start; }
+      .body > * { min-width: 0; }
+      .party { font-size: 11.5px; }
+      .msg { min-width: 0; overflow-wrap: anywhere; word-break: break-word; font-size: 12.5px; }
+      .msg strong { display: block; overflow-wrap: anywhere; }
+      .arrow { letter-spacing: 0; }
+      .divider { padding: 5px 6px; font-size: 12px; overflow-wrap: anywhere; }
+      .info { min-height: 0; padding: 8px 10px; font-size: 12.5px; }
+      .chip { max-width: 100%; overflow-wrap: anywhere; letter-spacing: 0; font-size: 12.5px; }
+      .controls { gap: 8px; }
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
     <div class="title">WebSocket 握手：在 HTTP 连接上完成协议升级</div>
-    <div class="subtitle">握手阶段用 HTTP 报文，握手之后这条连接只跑 WebSocket 帧</div>
+    <div class="subtitle">握手阶段用 HTTP 报文，HTTP/1.1 升级后传送 WebSocket 帧</div>
 
     <div class="statusbar">当前通道：<span id="channel" class="chip">HTTP</span></div>
 

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="figTitle figDesc">
+  <title id="figTitle">一次请求穿过的三个进程</title>
+  <desc id="figDesc">一条 chat 请求从 API Server 进程进入，经 ZMQ 交给 EngineCore 进程的调度器与 KV 缓存管理器，再下发给每张显卡一个的 GPU Worker 进程；每个 decode 步采样出的 token 沿下方回流，依次回到 EngineCore 与 API Server。</desc>
+  <style>/* paired-theme-canvas */
+    :root{color-scheme:light dark;
+      --card:#f8fafc;--cardBorder:#e2e8f0;
+      --fg:#111827;--muted:#475569;
+      --accent:#2563eb;--node:#ffffff;
+      --teal:#0f766e;
+      --dimStroke:#cbd5e1;--dimText:#8f9aab}
+    @media(prefers-color-scheme:dark){
+      :root{--card:#0b1020;--cardBorder:#1e293b;
+        --fg:#e5e7eb;--muted:#cbd5e1;
+        --accent:#60a5fa;--node:#0f172a;
+        --teal:#62d4c5;
+        --dimStroke:#334155;--dimText:#7c8798}}
+    text{font-family:"Segoe UI","Noto Sans SC",Arial,sans-serif}
+    .title{font-size:19px;font-weight:600;fill:var(--fg)}
+    .hint{font-size:12.5px;fill:var(--muted)}
+    .boxTitle{font-size:13.5px;font-weight:600;fill:var(--fg)}
+    .item{font-size:11.5px;fill:var(--fg)}
+    .sub{font-size:11px;fill:var(--muted)}
+    .boundary{stroke:var(--dimStroke);stroke-width:1.2;stroke-dasharray:5 5;fill:none}
+    .pane{fill:var(--card);stroke:var(--cardBorder);stroke-width:1.4}
+    .inner{fill:var(--node);stroke:var(--dimStroke);stroke-width:1.2}
+    .arrow{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round}
+    .arrowBack{fill:none;stroke:var(--teal);stroke-width:1.8;stroke-dasharray:6 4;stroke-linecap:round}
+    .arrowLabel{font-size:11px;fill:var(--muted);text-anchor:middle}
+    .backLabel{font-size:11.5px;fill:var(--teal);text-anchor:middle}
+    .tag{font-size:11px;fill:var(--muted)}
+  </style>
+
+  <defs>
+    <marker id="arwFwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+    </marker>
+    <marker id="arwBack" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--teal)"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="32" y="32">一次请求穿过的三个进程</text>
+  <text class="hint" x="32" y="54">以一条 chat 请求为例；实线为请求方向，虚线为每个 decode 步回流一个 token id</text>
+
+  <!-- API Server 进程 -->
+  <rect class="pane" x="32" y="92" width="198" height="278" rx="12"/>
+  <text class="boxTitle" x="48" y="118">API Server 进程</text>
+  <text class="item" x="48" y="150">OpenAI 兼容 HTTP 接口</text>
+  <text class="item" x="48" y="176">分词与模板 → token ids</text>
+  <text class="item" x="48" y="202">把请求交给 EngineCore</text>
+  <text class="item" x="48" y="228">token id → 文本 → SSE</text>
+  <text class="sub" x="48" y="266">跨边界只传 id 与元数据，</text>
+  <text class="sub" x="48" y="284">张量留在显卡上</text>
+  <text class="tag" x="48" y="336">分词与解码都在 CPU，</text>
+  <text class="tag" x="48" y="352">可独立加进程</text>
+
+  <!-- 进程边界 -->
+  <line class="boundary" x1="234" y1="86" x2="234" y2="376"/>
+  <line class="boundary" x1="560" y1="86" x2="560" y2="376"/>
+
+  <!-- 请求方向箭头 -->
+  <line class="arrow" x1="234" y1="196" x2="296" y2="196" marker-end="url(#arwFwd)"/>
+  <text class="arrowLabel" x="267" y="182">token ids</text>
+  <text class="arrowLabel" x="267" y="214">ZMQ</text>
+  <line class="arrow" x1="560" y1="196" x2="622" y2="196" marker-end="url(#arwFwd)"/>
+  <text class="arrowLabel" x="593" y="182">批次</text>
+  <text class="arrowLabel" x="593" y="214">ZMQ</text>
+
+  <!-- EngineCore 进程 -->
+  <rect class="pane" x="300" y="92" width="256" height="278" rx="12"/>
+  <text class="boxTitle" x="316" y="118">EngineCore 进程</text>
+  <rect class="inner" x="316" y="132" width="224" height="106" rx="9"/>
+  <text class="boxTitle" x="330" y="154" style="font-size:12.5px">调度器</text>
+  <text class="item" x="330" y="178">每个 iteration 重新组批</text>
+  <text class="item" x="330" y="200">decode 优先，prefill 分块</text>
+  <text class="item" x="330" y="222">块不够时抢占请求</text>
+  <rect class="inner" x="316" y="250" width="224" height="106" rx="9"/>
+  <text class="boxTitle" x="330" y="272" style="font-size:12.5px">KV Cache 管理器</text>
+  <text class="item" x="330" y="296">块池：等大物理块</text>
+  <text class="item" x="330" y="318">块表：请求 → 物理块</text>
+  <text class="item" x="330" y="340">前缀哈希：整块命中复用</text>
+
+  <!-- GPU Worker 进程 -->
+  <rect class="pane" x="626" y="92" width="242" height="278" rx="12"/>
+  <text class="boxTitle" x="642" y="118">GPU Worker 进程 × N</text>
+  <text class="item" x="642" y="150">每张显卡一个进程</text>
+  <text class="item" x="642" y="176">权重常驻显存</text>
+  <text class="item" x="642" y="202">按块表读 KV 算 attention</text>
+  <text class="item" x="642" y="228">一轮算出下一个 token</text>
+  <text class="item" x="642" y="254">显存 = 权重 + 激活 + KV</text>
+  <text class="tag" x="642" y="336">进程数 = TP × PP × DP</text>
+
+  <!-- 回流路径 -->
+  <polyline class="arrowBack" points="747,370 747,400 140,400 140,372" marker-end="url(#arwBack)"/>
+  <line class="arrowBack" x1="428" y1="400" x2="428" y2="372" marker-end="url(#arwBack)"/>
+  <text class="backLabel" x="520" y="420">每个 decode 步回流采样出的 token id</text>
+
+  <text class="hint" x="32" y="456">虚线为进程边界：调度在 CPU 上逐轮决定算哪些请求的哪个 token，Worker 只负责执行。</text>
+  <text class="hint" x="32" y="478">一个请求先 prefill 整段 prompt，再每步 decode 一个 token；两种工作在同一轮批次里共存。</text>
+</svg>

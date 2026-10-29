@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>连续批处理：每轮更新批次成员</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f8fafc; --text:#172033; --muted:#526174; --line:#536273;
+    --grid:#cbd5e1; --accent:#2563eb; --chip:#e6eef9; --shadow:rgba(15,23,42,.12);
+    --c1:#2563eb; --c2:#0f766e; --c3:#b45309; --c4:#7c3aed; --c5:#be123c;
+    --idle:#eef2f7; --idleLine:#cbd5e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#111318; --panel:#1b2029; --text:#e8edf5; --muted:#aab5c4; --line:#9aa8ba;
+      --grid:#455366; --accent:#7aa2ff; --chip:#263142; --shadow:rgba(0,0,0,.38);
+      --c1:#7aa2ff; --c2:#62d4c5; --c3:#f6b85f; --c4:#b89cff; --c5:#ff8aa0;
+      --idle:#232a35; --idleLine:#455366;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font-family:"Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;display:flex;flex-direction:column}
+  header{padding:18px 24px 6px;text-align:center}
+  h1{margin:0;font-size:23px}
+  .sub{margin-top:6px;color:var(--muted);font-size:13.5px}
+  main{padding:8px 22px 12px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start}
+  .lane{min-width:0;border:1.4px solid var(--line);border-radius:14px;background:var(--panel);
+        box-shadow:0 6px 16px var(--shadow);padding:12px 14px}
+  .laneHead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .laneHead h2{margin:0;font-size:15px}
+  .laneHead .stat{font-size:12.5px;color:var(--muted)}
+  .laneHead .stat b{color:var(--text);font-variant-numeric:tabular-nums}
+  .scroll{overflow-x:auto;padding-bottom:2px}
+  .grid{display:grid;gap:4px;align-items:center;min-width:calc(64px + var(--cols,1) * 46px)}
+  .rowLabel{font-size:11.5px;color:var(--muted);text-align:right;padding-right:2px}
+  .stepHead{font-size:10.5px;color:var(--muted);text-align:center}
+  .cell{height:26px;border-radius:6px;border:1px solid transparent;display:flex;
+        align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;
+        position:relative;overflow:hidden}
+  @media (prefers-color-scheme: dark){ .cell{color:#0b1020} }
+  .cell.prefill{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.34) 0 5px,transparent 5px 10px)}
+  .cell.idle{background:var(--idle);border:1px dashed var(--idleLine);color:var(--muted);font-weight:400;font-size:10.5px}
+  .cell.future{opacity:.22}
+  .cell.end{border:none;background:transparent}
+  .cell.current{outline:2px solid var(--accent);outline-offset:1px}
+  .waitRow{font-size:10.5px;color:var(--muted);text-align:center}
+  .waitRow.on{color:var(--accent);font-weight:600}
+  footer{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:10px 20px 16px}
+  button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;
+         padding:7px 13px;cursor:pointer;font-size:13px}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  button[aria-pressed="true"]{background:var(--chip);border-color:var(--accent);color:var(--accent)}
+  .count{color:var(--muted);min-width:84px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
+  .params{margin-top:6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .legend2{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:6px;font-size:11.5px;color:var(--muted)}
+  .legend2 span{display:inline-flex;align-items:center;gap:5px}
+  .sw{width:16px;height:12px;border-radius:4px;display:inline-block}
+  .sw.sample{background:var(--c1)}
+  .sw.sample.prefill{background:var(--c1);background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.34) 0 4px,transparent 4px 8px)}
+  .sw.sample.idle{background:var(--idle);border:1px dashed var(--idleLine)}
+  .take{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.5}
+  .take b{color:var(--text)}
+  .concl{padding:0 24px;color:var(--muted);font-size:12.5px;line-height:1.6;text-align:center}
+  .concl b{color:var(--text)}
+  @media (max-width:840px){
+    .grid{min-width:calc(64px + var(--cols,1) * 30px)}
+    .pmark{display:none}
+    .cell{height:22px;font-size:10.5px}
+    .rowLabel{font-size:10px}
+    h1{font-size:19px}
+    main{padding:8px 12px}
+  }
+  @media (max-width:520px){
+    header{padding:12px 14px 2px}
+    h1{font-size:18px}
+    .sub{font-size:12px;margin-top:4px}
+    main{padding:6px 10px 8px;gap:9px}
+    .lane{padding:9px 10px}
+    .laneHead{gap:10px;margin-bottom:6px}
+    .laneHead h2{font-size:13.5px}
+    .laneHead .stat{font-size:11.5px}
+    .cell{height:20px;font-size:10px}
+    footer{padding:8px 10px 12px;gap:8px}
+    button{padding:6px 10px;font-size:12px}
+    .concl{padding:0 12px;font-size:12px}
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<header>
+  <h1>连续批处理：每轮更新批次成员</h1>
+  <div class="sub">槽位是这一轮最多能并排处理的请求条数。两条泳道处理同一组请求、同样的到达时刻、同样 3 个槽位；一轮 = 一次前向</div>
+  <div class="params" id="params"></div>
+  <div class="legend2">
+    <span><i class="sw sample"></i>占用槽位，字母是请求</span>
+    <span><i class="sw sample prefill"></i>这一轮做 prefill（斜纹）</span>
+    <span><i class="sw sample idle"></i>这一轮该槽位没有请求</span>
+    <span>最下一行「排队」是等待中的请求数</span>
+  </div>
+</header>
+
+<main>
+  <section class="lane">
+    <div class="laneHead">
+      <h2>静态批处理：整批一起开始，一起结束</h2>
+      <span class="stat">全部完成于第 <b id="staticDone">-</b> 步</span>
+      <span class="stat">空转 <b id="staticIdle">-</b> 槽位步</span>
+      <span class="stat">槽位利用率 <b id="staticUtil">-</b></span>
+      <span class="stat">平均等待 <b id="staticWait">-</b> 步</span>
+      <span class="stat">分批 <b id="staticBatches">-</b></span>
+    </div>
+    <div class="scroll"><div class="grid" id="gridStatic"></div></div>
+    <div class="take" id="takeStatic"></div>
+  </section>
+
+  <section class="lane">
+    <div class="laneHead">
+      <h2>连续批处理：每轮重新组批，空闲槽位接纳新请求</h2>
+      <span class="stat">全部完成于第 <b id="contDone">-</b> 步</span>
+      <span class="stat">空转 <b id="contIdle">-</b> 槽位步</span>
+      <span class="stat">槽位利用率 <b id="contUtil">-</b></span>
+      <span class="stat">平均等待 <b id="contWait">-</b> 步</span>
+    </div>
+    <div class="scroll"><div class="grid" id="gridCont"></div></div>
+    <div class="take" id="takeCont"></div>
+  </section>
+</main>
+
+<div class="concl" id="concl"></div>
+
+<footer>
+  <button id="play" type="button" aria-pressed="false">播放</button>
+  <button id="prev" type="button">上一步</button>
+  <div class="count" id="count">0 / 0</div>
+  <button id="next" type="button">下一步</button>
+  <button id="insert" type="button">插入新请求</button>
+  <button id="reset" type="button">重置</button>
+</footer>
+
+<script>
+/* 一条时间轴上的模型参数：槽位数即 max_num_seqs，CHUNK 即每轮可用于 prefill 的 token 预算。 */
+const SLOTS = 3;        // 槽位数（max_num_seqs）：只保留 3 槽这一档
+const CHUNK = 2048;
+const COLORS = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)"];
+
+const DEFAULTS = [
+  { id: "A", arrive: 0, prompt: 2048, output: 6 },
+  { id: "B", arrive: 0, prompt: 4096, output: 4 },
+  { id: "C", arrive: 0, prompt: 2048, output: 5 },
+  { id: "D", arrive: 3, prompt: 2048, output: 4 }
+];
+
+let requests = DEFAULTS.map(r => ({ ...r }));
+let scenario = null;          // 两个批处理策略的完整推演结果
+let step = 0;                 // 当前高亮的轮次
+let playing = false;
+let timer = null;
+let letterSeq = 4;            // 插入新请求时用的字母，D 之后是 E
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* 请求的 prefill 需要几轮：prompt 长度按每轮 CHUNK 的预算切片。 */
+function prefillChunks(prompt){
+  return Math.max(1, Math.ceil(prompt / CHUNK));
+}
+
+/* 静态批处理：组批后成员固定、中途不补人；整批一起推进到全部做完为止。
+   prefill 同样按预算切片，与连续批处理用的是同一个切片规则，两栏只差「换不换人」。 */
+function simulateStatic(list){
+  const sorted = [...list].sort((a, b) => a.arrive - b.arrive);
+  const steps = [];
+  const startAt = {};
+  const finishAt = {};
+  const batches = [];
+  let t = 0, idx = 0, queue = [], doneStep = 0;
+
+  while (true) {
+    while (idx < sorted.length && sorted[idx].arrive <= t) queue.push(sorted[idx++]);
+    if (queue.length === 0) {
+      if (idx >= sorted.length) break;
+      steps.push({ cells: new Array(SLOTS).fill(null), waiting: 0 });
+      t++;
+      continue;
+    }
+
+    const batch = queue.splice(0, SLOTS).map(r => ({
+      ...r, prefillLeft: prefillChunks(r.prompt), outputLeft: r.output
+    }));
+    batch.forEach(r => { startAt[r.id] = t; });
+    const batchStart = t;
+    let guard = 0;
+
+    while (batch.some(r => r.prefillLeft > 0 || r.outputLeft > 0) && guard++ < 500) {
+      // 批进行中到达的请求只能排队，这一批不再加人
+      while (idx < sorted.length && sorted[idx].arrive <= t) queue.push(sorted[idx++]);
+      const cells = new Array(SLOTS).fill(null);
+      batch.forEach((r, i) => {
+        if (r.prefillLeft > 0) cells[i] = { id: r.id, kind: "P" };
+        else if (r.outputLeft > 0) cells[i] = { id: r.id, kind: "D" };
+      });
+      steps.push({ cells, waiting: queue.length });
+      batch.forEach(r => {
+        if (r.prefillLeft > 0) {
+          r.prefillLeft--;
+          if (r.prefillLeft === 0) r.outputLeft--;   // 最后一个 prefill 切片顺带产出第一个 token
+        } else if (r.outputLeft > 0) {
+          r.outputLeft--;
+        }
+        if (r.prefillLeft === 0 && r.outputLeft <= 0 && !finishAt[r.id]) finishAt[r.id] = t;
+      });
+      t++;
+    }
+
+    doneStep = t - 1;
+    batches.push(`${batchStart}-${doneStep}`);
+  }
+
+  const first = steps.findIndex(s => s.cells.some(c => c));
+  const window = first < 0 ? 0 : doneStep - first + 1;
+  let used = 0;
+  steps.forEach(s => s.cells.forEach(c => { if (c) used++; }));
+  const waits = Object.keys(startAt).map(id => startAt[id] - list.find(x => x.id === id).arrive);
+  return { steps, doneStep, idle: window * SLOTS - used, used, window, avgWait: avg(waits), batches, startAt, finishAt };
+}
+
+/* 连续批处理：每轮先让跑着的请求各进一步，结束后立刻把空槽位交给排队者；
+   prefill 太长时切成多轮，与别人的 decode 共享同一批次。 */
+function simulateContinuous(list){
+  const sorted = [...list].sort((a, b) => a.arrive - b.arrive);
+  const steps = [];
+  const startAt = {};
+  const finishAt = {};
+  let t = 0, idx = 0, queue = [], slots = new Array(SLOTS).fill(null);
+  let doneStep = 0;
+
+  while (true) {
+    while (idx < sorted.length && sorted[idx].arrive <= t) queue.push(sorted[idx++]);
+
+    // 空槽位立刻补人
+    for (let i = 0; i < SLOTS && queue.length; i++) {
+      if (slots[i]) continue;
+      const r = queue.shift();
+      slots[i] = { ...r, prefillLeft: prefillChunks(r.prompt), outputLeft: r.output };
+      startAt[r.id] = t;
+    }
+
+    if (slots.every(s => s === null)) {
+      if (idx >= sorted.length) break;
+      steps.push({ cells: new Array(SLOTS).fill(null), waiting: queue.length });
+      t++;
+      continue;
+    }
+
+    const cells = new Array(SLOTS).fill(null);
+    slots.forEach((r, i) => {
+      if (r) cells[i] = { id: r.id, kind: r.prefillLeft > 0 ? "P" : "D" };
+    });
+    steps.push({ cells, waiting: queue.length });
+
+    // 推进一轮：prefill 的最后一轮顺带产出第一个 token，之后的每轮 decode 产出一个
+    slots.forEach((r, i) => {
+      if (!r) return;
+      if (r.prefillLeft > 0) {
+        r.prefillLeft--;
+        if (r.prefillLeft === 0) r.outputLeft--;
+      } else {
+        r.outputLeft--;
+      }
+      if (r.prefillLeft === 0 && r.outputLeft <= 0) {
+        finishAt[r.id] = t;
+        slots[i] = null;
+      }
+    });
+
+    doneStep = t;
+    t++;
+  }
+
+  const first = steps.findIndex(s => s.cells.some(c => c));
+  const window = first < 0 ? 0 : doneStep - first + 1;
+  let used = 0;
+  steps.forEach(s => s.cells.forEach(c => { if (c) used++; }));
+  const waits = Object.keys(startAt).map(id => startAt[id] - list.find(x => x.id === id).arrive);
+  return { steps, doneStep, idle: window * SLOTS - used, used, window, avgWait: avg(waits) };
+}
+
+function avg(xs){ return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; }
+
+function colorOf(id){
+  const n = id.charCodeAt(0) - 65;          // A 对应第一个颜色
+  return COLORS[((n % COLORS.length) + COLORS.length) % COLORS.length];
+}
+
+function buildGrid(host, result, total){
+  const n = Math.max(total, 1);
+  host.style.gridTemplateColumns = `64px repeat(${n}, minmax(0, 1fr))`;
+  host.style.setProperty("--cols", String(n));
+  host.innerHTML = "";
+
+  // 表头：轮次编号
+  host.appendChild(div("stepHead", ""));
+  for (let i = 0; i < n; i++) host.appendChild(div("stepHead", String(i)));
+
+  // 四个槽位
+  for (let s = 0; s < SLOTS; s++) {
+    host.appendChild(div("rowLabel", "槽 " + (s + 1)));
+    for (let i = 0; i < n; i++) {
+      const cell = result.steps[i]?.cells[s] || null;
+      const el = document.createElement("div");
+      el.className = "cell";
+      if (i >= result.steps.length) {
+        // 这一条泳道已经跑完，留空白而不是画成空转
+        el.classList.add("end");
+      } else if (!cell) {
+        el.classList.add("idle");
+        el.textContent = "空";
+        el.title = "这一轮该槽位没有请求，显存与算力空转";
+      } else {
+        el.style.background = colorOf(cell.id);
+        if (cell.kind === "P") el.classList.add("prefill");
+        el.innerHTML = cell.kind === "P"
+          ? `${cell.id}<span class="pmark"> ·P</span>`
+          : cell.id;
+        el.title = cell.kind === "P" ? `请求 ${cell.id} 正在 prefill` : `请求 ${cell.id} 解码一个 token`;
+      }
+      if (i > step) el.classList.add("future");
+      if (i === step && i < result.steps.length) el.classList.add("current");
+      host.appendChild(el);
+    }
+  }
+
+  // 每轮排队等待的请求数
+  host.appendChild(div("rowLabel", "排队"));
+  for (let i = 0; i < n; i++) {
+    if (i >= result.steps.length) { host.appendChild(div("waitRow", "")); continue; }
+    const w = result.steps[i]?.waiting ?? 0;
+    const el = div("waitRow" + (w > 0 ? " on" : ""), w > 0 ? String(w) : "");
+    el.title = w > 0 ? `${w} 条请求在等待空位` : "没有排队";
+    if (i > step) el.classList.add("future");
+    host.appendChild(el);
+  }
+}
+
+function div(cls, text){
+  const el = document.createElement("div");
+  el.className = cls;
+  el.textContent = text;
+  return el;
+}
+
+function recompute(){
+  scenario = {
+    s: simulateStatic(requests),
+    c: simulateContinuous(requests)
+  };
+  const maxStep = Math.max(scenario.s.steps.length, scenario.c.steps.length) - 1;
+  step = Math.min(step, Math.max(0, maxStep));
+  render();
+}
+
+function render(){
+  if (!scenario) return;
+  const totalSteps = Math.max(scenario.s.steps.length, scenario.c.steps.length);
+  buildGrid(document.getElementById("gridStatic"), scenario.s, totalSteps);
+  buildGrid(document.getElementById("gridCont"), scenario.c, totalSteps);
+
+  const s = scenario.s, c = scenario.c;
+  document.getElementById("staticDone").textContent = s.doneStep;
+  document.getElementById("staticIdle").textContent = s.idle;
+  document.getElementById("staticUtil").textContent = pct(s.used, s.window * SLOTS);
+  document.getElementById("staticWait").textContent = s.avgWait.toFixed(1);
+  document.getElementById("staticBatches").textContent = s.batches.join("、");
+
+  document.getElementById("contDone").textContent = c.doneStep;
+  document.getElementById("contIdle").textContent = c.idle;
+  document.getElementById("contUtil").textContent = pct(c.used, c.window * SLOTS);
+  document.getElementById("contWait").textContent = c.avgWait.toFixed(1);
+
+  renderParams();
+
+  const firstEnd = Number((s.batches[0] || "0-0").split("-")[1]);
+  const early = Object.keys(s.finishAt)
+    .filter(id => s.startAt[id] < firstEnd && s.finishAt[id] < firstEnd)
+    .sort((a, b) => s.finishAt[a] - s.finishAt[b]);
+  document.getElementById("takeStatic").innerHTML =
+    `批次成员固定，全部结束后才接纳下一批：` +
+    (early.length
+      ? `${early.join("、")} 第 ${s.finishAt[early[0]]} 步做完，这些请求的槽位一直空到第 ${firstEnd} 步本批结束；`
+      : `整批执行到最后一条结束；`) +
+    `中途进来的请求进不了这一批，只能在“排队”里等。共空转 <b>${s.idle}</b> 槽位步，分 ${s.batches.length} 批完成。`;
+  document.getElementById("takeCont").innerHTML =
+    `每轮重排：做完的当轮退出、排队的当轮补进，共空转 <b>${c.idle}</b> 槽位步；` +
+    `同一组请求提前到第 <b>${c.doneStep}</b> 步完成。`;
+
+  const total = Math.max(scenario.s.steps.length, scenario.c.steps.length);
+  document.getElementById("count").textContent = `${step + 1} / ${total}`;
+  document.getElementById("concl").innerHTML =
+    `同样 ${requests.length} 条请求：静态批处理在第 <b>${s.doneStep}</b> 步完成，空转 <b>${s.idle}</b> 槽位步；` +
+    `连续批处理在第 <b>${c.doneStep}</b> 步完成，空转 <b>${c.idle}</b> 槽位步。` +
+    `差别只在空槽位什么时候交给排队者；队列排空之后的尾部，两种策略都会空转。`;
+}
+
+function renderParams(){
+  const list = [...requests]
+    .sort((a, b) => a.arrive - b.arrive || a.id.localeCompare(b.id))
+    .map(r => `${r.id} 第 ${r.arrive} 步入队，prompt ${r.prompt} → 输出 ${r.output}`)
+    .join(" · ");
+  document.getElementById("params").textContent =
+    `${SLOTS} 个槽位，每轮 prefill 预算 ${CHUNK} token｜` + list;
+}
+
+function pct(a, b){ return b > 0 ? Math.round(a / b * 100) + "%" : "-"; }
+
+function setStep(v){
+  const max = Math.max(scenario.s.steps.length, scenario.c.steps.length) - 1;
+  step = Math.max(0, Math.min(v, max));
+  render();
+}
+
+function play(on){
+  playing = on;
+  const btn = document.getElementById("play");
+  btn.textContent = on ? "暂停" : "播放";
+  btn.setAttribute("aria-pressed", String(on));
+  if (timer) { clearInterval(timer); timer = null; }
+  if (!on) return;
+  timer = setInterval(() => {
+    const max = Math.max(scenario.s.steps.length, scenario.c.steps.length) - 1;
+    if (step >= max) { play(false); return; }
+    setStep(step + 1);
+  }, 600);
+}
+
+function insertRequest(){
+  // 字母用完就加数字后缀，保证 id 唯一，颜色仍按首字母取
+  const n = letterSeq++;
+  const id = String.fromCharCode(65 + (n % 26)) + (n >= 26 ? String(Math.floor(n / 26) + 1) : "");
+  requests.push({ id, arrive: step + 1, prompt: 2048, output: 4 });
+  recompute();
+}
+
+document.getElementById("play").addEventListener("click", () => play(!playing));
+document.getElementById("prev").addEventListener("click", () => { play(false); setStep(step - 1); });
+document.getElementById("next").addEventListener("click", () => { play(false); setStep(step + 1); });
+document.getElementById("insert").addEventListener("click", insertRequest);
+document.getElementById("reset").addEventListener("click", () => {
+  play(false);
+  requests = DEFAULTS.map(r => ({ ...r }));
+  letterSeq = 4;
+  step = 0;
+  recompute();
+});
+
+// 键盘：空格播放/暂停，左右步进，+ 插入
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "BUTTON") return;
+  if (e.code === "Space") { e.preventDefault(); play(!playing); }
+  else if (e.code === "ArrowRight") { play(false); setStep(step + 1); }
+  else if (e.code === "ArrowLeft") { play(false); setStep(step - 1); }
+  else if (e.key === "+" || e.key === "=") insertRequest();
+});
+
+// 离开视口就停，回来由读者自己继续
+const host = document.querySelector("main");
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(entries => {
+    entries.forEach(en => { if (!en.isIntersecting && playing) play(false); });
+  }, { threshold: 0.15 }).observe(host);
+}
+
+recompute();
+if (!reduceMotion) play(true);
+</script>
+</body>
+</html>

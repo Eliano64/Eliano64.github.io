@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 392" width="100%" role="img" aria-label="同一步输入下 LSTM 与 GRU 的保留量与写入量对照">
+<style>
+:root{--bg:#ffffff;--fg:#1b1f23;--muted:#5b6570;--line:#c9d0d8;--keep:#3f74c9;--write:#c2553f}
+@media (prefers-color-scheme: dark){
+:root{--bg:#171b23;--fg:#e8eaee;--muted:#9aa3ad;--line:#3a4149;--keep:#7fa8ee;--write:#ef9a83}}
+text{font-family:inherit}
+.t{font-size:14px;font-weight:600;fill:var(--fg)}
+.s{font-size:11px;fill:var(--muted)}
+.p{font-size:12px;font-weight:600;fill:var(--fg)}
+.l{font-size:11px;fill:var(--fg)}
+.g{font-size:10.5px;fill:var(--muted)}
+.v{font-size:10px;fill:var(--fg)}
+</style>
+<rect x="0" y="0" width="440" height="392" fill="var(--bg)"/>
+<text class="t" x="14" y="24">同一步输入下的保留量与写入量</text>
+<text class="s" x="14" y="42">同一行两段相加就是更新后的状态；横条按 0.9 满格等比缩放</text>
+<text class="s" x="14" y="58">x = [0.8, 0.5]，h 上一步 = [0.3, 0.2]，c 上一步 = [0.6, 0.4]</text>
+<text class="p" x="14" y="82">LSTM：保留与写入分别加权</text>
+<text class="l" x="14" y="105">第 1 维</text>
+<rect x="96" y="92" width="130.5" height="18" fill="var(--keep)" rx="2"/>
+<rect x="226.5" y="92" width="124.9" height="18" fill="var(--write)" rx="2"/>
+<text class="v" x="357.4" y="105">0.766</text>
+<text class="l" x="14" y="131">第 2 维</text>
+<rect x="96" y="118" width="70.3" height="18" fill="var(--keep)" rx="2"/>
+<rect x="166.3" y="118" width="48.8" height="18" fill="var(--write)" rx="2"/>
+<text class="v" x="221.1" y="131">0.357</text>
+<text class="g" x="14" y="152">f = 0.652、0.527，i = 0.648、0.648，f + i = 1.300、1.175</text>
+<text class="g" x="14" y="168">候选 = 0.578、0.226；输出门 o = 0.594、0.632，h = [0.383, 0.217]</text>
+<text class="p" x="14" y="200">GRU：旧状态与候选互补加权</text>
+<text class="l" x="14" y="223">第 1 维</text>
+<rect x="96" y="210" width="62.7" height="18" fill="var(--keep)" rx="2"/>
+<rect x="158.7" y="210" width="79.3" height="18" fill="var(--write)" rx="2"/>
+<text class="v" x="244.0" y="223">0.426</text>
+<text class="l" x="14" y="249">第 2 维</text>
+<rect x="96" y="236" width="43.2" height="18" fill="var(--keep)" rx="2"/>
+<rect x="139.2" y="236" width="50.5" height="18" fill="var(--write)" rx="2"/>
+<text class="v" x="195.7" y="249">0.281</text>
+<text class="g" x="14" y="270">z = 0.627、0.648，1 − z = 0.373、0.352，两者恒和为 1</text>
+<text class="g" x="14" y="286">重置门 r = 0.692、0.555，候选 n = 0.638、0.430</text>
+<rect x="14" y="306" width="10" height="10" fill="var(--keep)" rx="2"/>
+<text class="g" x="30" y="315">保留旧状态</text>
+<rect x="118" y="306" width="10" height="10" fill="var(--write)" rx="2"/>
+<text class="g" x="134" y="315">写入新内容</text>
+<text class="g" x="14" y="338">LSTM 的 f 与 i 各自独立，两者相加不必等于 1；</text>
+<text class="g" x="14" y="354">GRU 用同一个 z 分配两侧权重，旧状态与新候选此消彼长。</text>
+<text class="g" x="14" y="374">c 与 h 都是状态量，门值本身不可跨结构直接比较。</text>
+</svg>

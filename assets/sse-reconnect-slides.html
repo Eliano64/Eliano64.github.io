@@ -135,7 +135,7 @@
 <body>
   <main class="wrap">
     <div class="title">SSE 的断线重连与续传</div>
-    <div class="subtitle">重连由浏览器负责，补发要服务器自己实现</div>
+    <div class="subtitle">重连由浏览器负责，补发需服务器实现</div>
 
     <div class="status">
       <span class="chip">连接状态：<b id="ready">CONNECTING</b></span>
@@ -178,7 +178,7 @@
         last: "42",
         hist: true,
         broken: false,
-        info: "服务器把每条事件写进同一个响应体。带 <code>id</code> 的事件会被浏览器记住最后编号（这里是 42），重连时要用到它。"
+        info: "服务器把每条事件写进同一个响应体。带 <code>id</code> 的事件会被浏览器记住最后编号（这里是 42），重连时携带该编号。"
       },
       {
         name: "连接中断",
@@ -205,7 +205,7 @@
         last: "45",
         hist: true,
         broken: false,
-        info: "续传不是自动完成的：服务器需要自己保存历史事件，才能把 43、44 这类断口之后的事件补发出去。如果没有保存，就只能从当前的新事件开始发送，断口期间产生的事件永久丢失。"
+        info: "续传不是自动完成的：服务器需要保存历史事件，才能把 43、44 这类断口之后的事件补发出去。如果没有保存，就无法从该服务器已保留的事件流中重放，只能从当前事件继续发送。"
       },
       {
         name: "主动关闭",

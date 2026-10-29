@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" role="img" aria-labelledby="tkm dkm">
+  <title id="tkm">K-Means 三步迭代：分配、挪质心、再分配</title>
+  <desc id="dkm">12 个点、两团各 6 个；初始质心 (1.000, 1.000) 与 (4.000, 1.000)。三轮的质心依次是 (1.000, 1.000) / (4.000, 1.000)、(0.471, 0.497) / (4.723, 3.255)、(0.627, -0.222) / (4.504, 4.262)；SSE 依次 101.04、50.80、38.63。</desc>
+  <style>
+    .bg { fill: #f8fafc; }
+    @media (prefers-color-scheme: dark) { .bg { fill: #0b1020; } }
+    .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.4; }
+    @media (prefers-color-scheme: dark) { .panel { fill: #111827; stroke: #334155; } }
+    .grid { stroke: #e2e8f0; stroke-width: 1; }
+    @media (prefers-color-scheme: dark) { .grid { stroke: #24334a; } }
+    .axis { stroke: #94a3b8; stroke-width: 1.2; }
+    .tick { stroke: #94a3b8; stroke-width: 1; }
+    .ref { stroke: #be123c; stroke-width: 1.3; stroke-dasharray: 6 5; fill: none; }
+    .text { fill: #0f172a; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    @media (prefers-color-scheme: dark) { .text { fill: #e2e8f0; } }
+    .muted { fill: #475569; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    @media (prefers-color-scheme: dark) { .muted { fill: #94a3b8; } }
+    .mono { fill: #0f172a; font-family: Consolas, "Courier New", monospace; }
+    @media (prefers-color-scheme: dark) { .mono { fill: #e2e8f0; } }
+    .em { fill: #15803d; font-family: Arial, "Microsoft YaHei", sans-serif; }
+    @media (prefers-color-scheme: dark) { .em { fill: #4ade80; } }
+    .c1 { fill: none; stroke: #2563eb; stroke-width: 2.1; stroke-linejoin: round; stroke-linecap: round; }
+    .c2 { fill: none; stroke: #be123c; stroke-width: 2.1; stroke-linejoin: round; stroke-linecap: round; }
+    .c3 { fill: none; stroke: #16a34a; stroke-width: 2.1; stroke-linejoin: round; stroke-linecap: round; }
+    .c4 { fill: none; stroke: #b45309; stroke-width: 2.1; stroke-linejoin: round; stroke-linecap: round; }
+    .c5 { fill: none; stroke: #7c3aed; stroke-width: 2.1; stroke-linejoin: round; stroke-linecap: round; }
+    @media (prefers-color-scheme: dark) {
+      .c1 { stroke: #60a5fa; } .c2 { stroke: #fb7185; } .c3 { stroke: #4ade80; }
+      .c4 { stroke: #fbbf24; } .c5 { stroke: #c4b5fd; }
+    }
+    .dot1 { fill: #2563eb; } .dot2 { fill: #be123c; } .dot3 { fill: #16a34a; }
+    .dot4 { fill: #b45309; } .dot5 { fill: #7c3aed; }
+    @media (prefers-color-scheme: dark) {
+      .dot1 { fill: #60a5fa; } .dot2 { fill: #fb7185; } .dot3 { fill: #4ade80; }
+      .dot4 { fill: #fbbf24; } .dot5 { fill: #c4b5fd; }
+    }
+    .card { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.2; }
+    .card-em { fill: #ecfdf5; stroke: #16a34a; stroke-width: 1.8; }
+    .group { fill: none; stroke: #cbd5e1; stroke-width: 1.2; stroke-dasharray: 5 4; }
+    .group-em { fill: rgba(22,163,74,0.05); stroke: #16a34a; stroke-width: 1.6; }
+    @media (prefers-color-scheme: dark) {
+      .card { fill: #1e293b; stroke: #334155; }
+      .card-em { fill: #052e1b; stroke: #4ade80; }
+      .group { stroke: #334155; }
+      .group-em { fill: rgba(74,222,128,0.06); stroke: #4ade80; }
+    }
+    .iso { fill: none; stroke: #94a3b8; stroke-width: 1.1; }
+    .iso-em { fill: none; stroke: #64748b; stroke-width: 1.6; }
+    @media (prefers-color-scheme: dark) { .iso { stroke: #64748b; } .iso-em { stroke: #94a3b8; } }
+    .plate { fill: #ffffff; opacity: 0.86; }
+    @media (prefers-color-scheme: dark) { .plate { fill: #0b1020; } }
+    .shade { fill: #f1f5f9; }
+    @media (prefers-color-scheme: dark) { .shade { fill: #1e293b; } }
+  </style>
+  <rect class="bg" x="0" y="0" width="900" height="500" rx="10"/>
+  <rect class="panel" x="14" y="12" width="872" height="476" rx="8"/>
+  <text class="text" x="30.0" y="38.0" font-size="13" text-anchor="start" font-weight="600">K-Means 三步：先按最近质心分配，再把质心挪到簇的均值</text>
+  <text class="muted" x="30.0" y="60.0" font-size="10.5" text-anchor="start" font-weight="400">12 个点、两团各 6 个（固定随机种子），K=2，初始质心 (1.000, 1.000) 与 (4.000, 1.000)；横轴 x₁、纵轴 x₂，三张小图同一比例。</text>
+  <rect class="panel" x="24" y="78" width="272" height="356" rx="8"/>
+  <text class="text" x="38.0" y="102.0" font-size="12.5" text-anchor="start" font-weight="600">初始分配</text>
+  <line class="grid" x1="96.8" y1="122.0" x2="96.8" y2="328.0"/>
+  <line class="tick" x1="96.8" y1="328.0" x2="96.8" y2="332.0"/>
+  <text class="muted" x="96.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">0</text>
+  <line class="grid" x1="144.8" y1="122.0" x2="144.8" y2="328.0"/>
+  <line class="tick" x1="144.8" y1="328.0" x2="144.8" y2="332.0"/>
+  <text class="muted" x="144.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">2</text>
+  <line class="grid" x1="192.8" y1="122.0" x2="192.8" y2="328.0"/>
+  <line class="tick" x1="192.8" y1="328.0" x2="192.8" y2="332.0"/>
+  <text class="muted" x="192.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">4</text>
+  <line class="grid" x1="240.8" y1="122.0" x2="240.8" y2="328.0"/>
+  <line class="tick" x1="240.8" y1="328.0" x2="240.8" y2="332.0"/>
+  <text class="muted" x="240.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">6</text>
+  <line class="grid" x1="50.0" y1="274.7" x2="270.0" y2="274.7"/>
+  <line class="tick" x1="46.0" y1="274.7" x2="50.0" y2="274.7"/>
+  <text class="muted" x="43.0" y="278.2" font-size="10" text-anchor="end" font-weight="400">0</text>
+  <line class="grid" x1="50.0" y1="229.5" x2="270.0" y2="229.5"/>
+  <line class="tick" x1="46.0" y1="229.5" x2="50.0" y2="229.5"/>
+  <text class="muted" x="43.0" y="233.0" font-size="10" text-anchor="end" font-weight="400">2</text>
+  <line class="grid" x1="50.0" y1="184.4" x2="270.0" y2="184.4"/>
+  <line class="tick" x1="46.0" y1="184.4" x2="50.0" y2="184.4"/>
+  <text class="muted" x="43.0" y="187.9" font-size="10" text-anchor="end" font-weight="400">4</text>
+  <line class="grid" x1="50.0" y1="139.3" x2="270.0" y2="139.3"/>
+  <line class="tick" x1="46.0" y1="139.3" x2="50.0" y2="139.3"/>
+  <text class="muted" x="43.0" y="142.8" font-size="10" text-anchor="end" font-weight="400">6</text>
+  <line class="axis" x1="50.0" y1="328.0" x2="270.0" y2="328.0"/>
+  <line class="axis" x1="50.0" y1="122.0" x2="50.0" y2="328.0"/>
+  <text class="muted" x="160.0" y="360.0" font-size="11" text-anchor="middle" font-weight="400"></text>
+  <text class="muted" x="16.0" y="225.0" font-size="11" text-anchor="middle" transform="rotate(-90 16.0 225.0)"></text>
+  <circle class="dot1" cx="116.0" cy="264.9" r="4.2"/>
+  <circle class="dot1" cx="88.2" cy="291.8" r="4.2"/>
+  <circle class="dot2" cx="162.7" cy="293.8" r="4.2"/>
+  <circle class="dot1" cx="94.9" cy="310.0" r="4.2"/>
+  <circle class="dot1" cx="109.3" cy="295.5" r="4.2"/>
+  <circle class="dot1" cx="69.2" cy="293.0" r="4.2"/>
+  <circle class="dot1" cx="136.5" cy="180.2" r="4.2"/>
+  <circle class="dot2" cx="227.7" cy="140.0" r="4.2"/>
+  <circle class="dot2" cx="218.2" cy="195.9" r="4.2"/>
+  <circle class="dot2" cx="250.8" cy="185.8" r="4.2"/>
+  <circle class="dot2" cx="191.3" cy="190.6" r="4.2"/>
+  <circle class="dot1" cx="142.7" cy="208.6" r="4.2"/>
+  <line class="c1" x1="114.3" y1="252.1" x2="127.3" y2="252.1"/>
+  <line class="c1" x1="120.8" y1="245.6" x2="120.8" y2="258.6"/>
+  <rect class="plate" x="125.8" y="254.1" width="22.0" height="15.0" rx="3"/>
+  <text class="text" x="128.8" y="265.1" font-size="10" text-anchor="start" font-weight="600">C1</text>
+  <line class="c2" x1="186.3" y1="252.1" x2="199.3" y2="252.1"/>
+  <line class="c2" x1="192.8" y1="245.6" x2="192.8" y2="258.6"/>
+  <rect class="plate" x="197.8" y="233.1" width="22.0" height="15.0" rx="3"/>
+  <text class="text" x="200.8" y="244.1" font-size="10" text-anchor="start" font-weight="600">C2</text>
+  <text class="mono" x="38.0" y="372.0" font-size="9.5" text-anchor="start" font-weight="400">C₁ (1.000, 1.000)</text>
+  <text class="mono" x="38.0" y="390.0" font-size="9.5" text-anchor="start" font-weight="400">C₂ (4.000, 1.000)</text>
+  <text class="text" x="38.0" y="412.0" font-size="11" text-anchor="start" font-weight="600">SSE = 101.04</text>
+  <rect class="panel" x="316" y="78" width="272" height="356" rx="8"/>
+  <text class="text" x="330.0" y="102.0" font-size="12.5" text-anchor="start" font-weight="600">第 1 次更新后</text>
+  <line class="grid" x1="388.8" y1="122.0" x2="388.8" y2="328.0"/>
+  <line class="tick" x1="388.8" y1="328.0" x2="388.8" y2="332.0"/>
+  <text class="muted" x="388.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">0</text>
+  <line class="grid" x1="436.8" y1="122.0" x2="436.8" y2="328.0"/>
+  <line class="tick" x1="436.8" y1="328.0" x2="436.8" y2="332.0"/>
+  <text class="muted" x="436.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">2</text>
+  <line class="grid" x1="484.8" y1="122.0" x2="484.8" y2="328.0"/>
+  <line class="tick" x1="484.8" y1="328.0" x2="484.8" y2="332.0"/>
+  <text class="muted" x="484.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">4</text>
+  <line class="grid" x1="532.8" y1="122.0" x2="532.8" y2="328.0"/>
+  <line class="tick" x1="532.8" y1="328.0" x2="532.8" y2="332.0"/>
+  <text class="muted" x="532.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">6</text>
+  <line class="grid" x1="342.0" y1="274.7" x2="562.0" y2="274.7"/>
+  <line class="tick" x1="338.0" y1="274.7" x2="342.0" y2="274.7"/>
+  <text class="muted" x="335.0" y="278.2" font-size="10" text-anchor="end" font-weight="400">0</text>
+  <line class="grid" x1="342.0" y1="229.5" x2="562.0" y2="229.5"/>
+  <line class="tick" x1="338.0" y1="229.5" x2="342.0" y2="229.5"/>
+  <text class="muted" x="335.0" y="233.0" font-size="10" text-anchor="end" font-weight="400">2</text>
+  <line class="grid" x1="342.0" y1="184.4" x2="562.0" y2="184.4"/>
+  <line class="tick" x1="338.0" y1="184.4" x2="342.0" y2="184.4"/>
+  <text class="muted" x="335.0" y="187.9" font-size="10" text-anchor="end" font-weight="400">4</text>
+  <line class="grid" x1="342.0" y1="139.3" x2="562.0" y2="139.3"/>
+  <line class="tick" x1="338.0" y1="139.3" x2="342.0" y2="139.3"/>
+  <text class="muted" x="335.0" y="142.8" font-size="10" text-anchor="end" font-weight="400">6</text>
+  <line class="axis" x1="342.0" y1="328.0" x2="562.0" y2="328.0"/>
+  <line class="axis" x1="342.0" y1="122.0" x2="342.0" y2="328.0"/>
+  <text class="muted" x="452.0" y="360.0" font-size="11" text-anchor="middle" font-weight="400"></text>
+  <text class="muted" x="308.0" y="225.0" font-size="11" text-anchor="middle" transform="rotate(-90 308.0 225.0)"></text>
+  <circle class="dot1" cx="408.0" cy="264.9" r="4.2"/>
+  <circle class="dot1" cx="380.2" cy="291.8" r="4.2"/>
+  <circle class="dot1" cx="454.7" cy="293.8" r="4.2"/>
+  <circle class="dot1" cx="386.9" cy="310.0" r="4.2"/>
+  <circle class="dot1" cx="401.3" cy="295.5" r="4.2"/>
+  <circle class="dot1" cx="361.2" cy="293.0" r="4.2"/>
+  <circle class="dot2" cx="428.5" cy="180.2" r="4.2"/>
+  <circle class="dot2" cx="519.7" cy="140.0" r="4.2"/>
+  <circle class="dot2" cx="510.2" cy="195.9" r="4.2"/>
+  <circle class="dot2" cx="542.8" cy="185.8" r="4.2"/>
+  <circle class="dot2" cx="483.3" cy="190.6" r="4.2"/>
+  <circle class="dot1" cx="434.7" cy="208.6" r="4.2"/>
+  <line class="c1" x1="393.6" y1="263.4" x2="406.6" y2="263.4"/>
+  <line class="c1" x1="400.1" y1="256.9" x2="400.1" y2="269.9"/>
+  <rect class="plate" x="405.1" y="265.4" width="22.0" height="15.0" rx="3"/>
+  <text class="text" x="408.1" y="276.4" font-size="10" text-anchor="start" font-weight="600">C1</text>
+  <line class="c2" x1="495.6" y1="201.2" x2="508.6" y2="201.2"/>
+  <line class="c2" x1="502.1" y1="194.7" x2="502.1" y2="207.7"/>
+  <rect class="plate" x="507.1" y="182.2" width="22.0" height="15.0" rx="3"/>
+  <text class="text" x="510.1" y="193.2" font-size="10" text-anchor="start" font-weight="600">C2</text>
+  <text class="mono" x="330.0" y="372.0" font-size="9.5" text-anchor="start" font-weight="400">C₁ (0.471, 0.497)</text>
+  <text class="mono" x="330.0" y="390.0" font-size="9.5" text-anchor="start" font-weight="400">C₂ (4.723, 3.255)</text>
+  <text class="text" x="330.0" y="412.0" font-size="11" text-anchor="start" font-weight="600">SSE = 50.80</text>
+  <rect class="panel" x="608" y="78" width="272" height="356" rx="8"/>
+  <text class="text" x="622.0" y="102.0" font-size="12.5" text-anchor="start" font-weight="600">第 2 次更新后</text>
+  <line class="grid" x1="680.8" y1="122.0" x2="680.8" y2="328.0"/>
+  <line class="tick" x1="680.8" y1="328.0" x2="680.8" y2="332.0"/>
+  <text class="muted" x="680.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">0</text>
+  <line class="grid" x1="728.8" y1="122.0" x2="728.8" y2="328.0"/>
+  <line class="tick" x1="728.8" y1="328.0" x2="728.8" y2="332.0"/>
+  <text class="muted" x="728.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">2</text>
+  <line class="grid" x1="776.8" y1="122.0" x2="776.8" y2="328.0"/>
+  <line class="tick" x1="776.8" y1="328.0" x2="776.8" y2="332.0"/>
+  <text class="muted" x="776.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">4</text>
+  <line class="grid" x1="824.8" y1="122.0" x2="824.8" y2="328.0"/>
+  <line class="tick" x1="824.8" y1="328.0" x2="824.8" y2="332.0"/>
+  <text class="muted" x="824.8" y="344.0" font-size="10" text-anchor="middle" font-weight="400">6</text>
+  <line class="grid" x1="634.0" y1="274.7" x2="854.0" y2="274.7"/>
+  <line class="tick" x1="630.0" y1="274.7" x2="634.0" y2="274.7"/>
+  <text class="muted" x="627.0" y="278.2" font-size="10" text-anchor="end" font-weight="400">0</text>
+  <line class="grid" x1="634.0" y1="229.5" x2="854.0" y2="229.5"/>
+  <line class="tick" x1="630.0" y1="229.5" x2="634.0" y2="229.5"/>
+  <text class="muted" x="627.0" y="233.0" font-size="10" text-anchor="end" font-weight="400">2</text>
+  <line class="grid" x1="634.0" y1="184.4" x2="854.0" y2="184.4"/>
+  <line class="tick" x1="630.0" y1="184.4" x2="634.0" y2="184.4"/>
+  <text class="muted" x="627.0" y="187.9" font-size="10" text-anchor="end" font-weight="400">4</text>
+  <line class="grid" x1="634.0" y1="139.3" x2="854.0" y2="139.3"/>
+  <line class="tick" x1="630.0" y1="139.3" x2="634.0" y2="139.3"/>
+  <text class="muted" x="627.0" y="142.8" font-size="10" text-anchor="end" font-weight="400">6</text>
+  <line class="axis" x1="634.0" y1="328.0" x2="854.0" y2="328.0"/>
+  <line class="axis" x1="634.0" y1="122.0" x2="634.0" y2="328.0"/>
+  <text class="muted" x="744.0" y="360.0" font-size="11" text-anchor="middle" font-weight="400"></text>
+  <text class="muted" x="600.0" y="225.0" font-size="11" text-anchor="middle" transform="rotate(-90 600.0 225.0)"></text>
+  <circle class="dot1" cx="700.0" cy="264.9" r="4.2"/>
+  <circle class="dot1" cx="672.2" cy="291.8" r="4.2"/>
+  <circle class="dot1" cx="746.7" cy="293.8" r="4.2"/>
+  <circle class="dot1" cx="678.9" cy="310.0" r="4.2"/>
+  <circle class="dot1" cx="693.3" cy="295.5" r="4.2"/>
+  <circle class="dot1" cx="653.2" cy="293.0" r="4.2"/>
+  <circle class="dot2" cx="720.5" cy="180.2" r="4.2"/>
+  <circle class="dot2" cx="811.7" cy="140.0" r="4.2"/>
+  <circle class="dot2" cx="802.2" cy="195.9" r="4.2"/>
+  <circle class="dot2" cx="834.8" cy="185.8" r="4.2"/>
+  <circle class="dot2" cx="775.3" cy="190.6" r="4.2"/>
+  <circle class="dot2" cx="726.7" cy="208.6" r="4.2"/>
+  <line class="c1" x1="689.3" y1="279.7" x2="702.3" y2="279.7"/>
+  <line class="c1" x1="695.8" y1="273.2" x2="695.8" y2="286.2"/>
+  <rect class="plate" x="700.8" y="281.7" width="22.0" height="15.0" rx="3"/>
+  <text class="text" x="703.8" y="292.7" font-size="10" text-anchor="start" font-weight="600">C1</text>
+  <line class="c2" x1="782.4" y1="178.5" x2="795.4" y2="178.5"/>
+  <line class="c2" x1="788.9" y1="172.0" x2="788.9" y2="185.0"/>
+  <rect class="plate" x="793.9" y="159.5" width="22.0" height="15.0" rx="3"/>
+  <text class="text" x="796.9" y="170.5" font-size="10" text-anchor="start" font-weight="600">C2</text>
+  <text class="mono" x="622.0" y="372.0" font-size="9.5" text-anchor="start" font-weight="400">C₁ (0.627, -0.222)</text>
+  <text class="mono" x="622.0" y="390.0" font-size="9.5" text-anchor="start" font-weight="400">C₂ (4.504, 4.262)</text>
+  <text class="text" x="622.0" y="412.0" font-size="11" text-anchor="start" font-weight="600">SSE = 38.63</text>
+  <text class="muted" x="30.0" y="456.0" font-size="10.5" text-anchor="start" font-weight="400">初始分配有 3 个点站错队（1 个左团点被判给 C₂，2 个右团点被判给 C₁），SSE 高到 101.04；质心一挪先纠正一个，第三次分配后全部归位，SSE 降到 38.63。</text>
+  <text class="muted" x="30.0" y="476.0" font-size="10.5" text-anchor="start" font-weight="400">分配与挪质心交替进行，SSE 单调不增；当分配不再变化时，两个质心就落在两团的重心上。</text>
+</svg>

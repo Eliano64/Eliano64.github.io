@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>同一组数据，两种归一化方法</title>
+<style>
+  :root {
+    --bg:#ffffff; --fg:#1f2328; --muted:#6b7280; --line:#d0d7de; --panel:#f6f8fa;
+    --accent:#2f6feb; --accent-weak:#e8f0fe; --warm:#d9480f; --warm-weak:#fdf0e7;
+    --cell:#ffffff; --cell-dim:#f2f4f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#16181c; --fg:#e6e8eb; --muted:#9aa4b2; --line:#333a45; --panel:#1d2026;
+      --accent:#6ea8fe; --accent-weak:#1b2a3d; --warm:#ff922b; --warm-weak:#33241a;
+      --cell:#22262d; --cell-dim:#1a1d22;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:14px 16px 16px;background:var(--bg);color:var(--fg);
+       font:14px/1.55 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  h1{font-size:15px;margin:0;font-weight:600}
+  header p{margin:0;color:var(--muted);font-size:12px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 8px}
+  button{font:inherit;font-size:12px;padding:5px 11px;border-radius:7px;border:1px solid var(--line);
+         background:var(--panel);color:var(--fg);cursor:pointer}
+  button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+  button:focus-visible,.grid:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px}
+  @media (max-width:620px){.layout{grid-template-columns:minmax(0,1fr)}}
+  .grid{border-collapse:separate;border-spacing:4px;font-variant-numeric:tabular-nums;width:100%}
+  .grid th{font-size:11px;color:var(--muted);font-weight:500;padding:0 0 2px}
+  .grid td{background:var(--cell);border:1px solid var(--line);border-radius:6px;
+           text-align:center;padding:6px 4px;min-width:54px;font-size:13px}
+  .grid td.on{background:var(--accent-weak);border-color:var(--accent)}
+  .grid td.warm{background:var(--warm-weak);border-color:var(--warm)}
+  .grid td.dim{color:var(--muted)}
+  .grid th.on{color:var(--accent)}
+  .grid th.warm{color:var(--warm)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+  .panel h2{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+  .panel p{margin:4px 0;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .panel code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+  .axis{font-size:12px;color:var(--muted);margin-top:6px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .readout{margin-top:8px;font-size:12px;color:var(--muted);min-height:32px;font-variant-numeric:tabular-nums}
+  /* 窄屏压缩：隐藏重复说明、收紧间距，避免卡片被裁切 */
+  @media (max-width:620px){
+    body{padding:10px 12px 12px}
+    .legend,.axis{display:none}
+    .grid td{padding:5px 3px;min-width:46px;font-size:12.5px}
+    .panel{padding:8px 10px}
+    .panel p{font-size:12px}
+    header p{display:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>同一组数据，两种归一化方法</h1>
+  <p id="shape"></p>
+</header>
+
+<div class="controls">
+  <button id="bn" aria-pressed="true">BatchNorm</button>
+  <button id="ln" aria-pressed="false">LayerNorm</button>
+  <button id="phase" aria-pressed="false">推理阶段</button>
+  <button id="affine" aria-pressed="false">加 gamma 与 beta</button>
+</div>
+
+<div class="layout">
+  <div>
+    <table class="grid" id="grid" aria-label="激活值矩阵，可点击选择参与计算的行或列"></table>
+    <div class="legend">
+      <span><i style="background:var(--accent-weak);border:1px solid var(--accent)"></i>当前计算范围</span>
+      <span><i style="background:var(--cell);border:1px solid var(--line)"></i>其余位置</span>
+    </div>
+    <div class="axis" id="axisText"></div>
+  </div>
+  <div class="panel">
+    <h2>当前计算范围内的均值与方差</h2>
+    <div id="calc"></div>
+    <div class="readout" id="readout"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  // 4 x 3 的激活矩阵：所有统计量、标准化值与仿射结果都由它算出
+  const X = [
+    [1, 5, 2],
+    [4, 7, 3],
+    [2, 6, 9],
+    [8, 9, 4],
+  ];
+  const GAMMA = [1.0, 1.5, 1.0];
+  const BETA = [0.0, -0.2, 0.0];
+  const EPS = 1e-5;
+  // 推理阶段的 running 估计：本图的给定输入，用来演示训练与推理的差别
+  const RUNNING = {
+    mean: [3.9, 6.9, 4.6],
+    varr: [7.0, 2.4, 7.1],
+  };
+
+  const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+  const variance = (a) => { const m = mean(a); return a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length; };
+  const std = (a) => Math.sqrt(variance(a));
+  const fx = (v, d) => Number(v.toFixed(d ?? 3));
+
+  const rows = X.length, cols = X[0].length;
+  document.getElementById("shape").textContent =
+    rows + " 个样本 x " + cols + " 个特征，BatchNorm 沿列算，LayerNorm 沿行算";
+  const colStats = [...Array(cols)].map((_, j) => {
+    const c = X.map((r) => r[j]);
+    return { mean: mean(c), std: std(c) };
+  });
+  const rowStats = X.map((r) => ({ mean: mean(r), std: std(r) }));
+
+  let mode = "bn";       // bn | ln
+  let phase = "train";   // train | infer (仅 bn 有影响)
+  let affine = false;
+  let selected = 1;      // 选中的列（bn）或行（ln）
+
+  const grid = document.getElementById("grid");
+  const calc = document.getElementById("calc");
+  const readout = document.getElementById("readout");
+  const axisText = document.getElementById("axisText");
+
+  function groupStats() {
+    if (mode === "bn") {
+      const j = selected;
+      if (phase === "infer") {
+        return { mean: RUNNING.mean[j], varr: RUNNING.varr[j], source: "推理：running 估计", index: j };
+      }
+      return { mean: colStats[j].mean, varr: colStats[j].std ** 2, source: "训练：当前 batch 的列统计", index: j };
+    }
+    const i = selected;
+    return { mean: rowStats[i].mean, varr: rowStats[i].std ** 2, source: "训练与推理相同：该样本的行统计", index: i };
+  }
+
+  function normalise(value, stats) {
+    return (value - stats.mean) / Math.sqrt(stats.varr + EPS);
+  }
+
+  function render() {
+    const stats = groupStats();
+    grid.innerHTML = "";
+    const head = document.createElement("tr");
+    head.appendChild(document.createElement("th"));
+    for (let j = 0; j < cols; j++) {
+      const th = document.createElement("th");
+      th.textContent = "特征 " + (j + 1);
+      th.className = mode === "bn" && j === selected ? "on" : "";
+      head.appendChild(th);
+    }
+    grid.appendChild(head);
+
+    X.forEach((row, i) => {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th");
+      th.textContent = "样本 " + (i + 1);
+      th.className = mode === "ln" && i === selected ? "warm" : "";
+      tr.appendChild(th);
+      row.forEach((value, j) => {
+        const td = document.createElement("td");
+        const inGroup = mode === "bn" ? j === selected : i === selected;
+        td.className = inGroup ? (mode === "bn" ? "on" : "warm") : "";
+        const z = normalise(value, mode === "bn"
+          ? (phase === "infer"
+              ? { mean: RUNNING.mean[j], varr: RUNNING.varr[j] }
+              : { mean: colStats[j].mean, varr: colStats[j].std ** 2 })
+          : { mean: rowStats[i].mean, varr: rowStats[i].std ** 2 });
+        const out = affine ? GAMMA[j] * z + BETA[j] : z;
+        td.textContent = fx(out);
+        td.title = "原始值 " + value + "，标准化 " + fx(z);
+        td.addEventListener("click", () => { selected = mode === "bn" ? j : i; render(); });
+        tr.appendChild(td);
+      });
+      grid.appendChild(tr);
+    });
+
+    const groupSize = mode === "bn" ? rows : cols;
+    axisText.textContent = mode === "bn"
+      ? "BatchNorm：选中第 " + (selected + 1) + " 列，使用 " + groupSize + " 个样本的同一特征计算均值和方差。"
+      : "LayerNorm：选中第 " + (selected + 1) + " 行，使用该样本的 " + groupSize + " 个特征计算均值和方差。";
+
+    const z = normalise(mode === "bn" ? 7 : X[selected][1], stats);
+    const shown = affine ? GAMMA[1] * z + BETA[1] : z;
+    calc.innerHTML =
+      "<p>来源：<code>" + stats.source + "</code></p>" +
+      "<p>mu = <code>" + fx(stats.mean) + "</code>，sigma² = <code>" + fx(stats.varr) + "</code>，sigma = <code>" + fx(Math.sqrt(stats.varr)) + "</code></p>" +
+      "<p>x_hat = (7 - " + fx(stats.mean) + ") / sqrt(" + fx(stats.varr) + " + " + EPS + ") = <code>" + fx(z) + "</code></p>" +
+      "<p>y = gamma_2 · x_hat + beta_2 = " + (affine ? "1.5 x " + fx(z) + " - 0.2 = <code>" + fx(shown) + "</code>" : "x_hat（未启用仿射）") + "</p>";
+
+    readout.textContent = mode === "bn" && phase === "infer"
+      ? "推理阶段的均值和方差不来自当前数据，而是训练期累积的 running 估计；这样同一个样本的输出不会随同批伙伴变化。"
+      : mode === "bn"
+        ? "训练阶段用当前 batch 的列统计，每一列各自标准化，因此每列均值 0、方差 1。"
+        : "LayerNorm 对每个样本自己算统计量，四行各自标准化，因此每行均值 0、方差 1。";
+
+    document.getElementById("bn").setAttribute("aria-pressed", String(mode === "bn"));
+    document.getElementById("ln").setAttribute("aria-pressed", String(mode === "ln"));
+    document.getElementById("phase").setAttribute("aria-pressed", String(phase === "infer"));
+    document.getElementById("affine").setAttribute("aria-pressed", String(affine));
+    document.getElementById("phase").disabled = mode === "ln";
+  }
+
+  document.getElementById("bn").addEventListener("click", () => { mode = "bn"; phase = "train"; render(); });
+  document.getElementById("ln").addEventListener("click", () => { mode = "ln"; render(); });
+  document.getElementById("phase").addEventListener("click", () => { phase = phase === "train" ? "infer" : "train"; render(); });
+  document.getElementById("affine").addEventListener("click", () => { affine = !affine; render(); });
+  document.addEventListener("keydown", (event) => {
+    const max = mode === "bn" ? cols : rows;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") { event.preventDefault(); selected = (selected + 1) % max; render(); }
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); selected = (selected - 1 + max) % max; render(); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

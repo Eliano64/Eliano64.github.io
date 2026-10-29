@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420" role="img" aria-labelledby="figTitle figDesc">
+  <title id="figTitle">整张调用图与其中一条路径</title>
+  <desc id="figDesc">调用图中高亮一条从入口到返回的路径，其余模块与调用关系淡色显示。</desc>
+  <style>/* paired-theme-canvas */
+    :root{color-scheme:light dark;
+      --card:#f8fafc;--cardBorder:#e2e8f0;
+      --fg:#111827;--muted:#475569;
+      --accent:#2563eb;--node:#ffffff;
+      --dimNode:#f1f5f9;--dimStroke:#cbd5e1;--dimText:#8f9aab;--dimEdge:#cbd5e1}
+    @media(prefers-color-scheme:dark){
+      :root{--card:#0b1020;--cardBorder:#1e293b;
+        --fg:#e5e7eb;--muted:#cbd5e1;
+        --accent:#60a5fa;--node:#0f172a;
+        --dimNode:#111827;--dimStroke:#334155;--dimText:#7c8798;--dimEdge:#334155}}
+    text{font-family:"Segoe UI","Noto Sans SC",Arial,sans-serif}
+    .title{font-size:19px;font-weight:600;fill:var(--fg)}
+    .hint{font-size:13px;fill:var(--muted)}
+    .cap{font-size:13px;fill:var(--muted)}
+    .t{font-size:14px;text-anchor:middle;dominant-baseline:central;fill:var(--fg)}
+    .t.dim{fill:var(--dimText)}
+    .step{font-size:12px;font-weight:600;text-anchor:middle;fill:var(--accent)}
+    .node{fill:var(--node);stroke:var(--accent);stroke-width:1.8}
+    .node.dim{fill:var(--dimNode);stroke:var(--dimStroke);stroke-width:1.2}
+    .edge{fill:none;stroke:var(--dimEdge);stroke-width:1.4}
+    .edge.main{stroke:var(--accent);stroke-width:2.4;stroke-linecap:round}
+    .arwMain{fill:var(--accent)}
+    .arwDim{fill:var(--dimEdge)}
+    .lgMain{stroke:var(--accent);stroke-width:2.4;stroke-linecap:round}
+    .lgDim{stroke:var(--dimEdge);stroke-width:1.4}
+  </style>
+
+  <defs>
+    <marker id="arwMain" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path class="arwMain" d="M 0 0 L 10 5 L 0 10 z"/>
+    </marker>
+    <marker id="arwDim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path class="arwDim" d="M 0 0 L 10 5 L 0 10 z"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="899" height="419" rx="16" fill="var(--card)" stroke="var(--cardBorder)"/>
+
+  <text class="title" x="40" y="48">整张调用图与其中一条路径</text>
+  <text class="hint" x="40" y="72">节点是模块，边是调用关系；淡色部分这一趟不读</text>
+
+  <g>
+    <path class="edge" d="M 95 182 C 95 246 136 276 194 286" marker-end="url(#arwDim)"/>
+    <path class="edge" d="M 405 182 C 405 240 372 270 306 284" marker-end="url(#arwDim)"/>
+    <path class="edge" d="M 304 300 H 504" marker-end="url(#arwDim)"/>
+    <path class="edge" d="M 560 182 V 276" marker-end="url(#arwDim)"/>
+    <path class="edge" d="M 614 300 H 659" marker-end="url(#arwDim)"/>
+  </g>
+
+  <g>
+    <path class="edge main" d="M 149 160 H 194" marker-end="url(#arwMain)"/>
+    <path class="edge main" d="M 304 160 H 349" marker-end="url(#arwMain)"/>
+    <path class="edge main" d="M 459 160 H 504" marker-end="url(#arwMain)"/>
+    <path class="edge main" d="M 614 160 H 659" marker-end="url(#arwMain)"/>
+  </g>
+
+  <g>
+    <rect class="node dim" x="196" y="278" width="108" height="44" rx="10"/>
+    <text class="t dim" x="250" y="300">日志</text>
+    <rect class="node dim" x="506" y="278" width="108" height="44" rx="10"/>
+    <text class="t dim" x="560" y="300">队列</text>
+    <rect class="node dim" x="661" y="278" width="108" height="44" rx="10"/>
+    <text class="t dim" x="715" y="300">回调</text>
+  </g>
+
+  <g>
+    <rect class="node" x="41" y="138" width="108" height="44" rx="10"/>
+    <text class="t" x="95" y="160">入口</text>
+    <rect class="node" x="196" y="138" width="108" height="44" rx="10"/>
+    <text class="t" x="250" y="160">解析</text>
+    <rect class="node" x="351" y="138" width="108" height="44" rx="10"/>
+    <text class="t" x="405" y="160">校验</text>
+    <rect class="node" x="506" y="138" width="108" height="44" rx="10"/>
+    <text class="t" x="560" y="160">存储</text>
+    <rect class="node" x="661" y="138" width="108" height="44" rx="10"/>
+    <text class="t" x="715" y="160">返回</text>
+  </g>
+
+  <g class="step">
+    <text x="95" y="128">1</text>
+    <text x="250" y="128">2</text>
+    <text x="405" y="128">3</text>
+    <text x="560" y="128">4</text>
+    <text x="715" y="128">5</text>
+  </g>
+
+  <text class="cap" x="40" y="374">一条路径：一个输入从进入模块到产生可观察输出所经过的全部语句</text>
+
+  <g class="cap">
+    <line class="lgMain" x1="600" y1="369" x2="636" y2="369"/>
+    <text x="644" y="374">本条路径</text>
+    <line class="lgDim" x1="730" y1="369" x2="766" y2="369"/>
+    <text x="774" y="374">其余部分</text>
+  </g>
+</svg>

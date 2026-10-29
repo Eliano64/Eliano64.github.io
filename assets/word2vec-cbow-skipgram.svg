@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 664" width="100%" role="img" aria-label="同一窗口下 CBOW 与 Skip-gram 的概率与损失">
+<style>text{font-family:ui-sans-serif,system-ui,'Segoe UI',sans-serif;fill:var(--fg)}:root{--bg:#ffffff;--fg:#1b1f23;--muted:#5b6570;--line:#c9d0d8;--bar:#7d90f0;--hit:#2c6b4a}@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e8eaee;--muted:#9aa3ad;--line:#3a4149;--bar:#8fa1ff;--hit:#84d3a6}}.t{font-size:17px;font-weight:600}.s{font-size:14px}.m{font-size:13px}.lab{font-size:14.5px}.val{font-size:13.5px;font-weight:600;text-anchor:end}.ax{font-size:11.5px;fill:var(--muted)}.cap{font-size:12px;fill:var(--muted)}.mut{font-size:13px;fill:var(--muted)}</style>
+<rect x="0" y="0" width="500" height="664" fill="var(--bg)"/>
+<text class="t" x="16" y="28">同一窗口下的 CBOW 与 Skip-gram</text>
+<text class="s" x="16" y="52">句子 小明 今天 想 吃 苹果，窗口半径 2</text>
+<text class="m" x="16" y="76">位置　0 小明　1 今天　2 想　3 吃　4 苹果</text>
+<text class="m" x="16" y="98">中心 想：距离 2 1 0 1 2</text>
+<text class="m" x="16" y="114">上下文 4 个：小明、今天、吃、苹果</text>
+<text class="m" x="16" y="136">中心 吃：距离 3 2 1 0 1</text>
+<text class="m" x="16" y="152">上下文 3 个：今天、想、苹果</text>
+<text class="mut" x="16" y="168">小明 距离 3，超出半径，不计入</text>
+<text class="lab" x="16" y="188">CBOW：上下文取均值 h，预测中心词 想</text>
+<text class="m" x="16" y="208">h = (e小明 + e今天 + e吃 + e苹果) / 4 = [0.50, 0.45, 0.45]</text>
+<text class="lab" x="16" y="237">小明</text>
+<text class="val" x="446" y="237">0.120</text>
+<text class="lab" x="16" y="258">今天</text>
+<text class="val" x="446" y="258">0.135</text>
+<text class="lab" x="16" y="279">想</text>
+<text class="val" x="446" y="279">0.220</text>
+<text class="lab" x="16" y="300">吃</text>
+<text class="val" x="446" y="300">0.191</text>
+<text class="lab" x="16" y="321">苹果</text>
+<text class="val" x="446" y="321">0.186</text>
+<text class="lab" x="16" y="342">汽车</text>
+<text class="val" x="446" y="342">0.148</text>
+<text class="ax" x="116.0" y="369" text-anchor="middle">0</text>
+<text class="ax" x="256.6173913726076" y="369" text-anchor="middle">0.11</text>
+<text class="ax" x="397.2347827452151" y="369" text-anchor="middle">0.22</text>
+<text class="cap" x="16" y="388">条形按最大概率 0.221 等比缩放，满格约 0.22，不是 1</text>
+<text class="m" x="16" y="410">L = -ln p(想) = -ln 0.220 = 1.52</text>
+<text class="lab" x="16" y="448">Skip-gram：中心向量 v想，分别预测 4 个上下文词</text>
+<text class="m" x="16" y="468">v想 = [0.50, 0.50, 0.40]，z = U v想</text>
+<text class="lab" x="16" y="497">小明</text>
+<text class="val" x="446" y="497">0.121</text>
+<text class="lab" x="16" y="518">今天</text>
+<text class="val" x="446" y="518">0.139</text>
+<text class="lab" x="16" y="539">想</text>
+<text class="val" x="446" y="539">0.221</text>
+<text class="lab" x="16" y="560">吃</text>
+<text class="val" x="446" y="560">0.190</text>
+<text class="lab" x="16" y="581">苹果</text>
+<text class="val" x="446" y="581">0.184</text>
+<text class="lab" x="16" y="602">汽车</text>
+<text class="val" x="446" y="602">0.145</text>
+<text class="m" x="16" y="626">L = -(ln 0.121 + ln 0.139 + ln 0.190 + ln 0.184) = 7.44</text>
+<text class="mut" x="16" y="644">圆点标出四个目标词；想 与 汽车 不是目标</text>
+<line x1="116" y1="232" x2="398" y2="232" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="232" x2="269.3" y2="232" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<line x1="116" y1="253" x2="398" y2="253" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="253" x2="288.9" y2="253" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<line x1="116" y1="274" x2="398" y2="274" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="274" x2="396.8" y2="274" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<circle cx="458" cy="274" r="4" fill="var(--hit)"/>
+<line x1="116" y1="295" x2="398" y2="295" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="295" x2="360.1" y2="295" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<line x1="116" y1="316" x2="398" y2="316" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="316" x2="354.1" y2="316" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<line x1="116" y1="337" x2="398" y2="337" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="337" x2="305.2" y2="337" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<line x1="116.0" y1="352" x2="116.0" y2="357" stroke="var(--line)" stroke-width="1"/>
+<line x1="256.6" y1="352" x2="256.6" y2="357" stroke="var(--line)" stroke-width="1"/>
+<line x1="397.2" y1="352" x2="397.2" y2="357" stroke="var(--line)" stroke-width="1"/>
+<line x1="116" y1="352" x2="398" y2="352" stroke="var(--line)" stroke-width="1"/>
+<line x1="116" y1="492" x2="398" y2="492" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="492" x2="270.8" y2="492" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<circle cx="458" cy="492" r="4" fill="var(--hit)"/>
+<line x1="116" y1="513" x2="398" y2="513" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="513" x2="294.0" y2="513" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<circle cx="458" cy="513" r="4" fill="var(--hit)"/>
+<line x1="116" y1="534" x2="398" y2="534" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="534" x2="398.0" y2="534" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<line x1="116" y1="555" x2="398" y2="555" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="555" x2="358.7" y2="555" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<circle cx="458" cy="555" r="4" fill="var(--hit)"/>
+<line x1="116" y1="576" x2="398" y2="576" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="576" x2="351.5" y2="576" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+<circle cx="458" cy="576" r="4" fill="var(--hit)"/>
+<line x1="116" y1="597" x2="398" y2="597" stroke="var(--line)" stroke-width="8" stroke-linecap="round" opacity="0.35"/>
+<line x1="116" y1="597" x2="301.3" y2="597" stroke="var(--bar)" stroke-width="8" stroke-linecap="round"/>
+</svg>

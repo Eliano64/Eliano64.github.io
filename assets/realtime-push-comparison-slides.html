@@ -180,6 +180,33 @@
       font-size: 12.5px;
       line-height: 1.45;
     }
+
+    @media (max-width: 520px) {
+      .wrap { padding: 10px 12px; }
+      .title { font-size: 18px; }
+      .tabs { gap: 6px; }
+      .tab { padding: 4px 10px; font-size: 12.5px; }
+      .lanes { grid-template-columns: 64px 1fr 64px; font-size: 13px; }
+      .resp { grid-template-columns: 1fr; align-items: stretch; gap: 6px; padding: 8px; }
+      .resp-label, .resp-state { font-size: 12px; }
+      .resp-body {
+        height: auto;
+        min-height: 54px;
+        max-height: 120px;
+        font-size: 11.5px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        overflow: auto;
+      }
+      .step { grid-template-columns: 26px 1fr; gap: 8px; padding: 6px 8px; min-height: 0; }
+      .step .num { width: 24px; height: 24px; font-size: 12px; }
+      .chips { gap: 6px; }
+      .chip { max-width: 100%; white-space: normal; overflow-wrap: anywhere; font-size: 12px; }
+      .body { grid-template-columns: 64px minmax(0, 1fr) 64px; gap: 4px; }
+      .body > * { min-width: 0; }
+      .party, .msg { overflow-wrap: anywhere; }
+    }
   </style>
 </head>
 <body>
@@ -240,7 +267,7 @@
           { state: "又一次新请求", body: "（请求在途）" },
           { state: "应答结束，客户这才拿到数据", body: 'data: {"price":68000}' }
         ],
-        chips: [["通信方向", "客户拉取"], ["每条消息开销", "一整套 HTTP 首部"], ["连接占用", "每条请求一条短连接"]],
+        chips: [["通信方向", "客户拉取"], ["每条消息开销", "一整套 HTTP 首部"], ["连接占用", "每条请求占一次往返，连接可复用"]],
         note: "实现最简单、不需要服务器特殊支持；代价是请求次数与是否有数据无关，实时性和空转量互相矛盾。"
       },
       long: {
@@ -269,8 +296,8 @@
           { dir: "s2c", name: "响应开始，但不结束", detail: "服务器返回 200 和 text/event-stream，然后故意不结束这个响应体，客户当初那次请求因此一直没有完成。" },
           { dir: "s2c", name: "有事就往里写一段", arrives: true, detail: "服务器把这条响应留着，每发生一件事就追加一段 data: ... 文本并立即发出，浏览器一收到就触发回调。" },
           { dir: "s2c", name: "再来一件事，继续追加", arrives: true, detail: "依然是同一个响应体，依然是同一条连接，不需要客户再问。" },
-          { dir: "c2s", name: "客户上行仍要新请求", detail: "这条连接的身份是“一个还没答完的请求”，只能顺着应答方向走。浏览器要上行数据，只能另发一个完整的 HTTP 请求。" },
-          { dir: "local", name: "断线由浏览器自动重连", detail: "SSE 在浏览器内置重连，并可携带 Last-Event-ID 告知服务器已收到的事件编号。" }
+          { dir: "c2s", name: "客户上行仍要新请求", detail: "这条连接的身份是“一个还没答完的请求”，只能沿响应方向传输。浏览器要上行数据，只能另发一个完整的 HTTP 请求。" },
+          { dir: "local", name: "断线由浏览器自动重连", detail: "SSE 在浏览器内置重连；重连时可携带 Last-Event-ID，是否补发取决于服务器是否保留并可重放。" }
         ],
         resp: [
           { state: "服务器尚未应答", body: "（请求在途）" },
@@ -278,7 +305,7 @@
           { state: "仍不结束：事件可以继续追加", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\n' },
           { state: "仍不结束", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\ndata: {"price":68120}' },
           { state: "服务器方向仍是这条响应；客户上行要另开请求", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\ndata: {"price":68120}' },
-          { state: "同一条连接，重连后由 Last-Event-ID 接上", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\ndata: {"price":68120}' }
+          { state: "重连时携带 Last-Event-ID", body: 'Content-Type: text/event-stream\ndata: {"price":68000}\ndata: {"price":68120}' }
         ],
         chips: [["通信方向", "服务器 → 客户单向"], ["每条消息开销", "事件文本格式"], ["连接占用", "一条长连接"]],
         note: "只需要服务器单向推送时最省事：纯文本协议、浏览器原生支持重连。限制是客户端不能在这条通道上回发数据。"
@@ -287,9 +314,9 @@
         tabTitle: "WebSocket",
         steps: [
           { dir: "c2s", name: "HTTP 升级握手", detail: "用一次带 Upgrade: websocket 的 GET 请求完成协议升级。" },
-          { dir: "s2c", name: "101 Switching Protocols", detail: "这是这条连接上唯一一个 HTTP 应答，它标志着协议切换；之后不再有 HTTP 报文。" },
+          { dir: "s2c", name: "101 Switching Protocols", detail: "这是 HTTP/1.1 升级握手的应答，标志协议切换；之后传送 WebSocket 帧。" },
           { dir: "both", name: "双向收发帧", arrives: true, detail: "任意一方都能随时发消息，帧首部最小 2 字节，不必再为每条消息重复一套 HTTP 首部。" },
-          { dir: "both", name: "Close 帧结束", detail: "交换 Close 帧后断开 TCP。断线重连、心跳与消息补发需要应用自己处理。" }
+          { dir: "both", name: "Close 帧结束", detail: "交换 Close 帧后断开 TCP。断线重连、心跳与消息补发需要应用处理。" }
         ],
         resp: [
           { state: "升级请求在途", body: "（请求在途）" },
@@ -297,8 +324,8 @@
           { state: "此后没有 HTTP 应答体，只有双向的帧", body: '浏览器→服务器  Text: {"price":68000}\n服务器→浏览器  Ping' },
           { state: "Close 帧之后连接结束", body: "服务器→浏览器  Close (1000)" }
         ],
-        chips: [["通信方向", "双向全双工"], ["每条消息开销", "2 字节帧首部"], ["连接占用", "一条长连接"]],
-        note: "双向、低开销、实时性最好；代价是协议状态最复杂，心跳、重连、背压与鉴权都要应用自己处理，中间代理也必须显式转发升级首部。"
+        chips: [["通信方向", "双向全双工"], ["每条消息开销", "至少 2 字节基础首部"], ["连接占用", "一条长连接"]],
+        note: "双向、消息开销低；代价是协议状态复杂，心跳、重连、背压与鉴权都要应用处理，中间代理也必须显式转发升级首部。"
       }
     };
 

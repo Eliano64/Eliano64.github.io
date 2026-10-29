@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RNN 逐步预测演示</title>
+<style>
+  :root{--bg:#fff;--fg:#1b2330;--muted:#5b6472;--line:#c8d0da;--panel:#f4f7fb;--accent:#3b5bdb;--warn:#b45309}
+  @media (prefers-color-scheme: dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;--panel:#1e2430;--accent:#8fa6ff;--warn:#f0b35a}}
+  *{box-sizing:border-box}
+  body{margin:0;padding:14px;background:var(--bg);color:var(--fg);font:14px/1.6 system-ui,"Noto Sans SC",sans-serif}
+  h1{font-size:16px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px}
+  button{font:inherit;padding:5px 11px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+  button:disabled{opacity:.45;cursor:default}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .grid{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1 1 240px;min-width:0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .strip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .tok{border:1px solid var(--line);border-radius:6px;padding:3px 8px;background:var(--bg)}
+  .tok.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;font-weight:600}
+  .tok small{color:var(--muted);font-weight:400}
+  .mono{font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+  .bars{display:grid;grid-template-columns:auto 1fr auto;gap:4px 6px;align-items:center;font-size:12.5px}
+  .bar{height:10px;border-radius:3px;background:var(--accent);min-width:0}
+  .track{background:var(--line);border-radius:3px;height:10px;overflow:hidden}
+  .muted{color:var(--muted)}
+  .ok{color:#2f855a}.bad{color:#c53030}
+  @media (prefers-color-scheme: dark){.ok{color:#7bd3a4}.bad{color:#ff8a8a}}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  th,td{border-bottom:1px solid var(--line);padding:3px 5px;text-align:left;white-space:nowrap}
+  .scroll{overflow-x:auto}
+  .fill{font-size:12.5px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+  <h1>RNN 读一个词，预测下一个词</h1>
+  <p class="sub">未训练演示参数；当前读入的向量、两步线性展开与概率都由同一组权重算出。</p>
+
+  <div class="controls">
+    <button id="prev" type="button">上一步</button>
+    <button id="next" type="button">下一步</button>
+    <button id="reset" type="button">重置</button>
+    <span class="muted" id="counter"></span>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="panel">
+        <div class="strip" id="strip" aria-label="输入序列"></div>
+        <div class="fill" id="detail" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <div class="muted" style="font-size:12.5px;margin-bottom:6px">下一个词的概率（对词表 softmax）</div>
+        <div class="bars" id="bars"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="muted" style="font-size:12.5px">逐步读数</div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>步</th><th>输入</th><th>h₁</th><th>h₂</th><th>预测</th><th>目标</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const vocab = ["顾客","喜欢","这部","电影","<eos>"];
+  const seq = ["顾客","喜欢","这部","电影"];
+  const target = ["喜欢","这部","电影","<eos>"];
+  const emb = [[0.5,-0.2],[0.3,0.6],[-0.4,0.5],[0.8,-0.1],[0.0,0.0]];
+  const Wx = [[0.5,-0.3],[0.2,0.4]];
+  const Wh = [[0.6,0.1],[-0.2,0.3]];
+  const b  = [0.0,0.1];
+  const Wy = [[0.4,0.2],[-0.3,0.5],[0.1,-0.6],[0.7,0.1],[-0.2,-0.4]];
+
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1];
+  const tanh=Math.tanh;
+  function mat2(W,x){ return [dot(W[0],x), dot(W[1],x)]; }
+  function softmax(z){ const m=Math.max.apply(null,z); const e=z.map(v=>Math.exp(v-m)); const s=e.reduce((a,v)=>a+v,0); return e.map(v=>v/s); }
+
+  const states=[]; let h=[0,0];
+  for(let t=0;t<seq.length;t++){
+    const x=emb[vocab.indexOf(seq[t])];
+    const lin=[0,1].map(r=>Wx[r][0]*x[0]+Wx[r][1]*x[1]+Wh[r][0]*h[0]+Wh[r][1]*h[1]+b[r]);
+    h=lin.map(v=>tanh(v));
+    const logits=Wy.map(row=>dot(row,h));
+    const probs=softmax(logits);
+    let top=0; for(let i=1;i<probs.length;i++) if(probs[i]>probs[top]) top=i;
+    states.push({t:t, tok:seq[t], h:h.slice(), logits:logits, probs:probs, top:top});
+  }
+
+  const strip=document.getElementById('strip');
+  const detail=document.getElementById('detail');
+  const bars=document.getElementById('bars');
+  const rows=document.getElementById('rows');
+  const counter=document.getElementById('counter');
+  const fmt=v=>(Math.abs(v)<0.0005?0:v).toFixed(3);
+  const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let cur=0;
+
+  const pct=v=>(100*v).toFixed(1)+'%';
+
+  function render(){
+    strip.innerHTML='';
+    seq.forEach((tok,i)=>{
+      const d=document.createElement('span');
+      d.className='tok'+(i===cur?' on':'');
+      d.innerHTML=esc(tok)+' <small>'+esc(target[i])+'</small>';
+      strip.appendChild(d);
+    });
+    const s=states[cur];
+    const hprev=cur===0?[0,0]:states[cur-1].h;
+    const xv=emb[vocab.indexOf(s.tok)];
+    const eq=r=>'h'+['₁','₂'][r]+' = tanh('+Wx[r][0].toFixed(3)+'·('+xv[0].toFixed(3)+') + '+Wx[r][1].toFixed(3)+'·('+xv[1].toFixed(3)+') + '
+      +Wh[r][0].toFixed(3)+'·('+hprev[0].toFixed(3)+') + '+Wh[r][1].toFixed(3)+'·('+hprev[1].toFixed(3)+') + '+b[r].toFixed(3)+') = '+fmt(s.h[r]);
+    detail.innerHTML='<div class="mono">第 '+(cur+1)+' 步：读入“'+s.tok+'”，x = ['+fmt(xv[0])+', '+fmt(xv[1])+']，h′ = ['+fmt(hprev[0])+', '+fmt(hprev[1])+']</div>'
+      +'<div class="mono">'+eq(0)+'</div>'
+      +'<div class="mono">'+eq(1)+'</div>'
+      +'<div class="mono">logits = ['+s.logits.map(v=>fmt(v)).join(', ')+']</div>'
+      +'<div>预测：<b>'+esc(vocab[s.top])+'</b>（'+pct(s.probs[s.top])+'）　目标：'+esc(target[cur])+' '
+      +'<span class="'+(vocab[s.top]===target[cur]?'ok':'bad')+'">'+(vocab[s.top]===target[cur]?'一致':'不一致')+'</span></div>';
+    bars.innerHTML='';
+    vocab.forEach((w,i)=>{
+      const label=document.createElement('span'); label.textContent=w;
+      const track=document.createElement('div'); track.className='track';
+      const bar=document.createElement('div'); bar.className='bar'; bar.style.width=(100*s.probs[i]).toFixed(1)+'%';
+      track.appendChild(bar);
+      const val=document.createElement('span'); val.className='mono'; val.textContent=fmt(s.probs[i]);
+      bars.appendChild(label); bars.appendChild(track); bars.appendChild(val);
+    });
+    rows.innerHTML='';
+    states.forEach((st,i)=>{
+      const tr=document.createElement('tr');
+      const ok=vocab[st.top]===target[i];
+      tr.innerHTML='<td>'+(i+1)+'</td><td>'+esc(st.tok)+'</td><td class="mono">'+fmt(st.h[0])+'</td>'
+        +'<td class="mono">'+fmt(st.h[1])+'</td><td>'+vocab[st.top]+'</td>'
+        +'<td class="'+(ok?'ok':'bad')+'">'+esc(target[i])+'</td>';
+      if(i===cur) tr.style.background='var(--panel)';
+      rows.appendChild(tr);
+    });
+    counter.textContent='第 '+(cur+1)+' / '+states.length+' 步';
+    document.getElementById('prev').disabled = cur===0;
+    document.getElementById('next').disabled = cur===states.length-1;
+  }
+
+  document.getElementById('prev').addEventListener('click',()=>{ if(cur>0){cur--; render();} });
+  document.getElementById('next').addEventListener('click',()=>{ if(cur<states.length-1){cur++; render();} });
+  document.getElementById('reset').addEventListener('click',()=>{ cur=0; render(); });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'){ if(cur<states.length-1){cur++; render();} }
+    if(e.key==='ArrowLeft'){ if(cur>0){cur--; render();} }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

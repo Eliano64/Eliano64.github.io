@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GBDT：每一轮去拟合上一轮的残差</title>
+<style>
+  :root {
+    --bg: #f8fafc; --panel: #ffffff; --line: #cbd5e1; --text: #0f172a; --muted: #475569;
+    --fit: #2563eb; --tree: #16a34a; --res: #be123c; --accent: #7c3aed;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1020; --panel: #111827; --line: #334155; --text: #e2e8f0; --muted: #94a3b8;
+      --fit: #60a5fa; --tree: #4ade80; --res: #fb7185; --accent: #c4b5fd;
+    }
+  }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: Arial, "Microsoft YaHei", sans-serif; }
+  .wrap { padding: 12px 14px; }
+  h1 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+  .hint { font-size: 12px; color: var(--muted); margin: 6px 0; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  svg { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    width: 100%; max-width: 560px; height: auto; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; font-size: 12px; color: var(--muted); min-width: 210px; }
+  .card b { color: var(--text); font-weight: 600; }
+  .mono { font-family: Consolas, "Courier New", monospace; color: var(--text); line-height: 1.8; }
+  .bar { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  button { font: inherit; font-size: 12px; padding: 5px 12px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>GBDT：每一轮去拟合上一轮的残差</h1>
+  <p class="hint">方向键切换轮次，空格播放或暂停。每轮在相邻样本之间试切一刀，取使残差平方和最小的阈值，再乘以学习率累加。</p>
+  <div class="row">
+    <svg id="plot" viewBox="0 0 560 360" role="img"
+         aria-label="六个样本上逐轮累加浅树的预测，红色竖线是当前残差"></svg>
+    <div>
+      <div class="card" id="readout"></div>
+      <div class="bar">
+        <button id="prev">上一轮</button>
+        <button id="next">下一轮</button>
+        <button id="play">播放</button>
+        <span class="mono" id="step" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  const NS = "http://www.w3.org/2000/svg";
+  const X = [1, 2, 3, 4, 5, 6];
+  const Y = [10, 12, 18, 20, 28, 30];
+  const LR = 0.5;               // 学习率（收缩系数）
+  const ROUNDS = 3;
+
+  const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+  const sse = a => a.reduce((s, v) => s + v * v, 0);
+
+  // 单层回归树：在相邻样本之间选阈值，两侧各取均值
+  function fitStump(residuals) {
+    let best = null;
+    for (let cut = 0; cut < X.length - 1; cut++) {
+      const left = residuals.slice(0, cut + 1);
+      const right = residuals.slice(cut + 1);
+      const l = mean(left), r = mean(right);
+      const err = sse(left.map(v => v - l)) + sse(right.map(v => v - r));
+      if (!best || err < best.err) best = { cut, l, r, err, thr: (X[cut] + X[cut + 1]) / 2 };
+    }
+    return best;
+  }
+
+  // 逐轮累加
+  const states = [{ F: Y.map(() => mean(Y)), detail: null }];
+  let F = states[0].F.slice();
+  for (let k = 1; k <= ROUNDS; k++) {
+    const residuals = Y.map((y, i) => y - F[i]);
+    const stump = fitStump(residuals);
+    F = F.map((f, i) => f + LR * (i <= stump.cut ? stump.l : stump.r));
+    states.push({ F: F.slice(), detail: stump, residuals, round: k });
+  }
+
+  const svg = document.getElementById("plot");
+  const readout = document.getElementById("readout");
+  const stepLabel = document.getElementById("step");
+  const PAD = 42, W = 560, H = 360;
+  const ymin = 6, ymax = 34;
+  const sx = v => PAD + (v - 0.5) / 6.2 * (W - 2 * PAD);
+  const sy = v => H - PAD - (v - ymin) / (ymax - ymin) * (H - 2 * PAD);
+
+  function el(tag, attrs, text) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (text !== undefined) n.textContent = text;
+    svg.appendChild(n);
+    return n;
+  }
+
+  function rmse(pred) {
+    return Math.sqrt(Y.reduce((s, y, i) => s + (y - pred[i]) ** 2, 0) / Y.length);
+  }
+
+  function render(idx) {
+    const st = states[idx];
+    svg.textContent = "";
+    for (let g = ymin; g <= ymax; g += 4) {
+      el("line", { x1: sx(0.5), y1: sy(g), x2: sx(6.6), y2: sy(g), stroke: "var(--line)", "stroke-width": 0.8 });
+      el("text", { x: PAD - 8, y: sy(g) + 4, "text-anchor": "end", fill: "var(--muted)", "font-size": 10 }, g);
+    }
+    el("path", { d: `M ${sx(0.5)} ${sy(ymin)} L ${sx(6.6)} ${sy(ymin)}`, stroke: "var(--muted)", fill: "none" });
+    el("text", { x: (sx(0.5) + sx(6.6)) / 2, y: H - 12, "text-anchor": "middle",
+                 fill: "var(--muted)", "font-size": 11 }, "样本 x");
+
+    // 当前预测：阶梯线
+    let d = "";
+    for (let i = 0; i < X.length; i++) {
+      const x0 = sx(X[i] - 0.5), x1 = sx(X[i] + 0.5), y = sy(st.F[i]);
+      d += (i === 0 ? `M ${x0} ${y}` : ` L ${x0} ${y}`) + ` L ${x1} ${y}`;
+    }
+    el("path", { d, stroke: "var(--fit)", "stroke-width": 2.2, fill: "none" });
+
+    // 残差：从真值到当前预测的竖线
+    Y.forEach((y, i) => {
+      el("line", { x1: sx(X[i]), y1: sy(y), x2: sx(X[i]), y2: sy(st.F[i]),
+                   stroke: "var(--res)", "stroke-width": 1.6, "stroke-dasharray": "4 3" });
+      el("circle", { cx: sx(X[i]), cy: sy(y), r: 4, fill: "var(--tree)" });
+    });
+
+    // 本轮阈值
+    if (st.detail) {
+      const xc = sx(st.detail.thr);
+      el("line", { x1: xc, y1: sy(ymax), x2: xc, y2: sy(ymin), stroke: "var(--accent)",
+                   "stroke-width": 1.2, "stroke-dasharray": "5 4" });
+      el("text", { x: xc + 6, y: sy(ymax) + 14, fill: "var(--accent)", "font-size": 11 },
+         `本轮切在 x = ${st.detail.thr}`);
+    }
+
+    readout.innerHTML = idx === 0
+      ? `<b>第 0 轮：只用均值</b><br><span class="mono">F0 = ${st.F[0].toFixed(1)}<br>RMSE = ${rmse(st.F).toFixed(2)}</span>`
+      : `<b>第 ${st.round} 轮：拟合上一轮的残差</b><br>` +
+        `<span class="mono">残差 ${st.residuals.map(v => v.toFixed(1)).join(", ")}<br>` +
+        `切在 x = ${st.detail.thr}，左侧取 ${st.detail.l.toFixed(2)}、右侧取 ${st.detail.r.toFixed(2)}<br>` +
+        `左半预测 ${st.F.filter((_, i) => i <= st.detail.cut).map(v => v.toFixed(1)).join(", ")}<br>` +
+        `右半预测 ${st.F.filter((_, i) => i > st.detail.cut).map(v => v.toFixed(1)).join(", ")}<br>` +
+        `RMSE = ${rmse(st.F).toFixed(2)}</span>`;
+    stepLabel.textContent = `${idx} / ${states.length - 1}`;
+  }
+
+  let idx = 0, timer = null;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+    document.getElementById("play").textContent = "播放";
+  }
+
+  function go(delta) {
+    idx = Math.max(0, Math.min(states.length - 1, idx + delta));
+    render(idx);
+  }
+
+  function togglePlay() {
+    if (timer) { stop(); return; }
+    if (reduce.matches) { go(1); return; }
+    if (idx >= states.length - 1) { idx = 0; render(idx); }
+    document.getElementById("play").textContent = "暂停";
+    timer = setInterval(() => {
+      if (idx >= states.length - 1) { stop(); return; }
+      go(1);
+    }, 1600);
+  }
+
+  document.getElementById("prev").addEventListener("click", () => { stop(); go(-1); });
+  document.getElementById("next").addEventListener("click", () => { stop(); go(1); });
+  document.getElementById("play").addEventListener("click", togglePlay);
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") { stop(); go(1); e.preventDefault(); }
+    if (e.key === "ArrowLeft") { stop(); go(-1); e.preventDefault(); }
+    if (e.key === " ") { togglePlay(); e.preventDefault(); }
+  });
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(es => es.forEach(en => { if (!en.isIntersecting) stop(); }),
+      { threshold: 0.2 }).observe(svg);
+  }
+
+  render(idx);
+})();
+</script>
+</body>
+</html>

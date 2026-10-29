@@ -1,0 +1,389 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>vLLM | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="推理服务的瓶颈vLLM 是面向大模型推理与服务的引擎，目标是在同一批权重上同时服务更多请求。主要瓶颈在显存容量、KV 缓存与调度：整段 prompt 先做一次前向（prefill），随后每步只推进一个 token（decode）。 对外是 OpenAI 兼容的 HTTP 服务，内部各角色的分工见后文的结构一节。 KV 缓存生成分两步。整段 prompt 先一次前向算完，这一步叫 prefill，计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vLLM">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/25/vLLM/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="推理服务的瓶颈vLLM 是面向大模型推理与服务的引擎，目标是在同一批权重上同时服务更多请求。主要瓶颈在显存容量、KV 缓存与调度：整段 prompt 先做一次前向（prefill），随后每步只推进一个 token（decode）。 对外是 OpenAI 兼容的 HTTP 服务，内部各角色的分工见后文的结构一节。 KV 缓存生成分两步。整段 prompt 先一次前向算完，这一步叫 prefill，计">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-25T09:52:30.000Z">
+<meta property="article:modified_time" content="2026-10-28T04:28:43.299Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "vLLM",
+  "url": "https://eliano64.github.io/2026/10/25/vLLM/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-25T09:52:30.000Z",
+  "dateModified": "2026-10-28T04:28:43.299Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/25/vLLM/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'vLLM',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">295</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">vLLM</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">vLLM</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-25T09:52:30.000Z" title="发表于 2026-10-25 17:52:30">2026-10-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-28T04:28:43.299Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.7k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="推理服务的瓶颈"><a href="#推理服务的瓶颈" class="headerlink" title="推理服务的瓶颈"></a>推理服务的瓶颈</h1><p>vLLM 是面向大模型推理与服务的引擎，目标是在同一批权重上同时服务更多请求。主要瓶颈在显存容量、KV 缓存与调度：整段 prompt 先做一次前向（prefill），随后每步只推进一个 token（decode）。</p>
+<p>对外是 OpenAI 兼容的 HTTP 服务，内部各角色的分工见后文的结构一节。</p>
+<h2 id="KV-缓存"><a href="#KV-缓存" class="headerlink" title="KV 缓存"></a>KV 缓存</h2><p>生成分两步。整段 prompt 先一次前向算完，这一步叫 prefill，计算密集。之后每轮只推进一个 token，叫 decode，每步都要读取这条序列此前所有位置的键与值，访存密集。</p>
+<p>K 与 V 指注意力里缓存的键与值。缓存省掉的是对已知位置的重复计算，每步仍要读这些缓存做注意力；代价是显存，且随上下文线性增长。下式给出每个 token 的 KV 字节数：</p>
+<script type="math/tex; mode=display">2 \times L \times H \times d \times b</script>
+<p>其中 <script type="math/tex">L</script> 是层数，<script type="math/tex">H</script> 是 KV 头数（不是查询头数），<script type="math/tex">d</script> 是每头维度，<script type="math/tex">b</script> 是元素字节，前面的 2 指 K 与 V 各一份。整段序列的缓存还要乘以序列长度。取 L&#x3D;32、H&#x3D;8、d&#x3D;128、b&#x3D;2，每个 token 为 128 KiB，8192 token 的序列约占 1 GiB。decode 每步只算一个 token，速度可能受显存带宽、缓存容量或调度限制，不必然先遇到容量上限。</p>
+<p>容量浪费来自按最大上下文为请求预留显存。连续预分配会留下大量可能用不到的空间，也会产生分配碎片。</p>
+<p>分页把显存切成等大的块，块池统一分配，请求只持有块表，记录第 i 个逻辑块落在哪个物理块。物理块随意分配，同一序列的块不必相邻；两张块表指向同一格，就是共享。</p>
+<p><img src="/assets/vllm-paged-attention-mapping.svg" alt="880"></p>
+<h1 id="前缀缓存"><a href="#前缀缓存" class="headerlink" title="前缀缓存"></a>前缀缓存</h1><p>多轮对话与批量评测里，请求共享同一段开头，这段 KV 算一次就够。判断“同一段”不能只比块内 token：块哈希把本块 token、父块哈希与额外字段（LoRA id、多模态哈希）合在一起，父哈希把链串起来，所以只有从头每块都对上才命中。</p>
+<p>只缓存写满的块，半块会被后续 token 改写。共享块用引用计数守住，计数不归零不能淘汰；计数归零的整块可能仍留在缓存里等待复用，直到被最近最少使用策略淘汰。</p>
+<p>前缀缓存复用匹配的 KV，计数归零的块可被淘汰，代价是哈希、查表与管理开销。</p>
+<h1 id="连续批处理"><a href="#连续批处理" class="headerlink" title="连续批处理"></a>连续批处理</h1><p>槽位是这一轮最多能并排处理的请求条数，上限取决于序列长度、token 预算、KV 占用、模型显存与配置，不是单纯由块数决定。下面是一个受控对比：同一组请求、同样到达时刻、同样 3 个槽位，只有准入规则不同。</p>
+<p>静态批处理指组批时定下成员、之后不再变，整批一起推进，直到最慢的那条结束。做完的请求仍占着槽位，新到的只能等下一批。批里只要有一条长尾，其余槽位就空到那条结束。</p>
+<p>连续批处理每轮重新组批：做完的立刻退出并归还块，排队的补进来。把长 prompt 切成多块（chunked prefill）与 decode 同批计算是另一项策略，可以与连续批处理叠加，但不是连续批处理的定义。</p>
+<p>常见的预算顺序是 decode 优先：先把待解码的排进这一轮的 token 预算，剩下的给 prefill。这样计算密集的 prefill 与访存密集的 decode 可能落在同一批里，算力与带宽同时被利用。</p>
+<p>分页让这种调度更容易实现：上下文可以散在任意块里，这一轮把哪些请求拼在一起只需选择读取哪些块表，不必搬移整段数据。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||812)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||812)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/vllm-continuous-batching-slides.html" style="width:100%;height:812px;border:0" loading="lazy"></iframe>
+</div>
+
+<p>块池耗尽时，新请求排不进来，运行中的请求也需要新块写 KV。做法是抢占：挑一条请求，释放其块，退回等待队列，等有空间再从该请求的前缀重算。V1 默认重算而不是换出到内存，因为在该实现中重新 prefill 通常比写出再读回更划算。</p>
+<p>代价是延迟，被抢占的请求要重新 prefill。频繁抢占通常说明并发需求超过显存容量，也可能是调度策略与预算设置的结果。</p>
+<h1 id="量化与并行"><a href="#量化与并行" class="headerlink" title="量化与并行"></a>量化与并行</h1><h2 id="量化"><a href="#量化" class="headerlink" title="量化"></a>量化</h2><p>量化是减少每个数值占的 bit 数。常见部署以 fp16 存储权重与 KV，每个数 16 位浮点；量化换成 fp8（8 位浮点）、int8 或 int4（8 位、4 位整数）。从 16 位降到 8 位，每个权重占的字节减半；降到 4 位再减半。</p>
+<p>降低位宽能减少存储与访存字节。decode 一步只算一个 token，算术强度低，往往受显存带宽限制；增大批处理可以提高权重复用。收益取决于 kernel、硬件与任务，位宽减半不必然让一轮时间减半。</p>
+<p>量化改变权重精度，输出可能随之改变，位宽越低差别通常越大。是否可接受取决于任务的误差要求，需要在目标数据上评估。</p>
+<h2 id="并行"><a href="#并行" class="headerlink" title="并行"></a>并行</h2><p>一些时候需要使用多张显卡：一张卡放不下模型，就得让每张卡只存一部分权重，也就是模型并行；模型放得下但吞吐不够，就在每组设备上放一份完整副本，也就是数据并行。</p>
+<p>模型并行有三种分法。张量并行把权重或计算按头、通道切开，各卡算一部分，并通过集合通信汇总，切得越细通信越频繁，通常在一台机器内使用。流水线并行按层分段，可以跨机器，代价是流水线气泡。MoE 模型还有专家并行，把不同专家放到不同卡上。</p>
+<p>数据并行让每组卡持有一份完整副本，各自调度请求，吞吐随副本增多而上升。每组副本内部仍可使用张量并行或流水线并行，因此不要求每张单卡都放下整个模型。</p>
+<table>
+<thead>
+<tr>
+<th>手段</th>
+<th>分什么</th>
+<th>换来什么</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>张量并行</td>
+<td>权重或计算按头、通道</td>
+<td>每卡权重变小，腾出的显存进块池</td>
+<td>集合通信开销</td>
+</tr>
+<tr>
+<td>流水线并行</td>
+<td>按层分，可跨节点</td>
+<td>单卡权重变小</td>
+<td>流水线气泡</td>
+</tr>
+<tr>
+<td>专家并行</td>
+<td>MoE 的专家</td>
+<td>单卡专家显存变小</td>
+<td>路由与负载均衡开销</td>
+</tr>
+<tr>
+<td>数据并行</td>
+<td>每组卡一份完整副本</td>
+<td>提高并发服务能力；每组持有完整模型</td>
+<td>每组副本的显存与通信开销</td>
+</tr>
+</tbody></table>
+<p>前三种把单卡权重或计算切开，数据并行在每组副本内保留完整模型。并行主要解决装不下与吞吐不足；不同切分方式下，每 token 的数据移动与通信开销不同。</p>
+<h1 id="vLLM-的结构"><a href="#vLLM-的结构" class="headerlink" title="vLLM 的结构"></a>vLLM 的结构</h1><p>以下按 V1 架构介绍进程角色，实现细节以<a target="_blank" rel="noopener" href="https://docs.vllm.ai/en/latest/design/arch_overview/">官方架构文档</a>为准。</p>
+<p><img src="/assets/vllm-process-architecture.svg" alt="668"></p>
+<h2 id="API-server"><a href="#API-server" class="headerlink" title="API server"></a>API server</h2><p>API server 处理文本输入与输出。收下 OpenAI 兼容的 HTTP 请求，套 chat 模板、分词成 token id，连同采样参数打包交给 EngineCore；反向把回来的 token id 解码成文本，按 SSE 推给客户端。显存与调度不由 API server 管理。</p>
+<p>分词、图片解码与流式返回都消耗 CPU。CPU 侧成为瓶颈时，可先评估增加 API server，再考虑其他扩容方式。</p>
+<h2 id="EngineCore"><a href="#EngineCore" class="headerlink" title="EngineCore"></a>EngineCore</h2><p>EngineCore 不处理文本，也不执行模型前向；EngineCore 管理调度器与 KV 缓存管理器，块池、块表、前缀哈希都在后者这里，并协调各 worker。</p>
+<p>主循环按轮推进，每一轮依次做四步：</p>
+<ol>
+<li>从等待队列挑出这一轮要算的请求，按预算排进 decode 与 prefill。</li>
+<li>向 KV 管理器查前缀能复用哪些块，再按需分配新块。</li>
+<li>把这一轮拼成批次，带每个请求的块表交给 worker。</li>
+<li>收回采样结果，决定下一轮。</li>
+</ol>
+<p>一个数据并行 rank 配一个 EngineCore；同一份模型用张量并行或流水线并行摊到多卡时，也由 EngineCore 协调那几个 worker。CPU 核数不足会拖住每轮决策。</p>
+<h2 id="GPU-worker"><a href="#GPU-worker" class="headerlink" title="GPU worker"></a>GPU worker</h2><p>每张显卡由一个 worker 进程管理：加载所属的权重分片，管理该卡显存，执行前向。每个 worker 里有一个 model runner，负责把这一轮的输入张量准备好、按块表读 KV、执行 attention 与 FFN。采样由持有相应 logits 的 rank 完成，结果以 token id 回传。</p>
+<p>worker 管理该卡显存中的三份内容：权重、前向时的激活与 CUDA graph 预留、KV 池。CUDA graph 把一轮前向要下发的 GPU 指令记录下来。之后遇到匹配的批次形状与执行键就重放，省掉逐算子下发的开销。形状不匹配时可以重新捕获，也可以回退到即时执行；显存因此要单独预留。</p>
+<h1 id="一次请求的完整链路"><a href="#一次请求的完整链路" class="headerlink" title="一次请求的完整链路"></a>一次请求的完整链路</h1><p>假设系统提示加用户问题共 1800 个 token，其中前 1200 个与一条仍在缓存中的旧请求完全相同。</p>
+<ol>
+<li>API server 收到请求，分词成 1800 个 token id，连同采样参数打包，经 ZMQ 交给 EngineCore。</li>
+<li>调度器把请求放进等待队列，等这一轮的 token 预算。</li>
+<li>KV 管理器对前 1200 个 token 逐块算哈希，命中 75 个块（块容量 16 token），引用计数加一，不重算。</li>
+<li>余下 600 个 token 进入 prefill；此时还有别的请求在 decode，按本轮 token 预算分片推进。</li>
+<li>prefill 写新的 KV，按需向空闲队列要块；末块写不满也占一整块，位置记进块表。</li>
+<li>这一轮的批次带着各自的块表下发到每个 GPU worker，worker 按块表读 KV、算 attention、得 logits。</li>
+<li>采样出下一个 token id，回传 EngineCore，再交给 API server；API server 解码成文本、流式推给客户端。这个 token 的 K、V 在下一轮前向时写进最后一个块。</li>
+<li>之后每轮重复第 5 到第 7 步，直到结束符或长度上限。</li>
+<li>请求结束，块表作废：共享的前缀块计数减一，计数归零后仍可能留在缓存里等待复用；其余块释放，是否立即淘汰由缓存策略决定。</li>
+</ol>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||980)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||980)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/vllm-request-lifecycle-slides.html" style="width:100%;height:980px;border:0" loading="lazy"></iframe>
+</div>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/25/vLLM/">https://eliano64.github.io/2026/10/25/vLLM/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/10/25/On-AI-And-Learning/" title="On AI And Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">On AI And Learning</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">295</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8E%A8%E7%90%86%E6%9C%8D%E5%8A%A1%E7%9A%84%E7%93%B6%E9%A2%88"><span class="toc-text">推理服务的瓶颈</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#KV-%E7%BC%93%E5%AD%98"><span class="toc-text">KV 缓存</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E7%BC%80%E7%BC%93%E5%AD%98"><span class="toc-text">前缀缓存</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%9E%E7%BB%AD%E6%89%B9%E5%A4%84%E7%90%86"><span class="toc-text">连续批处理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E4%B8%8E%E5%B9%B6%E8%A1%8C"><span class="toc-text">量化与并行</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8F%E5%8C%96"><span class="toc-text">量化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C"><span class="toc-text">并行</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#vLLM-%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">vLLM 的结构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#API-server"><span class="toc-text">API server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#EngineCore"><span class="toc-text">EngineCore</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GPU-worker"><span class="toc-text">GPU worker</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E8%AF%B7%E6%B1%82%E7%9A%84%E5%AE%8C%E6%95%B4%E9%93%BE%E8%B7%AF"><span class="toc-text">一次请求的完整链路</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/vLLM/" title="vLLM">vLLM</a><time datetime="2026-10-25T09:52:30.000Z" title="发表于 2026-10-25 17:52:30">2026-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/On-AI-And-Learning/" title="On AI And Learning">On AI And Learning</a><time datetime="2026-10-25T09:40:12.000Z" title="发表于 2026-10-25 17:40:12">2026-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/How-To-Read-Code-In-A-Complex-Project/" title="How To Read Code In A Complex Project">How To Read Code In A Complex Project</a><time datetime="2026-10-25T02:27:05.000Z" title="发表于 2026-10-25 10:27:05">2026-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-22T08:35:42.000Z" title="发表于 2026-10-22 16:35:42">2026-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Go-Environment-Management/" title="Go Environment Management">Go Environment Management</a><time datetime="2026-09-15T10:20:00.000Z" title="发表于 2026-09-15 18:20:00">2026-09-15</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/On-AI-And-Learning/" title="On AI And Learning">On AI And Learning</a><time datetime="2026-10-28T04:28:43.322Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/vLLM/" title="vLLM">vLLM</a><time datetime="2026-10-28T04:28:43.299Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

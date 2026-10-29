@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>教师强制与贪心生成</title>
+<style>
+  :root{--bg:#fff;--fg:#1b2330;--muted:#5b6472;--line:#c8d0da;--panel:#f4f7fb;--accent:#3b5bdb;--ok:#2f855a;--bad:#c53030}
+  @media (prefers-color-scheme: dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;--panel:#1e2430;--accent:#8fa6ff;--ok:#7bd3a4;--bad:#ff8a8a}}
+  *{box-sizing:border-box}
+  body{margin:0;padding:14px;background:var(--bg);color:var(--fg);font:14px/1.6 system-ui,"Noto Sans SC",sans-serif}
+  h1{font-size:16px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  button{font:inherit;padding:5px 11px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+  button:disabled{opacity:.45;cursor:default}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .grid{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1 1 260px;min-width:0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .panel h2{font-size:13px;margin:0 0 6px}
+  .mono{font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+  .muted{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{border-bottom:1px solid var(--line);padding:3px 5px;text-align:left;white-space:nowrap}
+  tr.on td{background:var(--bg)}
+  .scroll{overflow-x:auto}
+  .ok{color:var(--ok)}.bad{color:var(--bad)}
+  .prefix{margin-top:8px;font-size:13px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+  <h1>同一句话，两种前缀</h1>
+  <p class="sub">教学权重未经训练，只演示前缀来源的差别：训练读真实前缀，推理把上一步输出接回输入。</p>
+
+  <div class="controls">
+    <button id="prev" type="button">上一步</button>
+    <button id="next" type="button">下一步</button>
+    <button id="reset" type="button">重置</button>
+    <span class="muted" id="counter"></span>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="panel">
+        <h2>训练：教师强制</h2>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>步</th><th>输入</th><th>目标</th><th>预测</th><th>目标概率</th></tr></thead>
+            <tbody id="tfRows"></tbody>
+          </table>
+        </div>
+        <div class="prefix" id="tfInfo"></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel">
+        <h2>推理：贪心</h2>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>步</th><th>输入</th><th>选择</th><th>选择概率</th><th>状态 h</th></tr></thead>
+            <tbody id="grRows"></tbody>
+          </table>
+        </div>
+        <div class="prefix" id="grInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="mono" id="detail" aria-live="polite"></div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const V=["<bos>","<eos>","学生","喜欢","深度","学习","这部"];
+  const idx={}; V.forEach((w,i)=>idx[w]=i);
+  const emb=[[0.546,0.13],[-0.04,0.136],[-0.744,0.265],[0.512,-0.525],[-0.294,-0.459],[-0.913,-0.273],[-0.37,-0.035]];
+  const We=[[0.96,0.712],[0.618,-0.036]];
+  const Wh=[[0.568,0.946],[0.72,0.312]];
+  const Wo=[[0.557,0.205],[-0.445,-0.688],[0.571,0.76],[0.763,0.271],[0.509,-0.025],[-0.282,0.663],[0.085,-0.751]];
+  const b=[0,0];
+  const BOS="<bos>", EOS="<eos>";
+
+  const tanh=Math.tanh;
+  function step(prev,h){
+    const e=emb[idx[prev]];
+    const h2=[0,1].map(r=>tanh(We[r][0]*e[0]+We[r][1]*e[1]+Wh[r][0]*h[0]+Wh[r][1]*h[1]+b[r]));
+    const logits=[];
+    for(let k=0;k<V.length;k++){ logits.push(Wo[k][0]*h2[0]+Wo[k][1]*h2[1]); }
+    const m=Math.max.apply(null,logits), ex=logits.map(z=>Math.exp(z-m)), s=ex.reduce((a,v)=>a+v,0);
+    const probs=ex.map(v=>v/s);
+    let top=0; for(let k=1;k<V.length;k++) if(probs[k]>probs[top]) top=k;
+    return {h:h2, probs:probs, top:top};
+  }
+
+  const targets=["学生","喜欢","深度","学习",EOS];
+  let h=[0,0];
+  const tf=[];
+  let prev=BOS;
+  for(let t=0;t<targets.length;t++){
+    const r=step(prev,h); h=r.h;
+    const p=r.probs[idx[targets[t]]];
+    tf.push({step:t+1, prev:prev, target:targets[t], pred:V[r.top], p:p, loss:-Math.log(p), h:r.h.slice()});
+    prev=targets[t];
+  }
+  const gr=[]; h=[0,0]; prev=BOS;
+  for(let t=0;t<6;t++){
+    const r=step(prev,h); h=r.h;
+    const tok=V[r.top];
+    gr.push({step:t+1, prev:prev, tok:tok, p:r.probs[r.top], h:r.h.slice()});
+    if(tok===EOS) break;
+    prev=tok;
+  }
+
+  const fmt=v=>(Math.abs(v)<0.0005?0:v).toFixed(3);
+  const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const pct=v=>(100*v).toFixed(1)+'%';
+  let cur=1;
+
+  function render(){
+    const tfRows=document.getElementById('tfRows'), grRows=document.getElementById('grRows');
+    tfRows.innerHTML=''; grRows.innerHTML='';
+    tf.forEach(r=>{
+      const tr=document.createElement('tr'); if(r.step===cur) tr.className='on';
+      const ok=r.pred===r.target;
+      tr.innerHTML='<td>'+r.step+'</td><td>'+esc(r.prev)+'</td><td>'+esc(r.target)+'</td>'
+        +'<td class="'+(ok?'ok':'bad')+'">'+esc(r.pred)+'</td><td class="mono">'+pct(r.p)+'</td>';
+      tfRows.appendChild(tr);
+    });
+    gr.forEach(r=>{
+      const tr=document.createElement('tr'); if(r.step===cur) tr.className='on';
+      const targetAt=tf[r.step-1]?tf[r.step-1].target:'';
+      const same=r.tok===targetAt;
+      tr.innerHTML='<td>'+r.step+'</td><td>'+esc(r.prev)+'</td>'
+        +'<td class="'+(same?'ok':'bad')+'">'+esc(r.tok)+'</td><td class="mono">'+pct(r.p)+'</td>'
+        +'<td class="mono">['+fmt(r.h[0])+', '+fmt(r.h[1])+']</td>';
+      grRows.appendChild(tr);
+    });
+    const tot=tf.reduce((a,r)=>a+r.loss,0);
+    document.getElementById('tfInfo').innerHTML='真实前缀一直由标注提供；逐步平均损失约 <span class="mono">'+(tot/tf.length).toFixed(3)+'</span>，累计 <span class="mono">'+tot.toFixed(3)+'</span>。';
+    const grText=gr.map(r=>r.tok).join(' ');
+    const stop=gr[gr.length-1].tok===EOS?'遇到 <eos> 停止':('达到上限 '+gr.length+' 步');
+    document.getElementById('grInfo').innerHTML='生成前缀：<span class="mono">'+esc(grText)+'</span>；'+esc(stop)+'。';
+    const t=cur<=tf.length?tf[cur-1]:null;
+    const g=cur<=gr.length?gr[cur-1]:null;
+    const parts=[];
+    parts.push(t
+      ? '第 '+cur+' 步训练：输入“'+t.prev+'”，目标“'+t.target+'”，预测“'+t.pred+'”，状态 ['+fmt(t.h[0])+', '+fmt(t.h[1])+']'
+      : '训练已结束（共 '+tf.length+' 步）。');
+    parts.push(g
+      ? '第 '+cur+' 步推理：输入“'+g.prev+'”，选择“'+g.tok+'”，状态 ['+fmt(g.h[0])+', '+fmt(g.h[1])+']'
+      : '推理已结束（第 '+gr.length+' 步遇到 '+EOS+'）。');
+    document.getElementById('detail').textContent=parts.join('；')+'。';
+    document.getElementById('counter').textContent='第 '+cur+' 步';
+    document.getElementById('prev').disabled=cur===1;
+    document.getElementById('next').disabled=cur===Math.max(tf.length,gr.length);
+  }
+  document.getElementById('prev').addEventListener('click',()=>{ if(cur>1){cur--; render();} });
+  document.getElementById('next').addEventListener('click',()=>{ if(cur<Math.max(tf.length,gr.length)){cur++; render();} });
+  document.getElementById('reset').addEventListener('click',()=>{cur=1; render();});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight' && cur<Math.max(tf.length,gr.length)){cur++; render();}
+    if(e.key==='ArrowLeft' && cur>1){cur--; render();}
+  });
+  render();
+})();
+</script>
+</body>
+</html>

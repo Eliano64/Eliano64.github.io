@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="470" viewBox="0 0 900 470" role="img" aria-labelledby="figTitle figDesc">
+  <title id="figTitle">请求的块表与全局块池</title>
+  <desc id="figDesc">三个请求各自持有一张块表，表里记录逻辑块对应的物理块号；块池中的物理块大小相同、位置任意，被两个请求共用的块引用计数为 2，未被分配的块为空闲。</desc>
+  <style>/* paired-theme-canvas */
+    :root{color-scheme:light dark;
+      --bg:#ffffff;--card:#f8fafc;--cardBorder:#e2e8f0;
+      --fg:#111827;--muted:#475569;
+      --a:#2563eb;--aFill:#dbeafe;
+      --b:#0f766e;--bFill:#ccfbf1;
+      --c:#b45309;--cFill:#fef3c7;
+      --s:#6d28d9;--sFill:#ede9fe;
+      --dimStroke:#cbd5e1;--dimText:#8f9aab}
+    @media(prefers-color-scheme:dark){
+      :root{--bg:#0b1020;--card:#0b1020;--cardBorder:#1e293b;
+        --fg:#e5e7eb;--muted:#cbd5e1;
+        --a:#7aa2ff;--aFill:#16233d;
+        --b:#62d4c5;--bFill:#122a28;
+        --c:#f6b85f;--cFill:#2c2214;
+        --s:#b89cff;--sFill:#221a3a;
+        --dimStroke:#334155;--dimText:#7c8798}}
+    text{font-family:"Segoe UI","Noto Sans SC",Arial,sans-serif}
+    .title{font-size:19px;font-weight:600;fill:var(--fg)}
+    .hint{font-size:12.5px;fill:var(--muted)}
+    .panelTitle{font-size:13px;font-weight:600;fill:var(--fg)}
+    .reqName{font-size:12.5px;font-weight:600;fill:var(--fg)}
+    .reqMeta{font-size:11px;fill:var(--muted)}
+    .note{font-size:11px;fill:var(--muted)}
+    .num{font-size:15px;font-weight:600;text-anchor:middle}
+    .cap{font-size:10px;text-anchor:middle;fill:var(--muted)}
+    .cellA{fill:var(--aFill);stroke:var(--a);stroke-width:1.5}
+    .cellB{fill:var(--bFill);stroke:var(--b);stroke-width:1.5}
+    .cellC{fill:var(--cFill);stroke:var(--c);stroke-width:1.5}
+    .cellS{fill:var(--sFill);stroke:var(--s);stroke-width:1.5}
+    .cellFree{fill:none;stroke:var(--dimStroke);stroke-width:1.2;stroke-dasharray:4 3}
+    .cellEmpty{fill:none;stroke:var(--dimStroke);stroke-width:1.2;stroke-dasharray:2 3}
+    .tA{fill:var(--a)}.tB{fill:var(--b)}.tC{fill:var(--c)}.tS{fill:var(--s)}.tFree{fill:var(--dimText)}
+    .sep{stroke:var(--cardBorder);stroke-width:1.2}
+  </style>
+  <rect x="0" y="0" width="900" height="470" fill="var(--bg)"/>
+
+  <text class="title" x="32" y="32">逻辑块与物理块之间靠块表连起来</text>
+  <text class="hint" x="32" y="54">三个请求，每块容量 4 个 token；表里存的是物理块号，所以同一序列的块不必相邻</text>
+
+  <text class="panelTitle" x="32" y="90">请求侧：块表（逻辑块 → 物理块号）</text>
+  <text class="panelTitle" x="556" y="90">块池：16 个等大物理块</text>
+  <line class="sep" x1="540" y1="70" x2="540" y2="356"/>
+
+  <!-- 请求 A -->
+  <text class="reqName" x="32" y="132">请求 A</text>
+  <text class="reqMeta" x="32" y="150">12 token，3 块</text>
+  <rect class="cellS" x="180" y="112" width="62" height="52" rx="8"/>
+  <text class="num tS" x="211" y="136">7</text>
+  <text class="cap" x="211" y="154">逻辑 0</text>
+  <rect class="cellS" x="254" y="112" width="62" height="52" rx="8"/>
+  <text class="num tS" x="285" y="136">2</text>
+  <text class="cap" x="285" y="154">逻辑 1</text>
+  <rect class="cellA" x="328" y="112" width="62" height="52" rx="8"/>
+  <text class="num tA" x="359" y="136">11</text>
+  <text class="cap" x="359" y="154">逻辑 2</text>
+  <text class="note" x="404" y="134">前两块与 B 共享</text>
+  <text class="note" x="404" y="152">只有第三块独占</text>
+
+  <!-- 请求 B -->
+  <text class="reqName" x="32" y="198">请求 B</text>
+  <text class="reqMeta" x="32" y="216">12 token，3 块</text>
+  <rect class="cellS" x="180" y="178" width="62" height="52" rx="8"/>
+  <text class="num tS" x="211" y="202">7</text>
+  <text class="cap" x="211" y="220">逻辑 0</text>
+  <rect class="cellS" x="254" y="178" width="62" height="52" rx="8"/>
+  <text class="num tS" x="285" y="202">2</text>
+  <text class="cap" x="285" y="220">逻辑 1</text>
+  <rect class="cellB" x="328" y="178" width="62" height="52" rx="8"/>
+  <text class="num tB" x="359" y="202">13</text>
+  <text class="cap" x="359" y="220">逻辑 2</text>
+  <text class="note" x="404" y="200">前 8 token 与 A 相同</text>
+  <text class="note" x="404" y="218">查块表即命中，不重算</text>
+
+  <!-- 请求 C -->
+  <text class="reqName" x="32" y="264">请求 C</text>
+  <text class="reqMeta" x="32" y="282">8 token，2 块</text>
+  <rect class="cellC" x="180" y="244" width="62" height="52" rx="8"/>
+  <text class="num tC" x="211" y="268">5</text>
+  <text class="cap" x="211" y="286">逻辑 0</text>
+  <rect class="cellC" x="254" y="244" width="62" height="52" rx="8"/>
+  <text class="num tC" x="285" y="268">9</text>
+  <text class="cap" x="285" y="286">逻辑 1</text>
+  <rect class="cellEmpty" x="328" y="244" width="62" height="52" rx="8"/>
+  <text class="cap" x="359" y="274" style="font-size:11px">未分配</text>
+  <text class="note" x="404" y="266">块按需追加</text>
+  <text class="note" x="404" y="284">不预分配整段上下文</text>
+
+  <!-- 块池 4×4 -->
+  <g>
+    <rect class="cellFree" x="556" y="112" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="589" y="136">0</text><text class="cap" x="589" y="154">空闲</text>
+    <rect class="cellFree" x="632" y="112" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="665" y="136">1</text><text class="cap" x="665" y="154">空闲</text>
+    <rect class="cellS" x="708" y="112" width="66" height="52" rx="8"/>
+    <text class="num tS" x="741" y="136">2</text><text class="cap" x="741" y="154">引用 2</text>
+    <rect class="cellFree" x="784" y="112" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="817" y="136">3</text><text class="cap" x="817" y="154">空闲</text>
+
+    <rect class="cellFree" x="556" y="174" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="589" y="198">4</text><text class="cap" x="589" y="216">空闲</text>
+    <rect class="cellC" x="632" y="174" width="66" height="52" rx="8"/>
+    <text class="num tC" x="665" y="198">5</text><text class="cap" x="665" y="216">引用 1</text>
+    <rect class="cellFree" x="708" y="174" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="741" y="198">6</text><text class="cap" x="741" y="216">空闲</text>
+    <rect class="cellS" x="784" y="174" width="66" height="52" rx="8"/>
+    <text class="num tS" x="817" y="198">7</text><text class="cap" x="817" y="216">引用 2</text>
+
+    <rect class="cellFree" x="556" y="236" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="589" y="260">8</text><text class="cap" x="589" y="278">空闲</text>
+    <rect class="cellC" x="632" y="236" width="66" height="52" rx="8"/>
+    <text class="num tC" x="665" y="260">9</text><text class="cap" x="665" y="278">引用 1</text>
+    <rect class="cellFree" x="708" y="236" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="741" y="260">10</text><text class="cap" x="741" y="278">空闲</text>
+    <rect class="cellA" x="784" y="236" width="66" height="52" rx="8"/>
+    <text class="num tA" x="817" y="260">11</text><text class="cap" x="817" y="278">引用 1</text>
+
+    <rect class="cellFree" x="556" y="298" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="589" y="322">12</text><text class="cap" x="589" y="340">空闲</text>
+    <rect class="cellB" x="632" y="298" width="66" height="52" rx="8"/>
+    <text class="num tB" x="665" y="322">13</text><text class="cap" x="665" y="340">引用 1</text>
+    <rect class="cellFree" x="708" y="298" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="741" y="322">14</text><text class="cap" x="741" y="340">空闲</text>
+    <rect class="cellFree" x="784" y="298" width="66" height="52" rx="8"/>
+    <text class="num tFree" x="817" y="322">15</text><text class="cap" x="817" y="340">空闲</text>
+  </g>
+
+  <!-- 图例 -->
+  <rect class="cellS" x="32" y="374" width="18" height="14" rx="4"/>
+  <text class="note" x="58" y="386">被共享（引用计数 2）</text>
+  <rect class="cellA" x="212" y="374" width="18" height="14" rx="4"/>
+  <text class="note" x="238" y="386">A 独占</text>
+  <rect class="cellB" x="318" y="374" width="18" height="14" rx="4"/>
+  <text class="note" x="344" y="386">B 独占</text>
+  <rect class="cellC" x="424" y="374" width="18" height="14" rx="4"/>
+  <text class="note" x="450" y="386">C 独占</text>
+  <rect class="cellFree" x="530" y="374" width="18" height="14" rx="4"/>
+  <text class="note" x="556" y="386">空闲，可分配给任意请求</text>
+
+  <text class="hint" x="32" y="416">块表是请求私有的，块池是全局的。引用计数归零的块回到空闲队列，队列头部先被淘汰。</text>
+  <text class="hint" x="32" y="438">块容量固定带来内部碎片：末尾未写满的块同样占满一格显存。</text>
+</svg>
