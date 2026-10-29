@@ -1,0 +1,435 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Decision Tree | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="决策树的位置逻辑回归这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。 这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Decision Tree">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/09/Decision-Tree/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="决策树的位置逻辑回归这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。 这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-09T15:41:19.000Z">
+<meta property="article:modified_time" content="2026-10-27T04:18:16.916Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="MachineLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Decision Tree",
+  "url": "https://eliano64.github.io/2026/10/09/Decision-Tree/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-09T15:41:19.000Z",
+  "dateModified": "2026-10-27T04:18:16.916Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/09/Decision-Tree/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Decision Tree',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Decision Tree</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Decision Tree</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-09T15:41:19.000Z" title="发表于 2026-10-09 23:41:19">2026-10-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-27T04:18:16.916Z" title="更新于 2026-10-27 12:18:16">2026-10-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.7k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="决策树的位置"><a href="#决策树的位置" class="headerlink" title="决策树的位置"></a>决策树的位置</h1><p><a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Logistic-Regression&#x2F;" class="wikilink">逻辑回归</a>这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。</p>
+<p>这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有多一致）。</p>
+<h1 id="层层提问的结构"><a href="#层层提问的结构" class="headerlink" title="层层提问的结构"></a>层层提问的结构</h1><p>决策树（Decision Tree）以逐层提问的方式划分数据：按不同特征递归分裂，最终形成倒立的树状结构。三个部件构成一次推理的完整链条：</p>
+<table>
+<thead>
+<tr>
+<th>部件</th>
+<th>在树中的位置</th>
+<th>代表的内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内部节点</td>
+<td>分叉处</td>
+<td>对某个特征的判断问题，例如“天气是晴天吗”</td>
+</tr>
+<tr>
+<td>树枝分支</td>
+<td>从节点引出的每一条线</td>
+<td>判断得到的一个答案，例如“是”与“否”，一条分支对应一个答案</td>
+</tr>
+<tr>
+<td>叶节点</td>
+<td>不再分叉的末端</td>
+<td>最终的决策结果，例如“去打球”或“不去”</td>
+</tr>
+</tbody></table>
+<p>从根节点到某个叶节点，沿途的每一次判断连起来就是一次完整的推理，这条路径同时是模型给出该结论的依据。决策树的可解释性来自这里：每一步都是关于某个特征取值的判断，而不是多项加权求和。</p>
+<p>这一点与<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Logistic-Regression&#x2F;" class="wikilink">逻辑回归</a>形成对照。逻辑回归也输出一个概率，但概率来自全部特征权重的一次加权求和；要说明某个样本为什么被判成这一类，只能回到系数上逐个解释每个特征的贡献。树的判断路径不需要换算。</p>
+<h1 id="每次分裂的选择"><a href="#每次分裂的选择" class="headerlink" title="每次分裂的选择"></a>每次分裂的选择</h1><p>树的结构确定之后，预测就很直接：从根开始，每一步看一个特征，到达叶子就得到答案。真正的工作量在训练，而训练要解决的只有一个问题：当前这个节点该用哪个特征来问。天气、温度、湿度都能当候选，第一步选错，后面的分裂只能在次优的子集上补救。</p>
+<p>模型判断第一步该问天气还是温度，需要一个能比较两个候选划分好坏的数，这个数建立在纯度之上。</p>
+<h2 id="纯度"><a href="#纯度" class="headerlink" title="纯度"></a>纯度</h2><p><strong>纯度</strong>（Purity）衡量一个节点里的样本在类别上有多一致：全部同属一类时纯度最高，各类比例相等时不纯度最高。分裂的目的是让子节点比父节点更纯，一次分裂值不值得做，取决于划分把纯度提高了多少。</p>
+<p>纯度是判断标准，还不是可计算的量。下面两套指标都在做同一件事：把纯度换成数值。</p>
+<h2 id="熵"><a href="#熵" class="headerlink" title="熵"></a>熵</h2><p>熵（Entropy）衡量一个节点中各类别分布的混乱程度。记当前节点为 <script type="math/tex">D</script>，<script type="math/tex">K</script> 为类别数，<script type="math/tex">p_k</script> 为该节点中第 <script type="math/tex">k</script> 类样本的比例，熵定义为：</p>
+<script type="math/tex; mode=display">H(D) = -\sum_{k=1}^{K} p_k \log_2 p_k</script>
+<p>某一类的比例为 0 时约定 <script type="math/tex">0 \log 0 = 0</script>：这一类在节点里不出现，不贡献混乱程度。以 2 为底时，熵的单位是比特。</p>
+<p>两类各占一半（<script type="math/tex">p_1 = p_2 = 0.5</script>）时，<script type="math/tex">H = -(0.5 \times (-1) + 0.5 \times (-1)) = 1</script> 比特，这是两类问题里熵的最大值，也就是最难判断样本类别的状态。一类占满（<script type="math/tex">p_1 = 1</script>，其余为 0）时 <script type="math/tex">H = 0</script>，没有不确定性，最为纯净。</p>
+<p>计算开销落在对数上。建树时每评估一个候选划分，都要对每个子节点按类别算一遍 <script type="math/tex">p_k \log_2 p_k</script>；候选划分的数量随特征数与取值数增长，对数运算的次数随之增长。实际开销取决于实现与候选数量，对数运算通常是评估中较重的一环。</p>
+<h2 id="信息增益"><a href="#信息增益" class="headerlink" title="信息增益"></a>信息增益</h2><p>信息增益（Information Gain）定义为用某个特征分裂之后混乱程度下降了多少，也就是这次分裂消除了多少不确定性。按特征 <script type="math/tex">A</script> 把父节点 <script type="math/tex">D</script> 分成 <script type="math/tex">m</script> 个子节点 <script type="math/tex">D_1, \dots, D_m</script>，分裂后的混乱程度是各子节点的熵按样本比例加权求和：</p>
+<script type="math/tex; mode=display">H_{\text{after}}(D, A) = \sum_{i=1}^{m} \frac{|D_i|}{|D|} H(D_i)</script>
+<p>加权这一步不能省。子节点的样本数不同，一个只装三个样本的纯子节点和一个装了几百个样本的纯子节点，对父节点混乱程度的削减不同；用 <script type="math/tex">|D_i|/|D|</script> 把权重归一到 1，分裂后的值才与分裂前的熵在同一尺度上。</p>
+<script type="math/tex; mode=display">\mathrm{IG}(D, A) = H(D) - \sum_{i=1}^{m} \frac{|D_i|}{|D|} H(D_i)</script>
+<p>增益越大，说明这个特征把不同类别分开的能力越强。建树时对所有候选特征各算一次增益，取最大的那个去分裂。</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;decision-tree-split.svg">..&#x2F;assets&#x2F;decision-tree-split.svg</span></p>
+<h2 id="基尼不纯度"><a href="#基尼不纯度" class="headerlink" title="基尼不纯度"></a>基尼不纯度</h2><p>基尼不纯度（Gini Impurity）是另一套纯度度量，动机是计算更快：熵要为每个子节点算对数，基尼不纯度只用乘法和加法。基尼不纯度与经济学中衡量收入分配的基尼系数不是同一个指标，只是名称相近。</p>
+<p>直观含义可以一句话说清：随机从节点中抽取两个样本，两者属于不同类别的概率。抽完放回，两次抽取的分布相同。两次抽到同一类的概率是各类比例的平方和 <script type="math/tex">\sum_k p_k^2</script>，两次抽到不同类的概率是：</p>
+<script type="math/tex; mode=display">Gini(D) = 1 - \sum_{k=1}^{K} p_k^2</script>
+<p>另一种写法从第一个样本出发：第一个样本属于第 <script type="math/tex">k</script> 类而第二个不属于，概率是 <script type="math/tex">p_k(1 - p_k)</script>，对 <script type="math/tex">k</script> 求和即两次抽到不同类的概率：</p>
+<script type="math/tex; mode=display">Gini(D) = \sum_{k=1}^{K} p_k(1 - p_k)</script>
+<p>两式恒等，因为 <script type="math/tex">\sum_k p_k = 1</script>：把第二式展开成 <script type="math/tex">\sum_k p_k - \sum_k p_k^2</script>，第一项正是 1。两条公式表达的是同一个量的两种写法，不是两式相除。</p>
+<p>用具体的分布验算。两类各占一半时 <script type="math/tex">p_1 = p_2 = 0.5</script>：第一式给 <script type="math/tex">1 - (0.25 + 0.25) = 0.5</script>，第二式给 <script type="math/tex">0.5 \times 0.5 + 0.5 \times 0.5 = 0.5</script>。按概率直接算也一样：先抽到第一类再抽到第二类的概率是 <script type="math/tex">0.5 \times 0.5 = 0.25</script>，顺序反过来再得 0.25，合计 0.5。</p>
+<p>一类占满时 <script type="math/tex">p_1 = 1</script>，其余为 0：第一式给 <script type="math/tex">1 - 1 = 0</script>，抽两次必然同类，概率为 0，节点完全纯净。</p>
+<p>再看三类等分，<script type="math/tex">p_1 = p_2 = p_3 = 1/3</script>：第一式给 <script type="math/tex">1 - 3 \times (1/9) = 2/3</script>，两次抽到同类的概率是 <script type="math/tex">3 \times (1/9) = 1/3</script>，不同类就是 <script type="math/tex">2/3</script>。同样的均匀分布，类别越多这个值越大：两类最多 0.5，三类最多 2&#x2F;3，所以跨不同类别数的节点不能直接比较基尼不纯度。</p>
+<p>实践中更常用基尼不纯度，原因在计算：只有乘法和加法，没有对数；建树时每个候选划分都要算一次。scikit-learn 的决策树（CART 算法）默认指标是基尼不纯度。使用时该值越小，节点越纯。</p>
+<h2 id="两种指标的取舍"><a href="#两种指标的取舍" class="headerlink" title="两种指标的取舍"></a>两种指标的取舍</h2><p>两套指标的形状接近：都在纯净时取 0，都在均匀分布时取最大，在多数节点上选出的划分相同。差别在尺度和代价上：</p>
+<table>
+<thead>
+<tr>
+<th>对照项</th>
+<th>熵</th>
+<th>基尼不纯度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>衡量的东西</td>
+<td>节点中类别分布的混乱程度</td>
+<td>随机抽两个样本、类别不同的概率</td>
+</tr>
+<tr>
+<td>两类各半时的取值</td>
+<td>1 比特</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>均匀分布时的最大</td>
+<td><script type="math/tex">\log_2 K</script>，随类别数增长较快</td>
+<td><script type="math/tex">1 - 1/K</script>，增长较慢</td>
+</tr>
+<tr>
+<td>单次计算</td>
+<td>每类一次对数</td>
+<td>每类一次乘法与加法</td>
+</tr>
+<tr>
+<td>适用场合</td>
+<td>需要与信息论的量对照、要解释“消除了多少不确定性”时用</td>
+<td>大规模建树的默认，速度优先时用</td>
+</tr>
+</tbody></table>
+<p>分工大致如此：需要把“这个特征消除了多少不确定性”讲清楚，就用熵与信息增益；需要在一批候选特征里快速比较，就用基尼不纯度。两套指标的尺度不同，因此在同一个节点上可能选出不同的划分，树的结构不保证完全一致。</p>
+<h1 id="建树的递归算法"><a href="#建树的递归算法" class="headerlink" title="建树的递归算法"></a>建树的递归算法</h1><p>指标确定之后，建树是一个递归过程：在当前节点上选一个特征划分，再对划分出的每一部分重复同样的事。下面五步是一个节点上要做完的全部工作。</p>
+<ol>
+<li>计算指标：在当前节点上，分别用每一个可用特征划分，算出各子节点按样本比例加权后的基尼不纯度。</li>
+<li>选择最优：取划分后基尼不纯度最小、也就是纯度提升最大的那个特征。</li>
+<li>分裂数据：按该特征的不同取值把样本分成若干份，每一份成为一个子节点。</li>
+<li>递归生长：对每个子节点重复上述过程，继续向下生长。</li>
+<li>生成叶节点：满足停止条件时不再分裂，确定该节点的最终预测结果。</li>
+</ol>
+<p>第一步算出每个候选划分的指标，第二步在这些数里取最小；第三步只按选中特征的取值分样本，其他特征不参与；第四步把前三步交给每个子节点，子节点只使用自身那份样本。</p>
+<p>递归必须有出口。节点的样本已经同属一类时，熵与基尼不纯度都已到 0，再分不会带来提升；找不到能让纯度提升的划分时，继续分只会把样本摊薄成孤点。这两种情况下当前节点直接变成叶节点，用样本中占多数的类别作为预测结果。</p>
+<h1 id="剪枝"><a href="#剪枝" class="headerlink" title="剪枝"></a>剪枝</h1><p>不加约束时，决策树会为把每一个异常值都分对而长出大量分支：某条分支只为那一个离群样本存在，叶节点只包含该样本。这样的树在训练集上几乎不出错，但那些分支描述的是这一批样本的偶然，对新样本的预测能力可能下降，这种现象称为过拟合。</p>
+<p>对策是剪掉多余细节，保留核心结构。按动手的时机，剪枝分两类。</p>
+<h2 id="预剪枝"><a href="#预剪枝" class="headerlink" title="预剪枝"></a>预剪枝</h2><p>预剪枝（Pre-pruning）在树向下生长的过程中提前设定规则，触及规则就停止。常用的两条规则是限制最大深度（max_depth）和限制叶节点最少样本数。</p>
+<p>这种方式实现简单、计算量小，工业界广泛使用：规则在分裂之前就起作用，不需要先生成一棵大树，深度与叶节点样本数都是建树时可直接检查的量。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">预剪枝看不到深处的收益</span></div>
+<div class="callout-content"><p>代价来自规则的短视。规则只看当前节点；当前这次分裂看起来不值得做，不等于再往下两层不会出现有价值的划分。预剪枝在那一刻停止，深处的结构再也长不出来。预剪枝的判断是对未来的估计，不是对完整树实际表现的比较。</p>
+</div>
+</div>
+<h2 id="后剪枝"><a href="#后剪枝" class="headerlink" title="后剪枝"></a>后剪枝</h2><p>后剪枝（Post-pruning）先让树生长到最大，再从下往上检查，把某个子树换成一个叶节点，比较换掉前后的误差；误差不变或更小就剪掉这个子树。</p>
+<p>判断因此发生在完整树的实际表现上：子树有多深、切出了哪些分支都已知道，剪与不剪可以真正比较一次。这使判断依据更充分，但不保证剪枝后的树一定更好；如果用于比较的验证数据与真实分布有偏差，剪枝结果同样可能偏离。</p>
+<p>代价是计算。必须先生成一棵完整的树，再对每个子树做一次替换检查，大数据下这个成本可能超过剪枝带来的收益，这也是工业界仍然大量使用预剪枝的原因。</p>
+<table>
+<thead>
+<tr>
+<th>对照项</th>
+<th>预剪枝</th>
+<th>后剪枝</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>动手时机</td>
+<td>生长过程中，规则一触发就停</td>
+<td>树长到最大之后，从下往上回剪</td>
+</tr>
+<tr>
+<td>判断依据</td>
+<td>最大深度、叶节点最少样本数这类预设规则</td>
+<td>把子树换成叶节点前后的误差比较</td>
+</tr>
+<tr>
+<td>计算成本</td>
+<td>低，不必生成完整树</td>
+<td>高，要先生成完整树再逐个检查子树</td>
+</tr>
+<tr>
+<td>主要问题</td>
+<td>规则看不到深处的收益，可能过早停止</td>
+<td>大数据下耗时，成本可能超过收益</td>
+</tr>
+</tbody></table>
+<h1 id="表格数据的基线"><a href="#表格数据的基线" class="headerlink" title="表格数据的基线"></a>表格数据的基线</h1><div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">表格数据先建立一棵树作为参照</span></div>
+<div class="callout-content"><p>实战经验：表格数据先建立一个树模型基线，通常是稳妥的起点。这里的基线指一个简单、稳定、结果可复现的参照模型，后续更复杂的模型与这个参照比较；表格数据则是每行一个样本、每列一个特征的数据，连续特征通常可直接使用，类别特征是否需要编码取决于具体实现。</p>
+</div>
+</div>
+<p>第一件是成本。建树只用到比较与乘加，常用的超参数包括深度、叶节点最少样本数和划分指标，执行一次就有结果，建立参照的代价很低。</p>
+<p>第二件是预处理。分裂按阈值切分，特征的量纲不影响切在哪里，所以<a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Data-Preprocessing&#x2F;" class="wikilink">标准化</a>对树不是必需的一步；线性模型通常要先做缩放才能稳定训练。</p>
+<p>第三件是可解释。<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Model-Evaluation&#x2F;" class="wikilink">评估</a>时，参照模型有助于判断指标变化的实际意义，树给出的正是一个可以逐条读的参照；路径还能当检查工具：如果树把一个业务上明显无关的列放在根节点，多半是数据泄漏或编码错误。</p>
+<p>基线不是终点。单棵树的方差偏大，样本换一批，结构就可能变；基线不足时，可以改用<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Ensemble-Learning&#x2F;" class="wikilink">集成方法</a>。换用更复杂的模型之前，先用同一份评估数据确认新模型相对这棵树的差距，否则多出来的复杂度只增加维护成本。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/09/Decision-Tree/">https://eliano64.github.io/2026/10/09/Decision-Tree/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/09/Logistic-Regression/" title="Logistic Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Logistic Regression</div></div><div class="info-2"><div class="info-item-1">预测房价、预测温度这类任务回答的是“多少”。把一封邮件分成垃圾邮件与正常邮件、把一张影像分成恶性与良性、判断一个用户会不会点击广告，回答的却是“属于哪一类”。后一类任务的输出是有限集合里的离散标签，标签之间既没有大小也没有距离，用线性回归直接拟合，从输出范围到对异常值的敏感性都会出问题。 把类别编码成 0 和 1、直接套线性回归、再用 0.5 当分界，是最直接的想法。这个做法在两处失效：输出可以落在 0 到 1 之外，一个极端样本也能把整条分界线拉歪。 逻辑回归的改法只动输出端：保留线性部分，接sigmoid 函数，将任意实数映射到 (0,1)，让模型直接给出概率。 输出变成概率之后，损失函数、梯度形式与评估方式都跟着变：均方误差在概率输出上梯度性质差，常用做法是换成从最大似然推出的交叉熵；评估不能只看准确率；类别多于两个时 sigmoid 换成 softmax。 从回归到分类分类任务分类（Classification）指输出离散标签的任务：候选类别有限、互斥，每个样本恰好属于其中一个。类别数为 2 时叫二分类，多于 2...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">集成学习的思路决策树给出的是一串可以直接读出的规则：年龄大于 30，收入低于 5000，就分到这一类。规则可读，代价是对具体样本过分敏感。训练集里少一个样本，或者某个特征取值稍微变动，整棵树的结构就可能改变。 集成学习不试图把单棵树做得更稳，而是承认单棵树会出错，让许多棵各自不完美的树共同给出预测。这条路上有两条分支：让树彼此独立地生长，最后汇总结果，代表是随机森林；让树一棵接一棵地修正前一轮的误差，代表是梯度提升树。 为什么需要集成单棵树的脆弱决策树的划分准则与剪枝在 Decision-Tree...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/27/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">数据准备训练前需要划分数据、估计预处理参数，再将处理后的数组转为张量批次。以下接口分别处理数值表示、预处理和批次装载。 形状记号中，N 表示样本数，D 表示输入特征数，K 表示输出特征数，C 表示类别数。dtype 表示元素类型，device 表示张量所在的计算设备。 NumPy 构造与属性1234import numpy as nprng = np.random.default_rng(0)X = rng.normal(size=(4, 3))        # 浮点，形状 [4, 3]i = np.arange(6).reshape(2, 3)     # 整数，形状 [2, 3]  np.array(data) 可将列表等序列转为数组，dtype 默认由元素推断：整数列表得到整数数组，含浮点得到浮点数组。np.zeros、np.ones 可以传 dtype；rng.normal 不接受 dtype 参数，得到 float64，需要单精度时用 .astype(np.float32)。shape、dtype、ndim...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Data-Preprocessing/" title="Data Preprocessing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Data Preprocessing</div></div><div class="info-2"><div class="info-item-1"> Cite Garbage in, garbage out.   真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。 预处理是模型的一部分，决定了模型能看见什么：一列缺失超过七成的特征是留着还是删掉，一个无序的港口名是编成 0、1、2 还是拆成三列...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">集成学习的思路决策树给出的是一串可以直接读出的规则：年龄大于 30，收入低于 5000，就分到这一类。规则可读，代价是对具体样本过分敏感。训练集里少一个样本，或者某个特征取值稍微变动，整棵树的结构就可能改变。 集成学习不试图把单棵树做得更稳，而是承认单棵树会出错，让许多棵各自不完美的树共同给出预测。这条路上有两条分支：让树彼此独立地生长，最后汇总结果，代表是随机森林；让树一棵接一棵地修正前一轮的误差，代表是梯度提升树。 为什么需要集成单棵树的脆弱决策树的划分准则与剪枝在 Decision-Tree...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">线性回归模型的训练对于线性回归模型，n 个样本、d 个特征写成设计矩阵 \mathbf{X} \in \mathbb{R}^{n \times d}，第 i 行是第 i 个样本的特征 \boldsymbol{x}_i^{\top}；标签是向量 \boldsymbol{y} \in \mathbb{R}^{n}。参数是权重 \boldsymbol{\theta} \in \mathbb{R}^{d} 与偏置 \boldsymbol{b} \in \mathbb{R}^{n}，预测写成 \hat{\boldsymbol{y}} = \mathbf{X} \boldsymbol{\theta} + \boldsymbol{b} 偏置向量的每个分量都是同一个数 b，即 \boldsymbol{b} = b\boldsymbol{1}（\boldsymbol{1} \in \mathbb{R}^{n} 是全 1 向量），加到每个样本上的是同一个值。  为什么偏置的分量都是同一个数 如果让这些值各不相同，等于给每个样本单独配一个截距。样本一共只有 n...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归的位置监督学习里，标签是连续数值时（房价、温度、销量），任务要回答的是“给定这些特征，输出是多少”，这一类任务称为回归，整个监督学习的版图见 Machine-Learning-Overview。线性回归（Linear Regression）是最简单的一种做法：把输出写成特征的加权和。特征是描述一个样本的各个属性，例如面积与房龄。名字里有两件事值得拆开：“线性”规定模型的形式，“回归”交代任务的类型。 线性回归先是一个模型，其次才是一套训练方法。下文只处理前一半：模型的形式怎么定，好坏怎么量，参数怎么解出来。把损失逐步降下去的过程见 Gradient-Descent。 什么算线性数学上的线性描述按比例变化、可叠加的关系。一个映射 f 满足两条性质就称为线性：输入放大 a 倍，输出也放大 a 倍，即 f(a\boldsymbol{x}) = a f(\boldsymbol{x})，这条叫齐次性；两个输入叠加后的输出等于各自输出之和，即 f(\boldsymbol{x} + \boldsymbol{z}) = f(\boldsymbol{x}) +...</div></div></div></a><a class="pagination-related" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="info-item-2">Machine Learning Overview</div></div><div class="info-2"><div class="info-item-1">人工智能与机器学习人工智能（Artificial Intelligence，AI）研究如何让计算机完成感知、学习、推理与决策这类任务。人工编写的规则系统与从数据训练出的系统都属于 AI。 机器学习（Machine Learning，ML）是 AI 中从数据学习参数或规则、用于预测或决策的部分。 深度学习（Deep Learning，DL）是机器学习的一个子集，用多层神经网络从输入逐层构造表示。这里的表示可由网络学习，输入可以是原始像素、波形或文本。 主流大语言模型（Large Language Model，LLM）使用多层神经网络，通常以 Transformer 为基础，学习根据已有上下文预测下一个词元。 !..&#x2F;assets&#x2F;machine-learning-scope.svg 空间智能与世界模型空间智能指在空间中感知、推理并行动的能力，需要处理距离、速度、重力这类几何与物理量。 世界模型学习环境的时空表示，根据历史状态、当前状态与动作预测后续状态，并支持策略学习与规划（World...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="toc-text">决策树的位置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B1%82%E5%B1%82%E6%8F%90%E9%97%AE%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">层层提问的结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AF%8F%E6%AC%A1%E5%88%86%E8%A3%82%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-text">每次分裂的选择</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%AF%E5%BA%A6"><span class="toc-text">纯度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%86%B5"><span class="toc-text">熵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A"><span class="toc-text">信息增益</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E5%B0%BC%E4%B8%8D%E7%BA%AF%E5%BA%A6"><span class="toc-text">基尼不纯度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E7%A7%8D%E6%8C%87%E6%A0%87%E7%9A%84%E5%8F%96%E8%88%8D"><span class="toc-text">两种指标的取舍</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BB%BA%E6%A0%91%E7%9A%84%E9%80%92%E5%BD%92%E7%AE%97%E6%B3%95"><span class="toc-text">建树的递归算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%AA%E6%9E%9D"><span class="toc-text">剪枝</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%84%E5%89%AA%E6%9E%9D"><span class="toc-text">预剪枝</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E5%89%AA%E6%9E%9D"><span class="toc-text">后剪枝</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A1%A8%E6%A0%BC%E6%95%B0%E6%8D%AE%E7%9A%84%E5%9F%BA%E7%BA%BF"><span class="toc-text">表格数据的基线</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

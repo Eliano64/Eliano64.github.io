@@ -1,0 +1,340 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Machine Learning Overview | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="人工智能与机器学习人工智能（Artificial Intelligence，AI）研究如何让计算机完成感知、学习、推理与决策这类任务。人工编写的规则系统与从数据训练出的系统都属于 AI。 机器学习（Machine Learning，ML）是 AI 中从数据学习参数或规则、用于预测或决策的部分。 深度学习（Deep Learning，DL）是机器学习的一个子集，用多层神经网络从输入逐层构造表示。这里">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Machine Learning Overview">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/05/Machine-Learning-Overview/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="人工智能与机器学习人工智能（Artificial Intelligence，AI）研究如何让计算机完成感知、学习、推理与决策这类任务。人工编写的规则系统与从数据训练出的系统都属于 AI。 机器学习（Machine Learning，ML）是 AI 中从数据学习参数或规则、用于预测或决策的部分。 深度学习（Deep Learning，DL）是机器学习的一个子集，用多层神经网络从输入逐层构造表示。这里">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-05T11:26:04.000Z">
+<meta property="article:modified_time" content="2026-10-28T04:44:53.946Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="MachineLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Machine Learning Overview",
+  "url": "https://eliano64.github.io/2026/10/05/Machine-Learning-Overview/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-05T11:26:04.000Z",
+  "dateModified": "2026-10-28T04:44:53.946Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/05/Machine-Learning-Overview/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Machine Learning Overview',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Machine Learning Overview</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Machine Learning Overview</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-05T11:26:04.000Z" title="发表于 2026-10-05 19:26:04">2026-10-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="人工智能与机器学习"><a href="#人工智能与机器学习" class="headerlink" title="人工智能与机器学习"></a>人工智能与机器学习</h1><p>人工智能（Artificial Intelligence，AI）研究如何让计算机完成感知、学习、推理与决策这类任务。人工编写的规则系统与从数据训练出的系统都属于 AI。</p>
+<p>机器学习（Machine Learning，ML）是 AI 中从数据学习参数或规则、用于预测或决策的部分。</p>
+<p>深度学习（Deep Learning，DL）是机器学习的一个子集，用多层神经网络从输入逐层构造表示。这里的表示可由网络学习，输入可以是原始像素、波形或文本。</p>
+<p>主流大语言模型（Large Language Model，LLM）使用多层神经网络，通常以 Transformer 为基础，学习根据已有上下文预测下一个词元。</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;machine-learning-scope.svg">..&#x2F;assets&#x2F;machine-learning-scope.svg</span></p>
+<h2 id="空间智能与世界模型"><a href="#空间智能与世界模型" class="headerlink" title="空间智能与世界模型"></a>空间智能与世界模型</h2><p>空间智能指在空间中感知、推理并行动的能力，需要处理距离、速度、重力这类几何与物理量。</p>
+<p>世界模型学习环境的时空表示，根据历史状态、当前状态与动作预测后续状态，并支持策略学习与规划（<a target="_blank" rel="noopener" href="https://worldmodels.github.io/">World Models</a>）。例如预测物体被推动后的位置与姿态，再比较不同动作的推演结果。世界模型与空间智能不是同义词：空间智能描述一类能力，世界模型是支撑这类能力的一种方法，具体的预测式实现只是其中一种架构。</p>
+<p>语言模型预测下一个词元，世界模型通常预测环境状态或观测以及动作的后果。两类目标可以在多模态系统中并存，不是互斥的分类。世界模型的价值在预测未来与比较行动方案，代价是预测误差随推演累积，环境改变后需要更新。</p>
+<h1 id="数据、特征与标签"><a href="#数据、特征与标签" class="headerlink" title="数据、特征与标签"></a>数据、特征与标签</h1><p>每一次观测或一个对象的记录称为<strong>样本</strong> ，所有取得的样本组成数据集。样本的输入变量称为<strong>特征</strong>，监督学习任务中待预测的目标称为<strong>标签</strong>。</p>
+<p>例如预测房价时，一条包含面积、房龄、到地铁距离、成交价等信息的房源记录是一个样本，面积、房龄、到地铁距离是特征，成交价是标签。特征与标签由任务决定，与记录中的排列位置无关。</p>
+<p>传统机器学习通常先人工选择或构造特征：判断哪些列有用、如何组合出新的列，模型再在选好的特征上拟合参数。决策树等方法虽能自动挑选部分特征，但可用的特征集合仍由人给定。</p>
+<p>深度学习能自动学习表示：输入可以是像素或波形，网络逐层组合出更抽象的表示。即便如此，数据采集、模型结构与训练设置仍需人设计。</p>
+<p>输入向量的分量个数称为输入维度。类别特征要先编码成数值，编码后的维度可能与原始列数不同，细节在 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Data-Preprocessing&#x2F;" class="wikilink">Data-Preprocessing</a>。</p>
+<p>训练阶段从带标签的样本学习特征到标签的映射；预测阶段把学到的映射应用到未见样本，由输入特征给出输出。没有标签时，可以先做无监督分析，看数据内部的结构。</p>
+<h1 id="模型与学习算法"><a href="#模型与学习算法" class="headerlink" title="模型与学习算法"></a>模型与学习算法</h1><p>模型是选定的函数形式加上一组参数，例如线性回归的系数、决策树的分裂规则。学习算法是拟合这些参数或规则的步骤，例如最小二乘、梯度下降、树的分裂准则。同一个算法换一份数据，得到的是不同的模型；同一个模型形式也可以用不同算法拟合。</p>
+<p>“线性回归”既可以指模型形式，也可以指最小二乘拟合这种做法，读到时要看上下文指的是哪一层。</p>
+<p>模型参数在训练中拟合得到。超参数控制模型或训练设置，由人在训练前设定，并借助验证集选择或搜索，例如学习率与树的最大深度。</p>
+<h1 id="一次训练"><a href="#一次训练" class="headerlink" title="一次训练"></a>一次训练</h1><p>以线性回归为例。模型为：</p>
+<script type="math/tex; mode=display">\hat{y}=\theta x+b</script>
+<p>其中 <script type="math/tex">x</script> 是输入特征，<script type="math/tex">\hat{y}</script> 是预测值，<script type="math/tex">\theta</script> 与 <script type="math/tex">b</script> 是待拟合的参数。取两个样本 <script type="math/tex">(1,3)</script> 与 <script type="math/tex">(2,5)</script>，用均方误差作为损失：</p>
+<script type="math/tex; mode=display">L=\frac{1}{n}\sum_{i=1}^{n}(\hat{y}_i-y_i)^2</script>
+<p><script type="math/tex">n</script> 是样本数，<script type="math/tex">y_i</script> 是真实标签，<script type="math/tex">L</script> 是平均平方误差。学习率取 0.2，初值 <script type="math/tex">\theta=b=0</script>。</p>
+<p>梯度是把损失对各参数的偏导放在一起构成的向量，指向损失增长最快的方向。可微模型的训练分三步：</p>
+<ol>
+<li>前向传播：用当前参数算出预测与损失。</li>
+<li>反向传播：用链式法则求损失对每个参数的偏导，得到梯度。</li>
+<li>参数更新：按梯度反方向调整参数，学习率控制更新幅度。</li>
+</ol>
+<p>树模型没有这样一组可导参数，靠分裂规则选择结构，不经过这条反向路径。</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;machine-learning-training-loop.svg">..&#x2F;assets&#x2F;machine-learning-training-loop.svg</span></p>
+<p>上面的图逐步列出三轮的预测、梯度与更新结果。训练可以按固定轮数停止，也可以依据验证集表现停止。梯度、学习率与优化器的更多做法见 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Gradient-Descent&#x2F;" class="wikilink">Gradient-Descent</a>。</p>
+<h1 id="学习设置"><a href="#学习设置" class="headerlink" title="学习设置"></a>学习设置</h1><p>常见设置有三类：监督学习、无监督学习与强化学习。</p>
+<h2 id="监督学习"><a href="#监督学习" class="headerlink" title="监督学习"></a>监督学习</h2><p>每个样本都带标签，模型学特征到标签的映射。标签是连续数值时任务叫回归，例如预测房价；标签是离散类别时任务叫分类，例如判断邮件是否为垃圾邮件。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">自监督</span></div>
+<div class="callout-content"><p>自监督从数据本身构造监督信号。语言模型用此前已经出现的上下文预测下一个词元，标签来自后续文本，不需要人工标注。这也是大语言模型能够利用大规模无标注文本的原因。</p>
+</div>
+</div>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">常见监督学习流程</span></div>
+<div class="callout-content"></div>
+</div>
+<p>监督学习的工程流程分四步。</p>
+<blockquote>
+<ol>
+<li>定义任务与指标：明确预测对象与成功标准。回归与分类对应不同的指标，指标用于评估与比较，划分方式则取决于任务与部署时的数据采样结构。</li>
+<li>划分数据：训练集用来学参数，验证集用来选模型与调参，测试集只用于最后估计泛化能力。泛化指模型在未见数据上的表现。清洗、编码、标准化的参数只在训练集上估计，再应用到验证集与测试集，避免信息泄漏。样本少时可用交叉验证。</li>
+<li>训练与诊断：训练集上都没学好叫欠拟合，把训练噪声也学进去叫过拟合。用验证集或测试集估计泛化能力；调的是超参数，不是训练得到的参数；测试集不能反复用来调参。</li>
+<li>上线与监控：部署后监控数据漂移，数据分布改变时回收反馈并周期性重训。评估指标的读法见 <a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Model-Evaluation&#x2F;" class="wikilink">Model-Evaluation</a>，数据处理的细节见 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Data-Preprocessing&#x2F;" class="wikilink">Data-Preprocessing</a>。</li>
+</ol>
+</blockquote>
+<h2 id="无监督学习"><a href="#无监督学习" class="headerlink" title="无监督学习"></a>无监督学习</h2><p>没有标签时，模型从数据内部找结构。聚类按相似度把样本分组，簇的语义要人事后解释；得到的组不自动等于业务上有效的用户类别。</p>
+<p>降维把冗余的高维特征压缩成较少的维度，例如用主成分分析得到综合指标；主成分也不自动具有可命名的含义。更多做法见 <a href="&#x2F;2026&#x2F;10&#x2F;10&#x2F;Unsupervised-Learning&#x2F;" class="wikilink">Unsupervised-Learning</a>。</p>
+<h2 id="强化学习"><a href="#强化学习" class="headerlink" title="强化学习"></a>强化学习</h2><p>智能体在环境中采取动作，环境给出奖励，目标是让长期累计奖励最大。策略描述在什么状态下选哪个动作。奖励是反馈信号，不一定是每一步都正确的判据：奖励可能稀疏、延迟，甚至只在一段交互结束后才结算。</p>
+<p>例如机器人导航中，状态是位置与朝向，动作是移动指令，奖励在到达目标时给出。若用已有日志离线训练，未覆盖状态上的策略表现无法保证。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/05/Machine-Learning-Overview/">https://eliano64.github.io/2026/10/05/Machine-Learning-Overview/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/15/Python-Environment-Management/" title="Python Environment Management"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Python Environment Management</div></div><div class="info-2"><div class="info-item-1">pip installpip install 默认装进当前解释器所在的 site-packages。系统解释器或 Anaconda 的 base 环境被所有项目共用，误装一次就会影响其它项目，所以先确认当前解释器是哪一个： 1python -c &quot;import sys; print(sys.executable)&quot;  .venv1python -m venv .venv      # 在项目根目录建立 .venv  激活命令随平台不同，Windows 下 venv 会同时生成三个激活脚本：    平台 激活命令    Windows PowerShell .\.venv\Scripts\Activate.ps1   Windows cmd .venv\Scripts\activate.bat   Git Bash、Linux、macOS source .venv/bin/activate   退出环境用 deactivate。 激活后应当确认解释器确实换了： 1python -c &quot;import sys;...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归的位置监督学习里，标签是连续数值时（房价、温度、销量），任务要回答的是“给定这些特征，输出是多少”，这一类任务称为回归，整个监督学习的版图见 Machine-Learning-Overview。线性回归（Linear Regression）是最简单的一种做法：把输出写成特征的加权和。特征是描述一个样本的各个属性，例如面积与房龄。名字里有两件事值得拆开：“线性”规定模型的形式，“回归”交代任务的类型。 线性回归先是一个模型，其次才是一套训练方法。下文只处理前一半：模型的形式怎么定，好坏怎么量，参数怎么解出来。把损失逐步降下去的过程见 Gradient-Descent。 什么算线性数学上的线性描述按比例变化、可叠加的关系。一个映射 f 满足两条性质就称为线性：输入放大 a 倍，输出也放大 a 倍，即 f(a\boldsymbol{x}) = a f(\boldsymbol{x})，这条叫齐次性；两个输入叠加后的输出等于各自输出之和，即 f(\boldsymbol{x} + \boldsymbol{z}) = f(\boldsymbol{x}) +...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/27/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">数据准备训练前需要划分数据、估计预处理参数，再将处理后的数组转为张量批次。以下接口分别处理数值表示、预处理和批次装载。 形状记号中，N 表示样本数，D 表示输入特征数，K 表示输出特征数，C 表示类别数。dtype 表示元素类型，device 表示张量所在的计算设备。 NumPy 构造与属性1234import numpy as nprng = np.random.default_rng(0)X = rng.normal(size=(4, 3))        # 浮点，形状 [4, 3]i = np.arange(6).reshape(2, 3)     # 整数，形状 [2, 3]  np.array(data) 可将列表等序列转为数组，dtype 默认由元素推断：整数列表得到整数数组，含浮点得到浮点数组。np.zeros、np.ones 可以传 dtype；rng.normal 不接受 dtype 参数，得到 float64，需要单精度时用 .astype(np.float32)。shape、dtype、ndim...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Data-Preprocessing/" title="Data Preprocessing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Data Preprocessing</div></div><div class="info-2"><div class="info-item-1"> Cite Garbage in, garbage out.   真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。 预处理是模型的一部分，决定了模型能看见什么：一列缺失超过七成的特征是留着还是删掉，一个无序的港口名是编成 0、1、2 还是拆成三列...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Decision-Tree/" title="Decision Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Decision Tree</div></div><div class="info-2"><div class="info-item-1">决策树的位置逻辑回归这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。 这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有多一致）。 层层提问的结构决策树（Decision...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">集成学习的思路决策树给出的是一串可以直接读出的规则：年龄大于 30，收入低于 5000，就分到这一类。规则可读，代价是对具体样本过分敏感。训练集里少一个样本，或者某个特征取值稍微变动，整棵树的结构就可能改变。 集成学习不试图把单棵树做得更稳，而是承认单棵树会出错，让许多棵各自不完美的树共同给出预测。这条路上有两条分支：让树彼此独立地生长，最后汇总结果，代表是随机森林；让树一棵接一棵地修正前一轮的误差，代表是梯度提升树。 为什么需要集成单棵树的脆弱决策树的划分准则与剪枝在 Decision-Tree...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">线性回归模型的训练对于线性回归模型，n 个样本、d 个特征写成设计矩阵 \mathbf{X} \in \mathbb{R}^{n \times d}，第 i 行是第 i 个样本的特征 \boldsymbol{x}_i^{\top}；标签是向量 \boldsymbol{y} \in \mathbb{R}^{n}。参数是权重 \boldsymbol{\theta} \in \mathbb{R}^{d} 与偏置 \boldsymbol{b} \in \mathbb{R}^{n}，预测写成 \hat{\boldsymbol{y}} = \mathbf{X} \boldsymbol{\theta} + \boldsymbol{b} 偏置向量的每个分量都是同一个数 b，即 \boldsymbol{b} = b\boldsymbol{1}（\boldsymbol{1} \in \mathbb{R}^{n} 是全 1 向量），加到每个样本上的是同一个值。  为什么偏置的分量都是同一个数 如果让这些值各不相同，等于给每个样本单独配一个截距。样本一共只有 n...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归的位置监督学习里，标签是连续数值时（房价、温度、销量），任务要回答的是“给定这些特征，输出是多少”，这一类任务称为回归，整个监督学习的版图见 Machine-Learning-Overview。线性回归（Linear Regression）是最简单的一种做法：把输出写成特征的加权和。特征是描述一个样本的各个属性，例如面积与房龄。名字里有两件事值得拆开：“线性”规定模型的形式，“回归”交代任务的类型。 线性回归先是一个模型，其次才是一套训练方法。下文只处理前一半：模型的形式怎么定，好坏怎么量，参数怎么解出来。把损失逐步降下去的过程见 Gradient-Descent。 什么算线性数学上的线性描述按比例变化、可叠加的关系。一个映射 f 满足两条性质就称为线性：输入放大 a 倍，输出也放大 a 倍，即 f(a\boldsymbol{x}) = a f(\boldsymbol{x})，这条叫齐次性；两个输入叠加后的输出等于各自输出之和，即 f(\boldsymbol{x} + \boldsymbol{z}) = f(\boldsymbol{x}) +...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E4%B8%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0"><span class="toc-text">人工智能与机器学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A9%BA%E9%97%B4%E6%99%BA%E8%83%BD%E4%B8%8E%E4%B8%96%E7%95%8C%E6%A8%A1%E5%9E%8B"><span class="toc-text">空间智能与世界模型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E3%80%81%E7%89%B9%E5%BE%81%E4%B8%8E%E6%A0%87%E7%AD%BE"><span class="toc-text">数据、特征与标签</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95"><span class="toc-text">模型与学习算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E8%AE%AD%E7%BB%83"><span class="toc-text">一次训练</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%AE%BE%E7%BD%AE"><span class="toc-text">学习设置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="toc-text">监督学习</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="toc-text">无监督学习</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0"><span class="toc-text">强化学习</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

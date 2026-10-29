@@ -1,0 +1,464 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Model Evaluation | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="在比较模型性能之前，先要有一个基线模型作为比较的参照系。基线模型（Baseline）指第一个快速实现、结构相对简单但流程完整的模型：数据怎么读、怎么划分、指标怎么算都已经能完整执行，只把模型的表达力压到最低。基线的价值不在精度，而在建立参照系。 训练模型为的是让模型抓住数据背后的规律，从而对从未见过的新数据也给出准确预测，这种能力叫泛化能力。测试集只是“没见过的新数据”的一次抽样，测试集给出的数字">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Model Evaluation">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/09/Model-Evaluation/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="在比较模型性能之前，先要有一个基线模型作为比较的参照系。基线模型（Baseline）指第一个快速实现、结构相对简单但流程完整的模型：数据怎么读、怎么划分、指标怎么算都已经能完整执行，只把模型的表达力压到最低。基线的价值不在精度，而在建立参照系。 训练模型为的是让模型抓住数据背后的规律，从而对从未见过的新数据也给出准确预测，这种能力叫泛化能力。测试集只是“没见过的新数据”的一次抽样，测试集给出的数字">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-09T14:54:54.000Z">
+<meta property="article:modified_time" content="2026-10-27T06:57:33.797Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="MachineLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Model Evaluation",
+  "url": "https://eliano64.github.io/2026/10/09/Model-Evaluation/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-09T14:54:54.000Z",
+  "dateModified": "2026-10-27T06:57:33.797Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/09/Model-Evaluation/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Model Evaluation',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Model Evaluation</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Model Evaluation</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-09T14:54:54.000Z" title="发表于 2026-10-09 22:54:54">2026-10-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-27T06:57:33.797Z" title="更新于 2026-10-27 14:57:33">2026-10-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.6k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>在比较模型性能之前，先要有一个基线模型作为比较的参照系。基线模型（Baseline）指第一个快速实现、结构相对简单但流程完整的模型：数据怎么读、怎么划分、指标怎么算都已经能完整执行，只把模型的表达力压到最低。基线的价值不在精度，而在建立参照系。</p>
+<p>训练模型为的是让模型抓住数据背后的规律，从而对从未见过的新数据也给出准确预测，这种能力叫<strong>泛化能力</strong>。测试集只是“没见过的新数据”的一次抽样，测试集给出的数字既是性能的估计，也带着抽样本身的偶然性。</p>
+<h1 id="评估基准与回归指标"><a href="#评估基准与回归指标" class="headerlink" title="评估基准与回归指标"></a>评估基准与回归指标</h1><p>评估在测试集上完成，指标算的是预测值与真实值之间的差距。本节只处理回归任务。分类任务关心的是混淆矩阵、精确率、召回率、F1、ROC 与 AUC，那套指标的前提是预测输出为类别或概率，放在 <a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Logistic-Regression&#x2F;" class="wikilink">逻辑回归</a> 里讲。</p>
+<h2 id="Baseline-的作用"><a href="#Baseline-的作用" class="headerlink" title="Baseline 的作用"></a>Baseline 的作用</h2><p>基线模型的构造原则是取最简单、又能把整个流程做完的那一个：回归任务直接预测训练集的均值，或者用 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Linear-Regression&#x2F;" class="wikilink">线性回归</a> 这类最简单的模型。基线同时充当三样东西。基本参照：指标明显差于基线时，应检查实现、特征、复杂度与数据划分，不能仅凭这个结果认定实现有 bug。改动效果的参照：每次调参、换特征带来的收益都相对基线计算。数据侧的问题定位：连基线都表现异常，问题往往在标签或特征上，这时该回到 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Data-Preprocessing&#x2F;" class="wikilink">数据预处理</a> 检查，而不是换更复杂的模型。</p>
+<h2 id="平均绝对误差（MAE）"><a href="#平均绝对误差（MAE）" class="headerlink" title="平均绝对误差（MAE）"></a>平均绝对误差（MAE）</h2><p>MAE（平均绝对误差）把每个样本的偏差取绝对值再求平均。<script type="math/tex">n</script> 是样本数，<script type="math/tex">y_i</script> 是真实值，<script type="math/tex">\hat{y}_i</script> 是预测值：</p>
+<script type="math/tex; mode=display">\mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n}\left| y_i - \hat{y}_i \right|</script>
+<p>MAE 的单位与目标变量完全一致，数字可以直接读成“平均差了几万元”。绝对值的惩罚随偏差线性增长，个别极端样本的影响比在平方项下小得多，所以 MAE 对异常值的敏感度低于 MSE；极端样本仍会拉高 MAE，只是权重小得多。代价是绝对值在零点不可导，把 MAE 当作损失函数来优化不如平方项方便，零点可以用次梯度，主流框架的 L1 损失默认就这样处理。</p>
+<h2 id="均方误差（MSE）"><a href="#均方误差（MSE）" class="headerlink" title="均方误差（MSE）"></a>均方误差（MSE）</h2><p>MSE（均方误差）先对偏差取平方，再求平均：</p>
+<script type="math/tex; mode=display">\mathrm{MSE} = \frac{1}{n}\sum_{i=1}^{n}\left( y_i - \hat{y}_i \right)^2</script>
+<p>平方把大误差的影响显著放大：偏差翻一倍，惩罚变成四倍。这正好适合对大偏差零容忍的场景，医疗与自动驾驶就是一例，一次大错不能和几次小错等价看待。代价是单位被平方（例如“平方万元”），失去了直观的业务含义。好处是处处可导，作为损失函数最方便优化。</p>
+<h2 id="均方根误差（RMSE）"><a href="#均方根误差（RMSE）" class="headerlink" title="均方根误差（RMSE）"></a>均方根误差（RMSE）</h2><p>RMSE（均方根误差）对 MSE 开根号，把量纲还原成目标变量的单位，同时保留平方项对大误差的惩罚：</p>
+<script type="math/tex; mode=display">\mathrm{RMSE} = \sqrt{\mathrm{MSE}}</script>
+<p>单位可解释与惩罚大误差这两件事同时成立，所以在工程实践和数据科学竞赛（例如 Kaggle）里，RMSE 是常用的回归指标。</p>
+<h2 id="决定系数（R2）"><a href="#决定系数（R2）" class="headerlink" title="决定系数（R2）"></a>决定系数（R2）</h2><p>R2（决定系数）换了一个基准：拿模型误差与“直接输出评估集均值”的误差相比。式中的 <script type="math/tex">\bar{y}</script> 是评估集上真实值的均值，也就是最朴素的预测水平：</p>
+<script type="math/tex; mode=display">R^{2} = 1 - \frac{\sum_{i=1}^{n}\left( y_i - \hat{y}_i \right)^2}{\sum_{i=1}^{n}\left( y_i - \bar{y} \right)^2}</script>
+<p>R2 衡量模型消除了总方差中多大比例的不确定性。等于 1 表示预测完全正确；等于 0 表示与直接输出均值一样；取负值表示比输出均值还差，上界为 1，下界没有限制。标签为常量时，分母中的总方差为 0，公式不适用。R2 是无量纲的，比较的是同一份数据上模型相对均值预测强多少；换一个数据集，总方差本身变了，两边的数值不能直接比较。</p>
+<h2 id="指标之间的分工"><a href="#指标之间的分工" class="headerlink" title="指标之间的分工"></a>指标之间的分工</h2><p>四个指标回答的不是同一个问题，选哪个取决于误差分布的特征和业务对可解释性的要求：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>单位</th>
+<th>对大误差的敏感度</th>
+<th>作为损失函数的可导性</th>
+<th>适用场合</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MAE</td>
+<td>与目标变量一致</td>
+<td>较低，惩罚随偏差线性增长，极端值仍会拉高指标，权重小于平方项</td>
+<td>零点不可导，可用次梯度训练</td>
+<td>异常值较多，或需要直接解释平均偏差</td>
+</tr>
+<tr>
+<td>MSE</td>
+<td>目标变量单位的平方</td>
+<td>高，惩罚随偏差平方增长</td>
+<td>处处可导</td>
+<td>作为训练损失，或对大偏差零容忍</td>
+</tr>
+<tr>
+<td>RMSE</td>
+<td>与目标变量一致</td>
+<td>高，继承平方项</td>
+<td>由 MSE 开方得到，训练时在 MSE 上求导更方便</td>
+<td>既要可解释又要惩罚大误差，常用选择</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>无量纲</td>
+<td>通过分子中的平方项体现</td>
+<td>通常作为报告指标</td>
+<td>同一数据集内比较模型与均值预测的强弱；换数据集后总方差不同，数值不可直接比较</td>
+</tr>
+</tbody></table>
+<h2 id="报告指标与训练损失的分工"><a href="#报告指标与训练损失的分工" class="headerlink" title="报告指标与训练损失的分工"></a>报告指标与训练损失的分工</h2><p>上表的可导性一列不是装饰。训练时梯度要从损失回传到参数，参与训练的量必须提供可用的梯度。MSE 处处可导，梯度里只含偏差的一次项，因此占住了损失函数的位置。MAE 在零点不可导，次梯度就能让训练继续，不要求处处可导。R2 基本不参与训练：无量纲让报告方便，但只有落在同一份数据、同一套预处理上，两个 R2 才能直接比较。</p>
+<p>于是同一个实验里出现两套数字是正常的：用 MSE 训练，用 MAE 或 RMSE 报告。前者提供光滑的梯度，后者提供业务能读懂的量。这也解释了为什么 RMSE 在报告里出现得最多：RMSE 的单位与目标变量一致，读者不需要在脑子里开方。</p>
+<p>比较还有一个前提：两个数字必须来自同一份测试集、同一套预处理。换一次划分、改一次归一化，指标就不可比，此时算出来的“提升”可能只是流程差异。</p>
+<h1 id="残差诊断"><a href="#残差诊断" class="headerlink" title="残差诊断"></a>残差诊断</h1><p>指标是全局汇总，只说平均错了多少，不说错在哪。残差（residual）是逐样本的偏差，定义为真实值减预测值：</p>
+<script type="math/tex; mode=display">e_i = y_i - \hat{y}_i</script>
+<p>逐样本看残差，才能看出误差是否带有结构。理想情况下残差应当接近纯噪声：与预测值无关、均值为零、近似对称。</p>
+<h1 id="评估的稳定性"><a href="#评估的稳定性" class="headerlink" title="评估的稳定性"></a>评估的稳定性</h1><p>指标选对之后，还要问这个数字换一次数据划分会变多少。变幅小，说明模型对数据划分不敏感；变幅大，说明评估结果对具体划分较敏感。</p>
+<h2 id="单次划分的问题"><a href="#单次划分的问题" class="headerlink" title="单次划分的问题"></a>单次划分的问题</h2><p>最常见的做法是一次 train&#x2F;test split：把数据分成训练集与测试集，训练集用来拟合参数，测试集只用来算指标。问题在于这一次划分的结果依赖运气。测试集只含有限个样本，恰好抽到几个极端样本，RMSE 就整体偏高；换一个随机种子重新划分，同一个模型会给出差别不小的数字。</p>
+<p>于是单次划分下两个模型相差很小的指标并不能说明谁更好，差异可能完全来自样本的落位。样本量越小，这种抖动越明显。这也是先有基线再谈改进的原因：改动必须稳定地超过基线，而不是在运气好的那一次划分上超过基线。</p>
+<h2 id="K-Fold-交叉验证"><a href="#K-Fold-交叉验证" class="headerlink" title="K-Fold 交叉验证"></a>K-Fold 交叉验证</h2><p>K-Fold（K 折交叉验证）把划分重复多次再汇总：把数据均匀分成 K 份，每一轮取 1 份留作验证、其余 K-1 份用于训练，重复 K 轮，每个样本恰好被验证一次。留出的那一份在这里叫验证折：真正只用一次的测试集仍留到最后。</p>
+<p>最终报告 K 次评估结果的均值和标准差。均值是对泛化性能的估计，标准差衡量这个估计有多依赖具体划分。标准差大，说明模型对数据的组成敏感，单次数字不能当结论；标准差小，两次实验之间的差异才可能真的来自模型本身。</p>
+<p>均值和标准差要一起看。如果两个模型的均值只差一点点，而这点差距还落在各自的标准差范围里，就不能宣称改进，需要更多轮重复或者更多数据才能分辨。代价是要训练 K 次。K 越大，每一折用到的训练集越大，但更多折不保证估计更稳：各折模型彼此高度相似，折间差异随之变小，多折带来的信息增量有限，所以 K 要在训练成本与估计质量之间权衡。</p>
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">同一批数据既选参又报分，数字会偏乐观</span></div>
+<div class="callout-content"><p>同一套划分还能用来选超参数，例如正则化的系数：在 K 轮里比较不同取值的均值，选出最好的那个；选完之后，测试集再报告一次。如果把选超参数和报告全部放在同一批数据上，连一个独立的测试集都不留，报出来的数字就会偏乐观。</p>
+</div>
+</div>
+<h1 id="欠拟合与过拟合"><a href="#欠拟合与过拟合" class="headerlink" title="欠拟合与过拟合"></a>欠拟合与过拟合</h1><p>评估稳定之后，训练误差与验证误差的组合就能说明模型缺什么。训练误差是在训练集上算出的指标，验证误差是在留出的验证集上算出的同一指标。只看其中任何一个都会误判。</p>
+<h2 id="欠拟合"><a href="#欠拟合" class="headerlink" title="欠拟合"></a>欠拟合</h2><p>欠拟合（underfitting）指模型过于简单，没有充分学到训练数据中的规律：训练误差与验证误差都很高，且两者差距不大。差距不大说明模型并没有在训练集上偷偷记住什么，只是没有能力表达数据里的结构。这时增加数据通常帮助有限：容量不足时，两条曲线会一起停在同样高的水平上，更多样本只是把这个水平估得更准。这不等于数据毫无用处，数据多了才撑得起更大的模型，但仅靠加数据解决不了容量不足。</p>
+<h2 id="过拟合"><a href="#过拟合" class="headerlink" title="过拟合"></a>过拟合</h2><p><strong>过拟合</strong>（overfitting）指模型过于复杂，除了真实规律，还把噪声一并记住了。噪声指数据中与目标无关的随机波动。表现是训练误差极低、验证误差明显更高，两者差距大。这时增加数据可能有帮助：更多样本让同一份噪声在总量里被稀释，模型难以把噪声逐一记住。</p>
+<h2 id="学习曲线"><a href="#学习曲线" class="headerlink" title="学习曲线"></a>学习曲线</h2><p>学习曲线以训练样本量为横轴，两条曲线分别是训练误差与验证误差。训练误差通常低于验证误差，因为模型在训练集上见过样本，误差自然更小。学习曲线的作用是把上面两个判据从两个点扩展成一条趋势来看。</p>
+<p>横轴也可以换成训练轮数，用来观察同一训练过程随迭代推进的变化。两条曲线的形状与读法随横轴改变，需要与样本量曲线区分。</p>
+<p>三种形态都以样本量为横轴。</p>
+<p>欠拟合的曲线：两条曲线都停在偏高的位置，彼此靠近，随样本量增加几乎水平，加样本不会把两条曲线拉下来，该做的是提高模型表达力。</p>
+<p>良好拟合的曲线：两条曲线都处在较低的水平，验证曲线紧贴训练曲线上方，间隙小且稳定，继续加样本收益递减。</p>
+<p>过拟合的曲线：训练曲线保持很低，随样本量增加可能略微上升，验证曲线从高处降下来，同一份样本量下两线间隙明显，容量越大间隙越宽。间隙随样本量增加而收窄，说明加数据有效；间隙不随样本量收窄、只随容量扩大，说明该压容量。</p>
+<p>横轴的两种画法回答两个不同问题。以样本量为横轴，问的是数据够不够：两条曲线在右侧是否已经合拢。以训练轮数为横轴，问的是该练多久：验证曲线先降后升，最低点就是该停的位置，这也是早停（验证指标开始变差就停下来）这条规则能成立的前提。轮数轴上那段上升与数据量无关，不能读成“样本不够”。</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;model-evaluation-learning-curve.svg">..&#x2F;assets&#x2F;model-evaluation-learning-curve.svg</span></p>
+<h2 id="欠拟合的对策"><a href="#欠拟合的对策" class="headerlink" title="欠拟合的对策"></a>欠拟合的对策</h2><p>欠拟合要做加法，三个方向都在提高模型的表达力：</p>
+<ul>
+<li>特征工程：加多项式特征的高次项，做特征交叉组合多个特征，用对数、指数等数学变换，或者结合业务知识补领域特征。</li>
+<li>增加训练轮数：加大 epochs，给模型更多学习时间，直到损失不再下降。</li>
+<li>增加模型复杂度：从 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Linear-Regression&#x2F;" class="wikilink">线性回归</a> 换成 <a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Decision-Tree&#x2F;" class="wikilink">决策树</a>、随机森林这类模型，也就是换到 <a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Ensemble-Learning&#x2F;" class="wikilink">集成学习</a> 的方向。</li>
+</ul>
+<h2 id="过拟合的对策"><a href="#过拟合的对策" class="headerlink" title="过拟合的对策"></a>过拟合的对策</h2><p>过拟合要做减法，让模型别太极端。可动的方向有四个：增加训练数据，降低模型复杂度（减少多项式阶数或树的深度），做特征选择（主动去掉无关与冗余特征，减少干扰信号），以及正则化。前三者的效果依赖数据本身是否够多、哪些特征该留，正则化最通用，因为不换数据也不换模型，只在训练过程中限制有效容量。具体做法按作用面分成五类，下面逐一展开。</p>
+<p>这四个方向不是同一回事。增加数据改变的是信息量，样本里的噪声被平均掉，模型看到的是更接近真实规律的分布。降低复杂度与特征选择是主动放弃一部分表达力。正则化可以保留参数结构，通过约束参数或训练过程限制有效复杂度。有代表性的训练数据可以帮助减少过拟合。数据获取成本高时，可以优先评估降低复杂度、特征选择和正则化，也可以组合使用。</p>
+<h1 id="正则化"><a href="#正则化" class="headerlink" title="正则化"></a>正则化</h1><p>正则化（regularization）指在训练目标、参数更新、网络结构、训练流程或训练数据上追加约束，限制模型的有效容量，用略高的训练误差换取泛化性能。没有正则化的时候，模型为了迎合噪声会剧烈扭曲参数，拟合出一条穿过每个训练点的曲线；加上约束之后，参数被压回平滑的形态。约束的强度由超参数控制，代价是最优的训练误差略微变高，期望换来更低的验证误差。这个交换并不保证成立，强度选得过大，训练误差与验证误差会一起升高。</p>
+<p>约束可以加在五个位置：损失函数、参数更新、网络结构、训练流程、训练数据。前两个直接作用于权重的数值，后三个改变模型看到的计算图或数据分布。</p>
+<h2 id="权重为什么要小"><a href="#权重为什么要小" class="headerlink" title="权重为什么要小"></a>权重为什么要小</h2><p>在特征表示与网络结构固定时，权重幅度会影响输出对输入变化的敏感程度。过大的权重可能放大输入扰动，使模型更容易拟合噪声。限制权重幅度可约束这种敏感性，但实际效果仍取决于模型结构与数据。</p>
+<p>这也是正则化与降复杂度能互相替代的原因：两者都在降低有效容量。区别是降复杂度直接拿掉参数（少几阶多项式、少几层树），正则化保留全部参数但限制参数的取值范围。</p>
+<h2 id="损失函数上：L1-与-L2"><a href="#损失函数上：L1-与-L2" class="headerlink" title="损失函数上：L1 与 L2"></a>损失函数上：L1 与 L2</h2><p>L2 正则化在原始损失后追加所有权重的平方和，系数 <script type="math/tex">\lambda</script> 决定罚得多重，分母上的 2 是为求导后只剩 <script type="math/tex">\lambda w</script>：</p>
+<script type="math/tex; mode=display">\mathcal{L} = \mathcal{L}_{\text{原始}} + \frac{\lambda}{2} \sum_{j} w_j^{2}</script>
+<p>L1 正则化追加的是所有权重的绝对值之和，其余相同：</p>
+<script type="math/tex; mode=display">\mathcal{L} = \mathcal{L}_{\text{原始}} + \lambda \sum_{j} \left| w_j \right|</script>
+<p>两者的差别在于把权重压向零的方式。L2 的惩罚在零点附近平缓，梯度随权重线性缩小，最优解倾向于把各组权重同时压到接近 0 的小值，但 L2 不保证每一项都非零，具体解取决于损失项与惩罚项的合成。L1 的惩罚在零点处有尖角，最优解容易落在坐标轴上，部分不重要特征的权重被压成恰好 0，权重因此稀疏，天然带有特征选择的效果。L1 选出的只是使损失与惩罚之和最小的那组特征，不保证选中的都真正相关，也不保证把无关特征全部剔除。</p>
+<p>L2 正则化的线性回归称为 Ridge（岭回归），L1 正则化的线性回归称为 Lasso。Lasso 是 Least Absolute Shrinkage and Selection Operator（最小绝对值收缩与选择算子）的缩写。</p>
+<p>两个权重的模型上，惩罚形状决定最优点落在哪里：</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;model-evaluation-l1-l2.svg">..&#x2F;assets&#x2F;model-evaluation-l1-l2.svg</span></p>
+<h2 id="为什么深度网络默认-L2"><a href="#为什么深度网络默认-L2" class="headerlink" title="为什么深度网络默认 L2"></a>为什么深度网络默认 L2</h2><p>深度网络的泛化依赖参数之间的协同作用与权重的平滑分布，而不是剔除某几个特定神经元，所以均匀缩小的 L2 与这种工作方式合拍，L1 制造的稀疏反而会打散这种协同。更实际的理由是可导性：L2 项的导数是 <script type="math/tex">\lambda w</script>，处处光滑，对 SGD（随机梯度下降）、Adam 这类基于梯度的优化器都友好；L1 在零点不可导，需要额外处理。</p>
+<h2 id="权重衰减"><a href="#权重衰减" class="headerlink" title="权重衰减"></a>权重衰减</h2><p>工程上 L2 通常不通过改损失函数实现：PyTorch 由优化器的 weight_decay 参数完成这一步，直接改更新式。这个视角叫权重衰减（weight decay），每一步更新时先让权重乘上一个略小于 1 的因子，使权重按比例自然缩小：</p>
+<script type="math/tex; mode=display">w_{t+1} = \underbrace{(1 - \eta\lambda)}_{\text{衰减因子}} \, w_t - \eta \, \frac{\partial \mathcal{L}_{\text{原始}}}{\partial w}</script>
+<p>其中 <script type="math/tex">w_t</script> 是第 <script type="math/tex">t</script> 步的权重，<script type="math/tex">\eta</script> 是学习率，<script type="math/tex">\lambda</script> 是权重衰减系数，通常取 <script type="math/tex">10^{-4}</script> 到 <script type="math/tex">10^{-2}</script>。可以把权重衰减想成每个权重都绑了一根回到原点的弹簧：梯度没有强烈要求权重增大时，权重随时间缓慢衰减到零附近；梯度持续把权重往外拉时，弹簧只是让权重比没有衰减时小一点。</p>
+<p><script type="math/tex">\lambda</script> 的作用不是在任何取值上都单调。取 0 时退化为普通训练，过拟合照旧；从 0 往大调，常见的情形是权重被压得越来越紧，验证误差先降后升，升的那一段已经是欠拟合。具体在哪个区间下降、哪个区间上升，取决于任务与数据，也可能出现调大 <script type="math/tex">\lambda</script> 只让验证误差变差的情况。所以 <script type="math/tex">\lambda</script> 本身是个需要选的超参数，选的依据是验证集上的指标，而不是训练损失。</p>
+<h2 id="L2-与权重衰减的等价性"><a href="#L2-与权重衰减的等价性" class="headerlink" title="L2 与权重衰减的等价性"></a>L2 与权重衰减的等价性</h2><p>这两件事在概念上分属不同层：L2 改的是损失函数，权重衰减改的是优化器的更新动作。但在标准 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Gradient-Descent&#x2F;" class="wikilink">梯度下降</a> 下，两者是同一个式子。把 L2 项代回更新公式，四步就能看出来。</p>
+<p>第一步，写出总损失，与上面 L2 的定义同形：</p>
+<script type="math/tex; mode=display">\mathcal{L} = \mathcal{L}_{\text{原始}} + \frac{\lambda}{2}\sum_{i} w_i^{2}</script>
+<p>第二步，对权重求导，平方项贡献 <script type="math/tex">\lambda w</script>：</p>
+<script type="math/tex; mode=display">\frac{\partial \mathcal{L}}{\partial w} = \frac{\partial \mathcal{L}_{\text{原始}}}{\partial w} + \lambda w</script>
+<p>第三步，把这个梯度代进 SGD 的更新式：</p>
+<script type="math/tex; mode=display">w_{t+1} = w_t - \eta \left( \frac{\partial \mathcal{L}_{\text{原始}}}{\partial w} + \lambda w_t \right)</script>
+<p>第四步，把含 <script type="math/tex">w_t</script> 的两项合并，提取公因式：</p>
+<script type="math/tex; mode=display">w_{t+1} = (1 - \eta\lambda) \, w_t - \eta \, \frac{\partial \mathcal{L}_{\text{原始}}}{\partial w}</script>
+<p>结果与权重衰减的更新式逐项相同，等价性就来自这里。第一步里那个 1&#x2F;2 的系数不是随便写的：这个系数让求导后只剩下 <script type="math/tex">\lambda w</script>，与衰减因子里的 <script type="math/tex">\eta\lambda</script> 对齐，两种写法才对得上。若把 L2 写成 <script type="math/tex">\lambda \sum w^2</script>，等价式里的衰减因子会变成 <script type="math/tex">(1 - 2\eta\lambda)</script>，强度差一倍。</p>
+<h2 id="Adam-下等价性失效"><a href="#Adam-下等价性失效" class="headerlink" title="Adam 下等价性失效"></a>Adam 下等价性失效</h2><p>等价性依赖一个前提：更新形式是 <script type="math/tex">w</script> 减去 <script type="math/tex">\eta</script> 乘梯度这种线性组合。换成 Adam 就不成立，因为 Adam 还要把梯度除以 <script type="math/tex">\sqrt{v_t}</script>，其中 <script type="math/tex">v_t</script> 是该参数历史梯度平方的滑动平均，也叫二阶动量。</p>
+<p>把 L2 写进损失，惩罚项会先混进梯度，再连同梯度一起混进一阶动量 <script type="math/tex">m_t</script>（梯度的滑动平均）与二阶动量 <script type="math/tex">v_t</script>：</p>
+<script type="math/tex; mode=display">g_t = \nabla \mathcal{L}_{\text{原始}}(w_t) + \lambda w_t \quad \text{一并进入} \; m_t, \; v_t</script>
+<p>于是 <script type="math/tex">\lambda</script> 不再是一个统一的强度。梯度本来就小的参数 <script type="math/tex">v_t</script> 极小，自适应除以 <script type="math/tex">\sqrt{v_t}</script> 时，正则化力度被放大；梯度本来就大的参数 <script type="math/tex">v_t</script> 极大，同样的除法把正则化力度压缩。原本设定的衰减强度被这套自适应缩放改变，得到的更新式与直接做权重衰减不同。这不等于 L2 在 Adam 下失效：损失里加了 L2 项，训练照样会把权重压小，只是惩罚力度随参数的梯度量级变化，无法像解耦衰减那样按 <script type="math/tex">\lambda</script> 精确控制。</p>
+<h2 id="AdamW"><a href="#AdamW" class="headerlink" title="AdamW"></a>AdamW</h2><p>AdamW 把权重衰减从自适应缩放里解耦出来：<script type="math/tex">\hat{m}_t</script> 与 <script type="math/tex">\hat{v}_t</script> 只由原始损失的梯度计算，权重衰减直接作用在参数上，与梯度的自适应缩放分开：</p>
+<script type="math/tex; mode=display">w_{t+1} = (1 - \eta\lambda) \, w_t - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \, \hat{m}_t</script>
+<p>衰减因子只作用在 <script type="math/tex">w_t</script> 上，与 <script type="math/tex">\sqrt{\hat{v}_t}</script> 无关，<script type="math/tex">\lambda</script> 因此恢复成可以直接设定的衰减强度。今天的 Transformer、BERT、ViT 以及大语言模型的训练基本都用 AdamW 这类解耦写法。</p>
+<h2 id="网络结构上：Dropout"><a href="#网络结构上：Dropout" class="headerlink" title="网络结构上：Dropout"></a>网络结构上：Dropout</h2><p>Dropout（随机失活）换了一个作用对象：不压权重数值，而是改网络结构。具体做法是每次前向传播时，以概率 <script type="math/tex">p</script> 随机把一部分神经元的输出置 0，也就是在这一次训练里关闭这些神经元，而且每次关闭的神经元都不同。</p>
+<p>这个动作带来两个后果。其一，神经元不能再依赖某个特定邻居的输出，每个位置都必须学出独立有用的特征。其二，每个 batch 训练的都是一个不同的子网络，推理时相当于成千上万个共享参数的子网络在集体投票，这是一种隐式集成。</p>
+<p>训练时部分神经元不工作，剩余神经元的输出期望会被压低。为了让训练与推理的期望一致，需要反向 Dropout（inverted dropout）：训练阶段在丢弃的同时，把存活神经元的输出除以 <script type="math/tex">1-p</script>，<script type="math/tex">p</script> 取 0.5 时存活的激活值被放大成原来的 2 倍。推理阶段所有神经元正常工作，输出保持原样，不做任何缩放调整。</p>
+<p>Dropout 率取决于层的位置和具体任务，常见起点有：隐藏层 0.5，让每次前向保留的神经元组合尽量多样。输入层若要用，取 0.1 到 0.2，避免丢掉过多原始输入信息。Transformer 0.1 左右，Transformer 本身的结构设计已经比较合理，过重的 Dropout 会妨碍大规模预训练。这些数字是候选值，不是各层的统一默认。卷积网络同样可以用 Dropout，只是卷积特征图在空间上高度局部相关。随机丢单个位置带来的信息扰动有限。实践中常把 Dropout 放在全连接层或池化层之后，并与批归一化（BatchNorm）配合使用。BatchNorm 不能替代 Dropout：BatchNorm 归一化激活的分布，让训练更稳定，正则效果只是副产品；Dropout 显式随机关闭神经元，改变的是每个 batch 的网络结构。</p>
+<p>这些取值背后是同一个参数的两端。<script type="math/tex">p</script> 越大，每次前向能用的神经元越少，容量被压得越狠，过头就是欠拟合，训练损失迟迟不降；<script type="math/tex">p</script> 越小，子网络彼此太像，集成效应消失，等于没加。同一层该取多少，仍然要靠训练与验证两条曲线来判断。</p>
+<h2 id="训练流程上：早停"><a href="#训练流程上：早停" class="headerlink" title="训练流程上：早停"></a>训练流程上：早停</h2><p>早停（early stopping）把正则化做在时间轴上。过拟合表现为验证指标在某个时刻开始恶化，那就在恶化之前停下来：监控验证集指标，连续若干个 epoch 没有改善就终止训练，并回退到表现最好的那个 checkpoint。</p>
+<p>允许连续多少个 epoch 没有改善，由 patience 控制，通常 5 到 20 是合理范围：取小了，会在指标的正常波动里误停；取大了，等于等到过拟合已经发生之后才停。</p>
+<div class="callout callout-tip">
+<div class="callout-title"><i class="fa-solid fa-lightbulb callout-icon"></i><span class="callout-title-text">回退到最好的那一份权重</span></div>
+<div class="callout-content"><p>停止时回退到表现最好的那个 checkpoint，而不是直接用最后一轮的权重，原因是恶化本身就有滞后：能确认指标在变差的时候，权重已经离开最优点好几步了。</p>
+</div>
+</div>
+<p>早停算正则化，理由是隐式约束：没有修改损失，也没有改动结构，但训练步数越少，权重离初始值越近，可探索的参数空间越小，等价于限制了模型的有效复杂度，这一层作用常被称为隐式正则化。</p>
+<p>早停的前提是手里有一份验证集。这份数据可以参与选超参数与决定何时停，但不能用来拟合权重：一旦用验证集更新参数，监控到的指标就不再代表“没见过的数据”。验证集也不能充当最终报告的测试集，否则报告的数字会偏乐观。</p>
+<h2 id="训练数据上：数据增强"><a href="#训练数据上：数据增强" class="headerlink" title="训练数据上：数据增强"></a>训练数据上：数据增强</h2><p>数据增强（data augmentation）换到数据侧。前面几种方法都在限制模型容量，数据增强扩大训练分布：对训练数据施加随机变换，让模型难以记住具体样本，被迫学习更通用的特征。图像任务里常用的变换有翻转（水平、垂直）、裁剪（RandomCrop）、小角度随机旋转、颜色抖动（亮度、对比度）。同一张图换几个角度和亮度，相当于在不额外标注的情况下多了几倍训练样本，因此在计算机视觉任务上效果尤其显著。</p>
+<p>这些变换必须保住标签：翻转和裁剪不能把目标切掉，颜色抖动不能改变类别。变换后的样本标签错了，等于往训练集里注入噪声。</p>
+<p>数据增强的代价比较特别：训练准确率可能下降。训练分布被撑开之后，模型连训练集都不再容易拟合到接近零误差，而验证集准确率反而可能更高。这个反差说明训练准确率不是目标：变换后的样本在参数空间里把决策边界推到了更稳的位置，代价是模型更难只靠记住个别样本达到低训练误差。降低训练准确率的机制不止数据增强一种，强正则化、过大的 Dropout 率、容量不足的模型都会让训练准确率下降，区别在于动机：数据增强在保留信息的前提下扩大分布，其余几种是在压缩容量。</p>
+<h2 id="按作用面归类"><a href="#按作用面归类" class="headerlink" title="按作用面归类"></a>按作用面归类</h2><p>五种做法落在五个不同的位置，看清位置比记住名词更有用：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用位置</th>
+<th>核心思路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1 与 L2 正则化</td>
+<td>损失函数</td>
+<td>惩罚大权重，限制参数幅度；L1 压出稀疏权重并顺带做特征选择，L2 均匀缩小全部权重</td>
+</tr>
+<tr>
+<td>权重衰减</td>
+<td>参数更新</td>
+<td>每步把权重向零衰减；在 AdamW 中与自适应缩放解耦，避免 <script type="math/tex">\lambda</script> 被梯度量级扭曲</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>网络结构</td>
+<td>随机关闭神经元，迫使特征冗余，每个 batch 训练一个子网络</td>
+</tr>
+<tr>
+<td>早停</td>
+<td>训练流程</td>
+<td>验证指标恶化时终止训练，用训练步数限制可探索的参数空间</td>
+</tr>
+<tr>
+<td>数据增强</td>
+<td>训练数据</td>
+<td>增加数据多样性，减少记忆个例，代价是训练准确率可能下降</td>
+</tr>
+</tbody></table>
+<h2 id="工业流水线的组合用法"><a href="#工业流水线的组合用法" class="headerlink" title="工业流水线的组合用法"></a>工业流水线的组合用法</h2><p>实际训练一个深度网络时很少只挑一种。现代工业级训练流水线往往同时应用 AdamW 权重衰减、适度 Dropout、丰富的数据增强与早停机制：权重衰减约束参数幅度，Dropout 约束单次前向的通路，数据增强扩大训练分布，早停控制训练时长。四种方法的作用面不同，但组合起来并不保证互不冲突；叠加之后剩下的那部分容量才是模型真正用来拟合规律的部分。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/09/Model-Evaluation/">https://eliano64.github.io/2026/10/09/Model-Evaluation/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/08/Data-Preprocessing/" title="Data Preprocessing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Data Preprocessing</div></div><div class="info-2"><div class="info-item-1"> Cite Garbage in, garbage out.   真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。 预处理是模型的一部分，决定了模型能看见什么：一列缺失超过七成的特征是留着还是删掉，一个无序的港口名是编成 0、1、2 还是拆成三列...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Logistic-Regression/" title="Logistic Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Logistic Regression</div></div><div class="info-2"><div class="info-item-1">预测房价、预测温度这类任务回答的是“多少”。把一封邮件分成垃圾邮件与正常邮件、把一张影像分成恶性与良性、判断一个用户会不会点击广告，回答的却是“属于哪一类”。后一类任务的输出是有限集合里的离散标签，标签之间既没有大小也没有距离，用线性回归直接拟合，从输出范围到对异常值的敏感性都会出问题。 把类别编码成 0 和 1、直接套线性回归、再用 0.5 当分界，是最直接的想法。这个做法在两处失效：输出可以落在 0 到 1 之外，一个极端样本也能把整条分界线拉歪。 逻辑回归的改法只动输出端：保留线性部分，接sigmoid 函数，将任意实数映射到 (0,1)，让模型直接给出概率。 输出变成概率之后，损失函数、梯度形式与评估方式都跟着变：均方误差在概率输出上梯度性质差，常用做法是换成从最大似然推出的交叉熵；评估不能只看准确率；类别多于两个时 sigmoid 换成 softmax。 从回归到分类分类任务分类（Classification）指输出离散标签的任务：候选类别有限、互斥，每个样本恰好属于其中一个。类别数为 2 时叫二分类，多于 2...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/27/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">数据准备训练前需要划分数据、估计预处理参数，再将处理后的数组转为张量批次。以下接口分别处理数值表示、预处理和批次装载。 形状记号中，N 表示样本数，D 表示输入特征数，K 表示输出特征数，C 表示类别数。dtype 表示元素类型，device 表示张量所在的计算设备。 NumPy 构造与属性1234import numpy as nprng = np.random.default_rng(0)X = rng.normal(size=(4, 3))        # 浮点，形状 [4, 3]i = np.arange(6).reshape(2, 3)     # 整数，形状 [2, 3]  np.array(data) 可将列表等序列转为数组，dtype 默认由元素推断：整数列表得到整数数组，含浮点得到浮点数组。np.zeros、np.ones 可以传 dtype；rng.normal 不接受 dtype 参数，得到 float64，需要单精度时用 .astype(np.float32)。shape、dtype、ndim...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Data-Preprocessing/" title="Data Preprocessing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Data Preprocessing</div></div><div class="info-2"><div class="info-item-1"> Cite Garbage in, garbage out.   真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。 预处理是模型的一部分，决定了模型能看见什么：一列缺失超过七成的特征是留着还是删掉，一个无序的港口名是编成 0、1、2 还是拆成三列...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Decision-Tree/" title="Decision Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Decision Tree</div></div><div class="info-2"><div class="info-item-1">决策树的位置逻辑回归这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。 这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有多一致）。 层层提问的结构决策树（Decision...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">集成学习的思路决策树给出的是一串可以直接读出的规则：年龄大于 30，收入低于 5000，就分到这一类。规则可读，代价是对具体样本过分敏感。训练集里少一个样本，或者某个特征取值稍微变动，整棵树的结构就可能改变。 集成学习不试图把单棵树做得更稳，而是承认单棵树会出错，让许多棵各自不完美的树共同给出预测。这条路上有两条分支：让树彼此独立地生长，最后汇总结果，代表是随机森林；让树一棵接一棵地修正前一轮的误差，代表是梯度提升树。 为什么需要集成单棵树的脆弱决策树的划分准则与剪枝在 Decision-Tree...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">线性回归模型的训练对于线性回归模型，n 个样本、d 个特征写成设计矩阵 \mathbf{X} \in \mathbb{R}^{n \times d}，第 i 行是第 i 个样本的特征 \boldsymbol{x}_i^{\top}；标签是向量 \boldsymbol{y} \in \mathbb{R}^{n}。参数是权重 \boldsymbol{\theta} \in \mathbb{R}^{d} 与偏置 \boldsymbol{b} \in \mathbb{R}^{n}，预测写成 \hat{\boldsymbol{y}} = \mathbf{X} \boldsymbol{\theta} + \boldsymbol{b} 偏置向量的每个分量都是同一个数 b，即 \boldsymbol{b} = b\boldsymbol{1}（\boldsymbol{1} \in \mathbb{R}^{n} 是全 1 向量），加到每个样本上的是同一个值。  为什么偏置的分量都是同一个数 如果让这些值各不相同，等于给每个样本单独配一个截距。样本一共只有 n...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归的位置监督学习里，标签是连续数值时（房价、温度、销量），任务要回答的是“给定这些特征，输出是多少”，这一类任务称为回归，整个监督学习的版图见 Machine-Learning-Overview。线性回归（Linear Regression）是最简单的一种做法：把输出写成特征的加权和。特征是描述一个样本的各个属性，例如面积与房龄。名字里有两件事值得拆开：“线性”规定模型的形式，“回归”交代任务的类型。 线性回归先是一个模型，其次才是一套训练方法。下文只处理前一半：模型的形式怎么定，好坏怎么量，参数怎么解出来。把损失逐步降下去的过程见 Gradient-Descent。 什么算线性数学上的线性描述按比例变化、可叠加的关系。一个映射 f 满足两条性质就称为线性：输入放大 a 倍，输出也放大 a 倍，即 f(a\boldsymbol{x}) = a f(\boldsymbol{x})，这条叫齐次性；两个输入叠加后的输出等于各自输出之和，即 f(\boldsymbol{x} + \boldsymbol{z}) = f(\boldsymbol{x}) +...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%84%E4%BC%B0%E5%9F%BA%E5%87%86%E4%B8%8E%E5%9B%9E%E5%BD%92%E6%8C%87%E6%A0%87"><span class="toc-text">评估基准与回归指标</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Baseline-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">Baseline 的作用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E5%9D%87%E7%BB%9D%E5%AF%B9%E8%AF%AF%E5%B7%AE%EF%BC%88MAE%EF%BC%89"><span class="toc-text">平均绝对误差（MAE）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%EF%BC%88MSE%EF%BC%89"><span class="toc-text">均方误差（MSE）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9D%87%E6%96%B9%E6%A0%B9%E8%AF%AF%E5%B7%AE%EF%BC%88RMSE%EF%BC%89"><span class="toc-text">均方根误差（RMSE）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B3%E5%AE%9A%E7%B3%BB%E6%95%B0%EF%BC%88R2%EF%BC%89"><span class="toc-text">决定系数（R2）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%87%E6%A0%87%E4%B9%8B%E9%97%B4%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">指标之间的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%A5%E5%91%8A%E6%8C%87%E6%A0%87%E4%B8%8E%E8%AE%AD%E7%BB%83%E6%8D%9F%E5%A4%B1%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">报告指标与训练损失的分工</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AE%8B%E5%B7%AE%E8%AF%8A%E6%96%AD"><span class="toc-text">残差诊断</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%84%E4%BC%B0%E7%9A%84%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="toc-text">评估的稳定性</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E6%AC%A1%E5%88%92%E5%88%86%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">单次划分的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#K-Fold-%E4%BA%A4%E5%8F%89%E9%AA%8C%E8%AF%81"><span class="toc-text">K-Fold 交叉验证</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AC%A0%E6%8B%9F%E5%90%88%E4%B8%8E%E8%BF%87%E6%8B%9F%E5%90%88"><span class="toc-text">欠拟合与过拟合</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AC%A0%E6%8B%9F%E5%90%88"><span class="toc-text">欠拟合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%8B%9F%E5%90%88"><span class="toc-text">过拟合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E6%9B%B2%E7%BA%BF"><span class="toc-text">学习曲线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AC%A0%E6%8B%9F%E5%90%88%E7%9A%84%E5%AF%B9%E7%AD%96"><span class="toc-text">欠拟合的对策</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E6%8B%9F%E5%90%88%E7%9A%84%E5%AF%B9%E7%AD%96"><span class="toc-text">过拟合的对策</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E5%88%99%E5%8C%96"><span class="toc-text">正则化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%87%8D%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%B0%8F"><span class="toc-text">权重为什么要小</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E4%B8%8A%EF%BC%9AL1-%E4%B8%8E-L2"><span class="toc-text">损失函数上：L1 与 L2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%B7%B1%E5%BA%A6%E7%BD%91%E7%BB%9C%E9%BB%98%E8%AE%A4-L2"><span class="toc-text">为什么深度网络默认 L2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F"><span class="toc-text">权重衰减</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#L2-%E4%B8%8E%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F%E7%9A%84%E7%AD%89%E4%BB%B7%E6%80%A7"><span class="toc-text">L2 与权重衰减的等价性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Adam-%E4%B8%8B%E7%AD%89%E4%BB%B7%E6%80%A7%E5%A4%B1%E6%95%88"><span class="toc-text">Adam 下等价性失效</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AdamW"><span class="toc-text">AdamW</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E4%B8%8A%EF%BC%9ADropout"><span class="toc-text">网络结构上：Dropout</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E4%B8%8A%EF%BC%9A%E6%97%A9%E5%81%9C"><span class="toc-text">训练流程上：早停</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E4%B8%8A%EF%BC%9A%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="toc-text">训练数据上：数据增强</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%89%E4%BD%9C%E7%94%A8%E9%9D%A2%E5%BD%92%E7%B1%BB"><span class="toc-text">按作用面归类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%B8%9A%E6%B5%81%E6%B0%B4%E7%BA%BF%E7%9A%84%E7%BB%84%E5%90%88%E7%94%A8%E6%B3%95"><span class="toc-text">工业流水线的组合用法</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

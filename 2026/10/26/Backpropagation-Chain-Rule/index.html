@@ -1,0 +1,354 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Backpropagation Chain Rule | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="问题规模设参数总数为 P。一个有 20 万参数的网络，如果用数值差分求梯度，前向差分要对每个参数各做一次前向（共 P+1 次），中心差分要对每个参数做正负两次前向（共 2P 次）。 反向传播把代价压到一次前向加一次反向：从损失出发，逆序遍历计算图，每到一个节点只乘该节点的局部导数，所有参数的梯度一次算出。 符号约定先约定符号。L 是标量损失，Z^{(l)}、A^{(l)} 分别是第 l 层的预激活">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Backpropagation Chain Rule">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/26/Backpropagation-Chain-Rule/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="问题规模设参数总数为 P。一个有 20 万参数的网络，如果用数值差分求梯度，前向差分要对每个参数各做一次前向（共 P+1 次），中心差分要对每个参数做正负两次前向（共 2P 次）。 反向传播把代价压到一次前向加一次反向：从损失出发，逆序遍历计算图，每到一个节点只乘该节点的局部导数，所有参数的梯度一次算出。 符号约定先约定符号。L 是标量损失，Z^{(l)}、A^{(l)} 分别是第 l 层的预激活">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-26T15:42:25.000Z">
+<meta property="article:modified_time" content="2026-10-27T03:24:51.749Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DeepLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Backpropagation Chain Rule",
+  "url": "https://eliano64.github.io/2026/10/26/Backpropagation-Chain-Rule/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-26T15:42:25.000Z",
+  "dateModified": "2026-10-27T03:24:51.749Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/26/Backpropagation-Chain-Rule/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Backpropagation Chain Rule',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Backpropagation Chain Rule</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Backpropagation Chain Rule</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-26T15:42:25.000Z" title="发表于 2026-10-26 23:42:25">2026-10-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-27T03:24:51.749Z" title="更新于 2026-10-27 11:24:51">2026-10-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Deep-Learning/">Deep Learning</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.9k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="问题规模"><a href="#问题规模" class="headerlink" title="问题规模"></a>问题规模</h1><p>设参数总数为 <script type="math/tex">P</script>。一个有 20 万参数的网络，如果用数值差分求梯度，前向差分要对每个参数各做一次前向（共 <script type="math/tex">P+1</script> 次），中心差分要对每个参数做正负两次前向（共 <script type="math/tex">2P</script> 次）。</p>
+<p>反向传播把代价压到一次前向加一次反向：从损失出发，逆序遍历计算图，每到一个节点只乘该节点的局部导数，所有参数的梯度一次算出。</p>
+<h1 id="符号约定"><a href="#符号约定" class="headerlink" title="符号约定"></a>符号约定</h1><p>先约定符号。<script type="math/tex">L</script> 是标量损失，<script type="math/tex">Z^{(l)}</script>、<script type="math/tex">A^{(l)}</script> 分别是第 <script type="math/tex">l</script> 层的预激活与激活；预激活指线性变换的输出，激活指预激活经过激活函数后的结果。</p>
+<p>下面写的 <script type="math/tex">\mathrm{d}A^{(l)} := \partial L/\partial A^{(l)}</script>、<script type="math/tex">\mathrm{d}Z^{(l)} := \partial L/\partial Z^{(l)}</script>、<script type="math/tex">\mathrm{d}W^{(l)} := \partial L/\partial W^{(l)}</script> 都是梯度矩阵，与对应的量同形，不是微分形式。</p>
+<p>一层的前向计算为：</p>
+<script type="math/tex; mode=display">Z^{(l)} = W^{(l)} A^{(l-1)} + b^{(l)}, \qquad A^{(l)} = \sigma\left(Z^{(l)}\right)</script>
+<p>形状约定：<script type="math/tex">A^{(l)} \in \mathbb{R}^{n_l \times B}</script>，<script type="math/tex">W^{(l)} \in \mathbb{R}^{n_l \times n_{l-1}}</script>，<script type="math/tex">b^{(l)} \in \mathbb{R}^{n_l \times 1}</script>，<script type="math/tex">B</script> 是 batch 内样本数。<script type="math/tex">b^{(l)}</script> 沿 batch 维广播；因此反向时，偏置的梯度要在 batch 维上汇总。</p>
+<h1 id="链式法则与计算图"><a href="#链式法则与计算图" class="headerlink" title="链式法则与计算图"></a>链式法则与计算图</h1><p>一元复合函数的链式法则为：</p>
+<script type="math/tex; mode=display">\frac{\mathrm{d}y}{\mathrm{d}x} = \frac{\mathrm{d}y}{\mathrm{d}u} \cdot \frac{\mathrm{d}u}{\mathrm{d}x}</script>
+<p>一个变量被用到多处时，要把每条路径的乘积相加。以 <script type="math/tex">y = x \cdot x</script> 为例，对第一个 <script type="math/tex">x</script> 求偏导得到第二个 <script type="math/tex">x</script>，对第二个 <script type="math/tex">x</script> 求偏导得到第一个 <script type="math/tex">x</script>，两条相加得 <script type="math/tex">\mathrm{d}y/\mathrm{d}x = 2x</script>。</p>
+<p>把每一步计算记成节点、把依赖记成边，得到计算图。一个节点的梯度由所有使用该节点的下游分支贡献相加得到，再沿输入方向继续传播。</p>
+<p>因此反向传播只需一次遍历，就能得到全部节点与参数的梯度，开销低于逐参数数值差分。</p>
+<h1 id="一个可以手算的例子"><a href="#一个可以手算的例子" class="headerlink" title="一个可以手算的例子"></a>一个可以手算的例子</h1><h2 id="前向"><a href="#前向" class="headerlink" title="前向"></a>前向</h2><p>取一个三层标量网络：输入、权重、中间值与输出都是单个实数，而不是向量或矩阵。输入 <script type="math/tex">x = 1</script>，权重 <script type="math/tex">w_1 = 2</script>、<script type="math/tex">w_2 = 3</script>、<script type="math/tex">w_3 = -1</script>，中间用 ReLU，目标值 <script type="math/tex">t = 0</script>，损失取 <script type="math/tex">\tfrac{1}{2}(y-t)^2</script>。</p>
+<p>前向得到 <script type="math/tex">z_1 = 2</script>、<script type="math/tex">a_1 = 2</script>、<script type="math/tex">z_2 = 6</script>、<script type="math/tex">a_2 = 6</script>、<script type="math/tex">y = -6</script>、<script type="math/tex">L = 18</script>。</p>
+<h2 id="反向"><a href="#反向" class="headerlink" title="反向"></a>反向</h2><p>反向的初始梯度取 <script type="math/tex">\mathrm{d}L/\mathrm{d}L=1</script>。由损失函数的导数得到 <script type="math/tex">\mathrm{d}L/\mathrm{d}y=y-t=-6</script>。</p>
+<p>沿链回传时，每个节点把上游梯度乘上该节点的局部导数，再传给下一层。上游梯度指损失对当前节点输出的梯度。按这个顺序逐层计算：</p>
+<ol>
+<li>损失对输出：<script type="math/tex">\mathrm{d}L/\mathrm{d}y = y - t = -6</script>。</li>
+<li>穿过输出层（线性，局部导数 1）：<script type="math/tex">\mathrm{d}L/\mathrm{d}z_3 = -6 \times 1 = -6</script>。</li>
+<li>输出层权重：<script type="math/tex">\mathrm{d}L/\mathrm{d}w_3 = \mathrm{d}L/\mathrm{d}z_3 \times a_2 = -6 \times 6 = -36</script>。</li>
+<li>继续向输入方向，乘本层权重：<script type="math/tex">\mathrm{d}L/\mathrm{d}a_2 = \mathrm{d}L/\mathrm{d}z_3 \times w_3 = -6 \times (-1) = 6</script>。这里用的是第 2 步缓存的 <script type="math/tex">\mathrm{d}L/\mathrm{d}z_3</script>，不是第 3 步算出的 <script type="math/tex">-36</script>。</li>
+<li>穿过 ReLU（<script type="math/tex">z_2 = 6 > 0</script>，局部导数 1）：<script type="math/tex">\mathrm{d}L/\mathrm{d}z_2 = 6 \times 1 = 6</script>，于是 <script type="math/tex">\mathrm{d}L/\mathrm{d}w_2 = 6 \times a_1 = 6 \times 2 = 12</script>。</li>
+<li>再向输入方向：<script type="math/tex">\mathrm{d}L/\mathrm{d}a_1 = \mathrm{d}L/\mathrm{d}z_2 \times w_2 = 6 \times 3 = 18</script>；穿过 ReLU 得 <script type="math/tex">\mathrm{d}L/\mathrm{d}z_1 = 18</script>，于是 <script type="math/tex">\mathrm{d}L/\mathrm{d}w_1 = 18 \times x = 18</script>。</li>
+</ol>
+<h2 id="这个例子的网络图"><a href="#这个例子的网络图" class="headerlink" title="这个例子的网络图"></a>这个例子的网络图</h2><p>下图把这个例子画成一条可以逐步检查的计算链。绿色是输入与权重，蓝色框是线性运算（符号式、代入与结果），金色框是 ReLU，紫色是输出 <script type="math/tex">y = z_3</script>，红色是损失与目标。</p>
+<p>右侧虚线框存着各层的梯度，左侧橙色虚线表示反向传播方向。点“下一步”先看前向的中间量逐个填上，再看反向时每一步用的是哪个上游值、哪个局部因子；权重梯度与其他梯度分开记录，显示在对应权重旁。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||930)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||930)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/dl-backprop-graph.html" style="width:100%;height:930px;border:0" loading="lazy"></iframe>
+</div>
+
+<h1 id="矩阵形式的三个梯度"><a href="#矩阵形式的三个梯度" class="headerlink" title="矩阵形式的三个梯度"></a>矩阵形式的三个梯度</h1><p>把逐项计算写成矩阵，每一层要算三件事：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+\mathrm{d}Z^{(l)} &= \mathrm{d}A^{(l)} \odot \sigma'\left(Z^{(l)}\right) \\
+\mathrm{d}W^{(l)} &= \mathrm{d}Z^{(l)} \left(A^{(l-1)}\right)^{\top} \\
+\mathrm{d}b^{(l)} &= \mathrm{d}Z^{(l)} \mathbf{1}
+\end{aligned}</script>
+<p>第一式穿过激活，<script type="math/tex">\odot</script> 表示逐元素相乘；第二式与标量例子里“上游梯度乘本层输入”一致；第三式把每个样本的偏置梯度沿 batch 维加起来，<script type="math/tex">\mathbf{1}</script> 是长度为 <script type="math/tex">B</script> 的全 1 向量。</p>
+<p>反向向输入方向传播时用 <script type="math/tex">W^{\top}\mathrm{d}Z</script>，注意转置的位置。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">损失归一化与 1/B</span></div>
+<div class="callout-content"><p>损失的归一化方式决定梯度里有没有 <script type="math/tex">1/B</script>。若损失是 batch 上的平均，<script type="math/tex">\mathrm{d}Z</script> 里已经含了 <script type="math/tex">1/B</script>，不要再除一次；若损失是求和，梯度里没有 <script type="math/tex">1/B</script>，也不要在更新时补上。</p>
+<p>梯度取决于所选的目标函数。</p>
+</div>
+</div>
+<h1 id="自动微分的记录与释放"><a href="#自动微分的记录与释放" class="headerlink" title="自动微分的记录与释放"></a>自动微分的记录与释放</h1><p>自动微分指框架在前向时记录运算、反向时按记录求导的机制。记录运算的条件是：张量带 <code>requires_grad=True</code>（该标记表示需要为这个张量计算梯度），且当前处于梯度记录模式（训练循环里默认开启）。</p>
+<p>前向时，带梯度的张量由哪个算子、用什么输入算出，会被记下来。反向时按拓扑逆序遍历这张图，每个算子调用该算子对应的反向函数，把上游梯度乘上局部导数再传给上游。</p>
+<p><code>loss.backward()</code> 执行后，每个参数的梯度写入 <code>param.grad</code>；<code>optimizer.step()</code> 才真正改参数。</p>
+<p>计算图不会在前向结束时释放，通常在反向结束之后才释放为反向保存的中间量。如果要对同一个损失再求一次梯度，需在首次调用 <code>backward()</code> 时传入 <code>retain_graph=True</code> 以保留中间量，否则会报“图已被释放”。</p>
+<p>中间激活值必须留着供反向使用，所以显存占用与前向保存的激活规模成正比。长序列训练对显存的占用需求随之增加。梯度检查点的做法是在反向时重算部分前向，以少存中间激活、换取更低的显存占用。</p>
+<h1 id="梯度与学习率"><a href="#梯度与学习率" class="headerlink" title="梯度与学习率"></a>梯度与学习率</h1><p>梯度是损失对全部参数的偏导组成的向量，在当前参数点指向损失上升最快的方向。按负梯度执行一次参数更新：</p>
+<script type="math/tex; mode=display">\theta \leftarrow \theta - \eta \, \nabla_\theta L</script>
+<p><script type="math/tex">\eta</script> 是学习率，决定这一步的幅度。沿负梯度更新能否降低损失，取决于步长是否合适。</p>
+<p>以 <script type="math/tex">f(x) = x^2</script>、从 <script type="math/tex">x = 3</script> 出发为例。梯度是 <script type="math/tex">2x</script>，更新式变成 <script type="math/tex">x \leftarrow x - 2\eta x = (1 - 2\eta)x</script>，于是 <script type="math/tex">x_k = 3(1-2\eta)^k</script>。</p>
+<ul>
+<li><script type="math/tex">\eta = 0.1</script>：因子 <script type="math/tex">0.8</script>，序列 <script type="math/tex">3, 2.4, 1.92, 1.536</script>，单调收敛。</li>
+<li><script type="math/tex">\eta = 0.5</script>：因子 <script type="math/tex">0</script>，一步到 <script type="math/tex">0</script>，这是二次函数上的最优常数步长。</li>
+<li><script type="math/tex">\eta = 0.6</script>：因子 <script type="math/tex">-0.2</script>，序列 <script type="math/tex">3, -0.6, 0.12, -0.024</script>，符号来回变，但绝对值下降得比 <script type="math/tex">\eta = 0.1</script> 更快。</li>
+<li><script type="math/tex">\eta = 1.0</script>：因子 <script type="math/tex">-1</script>，在 <script type="math/tex">3</script> 与 <script type="math/tex">-3</script> 之间循环，不收敛。</li>
+<li><script type="math/tex">\eta = 1.2</script>：因子 <script type="math/tex">-1.4</script>，绝对值逐次放大，发散。</li>
+</ul>
+<p>在这个二次函数上，震荡不代表收敛更慢：<script type="math/tex">\eta=0.6</script> 的参数符号交替变化，但比 <script type="math/tex">\eta=0.1</script> 更快趋近 0。损失下降要求 <script type="math/tex">|1-2\eta|<1</script>，即 <script type="math/tex">0<\eta<1</script>；换用其他目标函数，适合的学习率范围也会变化。</p>
+<p>学习率调度按训练进度调整步长，自适应优化器还利用梯度统计调整各参数的更新尺度。</p>
+<p>梯度消失与爆炸是另一个问题，取决于各层权重和激活导数共同形成的矩阵连乘，幅度还与传播方向有关；仅凭激活导数或权重中的单一因素，不能判断完整梯度。相关量化见 <a href="&#x2F;2026&#x2F;10&#x2F;26&#x2F;Weight-Initialization-And-Variance&#x2F;" class="wikilink">Weight-Initialization-And-Variance</a> 与 <a href="&#x2F;2026&#x2F;10&#x2F;26&#x2F;Activation-Function-Comparison&#x2F;" class="wikilink">Activation-Function-Comparison</a>。</p>
+<p>参数梯度为零不代表到达最优，也可能是鞍点或平坦区；判断是否收敛要看损失与验证指标，而不是单看梯度范数。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/26/Backpropagation-Chain-Rule/">https://eliano64.github.io/2026/10/26/Backpropagation-Chain-Rule/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/26/Activation-Function-Comparison/" title="Activation Function Comparison"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Activation Function Comparison</div></div><div class="info-2"><div class="info-item-1">激活函数的作用仿射层的输出称为预激活，激活函数逐元素把预激活映射为新的输出。以下讨论仿射变换与逐点激活交替堆叠的前馈网络。激活函数为这种网络提供非线性；其他结构也可能产生非线性，例如最大池化的最大值选择、归一化中依赖输入的统计量，以及注意力中的 softmax 加权。 单个单元先做线性组合，再过一次非线性： z = \sum_i w_i x_i + b, \qquad a = \sigma(z) 如果去掉第二步，多层网络退化成一次仿射变换： y = W_3\left(W_2\left(W_1x + b_1\right) + b_2\right) + b_3 = (W_3W_2W_1)\,x + \left(W_3W_2b_1 + W_3b_2 + b_3\right) 括号展开后仍然是 W'x + b'，堆叠不增加非线性表达能力。 仿射变换与激活函数既然需要非线性，为什么不把线性那一步直接定义成非线性，例如标量映射 x \mapsto Wx^2 + b，省掉激活函数？ 一是数值尺度。取单变量、单位权重、零偏置，并让每层采用平方映射 x \mapsto x^2。叠加 L 层后得到...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Batch-Norm-And-Layer-Norm/" title="Batch Norm And Layer Norm"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Batch Norm And Layer Norm</div></div><div class="info-2"><div class="info-item-1">归一化要解决的问题初始化只处理第 0 步：权重按合适尺度采样，第一次前向的激活落在可控范围。这种控制是期望意义上的，只在权重与输入独立、分布对称等前提下近似成立。 训练开始后，每层权重按梯度更新，下一层看到的输入分布随之前后移动，初始尺度不再成立。归一化在训练过程中反复把激活按某一维重新定标，让后续层看到的均值与方差保持在可控范围，尺度推导见 Weight-Initialization-And-Variance。 归一化的位置不固定在线性层之后：输入侧可以做输入归一化，残差结构里归一化的位置也会影响训练稳定性。本篇比较的两种归一化都放在线性层之后、激活之前，这是最常见的排布。 标准化与仿射变换标准化指减去均值、再除以标准差。批归一化（Batch Normalization）简称 BatchNorm 或 BN。层归一化（Layer Normalization）简称 LayerNorm 或 LN。两者都在标准化之后接一次仿射变换，即逐维乘 \gamma 再加 \beta。 设 \mu 与 \sigma^2 分别是本次计算使用的均值和方差： \hat{x} = \frac{x -...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/26/Activation-Function-Comparison/" title="Activation Function Comparison"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Activation Function Comparison</div></div><div class="info-2"><div class="info-item-1">激活函数的作用仿射层的输出称为预激活，激活函数逐元素把预激活映射为新的输出。以下讨论仿射变换与逐点激活交替堆叠的前馈网络。激活函数为这种网络提供非线性；其他结构也可能产生非线性，例如最大池化的最大值选择、归一化中依赖输入的统计量，以及注意力中的 softmax 加权。 单个单元先做线性组合，再过一次非线性： z = \sum_i w_i x_i + b, \qquad a = \sigma(z) 如果去掉第二步，多层网络退化成一次仿射变换： y = W_3\left(W_2\left(W_1x + b_1\right) + b_2\right) + b_3 = (W_3W_2W_1)\,x + \left(W_3W_2b_1 + W_3b_2 + b_3\right) 括号展开后仍然是 W'x + b'，堆叠不增加非线性表达能力。 仿射变换与激活函数既然需要非线性，为什么不把线性那一步直接定义成非线性，例如标量映射 x \mapsto Wx^2 + b，省掉激活函数？ 一是数值尺度。取单变量、单位权重、零偏置，并让每层采用平方映射 x \mapsto x^2。叠加 L 层后得到...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Batch-Norm-And-Layer-Norm/" title="Batch Norm And Layer Norm"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Batch Norm And Layer Norm</div></div><div class="info-2"><div class="info-item-1">归一化要解决的问题初始化只处理第 0 步：权重按合适尺度采样，第一次前向的激活落在可控范围。这种控制是期望意义上的，只在权重与输入独立、分布对称等前提下近似成立。 训练开始后，每层权重按梯度更新，下一层看到的输入分布随之前后移动，初始尺度不再成立。归一化在训练过程中反复把激活按某一维重新定标，让后续层看到的均值与方差保持在可控范围，尺度推导见 Weight-Initialization-And-Variance。 归一化的位置不固定在线性层之后：输入侧可以做输入归一化，残差结构里归一化的位置也会影响训练稳定性。本篇比较的两种归一化都放在线性层之后、激活之前，这是最常见的排布。 标准化与仿射变换标准化指减去均值、再除以标准差。批归一化（Batch Normalization）简称 BatchNorm 或 BN。层归一化（Layer Normalization）简称 LayerNorm 或 LN。两者都在标准化之后接一次仿射变换，即逐维乘 \gamma 再加 \beta。 设 \mu 与 \sigma^2 分别是本次计算使用的均值和方差： \hat{x} = \frac{x -...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Deep-Learning-Study-Route/" title="Deep Learning Study Route"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Deep Learning Study Route</div></div><div class="info-2"><div class="info-item-1">深度学习在机器学习中的位置深度学习是机器学习的一个分支。模型仍是参数化的函数，训练仍是定义损失、求梯度、沿负梯度更新参数。与线性模型的区别在函数形式：多层可微变换复合起来，特征表示与分类器一起从数据中学出。把深度学习当成一组框架 API 的集合，就看不到这条主线。 表示学习与特征工程的分工传统机器学习里，特征通常由人设计，模型在这些特征上做分类或回归。深度学习把“从原始输入构造表示”这一步也纳入学习。以图像为例，靠前的层常对应边缘与局部纹理，中间的层组合出部件，靠后的层组合出物体。 这种从数据中学出的表示称为表示学习。表示学习并不总占优势：结构化表格数据上，人工特征配合中小规模模型往往更合适。优势出现在原始输入维度高、标注数据足够多、结构具有明显层次性的场景。 训练过程中仍有大量人工决策，包括数据清洗与增广、网络结构、损失函数、正则化强度。数据划分、结构、损失函数与正则化都属于训练前的人工配置，不会通过训练自动得到。 非线性与深度仿射变换指形如 Wx + b 的线性变换加平移。只把仿射层串联起来时，多层会合并成一次仿射变换： y =...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Deep-Learning-Training-Pipeline/" title="Deep Learning Training Pipeline"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Deep Learning Training Pipeline</div></div><div class="info-2"><div class="info-item-1">下面用监督学习的例子说明一次训练里发生了什么：有标签、有可导的损失、用反向传播求梯度、用优化器更新参数。强化学习与无监督预训练也常使用同一个前向、损失、反向、更新的骨架，差别在数据来源与目标函数。 从输入到预测训练流程的起点是数据形状与任务形式，这两者决定结构的选择：输入是展平的像素、卷积特征图还是序列，输出是类别、概率还是实数。下面的前向描述以最简单的全连接层为例。 图像是像素张量，可以直接进入线性层或卷积层；文本是词编号，需要先经过嵌入查表变成向量，再做矩阵运算。第一层把输入线性组合，再过激活函数，得到一组新的数值；下一层在这组新数值上重复同样的操作。层数加深，表示从低层模式逐步组合成高层语义。 以图像识别为例，靠前的层常对应边缘与纹理，靠后的层对应部件与物体。换成文本或表格，层次结构并不相同，所以“逐层抽象成边缘、部件、物体”是图像模型的典型情形，不是所有网络都如此。 这条链路叫前向传播： A^{(l)} = \sigma\left(W^{(l)} A^{(l-1)} + b^{(l)}\right) A^{(l-1)} 形状为 [n_{l-1}, B]，B 是...</div></div></div></a><a class="pagination-related" href="/2026/10/26/From-Perceptron-To-MLP/" title="From Perceptron To MLP"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">From Perceptron To MLP</div></div><div class="info-2"><div class="info-item-1">感知机感知机的结构一个感知机对输入做加权求和，再加偏置，最后通过阈值函数输出 0 或 1。这里的阈值函数指阶跃函数：自变量不小于 0 时取 1，否则取 0。 z = \sum_{i=1}^{n} w_i x_i + b, \qquad a = \text{step}(z) = \begin{cases} 1, & z \ge 0 \\ 0, & z < 0 \end{cases} w 与 b 是参数，a 是输出。把 z = 0 当成分界线，输入空间被切成两半：z \ge 0 判为 1，z < 0 判为 0。 所以感知机是一个线性分类器，决策边界是 w \cdot x + b = 0 这个超平面；输入为二维时，超平面退化为一条直线。 感知机的特点在于参数由误差反馈调整：分类错误时按下节规则修改权重，正确时保持不变。 学习规则与收敛条件 线性可分与收敛条件 线性可分指存在一组 (w,b)，使所有正类样本满足 w \cdot x + b \ge 0、所有负类样本满足 w \cdot x + b <...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Weight-Initialization-And-Variance/" title="Weight Initialization And Variance"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Weight Initialization And Variance</div></div><div class="info-2"><div class="info-item-1">初始化的目标初始化决定训练开始时的参数取值。初始化需要兼顾以下目标：  同一层的不同单元要能学到不同的特征。 信号在层间的尺度大致保持，不逐层放大或衰减。 梯度在反向传播中不消失也不爆炸。  第一条由对称性分析给出，第二条由方差在层间的传播推出，第三条由反向连乘的幅度决定。训练开始后的分布漂移不归初始化处理，相关机制见 Batch-Norm-And-Layer-Norm。 对称性若同层各单元的输入权重向量、输出连接权重、偏置与优化器状态完全相同，各单元就会产生相同的激活与梯度，更新后仍保持相同。该层只产生同一表示的重复副本，表示能力相当于一个单元。 如果输出层对各单元的权重不同，即使输入侧权重相同，各单元收到的上游梯度也不同，更新后就会分开。实践中通常用随机初始化打破单元之间的对称性，让各单元从不同的起点出发。 全零初始化在单层线性模型或逻辑回归上可以正常训练，因为没有需要区分彼此的隐藏单元。偏置通常初始化为 0；偏置不参与输入侧的特征区分，权重随机化之后，各单元对同一输入的加权结果已经不同，梯度随之不同。 方差的传播考虑一个线性层，输入 x_j 与权重 w_{ij}...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%A7%84%E6%A8%A1"><span class="toc-text">问题规模</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E7%BA%A6%E5%AE%9A"><span class="toc-text">符号约定</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%93%BE%E5%BC%8F%E6%B3%95%E5%88%99%E4%B8%8E%E8%AE%A1%E7%AE%97%E5%9B%BE"><span class="toc-text">链式法则与计算图</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E5%8F%AF%E4%BB%A5%E6%89%8B%E7%AE%97%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="toc-text">一个可以手算的例子</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E5%90%91"><span class="toc-text">前向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8D%E5%90%91"><span class="toc-text">反向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E4%B8%AA%E4%BE%8B%E5%AD%90%E7%9A%84%E7%BD%91%E7%BB%9C%E5%9B%BE"><span class="toc-text">这个例子的网络图</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%9F%A9%E9%98%B5%E5%BD%A2%E5%BC%8F%E7%9A%84%E4%B8%89%E4%B8%AA%E6%A2%AF%E5%BA%A6"><span class="toc-text">矩阵形式的三个梯度</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%BE%AE%E5%88%86%E7%9A%84%E8%AE%B0%E5%BD%95%E4%B8%8E%E9%87%8A%E6%94%BE"><span class="toc-text">自动微分的记录与释放</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A2%AF%E5%BA%A6%E4%B8%8E%E5%AD%A6%E4%B9%A0%E7%8E%87"><span class="toc-text">梯度与学习率</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

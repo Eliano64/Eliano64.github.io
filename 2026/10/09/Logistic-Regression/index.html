@@ -1,0 +1,495 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Logistic Regression | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="预测房价、预测温度这类任务回答的是“多少”。把一封邮件分成垃圾邮件与正常邮件、把一张影像分成恶性与良性、判断一个用户会不会点击广告，回答的却是“属于哪一类”。后一类任务的输出是有限集合里的离散标签，标签之间既没有大小也没有距离，用线性回归直接拟合，从输出范围到对异常值的敏感性都会出问题。 把类别编码成 0 和 1、直接套线性回归、再用 0.5 当分界，是最直接的想法。这个做法在两处失效：输出可以落">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Logistic Regression">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/09/Logistic-Regression/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="预测房价、预测温度这类任务回答的是“多少”。把一封邮件分成垃圾邮件与正常邮件、把一张影像分成恶性与良性、判断一个用户会不会点击广告，回答的却是“属于哪一类”。后一类任务的输出是有限集合里的离散标签，标签之间既没有大小也没有距离，用线性回归直接拟合，从输出范围到对异常值的敏感性都会出问题。 把类别编码成 0 和 1、直接套线性回归、再用 0.5 当分界，是最直接的想法。这个做法在两处失效：输出可以落">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-09T15:11:36.000Z">
+<meta property="article:modified_time" content="2026-10-27T04:21:03.796Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="MachineLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Logistic Regression",
+  "url": "https://eliano64.github.io/2026/10/09/Logistic-Regression/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-09T15:11:36.000Z",
+  "dateModified": "2026-10-27T04:21:03.796Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/09/Logistic-Regression/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Logistic Regression',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Logistic Regression</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Logistic Regression</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-09T15:11:36.000Z" title="发表于 2026-10-09 23:11:36">2026-10-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-27T04:21:03.796Z" title="更新于 2026-10-27 12:21:03">2026-10-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">987</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>预测房价、预测温度这类任务回答的是“多少”。把一封邮件分成垃圾邮件与正常邮件、把一张影像分成恶性与良性、判断一个用户会不会点击广告，回答的却是“属于哪一类”。后一类任务的输出是有限集合里的离散标签，标签之间既没有大小也没有距离，用<a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Linear-Regression&#x2F;" class="wikilink">线性回归</a>直接拟合，从输出范围到对异常值的敏感性都会出问题。</p>
+<p>把类别编码成 0 和 1、直接套线性回归、再用 0.5 当分界，是最直接的想法。这个做法在两处失效：输出可以落在 0 到 1 之外，一个极端样本也能把整条分界线拉歪。</p>
+<p>逻辑回归的改法只动输出端：保留线性部分，接sigmoid 函数，将任意实数映射到 <script type="math/tex">(0,1)</script>，让模型直接给出概率。</p>
+<p>输出变成概率之后，损失函数、梯度形式与评估方式都跟着变：均方误差在概率输出上梯度性质差，常用做法是换成从最大似然推出的交叉熵；评估不能只看准确率；类别多于两个时 sigmoid 换成 softmax。</p>
+<h1 id="从回归到分类"><a href="#从回归到分类" class="headerlink" title="从回归到分类"></a>从回归到分类</h1><h2 id="分类任务"><a href="#分类任务" class="headerlink" title="分类任务"></a>分类任务</h2><p>分类（Classification）指输出离散标签的任务：候选类别有限、互斥，每个样本恰好属于其中一个。类别数为 2 时叫二分类，多于 2 时叫多分类。</p>
+<p>分类与回归的分界在输出的性质上，也在“错”的含义上。回归的输出是连续数值，可以相减，平方误差下差 2 比差 1 严重 4 倍，误差累加起来就是损失；分类的输出是标签，在普通的 0-1 错误率下，把猫判成狗和判成飞机计为同样的错，标签之间不存在距离。所以回归的损失可以建立在残差上，逻辑回归则用预测概率构造分类损失。模型一般也不直接输出类别，而是输出每个类别的概率，再按一条概率分界把概率转成类别。</p>
+<h2 id="直接套用线性回归"><a href="#直接套用线性回归" class="headerlink" title="直接套用线性回归"></a>直接套用线性回归</h2><p>最直接的做法是把两类编码成 0 与 1，用 <script type="math/tex">z = \boldsymbol{w}^{\top}\boldsymbol{x}+b</script> 拟合标签，再规定 <script type="math/tex">z > 0.5</script> 判为正类。两条缺陷都出在这个规定上。</p>
+<p>第一条是输出范围。线性回归的输出取遍 <script type="math/tex">(-\infty, +\infty)</script>，而概率的取值范围是 <script type="math/tex">[0,1]</script>，模型输出通常落在内部的 <script type="math/tex">(0,1)</script>。阈值之外的数值没有解释力：输出 10000 与输出 0.51 的两个样本都被判为正类，两个样本在“有多大概率是正类”上却分不出高低，损失函数也没有统一的量纲去衡量错得多严重。</p>
+<p>第二条是异常值。线性回归用平方误差衡量偏差，离得越远罚得越重，一个尺寸特别大的样本足以把权重拉大，使分界线整体向该样本偏移；原本落在 0.5 正确一侧的普通样本被推过线，判错。出问题的不只是那一个点，而是一整片样本。</p>
+<p>两条缺陷的根源相同：线性函数的值域与概率的值域不一致，误差的形状又与“判对判错”无关。要修的只是输出端。</p>
+<h1 id="用-sigmoid-把分数变成概率"><a href="#用-sigmoid-把分数变成概率" class="headerlink" title="用 sigmoid 把分数变成概率"></a>用 sigmoid 把分数变成概率</h1><h2 id="函数形式"><a href="#函数形式" class="headerlink" title="函数形式"></a>函数形式</h2><p>sigmoid 函数（也叫 logistic 函数）定义为：</p>
+<script type="math/tex; mode=display">\sigma(z) = \frac{1}{1+e^{-z}}</script>
+<p>逻辑回归把线性部分的输出 <script type="math/tex">z = \boldsymbol{w}^{\top}\boldsymbol{x}+b</script> 送入 sigmoid，作为对正类的预测概率：</p>
+<script type="math/tex; mode=display">\hat{y} = \sigma(\boldsymbol{w}^{\top}\boldsymbol{x}+b) = \frac{1}{1+e^{-(\boldsymbol{w}^{\top}\boldsymbol{x}+b)}}</script>
+<p>前半段算一个分数，sigmoid 把分数换成概率。sigmoid 的性质都能从式子里读出来：因为 <script type="math/tex">e^{-z}>0</script>，分母恒大于 1，所以 <script type="math/tex">0<\sigma(z)<1</script>，取到的是开区间，在数学上不会精确等于 0 或 1。<script type="math/tex">z \to +\infty</script> 时 <script type="math/tex">\sigma \to 1</script>，<script type="math/tex">z \to -\infty</script> 时 <script type="math/tex">\sigma \to 0</script>，函数严格单调递增。另外， <script type="math/tex">\sigma(-z)=1-\sigma(z)</script>（两边通分到同一分母即可验证），所以图像关于点 <script type="math/tex">(0,0.5)</script> 中心对称，<script type="math/tex">z</script> 变号，概率随之变到 0.5 的另一侧。</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;logistic-sigmoid.svg">..&#x2F;assets&#x2F;logistic-sigmoid.svg</span></p>
+<h2 id="概率解读与决策边界"><a href="#概率解读与决策边界" class="headerlink" title="概率解读与决策边界"></a>概率解读与决策边界</h2><p><script type="math/tex">\hat{y}</script> 读作“这个样本属于正类的概率”，即 <script type="math/tex">\hat{y} = P(y=1 \mid \boldsymbol{x})</script>。输出 0.8 表示模型认为该样本有八成把握是正类。这是 sigmoid 相对线性回归最关键的一点：给出的数本身带概率含义，而不只是一个用来排序的分数。判类需要一条概率分界，称为决策阈值，默认取 0.5。因为 <script type="math/tex">\sigma</script> 严格递增且 <script type="math/tex">\sigma(0)=0.5</script>，条件 <script type="math/tex">\hat{y} \ge 0.5</script> 与 <script type="math/tex">z \ge 0</script> 完全等价：</p>
+<script type="math/tex; mode=display">\hat{y} \ge 0.5 \iff \frac{1}{1+e^{-z}} \ge \frac{1}{2} \iff 1+e^{-z} \le 2 \iff e^{-z} \le 1 \iff z \ge 0</script>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">阈值不是规定</span></div>
+<div class="callout-content"><p>于是<strong>决策边界</strong>是 <script type="math/tex">z = 0</script>，也就是 <script type="math/tex">\boldsymbol{w}^{\top}\boldsymbol{x}+b = 0</script>。这是一张超平面：线上的样本概率恰为 0.5，按 <script type="math/tex">z \ge 0</script> 判为正类的约定归入正类一侧；两侧分别是预测为正类与负类的区域。sigmoid 自带这条边界，因为中点 0.5 恰好落在 <script type="math/tex">z</script> 的零点上。这条边界是线性的，形状由特征决定。要划出弯曲的边界，得先做特征变换（见 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Data-Preprocessing&#x2F;" class="wikilink">Data-Preprocessing</a>），或者换用<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Decision-Tree&#x2F;" class="wikilink">Decision-Tree</a>这类按单个特征取值逐层切分的模型。阈值取 0.5 只是习惯，不是规定，评估一节会看到移动阈值的后果。</p>
+</div>
+</div>
+<h2 id="阶跃函数的问题"><a href="#阶跃函数的问题" class="headerlink" title="阶跃函数的问题"></a>阶跃函数的问题</h2><p>硬阈值的理想形态是阶跃函数：<script type="math/tex">z<0</script> 输出 0，<script type="math/tex">z \ge 0</script> 输出 1，在 <script type="math/tex">z=0</script> 处跳变。阶跃函数符合“只需要类别”的直觉，却不能用来训练：在 <script type="math/tex">z=0</script> 处左右极限不等，函数不连续，导数不存在；在其余所有点上导数为 0。梯度下降靠导数判断参数该往哪边改、改多少，导数要么不存在、要么恒为零，参数得不到任何方向信息，更新无法进行。导数为零还意味着 <script type="math/tex">z</script> 从 0.1 变到 100 对损失毫无影响，模型区分不出“差一点”和“差很远”，而这正是训练最需要的信息。</p>
+<p>sigmoid 是阶跃函数的平滑版本：处处连续可导，在 <script type="math/tex">z=0</script> 附近最陡，两端渐近平坦。中段的陡峭保住了“靠近边界时敏感”的性质，整体的平滑让梯度在每一点都有定义。</p>
+<h2 id="导数的简洁形式"><a href="#导数的简洁形式" class="headerlink" title="导数的简洁形式"></a>导数的简洁形式</h2><p>把分母写成幂，用链式法则求导：</p>
+<script type="math/tex; mode=display">\sigma(z) = \left(1+e^{-z}\right)^{-1} \quad\Longrightarrow\quad \sigma'(z) = -(1+e^{-z})^{-2}\cdot\left(-e^{-z}\right) = \frac{e^{-z}}{\left(1+e^{-z}\right)^{2}}</script>
+<p>再把结果拆成两个因子的乘积：</p>
+<script type="math/tex; mode=display">\frac{e^{-z}}{\left(1+e^{-z}\right)^{2}} = \frac{1}{1+e^{-z}}\cdot\frac{e^{-z}}{1+e^{-z}} = \sigma(z)\left(1-\sigma(z)\right)</script>
+<p>最后一处用到 <script type="math/tex">1-\sigma(z) = e^{-z}/(1+e^{-z})</script>。这个形式的用处在于只依赖 <script type="math/tex">\sigma(z)</script> 本身：前向计算已经把 <script type="math/tex">\hat{y}</script> 算出来了，反向传播时导数就是一次乘法 <script type="math/tex">\hat{y}(1-\hat{y})</script>，不必重新碰指数。<script type="math/tex">\hat{y}(1-\hat{y})</script> 是一条开口向下的抛物线，在 <script type="math/tex">\hat{y}=0.5</script> 处取最大值 0.25，在两端趋近 0，这个“两端趋零”的性质在下一节会变成麻烦。</p>
+<h1 id="损失函数的选择"><a href="#损失函数的选择" class="headerlink" title="损失函数的选择"></a>损失函数的选择</h1><h2 id="均方误差与-sigmoid-的组合"><a href="#均方误差与-sigmoid-的组合" class="headerlink" title="均方误差与 sigmoid 的组合"></a>均方误差与 sigmoid 的组合</h2><p>均方误差（MSE）取预测与标签之差的平方，单个样本写作：</p>
+<script type="math/tex; mode=display">L = \frac{1}{2}\left(\hat{y} - y\right)^{2}</script>
+<p>系数 <script type="math/tex">\frac{1}{2}</script> 只是为了让求导时平方产生的 2 被消掉。把平方误差接在 sigmoid 后面，凸性与梯度各出一处问题。</p>
+<p>第一处是凸性。线性回归配 MSE 时，损失是参数的凸二次函数；设计矩阵列满秩时，全局最优解唯一。采用合适步长，梯度下降可以收敛到最优解。平方误差与 sigmoid 复合后，损失一般不再是凸函数，可能出现多个局部极小，迭代结果也可能受初值影响。</p>
+<p>第二处是梯度。设 <script type="math/tex">\hat{y} = \sigma(z)</script>，<script type="math/tex">L</script> 对 <script type="math/tex">z</script> 的导数由两段乘起来：</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial \hat{y}} = \hat{y} - y, \qquad \frac{\partial \hat{y}}{\partial z} = \sigma'(z) = \hat{y}\left(1-\hat{y}\right)</script>
+<p>按链式法则把两段相乘：</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial z} = \frac{\partial L}{\partial \hat{y}}\cdot\frac{\partial \hat{y}}{\partial z} = \left(\hat{y} - y\right)\hat{y}\left(1-\hat{y}\right)</script>
+<p>两个因子在极端处反着走。正样本 <script type="math/tex">y=1</script> 被错得离谱时 <script type="math/tex">\hat{y} \approx 0</script>，第一个因子 <script type="math/tex">\hat{y}-y = -1</script>，量级接近上限；第二个因子 <script type="math/tex">\hat{y}(1-\hat{y}) \approx 0</script>，因为 sigmoid 在 0 端早就压平了。乘积约为 0：</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial z} = \underbrace{\left(\hat{y} - y\right)}_{=-1}\cdot\underbrace{\hat{y}\left(1-\hat{y}\right)}_{\approx 0} \approx 0</script>
+<p>预测概率接近错误类别的极端值时，梯度反而接近零，参数更新因而缓慢。这就是梯度消失在这套组合里的具体形态：损失的数值很大，传回参数的信号却接近零。MSE 在这里的问题是幅度：在最需要纠正的样本上给出最弱的信号。</p>
+<h2 id="分类损失应满足的条件"><a href="#分类损失应满足的条件" class="headerlink" title="分类损失应满足的条件"></a>分类损失应满足的条件</h2><p>对二分类，模型的输出是一个概率 <script type="math/tex">p = \hat{y}</script>。合理的分类损失至少应当满足三条要求。</p>
+<ul>
+<li>真实标签 <script type="math/tex">y=1</script> 时，<script type="math/tex">p</script> 越接近 1 损失越小，<script type="math/tex">p</script> 接近 0 时惩罚要大；</li>
+<li>真实标签 <script type="math/tex">y=0</script> 时对称，<script type="math/tex">p</script> 越接近 0 损失越小，<script type="math/tex">p</script> 接近 1 时惩罚要大；</li>
+<li>惩罚的峰值出现在模型非常自信却判错的位置。</li>
+</ul>
+<p>第三条容易被读错。<script type="math/tex">p=0.5</script> 是模型最不确定的点，损失并不在这里最大：两种结果都可能，此时惩罚应当居中。真正的最大损失在真实标签 <script type="math/tex">y=1</script> 而模型给出 <script type="math/tex">p \approx 0</script> 处：模型非常确信，而且确信的方向与标签相反。MSE 的惩罚有上界，梯度也不会随纠错需求增大：MSE 的惩罚只随 <script type="math/tex">|\hat{y}-y|</script> 增长，看似合理，但上一节已经算出，正在“自信判错”的位置上 MSE 的梯度趋近 0，惩罚再大也传不回参数。</p>
+<p>要写出满足这三条的函数，需要三件工具：对数函数、伯努利分布，以及概率与似然的区分。</p>
+<h2 id="对数函数"><a href="#对数函数" class="headerlink" title="对数函数"></a>对数函数</h2><p>引入对数有两个理由。一是单调性：<script type="math/tex">\log</script> 严格递增，最大化一个正数等价于最大化该数的对数，使概率取最大值的参数不会因为取对数而改变。二是数值稳定性：<script type="math/tex">m</script> 个样本的联合概率是 <script type="math/tex">m</script> 个小于 1 的数连乘，样本一多结果就下溢成 0，计算机无法表示，取对数把连乘换成连加：</p>
+<script type="math/tex; mode=display">\log(a\cdot b) = \log a + \log b</script>
+<p>下溢消失，求导也不必再展开 <script type="math/tex">m</script> 项乘积法则，逐项相加即可。而 <script type="math/tex">-\log x</script> 在 <script type="math/tex">(0,1)</script> 上的形状还正好满足上一节的要求：<script type="math/tex">x \to 1</script> 时 <script type="math/tex">-\log x \to 0</script>，<script type="math/tex">x \to 0</script> 时 <script type="math/tex">-\log x \to +\infty</script>，概率越接近正确答案惩罚越接近 0，越接近错误答案惩罚涨得越快。</p>
+<h2 id="伯努利分布"><a href="#伯努利分布" class="headerlink" title="伯努利分布"></a>伯努利分布</h2><p>二分类的标签是一次只有两种结果的随机试验，像抛一枚不一定均匀的硬币：结果为 1 的概率是 <script type="math/tex">p</script>，结果为 0 的概率是 <script type="math/tex">1-p</script>。两种情形可以用一个式子统一写出来：</p>
+<script type="math/tex; mode=display">P(y=1) = p, \quad P(y=0) = 1-p \quad\Longrightarrow\quad P(y) = p^{y}\left(1-p\right)^{1-y}</script>
+<p><script type="math/tex">y=1</script> 时第二项的指数为 0，<script type="math/tex">(1-p)^{0}=1</script>，只剩 <script type="math/tex">p</script>；<script type="math/tex">y=0</script> 时第一项为 1，只剩 <script type="math/tex">1-p</script>。逻辑回归给出的 <script type="math/tex">\hat{y}</script> 正是样本属于正类的概率 <script type="math/tex">p</script>，代入后得到单个样本被预测正确的概率：</p>
+<script type="math/tex; mode=display">P(y \mid \boldsymbol{x}) = \hat{y}^{y}\left(1-\hat{y}\right)^{1-y}</script>
+<h2 id="概率与似然"><a href="#概率与似然" class="headerlink" title="概率与似然"></a>概率与似然</h2><p>同一个表达式 <script type="math/tex">P(\text{数据} \mid \text{参数})</script>，从两个方向读，就是两个概念。概率是参数已知、数据未知时，预测数据出现的可能性。假设硬币均匀，即正面概率 <script type="math/tex">p=0.5</script>，问抛 10 次恰好出现 7 次正面的概率是多少，这是概率。</p>
+<p>似然是数据已知、参数未知时，评估参数是否合理。已经抛了 10 次，观测到 7 次正面与 3 次反面，问 <script type="math/tex">p</script> 取多少最符合这个观测，这是似然。两者的算式相同，区别在固定谁、变动谁：概率固定参数、变动数据，似然固定数据、变动参数。训练时数据是给定的，要变的是参数，所以这里起作用的是似然。</p>
+<h2 id="从最大似然到交叉熵"><a href="#从最大似然到交叉熵" class="headerlink" title="从最大似然到交叉熵"></a>从最大似然到交叉熵</h2><p>最大似然估计（MLE）的出发点是：这批数据已经出现了，那么让这批数据出现概率最大的参数，就是最好的参数。</p>
+<p><script type="math/tex">m</script> 个样本相互独立，联合概率是各自概率的连乘，这个乘积就是似然函数，其中 <script type="math/tex">\hat{y}_i</script> 由参数 <script type="math/tex">\boldsymbol{\theta} = (\boldsymbol{w}, b)</script> 决定：</p>
+<script type="math/tex; mode=display">L(\boldsymbol{\theta}) = \prod_{i=1}^{m}\hat{y}_i^{y_i}\left(1-\hat{y}_i\right)^{1-y_i}</script>
+<p>直接对乘积求导要展开 <script type="math/tex">m</script> 项乘积法则，样本稍多还会下溢，因此取对数。对数严格递增，不改变最大值的位置，同时把连乘变成连加，结果叫对数似然（log-likelihood），也就是似然取对数：</p>
+<script type="math/tex; mode=display">\log L(\boldsymbol{\theta}) = \sum_{i=1}^{m}\left[y_i\log\hat{y}_i + \left(1-y_i\right)\log\left(1-\hat{y}_i\right)\right]</script>
+<p>统计学要让似然最大，机器学习要把损失降到最小，于是加负号把最大化翻成最小化，再除以样本数 <script type="math/tex">m</script>，让损失的数值不随批量大小变化：</p>
+<script type="math/tex; mode=display">J(\boldsymbol{\theta}) = -\frac{1}{m}\sum_{i=1}^{m}\left[y_i\log\hat{y}_i + \left(1-y_i\right)\log\left(1-\hat{y}_i\right)\right]</script>
+<p>这就是交叉熵损失（Cross-Entropy Loss），二分类下的形式也叫二元交叉熵（BCE）。交叉熵在这里的定义是：衡量模型给出的预测分布与真实标签分布之间差距的损失，差距越小，损失越小。交叉熵由最大似然推出，所以最小化交叉熵与最大化数据出现的概率是同一件事。把 sigmoid 代进去之后，<script type="math/tex">J</script> 关于参数是凸函数；严格凸与有限最优需要额外条件，特征完全可分时最优参数可能不存在有限解。</p>
+<p><script type="math/tex">y_i</script> 只能取 0 或 1，求和里永远只有一项在起作用，这一项就是前面三条要求本身：判对时惩罚消失，判错且自信时惩罚发散。</p>
+<table>
+<thead>
+<tr>
+<th>真实标签</th>
+<th>起作用的损失项</th>
+<th>这一项的行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><script type="math/tex">y_i = 1</script></td>
+<td><script type="math/tex">-\log\hat{y}_i</script></td>
+<td><script type="math/tex">\hat{y}_i</script> 接近 1 时损失趋于 0，接近 0 时损失趋于 <script type="math/tex">+\infty</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">y_i = 0</script></td>
+<td><script type="math/tex">-\log\left(1-\hat{y}_i\right)</script></td>
+<td><script type="math/tex">\hat{y}_i</script> 接近 0 时损失趋于 0，接近 1 时损失趋于 <script type="math/tex">+\infty</script></td>
+</tr>
+</tbody></table>
+<h2 id="交叉熵的信息论解释"><a href="#交叉熵的信息论解释" class="headerlink" title="交叉熵的信息论解释"></a>交叉熵的信息论解释</h2><p>熵（Entropy）度量一个分布的不确定性，也就是想弄清这件事的结果、平均需要多少信息量。公平硬币正反各半，完全猜不中，熵最大。一枚 99% 出正面的硬币几乎没有悬念，熵很小。确定事件（100% 出正面）的熵为 0。交叉熵则度量两个分布的差距。分类任务里的两个分布是模型的预测概率分布与真实标签分布，后者是只有正确类别为 1 的 one-hot 分布。交叉熵算的是用预测分布去描述真实标签分布时还差多少，差得越少，模型越可靠。单个样本上的读数就是 <script type="math/tex">-\log p(\text{正确类别})</script>：模型给正确类别的概率越高，这个代价越接近 0。把正确类别的概率压到接近 0，代价发散。信息论的解释与最大似然的推导落在同一个式子上：交叉熵是“用预测分布去描述真实标签分布”这个动作本身的价格，而不是人为设定的惩罚。</p>
+<h1 id="梯度"><a href="#梯度" class="headerlink" title="梯度"></a>梯度</h1><p>单个样本的交叉熵记作 <script type="math/tex">J_i = -\left[y\log\hat{y} + (1-y)\log(1-\hat{y})\right]</script>，其中 <script type="math/tex">\hat{y} = \sigma(z)</script>，<script type="math/tex">z = \boldsymbol{w}^{\top}\boldsymbol{x}+b</script>。求 <script type="math/tex">J_i</script> 对 <script type="math/tex">z</script> 的导数分两步。</p>
+<p>第一步，对 <script type="math/tex">\hat{y}</script> 求导。先通分，再把分子展开为 <script type="math/tex">y - y\hat{y} - \hat{y} + y\hat{y} = y - \hat{y}</script>，最后取负号：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+\frac{\partial J_i}{\partial \hat{y}} &= -\left(\frac{y}{\hat{y}} - \frac{1-y}{1-\hat{y}}\right) \\
+&= -\frac{y\left(1-\hat{y}\right) - \left(1-y\right)\hat{y}}{\hat{y}\left(1-\hat{y}\right)} \\
+&= \frac{\hat{y} - y}{\hat{y}\left(1-\hat{y}\right)}
+\end{aligned}</script>
+<p>第二步，乘上 sigmoid 的导数。第一步得到的分母 <script type="math/tex">\hat{y}(1-\hat{y})</script> 恰好是 <script type="math/tex">\sigma'(z)</script>，被乘除了：</p>
+<script type="math/tex; mode=display">\begin{aligned}
+\frac{\partial J_i}{\partial z} &= \frac{\partial J_i}{\partial \hat{y}}\cdot\frac{\partial \hat{y}}{\partial z} \\
+&= \frac{\hat{y} - y}{\hat{y}\left(1-\hat{y}\right)}\cdot\hat{y}\left(1-\hat{y}\right) \\
+&= \hat{y} - y
+\end{aligned}</script>
+<p>这个相消不是巧合：交叉熵对 <script type="math/tex">\hat{y}</script> 的导数分母是 <script type="math/tex">\hat{y}(1-\hat{y})</script>，而 sigmoid 对 <script type="math/tex">z</script> 的导数正好是 <script type="math/tex">\hat{y}(1-\hat{y})</script>，两者互为倒数。</p>
+<p>再往前一步到参数。<script type="math/tex">z</script> 对第 <script type="math/tex">j</script> 个权重与对偏置的偏导分别是 <script type="math/tex">\partial z/\partial w_j = x_j</script>、<script type="math/tex">\partial z/\partial b = 1</script>，所以单个样本的偏导是：</p>
+<script type="math/tex; mode=display">\frac{\partial J_i}{\partial w_j} = \left(\hat{y} - y\right)x_j, \qquad \frac{\partial J_i}{\partial b} = \hat{y} - y</script>
+<p><script type="math/tex">m</script> 个样本取平均，得到要放进更新式的两个梯度：</p>
+<script type="math/tex; mode=display">\frac{\partial J}{\partial w_j} = \frac{1}{m}\sum_{i=1}^{m}\left(\hat{y}_i - y_i\right)x_{i,j}, \qquad \frac{\partial J}{\partial b} = \frac{1}{m}\sum_{i=1}^{m}\left(\hat{y}_i - y_i\right)</script>
+<p>这两个式子恰好是线性回归 MSE 的梯度去掉一个常数因子 2 之后的样子：</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>线性回归（MSE）</th>
+<th>逻辑回归（交叉熵）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>权重梯度</td>
+<td><script type="math/tex">\frac{2}{m}\sum_i\left(\hat{y}_i - y_i\right)x_{i,j}</script></td>
+<td><script type="math/tex">\frac{1}{m}\sum_i\left(\hat{y}_i - y_i\right)x_{i,j}</script></td>
+</tr>
+<tr>
+<td>偏置梯度</td>
+<td><script type="math/tex">\frac{2}{m}\sum_i\left(\hat{y}_i - y_i\right)</script></td>
+<td><script type="math/tex">\frac{1}{m}\sum_i\left(\hat{y}_i - y_i\right)</script></td>
+</tr>
+<tr>
+<td><script type="math/tex">\hat{y}</script> 的含义</td>
+<td><script type="math/tex">\boldsymbol{w}^{\top}\boldsymbol{x}_i + b</script></td>
+<td><script type="math/tex">\sigma\left(\boldsymbol{w}^{\top}\boldsymbol{x}_i + b\right)</script></td>
+</tr>
+</tbody></table>
+<p>更新式的形式与线性回归相同，区别在 <script type="math/tex">\hat{y}</script> 是经过 sigmoid 的概率，而不是线性输出。</p>
+<h1 id="分类任务的评估"><a href="#分类任务的评估" class="headerlink" title="分类任务的评估"></a>分类任务的评估</h1><h2 id="混淆矩阵"><a href="#混淆矩阵" class="headerlink" title="混淆矩阵"></a>混淆矩阵</h2><p>准确率是判对的样本占全部样本的比例。类别比例悬殊时准确率几乎没有信息量：正类只占极少数时，把全部样本都判为负类也能得到很高的准确率，而正类一个都没有被识别出来。</p>
+<p>混淆矩阵（Confusion Matrix）把所有样本按真实类别与预测类别交叉计数，排成一张表，是分类评估的基础。计数之前要先定下哪一类算正类。本节把“恶性”取为正类，热图上的 0 与 1 只是类别编码，不用作正负类的标记。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>预测为恶性（正类）</th>
+<th>预测为良性（负类）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>实际为恶性（正类）</td>
+<td>TP 41</td>
+<td>FN 1</td>
+</tr>
+<tr>
+<td>实际为良性（负类）</td>
+<td>FP 1</td>
+<td>TN 71</td>
+</tr>
+</tbody></table>
+<p>四个格子的名字由“真实类别”与“判得对不对”两件事组合而成。TP（True Positive，真正例）是正类被判成正类。FN（False Negative，假负例）是正类被判成负类，也就是漏报。FP（False Positive，假正例）是负类被判成正类，也就是误报。TN（True Negative，真负例）是负类被判成负类。这张表一共 114 个样本，即 41 + 1 + 1 + 71。</p>
+<p>两类错误的代价通常不对等。肿瘤筛查里，FN 把恶性判成良性，患者会错过治疗；FP 把良性判成恶性，代价是多做一次复查。指标的选择由这个不对称决定：这里应当优先压低 FN。准确率把两类错误算成同一个数，正好丢掉了这个不对称。</p>
+<h2 id="精确率、召回率与-F1"><a href="#精确率、召回率与-F1" class="headerlink" title="精确率、召回率与 F1"></a>精确率、召回率与 F1</h2><p>从混淆矩阵出发，把关注点放在正类上，得到两个比例：</p>
+<script type="math/tex; mode=display">\text{Precision} = \frac{TP}{TP+FP}, \qquad \text{Recall} = \frac{TP}{TP+FN}</script>
+<p>精确率（Precision）的分母是模型判为正类的全部样本，衡量判为正类的样本中真实正类的比例，即预测质量。召回率（Recall）的分母是真实正类的全部样本，问的是“真正的正类被抓到了多少”，衡量覆盖能力。两个分母不同，一个从预测出发，一个从真实出发，所以同一张矩阵能给出两个比例，各自回答一个问题。F1 把两者合成一个数，取的是调和平均（两项取倒数后求平均，再取一次倒数）：</p>
+<script type="math/tex; mode=display">F1 = 2\cdot\frac{P\times R}{P+R}</script>
+<p>调和平均由较小的一项主导：精确率与召回率只要有一个低，F1 就低；算术平均则会被较大的一项抬高。所以两者都高时 F1 才高，单看一个数就会漏掉另一面的短板。</p>
+<p>两者此消彼长，移动决策阈值就能看到。把阈值从 0.5 调低，更多样本越过线被判为正类：原本漏掉的正类重新被判对，召回率上升，同时被误判的负类增多，精确率下降。调高阈值则相反。在乳腺癌场景里宁可误报也不能漏报，阈值应当取低，让召回率优先，接受精确率的损失。</p>
+<h2 id="ROC-曲线与-AUC"><a href="#ROC-曲线与-AUC" class="headerlink" title="ROC 曲线与 AUC"></a>ROC 曲线与 AUC</h2><p>精确率与召回率都是在一个固定阈值上算出来的，换阈值就换一组数，ROC 曲线把阈值的影响整个画出来。ROC 曲线（Receiver Operating Characteristic Curve）以假正率 FPR 为横轴、真正率 TPR 为纵轴。把决策阈值从最严扫到最松，每个阈值在图上落一个点，连起来就是这条曲线。两个坐标的定义是：</p>
+<script type="math/tex; mode=display">\text{FPR} = \frac{FP}{FP+TN}, \qquad \text{TPR} = \frac{TP}{TP+FN}</script>
+<p>FPR 是负类中被误判为正类的比例，TPR 与召回率是同一个量，即正类被正确识别的比例。阈值很高时几乎没有样本被判为正类，两个比率都接近 0，点落在左下角；阈值放到最低，全部样本判为正类，两个比率都到 1，点落在右上角。示例数据里的 ROC 例子 AUC 为 0.9954，曲线从原点几乎垂直升到 TPR 接近 1，再水平向右；阈值取 0.8 时 TPR 已到 0.81，FPR 只有 0.02。</p>
+<p>AUC（Area Under Curve）是 ROC 曲线下的面积，取值 0 到 1。对角线对应随机猜测，AUC 为 0.5；AUC 越接近 1，模型把正类排在负类之前的能力越强。AUC 的关键性质是与阈值无关：一条曲线由所有阈值上的点组成，AUC 汇总的是整条曲线的高度，不依赖某个具体阈值，因此可以直接用来比较不同模型，不必先对齐各自的阈值。</p>
+<p>下面这组 60 个样本的示例里，拖动阈值就能看到计数与两个比例同时变化，AUC 保持不变：</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||520)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||520)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/logistic-threshold.html" style="width:100%;height:520px;border:0" loading="lazy"></iframe>
+</div>
+
+<h1 id="多分类与神经网络"><a href="#多分类与神经网络" class="headerlink" title="多分类与神经网络"></a>多分类与神经网络</h1><h2 id="softmax-把得分变成概率分布"><a href="#softmax-把得分变成概率分布" class="headerlink" title="softmax 把得分变成概率分布"></a>softmax 把得分变成概率分布</h2><p>二分类只有一个分数，sigmoid 把分数折成概率就够了。类别变成 <script type="math/tex">K</script> 个（猫、狗、猪）时，需要的是 <script type="math/tex">K</script> 个互相关联的概率。先给每个类别算一个独立得分：</p>
+<script type="math/tex; mode=display">z_k = \boldsymbol{w}_k^{\top}\boldsymbol{x} + b_k, \qquad k = 1,\dots,K</script>
+<p>这些未归一化的得分叫 logits，可以取任意实数，正负不限，加起来也不等于 1，不能直接当概率。softmax 把得分换成概率分布：</p>
+<script type="math/tex; mode=display">\hat{y}_k = \frac{e^{z_k}}{\sum_{j=1}^{K}e^{z_j}}</script>
+<p>分子恒正，所以每一项都大于 0；各项分子之和恰好是分母，所以总和严格为 1；指数把得分之间的差放大，得分高的一项占的份额更大。三类的一个具体例子：<script type="math/tex">z = [2.0, 1.0, 0.1]</script>，三个指数约为 <script type="math/tex">7.39</script>、<script type="math/tex">2.72</script>、<script type="math/tex">1.11</script>，总和约 <script type="math/tex">11.2</script>，得到 <script type="math/tex">\hat{y} = [0.66, 0.24, 0.10]</script>。分类结果取概率最大的那一类，这里没有单一的阈值，类别之间是竞争关系：一类的概率升上去，其他类必然降下来。</p>
+<h2 id="多分类交叉熵"><a href="#多分类交叉熵" class="headerlink" title="多分类交叉熵"></a>多分类交叉熵</h2><p>标签是一个 one-hot 向量，正确类别的位置为 1，其余为 0，交叉熵对 <script type="math/tex">K</script> 个类别求和：</p>
+<script type="math/tex; mode=display">L = -\sum_{k=1}^{K}y_k\log\hat{y}_k</script>
+<p>承接上面的例子，真实类别是第 0 类，<script type="math/tex">y = [1, 0, 0]</script>，代入后只有一项非零：</p>
+<script type="math/tex; mode=display">L = -\left(1\cdot\log 0.66 + 0\cdot\log 0.24 + 0\cdot\log 0.10\right) = -\log 0.66 \approx 0.42</script>
+<p>与二分类的情形相同，多分类交叉熵实质就是 <script type="math/tex">-\log\hat{y}_{\text{正确类}}</script>：正确类别的概率越接近 1，损失越接近 0；把正确类概率压到接近 0，损失发散。</p>
+<h2 id="多分类的梯度"><a href="#多分类的梯度" class="headerlink" title="多分类的梯度"></a>多分类的梯度</h2><p>对 softmax 的输出求导，先要对自身得分与其他得分分别求偏导。记 <script type="math/tex">S = \sum_j e^{z_j}</script>，则 <script type="math/tex">\hat{y}_k = e^{z_k}/S</script>。对自身得分，分子与分母都含 <script type="math/tex">e^{z_k}</script>，用商的求导法则：</p>
+<script type="math/tex; mode=display">\frac{\partial \hat{y}_k}{\partial z_k} = \frac{e^{z_k}S - e^{z_k}\cdot e^{z_k}}{S^{2}} = \frac{e^{z_k}}{S} - \left(\frac{e^{z_k}}{S}\right)^{2} = \hat{y}_k\left(1 - \hat{y}_k\right)</script>
+<p>对其他得分（<script type="math/tex">j \ne k</script>），分子与 <script type="math/tex">z_j</script> 无关，只有分母随之变化：</p>
+<script type="math/tex; mode=display">\frac{\partial \hat{y}_k}{\partial z_j} = \frac{0\cdot S - e^{z_k}\cdot e^{z_j}}{S^{2}} = -\hat{y}_k\hat{y}_j</script>
+<p>再对 <script type="math/tex">L = -\log\hat{y}_k</script>（<script type="math/tex">k</script> 是正确类别）用链式法则，正确类别对应的那一项是：</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial z_k} = -\frac{1}{\hat{y}_k}\cdot\hat{y}_k\left(1-\hat{y}_k\right) = -\left(1-\hat{y}_k\right) = \hat{y}_k - 1</script>
+<p>其他类别那一项是：</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial z_j} = -\frac{1}{\hat{y}_k}\cdot\left(-\hat{y}_k\hat{y}_j\right) = \hat{y}_j</script>
+<p>因为正确类别的 <script type="math/tex">y_k=1</script>、其余 <script type="math/tex">y_j=0</script>，两式可以合成一条：</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial z_k} = \hat{y}_k - y_k</script>
+<p>softmax 的导数里带着 <script type="math/tex">\hat{y}_k</script>，交叉熵对 <script type="math/tex">\hat{y}_k</script> 求导又给出 <script type="math/tex">1/\hat{y}_k</script>，两者相乘后约掉，梯度里只剩“预测减标签”，与二分类的 <script type="math/tex">\hat{y}-y</script> 是同一个形状。</p>
+<h2 id="逻辑回归作为单层神经网络"><a href="#逻辑回归作为单层神经网络" class="headerlink" title="逻辑回归作为单层神经网络"></a>逻辑回归作为单层神经网络</h2><p>把逻辑回归的四个部分按层摆开：输入是特征 <script type="math/tex">x_1, x_2, \dots</script>，一层连接把输入乘权重、加偏置得到 <script type="math/tex">z</script>，激活函数是 sigmoid（多分类时是 softmax），输出是概率。这就是一个没有隐藏层的单层神经网络，“逻辑回归”与“单层神经网络”的差别只在叫法，参数、前向计算与梯度完全对应。这也解释了为什么现代网络的输出层在单标签分类中普遍采用这一套：最后一层是线性变换加 softmax，损失是交叉熵。逻辑回归是这套结构里最简单的情形，把这一结构讲清楚，也就讲清了深度网络输出层在做什么。各类模型的分工见 <a href="&#x2F;2026&#x2F;10&#x2F;05&#x2F;Machine-Learning-Overview&#x2F;" class="wikilink">Machine-Learning-Overview</a>。</p>
+<h2 id="nn-Softmax-与-CrossEntropyLoss-叠加"><a href="#nn-Softmax-与-CrossEntropyLoss-叠加" class="headerlink" title="nn.Softmax 与 CrossEntropyLoss 叠加"></a><code>nn.Softmax</code> 与 <code>CrossEntropyLoss</code> 叠加</h2><p>PyTorch 里很容易写出下面这段：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">model = nn.Sequential(</span><br><span class="line">    ...,</span><br><span class="line">    nn.Linear(<span class="number">128</span>, <span class="number">10</span>),        <span class="comment"># 输出 10 个类别的得分</span></span><br><span class="line">    nn.Softmax(dim=-<span class="number">1</span>),        <span class="comment"># 提前把得分变成概率，与下面的损失重复</span></span><br><span class="line">)</span><br><span class="line">criterion = nn.CrossEntropyLoss()   <span class="comment"># 内部自带 softmax，期望未归一化的 logits</span></span><br></pre></td></tr></table></figure>
+
+<p>训练时的表现是 loss 缓慢下降，准确率可能长期停留在接近随机的水平，具体取决于初始化与优化设置。原因是 CrossEntropyLoss 期望的输入是未归一化的 logits。CrossEntropyLoss 内部先做 log_softmax 再取负对数，把“softmax 转概率”与“交叉熵”合成一步算完。网络末尾再接一个 nn.Softmax，等于对概率又做了一次 softmax：第一次已经把 logits 压进 <script type="math/tex">(0,1)</script> 且和为 1，各类之间的差距缩小。第二次 softmax 进一步压缩类别概率的差异，并改变梯度，可能妨碍训练。</p>
+<p>训练时移除模型末尾的 softmax，直接向损失函数传入 logits：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">model = nn.Sequential(</span><br><span class="line">    ...,</span><br><span class="line">    nn.Linear(<span class="number">128</span>, <span class="number">10</span>),        <span class="comment"># 只留未归一化的 logits</span></span><br><span class="line">)</span><br><span class="line">criterion = nn.CrossEntropyLoss()</span><br></pre></td></tr></table></figure>
+
+
+
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">CrossEntropyLoss 的输入</span></div>
+<div class="callout-content"><p>改掉之后 loss 通常会下降，幅度取决于初始化与优化设置。损失函数与其配套的激活需要成对使用，两者组合才构成一个完整的输出层；PyTorch 把这些配对打包进一个函数，代价是调用方必须知道输入是概率还是得分。合并计算还顺带解决了数值问题：分开算时 softmax 可能输出 0，再取对数得到负无穷；log_softmax 用 log-sum-exp 的形式绕开这一步。因此，训练时由 CrossEntropyLoss 完成这一步转换。</p>
+</div>
+</div>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/09/Logistic-Regression/">https://eliano64.github.io/2026/10/09/Logistic-Regression/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/09/Model-Evaluation/" title="Model Evaluation"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Model Evaluation</div></div><div class="info-2"><div class="info-item-1">在比较模型性能之前，先要有一个基线模型作为比较的参照系。基线模型（Baseline）指第一个快速实现、结构相对简单但流程完整的模型：数据怎么读、怎么划分、指标怎么算都已经能完整执行，只把模型的表达力压到最低。基线的价值不在精度，而在建立参照系。 训练模型为的是让模型抓住数据背后的规律，从而对从未见过的新数据也给出准确预测，这种能力叫泛化能力。测试集只是“没见过的新数据”的一次抽样，测试集给出的数字既是性能的估计，也带着抽样本身的偶然性。 评估基准与回归指标评估在测试集上完成，指标算的是预测值与真实值之间的差距。本节只处理回归任务。分类任务关心的是混淆矩阵、精确率、召回率、F1、ROC 与 AUC，那套指标的前提是预测输出为类别或概率，放在 逻辑回归 里讲。 Baseline 的作用基线模型的构造原则是取最简单、又能把整个流程做完的那一个：回归任务直接预测训练集的均值，或者用 线性回归 这类最简单的模型。基线同时充当三样东西。基本参照：指标明显差于基线时，应检查实现、特征、复杂度与数据划分，不能仅凭这个结果认定实现有...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Decision-Tree/" title="Decision Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Decision Tree</div></div><div class="info-2"><div class="info-item-1">决策树的位置逻辑回归这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。 这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有多一致）。 层层提问的结构决策树（Decision...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/27/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">数据准备训练前需要划分数据、估计预处理参数，再将处理后的数组转为张量批次。以下接口分别处理数值表示、预处理和批次装载。 形状记号中，N 表示样本数，D 表示输入特征数，K 表示输出特征数，C 表示类别数。dtype 表示元素类型，device 表示张量所在的计算设备。 NumPy 构造与属性1234import numpy as nprng = np.random.default_rng(0)X = rng.normal(size=(4, 3))        # 浮点，形状 [4, 3]i = np.arange(6).reshape(2, 3)     # 整数，形状 [2, 3]  np.array(data) 可将列表等序列转为数组，dtype 默认由元素推断：整数列表得到整数数组，含浮点得到浮点数组。np.zeros、np.ones 可以传 dtype；rng.normal 不接受 dtype 参数，得到 float64，需要单精度时用 .astype(np.float32)。shape、dtype、ndim...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Data-Preprocessing/" title="Data Preprocessing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Data Preprocessing</div></div><div class="info-2"><div class="info-item-1"> Cite Garbage in, garbage out.   真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。 预处理是模型的一部分，决定了模型能看见什么：一列缺失超过七成的特征是留着还是删掉，一个无序的港口名是编成 0、1、2 还是拆成三列...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Decision-Tree/" title="Decision Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Decision Tree</div></div><div class="info-2"><div class="info-item-1">决策树的位置逻辑回归这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。 这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有多一致）。 层层提问的结构决策树（Decision...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">集成学习的思路决策树给出的是一串可以直接读出的规则：年龄大于 30，收入低于 5000，就分到这一类。规则可读，代价是对具体样本过分敏感。训练集里少一个样本，或者某个特征取值稍微变动，整棵树的结构就可能改变。 集成学习不试图把单棵树做得更稳，而是承认单棵树会出错，让许多棵各自不完美的树共同给出预测。这条路上有两条分支：让树彼此独立地生长，最后汇总结果，代表是随机森林；让树一棵接一棵地修正前一轮的误差，代表是梯度提升树。 为什么需要集成单棵树的脆弱决策树的划分准则与剪枝在 Decision-Tree...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">线性回归模型的训练对于线性回归模型，n 个样本、d 个特征写成设计矩阵 \mathbf{X} \in \mathbb{R}^{n \times d}，第 i 行是第 i 个样本的特征 \boldsymbol{x}_i^{\top}；标签是向量 \boldsymbol{y} \in \mathbb{R}^{n}。参数是权重 \boldsymbol{\theta} \in \mathbb{R}^{d} 与偏置 \boldsymbol{b} \in \mathbb{R}^{n}，预测写成 \hat{\boldsymbol{y}} = \mathbf{X} \boldsymbol{\theta} + \boldsymbol{b} 偏置向量的每个分量都是同一个数 b，即 \boldsymbol{b} = b\boldsymbol{1}（\boldsymbol{1} \in \mathbb{R}^{n} 是全 1 向量），加到每个样本上的是同一个值。  为什么偏置的分量都是同一个数 如果让这些值各不相同，等于给每个样本单独配一个截距。样本一共只有 n...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归的位置监督学习里，标签是连续数值时（房价、温度、销量），任务要回答的是“给定这些特征，输出是多少”，这一类任务称为回归，整个监督学习的版图见 Machine-Learning-Overview。线性回归（Linear Regression）是最简单的一种做法：把输出写成特征的加权和。特征是描述一个样本的各个属性，例如面积与房龄。名字里有两件事值得拆开：“线性”规定模型的形式，“回归”交代任务的类型。 线性回归先是一个模型，其次才是一套训练方法。下文只处理前一半：模型的形式怎么定，好坏怎么量，参数怎么解出来。把损失逐步降下去的过程见 Gradient-Descent。 什么算线性数学上的线性描述按比例变化、可叠加的关系。一个映射 f 满足两条性质就称为线性：输入放大 a 倍，输出也放大 a 倍，即 f(a\boldsymbol{x}) = a f(\boldsymbol{x})，这条叫齐次性；两个输入叠加后的输出等于各自输出之和，即 f(\boldsymbol{x} + \boldsymbol{z}) = f(\boldsymbol{x}) +...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8E%E5%9B%9E%E5%BD%92%E5%88%B0%E5%88%86%E7%B1%BB"><span class="toc-text">从回归到分类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E7%B1%BB%E4%BB%BB%E5%8A%A1"><span class="toc-text">分类任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%A5%97%E7%94%A8%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92"><span class="toc-text">直接套用线性回归</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8-sigmoid-%E6%8A%8A%E5%88%86%E6%95%B0%E5%8F%98%E6%88%90%E6%A6%82%E7%8E%87"><span class="toc-text">用 sigmoid 把分数变成概率</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%BD%A2%E5%BC%8F"><span class="toc-text">函数形式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E7%8E%87%E8%A7%A3%E8%AF%BB%E4%B8%8E%E5%86%B3%E7%AD%96%E8%BE%B9%E7%95%8C"><span class="toc-text">概率解读与决策边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B6%E8%B7%83%E5%87%BD%E6%95%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">阶跃函数的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%BC%E6%95%B0%E7%9A%84%E7%AE%80%E6%B4%81%E5%BD%A2%E5%BC%8F"><span class="toc-text">导数的简洁形式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-text">损失函数的选择</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9D%87%E6%96%B9%E8%AF%AF%E5%B7%AE%E4%B8%8E-sigmoid-%E7%9A%84%E7%BB%84%E5%90%88"><span class="toc-text">均方误差与 sigmoid 的组合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E7%B1%BB%E6%8D%9F%E5%A4%B1%E5%BA%94%E6%BB%A1%E8%B6%B3%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="toc-text">分类损失应满足的条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E6%95%B0%E5%87%BD%E6%95%B0"><span class="toc-text">对数函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%AF%E5%8A%AA%E5%88%A9%E5%88%86%E5%B8%83"><span class="toc-text">伯努利分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E7%8E%87%E4%B8%8E%E4%BC%BC%E7%84%B6"><span class="toc-text">概率与似然</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E6%9C%80%E5%A4%A7%E4%BC%BC%E7%84%B6%E5%88%B0%E4%BA%A4%E5%8F%89%E7%86%B5"><span class="toc-text">从最大似然到交叉熵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E5%8F%89%E7%86%B5%E7%9A%84%E4%BF%A1%E6%81%AF%E8%AE%BA%E8%A7%A3%E9%87%8A"><span class="toc-text">交叉熵的信息论解释</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A2%AF%E5%BA%A6"><span class="toc-text">梯度</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%86%E7%B1%BB%E4%BB%BB%E5%8A%A1%E7%9A%84%E8%AF%84%E4%BC%B0"><span class="toc-text">分类任务的评估</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%B7%E6%B7%86%E7%9F%A9%E9%98%B5"><span class="toc-text">混淆矩阵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B2%BE%E7%A1%AE%E7%8E%87%E3%80%81%E5%8F%AC%E5%9B%9E%E7%8E%87%E4%B8%8E-F1"><span class="toc-text">精确率、召回率与 F1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROC-%E6%9B%B2%E7%BA%BF%E4%B8%8E-AUC"><span class="toc-text">ROC 曲线与 AUC</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%9A%E5%88%86%E7%B1%BB%E4%B8%8E%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"><span class="toc-text">多分类与神经网络</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#softmax-%E6%8A%8A%E5%BE%97%E5%88%86%E5%8F%98%E6%88%90%E6%A6%82%E7%8E%87%E5%88%86%E5%B8%83"><span class="toc-text">softmax 把得分变成概率分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E5%88%86%E7%B1%BB%E4%BA%A4%E5%8F%89%E7%86%B5"><span class="toc-text">多分类交叉熵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E5%88%86%E7%B1%BB%E7%9A%84%E6%A2%AF%E5%BA%A6"><span class="toc-text">多分类的梯度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E4%BD%9C%E4%B8%BA%E5%8D%95%E5%B1%82%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"><span class="toc-text">逻辑回归作为单层神经网络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nn-Softmax-%E4%B8%8E-CrossEntropyLoss-%E5%8F%A0%E5%8A%A0"><span class="toc-text">nn.Softmax 与 CrossEntropyLoss 叠加</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

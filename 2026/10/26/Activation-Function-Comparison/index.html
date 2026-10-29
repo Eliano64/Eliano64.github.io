@@ -1,0 +1,387 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Activation Function Comparison | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="激活函数的作用仿射层的输出称为预激活，激活函数逐元素把预激活映射为新的输出。以下讨论仿射变换与逐点激活交替堆叠的前馈网络。激活函数为这种网络提供非线性；其他结构也可能产生非线性，例如最大池化的最大值选择、归一化中依赖输入的统计量，以及注意力中的 softmax 加权。 单个单元先做线性组合，再过一次非线性： z &#x3D; \sum_i w_i x_i + b, \qquad a &#x3D; \sigma(z)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Activation Function Comparison">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/26/Activation-Function-Comparison/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="激活函数的作用仿射层的输出称为预激活，激活函数逐元素把预激活映射为新的输出。以下讨论仿射变换与逐点激活交替堆叠的前馈网络。激活函数为这种网络提供非线性；其他结构也可能产生非线性，例如最大池化的最大值选择、归一化中依赖输入的统计量，以及注意力中的 softmax 加权。 单个单元先做线性组合，再过一次非线性： z &#x3D; \sum_i w_i x_i + b, \qquad a &#x3D; \sigma(z)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-26T15:42:25.000Z">
+<meta property="article:modified_time" content="2026-10-27T03:18:25.163Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="DeepLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Activation Function Comparison",
+  "url": "https://eliano64.github.io/2026/10/26/Activation-Function-Comparison/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-26T15:42:25.000Z",
+  "dateModified": "2026-10-27T03:18:25.163Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/26/Activation-Function-Comparison/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Activation Function Comparison',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Activation Function Comparison</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Activation Function Comparison</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-26T15:42:25.000Z" title="发表于 2026-10-26 23:42:25">2026-10-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-27T03:18:25.163Z" title="更新于 2026-10-27 11:18:25">2026-10-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Deep-Learning/">Deep Learning</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">998</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="激活函数的作用"><a href="#激活函数的作用" class="headerlink" title="激活函数的作用"></a>激活函数的作用</h1><p>仿射层的输出称为预激活，激活函数逐元素把预激活映射为新的输出。以下讨论仿射变换与逐点激活交替堆叠的前馈网络。激活函数为这种网络提供非线性；其他结构也可能产生非线性，例如最大池化的最大值选择、归一化中依赖输入的统计量，以及注意力中的 softmax 加权。</p>
+<p>单个单元先做线性组合，再过一次非线性：</p>
+<script type="math/tex; mode=display">z = \sum_i w_i x_i + b, \qquad a = \sigma(z)</script>
+<p>如果去掉第二步，多层网络退化成一次仿射变换：</p>
+<script type="math/tex; mode=display">y = W_3\left(W_2\left(W_1x + b_1\right) + b_2\right) + b_3 = (W_3W_2W_1)\,x + \left(W_3W_2b_1 + W_3b_2 + b_3\right)</script>
+<p>括号展开后仍然是 <script type="math/tex">W'x + b'</script>，堆叠不增加非线性表达能力。</p>
+<h1 id="仿射变换与激活函数"><a href="#仿射变换与激活函数" class="headerlink" title="仿射变换与激活函数"></a>仿射变换与激活函数</h1><p>既然需要非线性，为什么不把线性那一步直接定义成非线性，例如标量映射 <script type="math/tex">x \mapsto Wx^2 + b</script>，省掉激活函数？</p>
+<p>一是数值尺度。取单变量、单位权重、零偏置，并让每层采用平方映射 <script type="math/tex">x \mapsto x^2</script>。叠加 <script type="math/tex">L</script> 层后得到 <script type="math/tex">x^{2^L}</script>：三层是 <script type="math/tex">x^8</script>，十层是 <script type="math/tex">x^{1024}</script>。<script type="math/tex">|x|>1</script> 时迅速溢出，<script type="math/tex">|x|<1</script> 时迅速衰减。这个标量例子说明，每层都做幂次映射会让尺度控制变难。</p>
+<p>ReLU（Rectified Linear Unit，修正线性单元）定义为 <script type="math/tex">\max(0,x)</script>。ReLU 在正半轴无上界，深层网络叠加大权重时，激活值仍可能逐层放大。</p>
+<p>二是工程实现。矩阵乘有成熟的库与内核，对 <script type="math/tex">z = w^{\top}x + b</script>，有 <script type="math/tex">\partial z/\partial w = x</script>；对单个样本，<script type="math/tex">\mathrm{d}L/\mathrm{d}W = \delta x^{\top}</script>，其中 <script type="math/tex">\delta = \partial L/\partial z</script>，一次外积即可给出该样本的权重梯度；整层把各样本的外积相加。</p>
+<p>自定义的非线性只要能用框架已有的算子组合出来，自动微分同样可以求导。框架没有提供的新算子需要自行实现反向，写出该算子在自身定义下的导数。</p>
+<h1 id="从激活导数到梯度传播"><a href="#从激活导数到梯度传播" class="headerlink" title="从激活导数到梯度传播"></a>从激活导数到梯度传播</h1><p>激活函数既决定前向取值，也影响反向梯度。一层输出对输入的偏导数组成雅可比矩阵，其中同时包含权重与激活导数的作用。</p>
+<p>反向传播需要连乘各层的雅可比矩阵，所以梯度的幅度与方向由整体连乘决定。权重的放大作用可能抵消激活导数的缩小作用，仅凭激活导数长期小于 1，不能断定完整梯度逐层衰减。</p>
+<h1 id="评估激活函数的六项指标"><a href="#评估激活函数的六项指标" class="headerlink" title="评估激活函数的六项指标"></a>评估激活函数的六项指标</h1><p>评估一个激活函数通常看下面六项。这六项是取舍指标，不是硬性门槛，没有哪个函数同时满足全部。</p>
+<ol>
+<li>非线性：不具备非线性，堆叠深度就没有意义。</li>
+<li>几乎处处可导：反向传播要乘该激活函数的导数。ReLU 在 0 处不可导，可约定该点的导数为 0；详见下文 ReLU 一节。阶跃函数则是除 0 点外导数恒为 0，这才是阶跃函数难以训练的原因。</li>
+<li>梯度行为良好：导数不消失、不爆炸，理想情况接近 1。</li>
+<li>计算开销小：训练中会被调用上亿次，单次开销与具体实现和硬件有关。</li>
+<li>输出零中心：输出均值为 0。这样可以缓解同一层所有输入同号带来的更新方向受限；ReLU 不满足这一项，这正是 ReLU 在取舍中的代价之一。</li>
+<li>单调、平滑、有界：常见的加分项，不是必需项。</li>
+</ol>
+<h1 id="逐点激活函数族"><a href="#逐点激活函数族" class="headerlink" title="逐点激活函数族"></a>逐点激活函数族</h1><h2 id="阶跃函数"><a href="#阶跃函数" class="headerlink" title="阶跃函数"></a>阶跃函数</h2><p>阶跃函数是最简单的阈值型激活函数：</p>
+<script type="math/tex; mode=display">\text{step}(x) = \begin{cases} 1, & x \ge 0 \\ 0, & x < 0 \end{cases}</script>
+<p>阶跃函数在 <script type="math/tex">x \ne 0</script> 处导数恒为 0，在 <script type="math/tex">x = 0</script> 处不可导。多层网络使用阶跃函数时，误差在反向乘上 0，参数得到的梯度为零。</p>
+<p>另一个问题是输出只有两种取值：输入是 0.001 还是 1000 都输出 1，数值上的差别被丢掉。</p>
+<h2 id="Sigmoid"><a href="#Sigmoid" class="headerlink" title="Sigmoid"></a>Sigmoid</h2><script type="math/tex; mode=display">\sigma(x) = \frac{1}{1 + e^{-x}}, \qquad \sigma'(x) = \sigma(x)\left(1 - \sigma(x)\right)</script>
+<p>sigmoid 在整个实数轴上处处可导，而反向传播需要一个能提供非零梯度的激活函数，S 形曲线因此成为常用选择。输出落在 <script type="math/tex">(0,1)</script> 且 <script type="math/tex">\sigma(0) = 0.5</script>，适合做二分类的概率输出；过渡平滑，输入 1.5 与 1.6 的输出有可分辨的差别。</p>
+<div class="callout callout-important">
+<div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">饱和</span></div>
+<div class="callout-content"><p>饱和指输入绝对值很大时，导数趋近 0。sigmoid 的导数在 <script type="math/tex">x = 0</script> 处取最大值 <script type="math/tex">0.25</script>，<script type="math/tex">|x|</script> 增大后迅速趋零，函数值趋近 1 或 0。</p>
+<p>反向传播每穿过一层都要乘一次该层激活的导数（连乘过程见 <a href="&#x2F;2026&#x2F;10&#x2F;26&#x2F;Backpropagation-Chain-Rule&#x2F;" class="wikilink">Backpropagation-Chain-Rule</a>），五层连乘的上界是 <script type="math/tex">0.25^5 \approx 9.8 \times 10^{-4}</script>。这是激活导数因子的乘积上界，不含权重因子；完整梯度还要乘上各层权重，所以这个上界给出的是量级上的衰减趋势，不是精确的梯度范数。</p>
+</div>
+</div>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">非零中心的适用范围</span></div>
+<div class="callout-content"><p>记 <script type="math/tex">\delta = \partial L/\partial z</script> 为该神经元预激活处的梯度，则 <script type="math/tex">\partial L/\partial w_j = \delta\, a_j^{(\text{prev})}</script>。如果上一层输出全为正，同一个神经元的所有权重梯度分量都与 <script type="math/tex">\delta</script> 同号，这一次更新只能整体增大或整体减小。</p>
+<p>这个结论适用于单个样本、单个神经元、上一层输出全为正的情形。整个训练过程中梯度是否同号，需要逐次计算才能判断；更新路径也不一定呈 Z 字形。</p>
+</div>
+</div>
+<p>sigmoid 与 tanh 都涉及指数运算。<code>exp</code> 的开销高于比较与加法，具体差值取决于硬件与内核，没有固定的数量级结论。</p>
+<h2 id="Tanh"><a href="#Tanh" class="headerlink" title="Tanh"></a>Tanh</h2><script type="math/tex; mode=display">\tanh(x) = \frac{e^{x} - e^{-x}}{e^{x} + e^{-x}} = 2\sigma(2x) - 1, \qquad \tanh'(x) = 1 - \tanh^2(x)</script>
+<p>值域从 <script type="math/tex">(0,1)</script> 扩展到 <script type="math/tex">(-1,1)</script>，关于原点对称。导数最大值从 <script type="math/tex">0.25</script> 提到 <script type="math/tex">1</script>，但 <script type="math/tex">1</script> 只在 <script type="math/tex">x = 0</script> 处取到，是上界而不是典型值。</p>
+<p><script type="math/tex">x = 1</script> 时 <script type="math/tex">\tanh'(1) = 1 - \tanh^2(1) \approx 0.42</script>，两层连乘就是 <script type="math/tex">0.18</script> 量级。该例中的激活导数乘积仍会衰减，但大于两层 sigmoid 导数乘积的上界。</p>
+<p>与 sigmoid 相比，tanh 的值域以 0 为中心，原点附近的导数更大；两端仍会饱和，计算也仍涉及指数运算。</p>
+<p><script type="math/tex">\tanh</script> 是奇函数，输入分布关于 0 对称时，输出分布也关于 0 对称。输入分布不对称时，输出均值可能不为 0，不能仅凭值域就认定输出零均值。</p>
+<h2 id="ReLU"><a href="#ReLU" class="headerlink" title="ReLU"></a>ReLU</h2><p>ReLU 截断负半轴：</p>
+<script type="math/tex; mode=display">\text{ReLU}(x) = \max(0, x), \qquad \text{ReLU}'(x) = \begin{cases} 1, & x > 0 \\ 0, & x \le 0 \end{cases}</script>
+<p>ReLU 在 <script type="math/tex">x = 0</script> 处不可导。该点可以使用次梯度：通过原点、且始终不高于 ReLU 图像的直线的斜率，可取 <script type="math/tex">[0,1]</script> 内的任一值；框架通常取 0；自定义实现应与所用框架的约定一致。</p>
+<p>ReLU 相对 sigmoid 与 tanh 的优势有三条。正半轴导数恒为 1，不饱和，梯度可以连续回传；只需一次比较，计算开销小；负半轴输出 0，激活结果稀疏，即一部分单元的输出恰为 0。</p>
+<p>代价同样有三条。负半轴导数为 0：只要某个单元的预激活在参与训练的所有样本上都是负的，该单元收到的数据梯度就一直是 0，这个单元在当下不起作用，称为死亡 ReLU。</p>
+<p>该状态仍有恢复的可能：上游参数或优化器状态改变后，预激活可能重新变正，该单元的梯度也随之恢复。输出非负、不是零中心，在正半轴梯度直通的情况下这点不利通常可以接受。</p>
+<p>正半轴无上界，深层叠加大参数时激活值可能放大，实践中常配合归一化与小学习率，但归一化不是 ReLU 网络能工作的必要条件。</p>
+<h2 id="带小斜率与门控的变体"><a href="#带小斜率与门控的变体" class="headerlink" title="带小斜率与门控的变体"></a>带小斜率与门控的变体</h2><p>Leaky ReLU 在负半轴给一个很小的斜率：</p>
+<script type="math/tex; mode=display">\text{LeakyReLU}(x) = \begin{cases} x, & x > 0 \\ \alpha x, & x \le 0 \end{cases}</script>
+<p>负半轴导数恒为 <script type="math/tex">\alpha</script>（常见取值 0.01 到 0.1），即便预激活为负，梯度也不是 0。Leaky ReLU 避免了负半轴局部导数为零造成的梯度阻断，但完整梯度仍取决于上游梯度与其他层。</p>
+<p><script type="math/tex">\alpha</script> 是新的手动超参，配合 Leaky ReLU 使用时初始化尺度要改：预激活分布关于 0 对称时，负半轴斜率让二阶矩变成 <script type="math/tex">(1+\alpha^2)/2</script> 倍，对应的 He 初始化给出权重方差 <script type="math/tex">2/\left((1+\alpha^2)\,\text{fan\_in}\right)</script>，这里 fan_in 指每个单元接收的输入个数。</p>
+<p>GELU（Gaussian Error Linear Unit，高斯误差线性单元）用标准正态分布的累积分布函数给输入加权。设 <script type="math/tex">Z \sim \mathcal{N}(0,1)</script>，<script type="math/tex">\Phi(x) = P(Z \le x)</script>，即标准正态变量不超过 <script type="math/tex">x</script> 的概率：</p>
+<script type="math/tex; mode=display">\text{GELU}(x) = x\,\Phi(x) \approx 0.5x\left(1 + \tanh\left(\sqrt{\tfrac{2}{\pi}}\left(x + 0.044715x^3\right)\right)\right)</script>
+<p>这里的 <script type="math/tex">\sqrt{2/\pi}</script> 是一个预先算好的常数，不是运行时的开方开销。GELU 在 0 附近平滑过渡，负半轴保留很小的负值，<script type="math/tex">x = 1</script> 时输出约 0.841。</p>
+<p>Transformer 前馈层常用这一激活（<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1606.08415">GELU 论文</a>）。并非所有 Transformer 都如此，也有模型选择别的激活。</p>
+<p>SiLU（Sigmoid Linear Unit，也称 Swish）形式更简单：</p>
+<script type="math/tex; mode=display">\text{SiLU}(x) = x \cdot \sigma(x)</script>
+<p>只需一个 sigmoid，形状与 GELU 接近。部分轻量级卷积神经网络采用 Swish 的分段线性近似 hard-swish（<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1905.02244">MobileNetV3 论文</a>），两者并不等同。</p>
+<p>大模型前馈层常用门控版本 SwiGLU。门控指两组线性变换的结果逐元素相乘，其中一组经过 SiLU；公式为 <script type="math/tex">\text{SwiGLU}(x) = \text{SiLU}(W_1x) \odot W_2x</script>，<script type="math/tex">\odot</script> 表示逐元素相乘。这一结构出现在 LLaMA、Mistral、Qwen 与 PaLM 等模型中，取舍点仍是精度与计算成本。</p>
+<p><img src="/assets/dl-activation-curves.svg" alt="六种激活函数的值与导数"></p>
+<h1 id="按位置选型"><a href="#按位置选型" class="headerlink" title="按位置选型"></a>按位置选型</h1><table>
+<thead>
+<tr>
+<th>位置</th>
+<th>常见选择</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>二分类输出层</td>
+<td>sigmoid，配二元交叉熵</td>
+<td>输出可直接解释为正类概率</td>
+</tr>
+<tr>
+<td>多分类输出层</td>
+<td>softmax，配交叉熵</td>
+<td>输出归一化为类别分布</td>
+</tr>
+<tr>
+<td>无约束回归输出层</td>
+<td>不加激活</td>
+<td>需要无界实数输出</td>
+</tr>
+<tr>
+<td>卷积网络隐藏层</td>
+<td>ReLU 与各类变体</td>
+<td>计算开销小，正半轴不饱和</td>
+</tr>
+<tr>
+<td>Transformer 前馈层</td>
+<td>GELU 或 SiLU 系</td>
+<td>平滑，负半轴保留少量信息</td>
+</tr>
+</tbody></table>
+<p>输出层与损失函数必须配对：分类时把 softmax 或 sigmoid 写在损失函数内部，比先归一化再取对数稳定得多。</p>
+<p>激活函数的选择没有全局最优，判断依据是上表的位置、任务形式，以及训练中实际观察到的梯度与饱和现象。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/26/Activation-Function-Comparison/">https://eliano64.github.io/2026/10/26/Activation-Function-Comparison/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Transformer Prerequisites</div></div><div class="info-2"><div class="info-item-1">文本的表示与基本运算Transformer 先把文本变成向量，再根据上下文更新各位置的表示。这需要明确数据怎样排列、运算怎样改变形状，以及表示中包含什么信息。以下统一采用行向量：一个 Token 对应一行，多个位置按行排列。 1. 标量、向量、矩阵与张量标量是一个数，向量是一组有序数值，矩阵按行和列组织数值。在深度学习中，张量通常指多维数组，标量、向量和矩阵分别是零阶、一阶和二阶张量。 文本先切分成 Token，即模型处理的离散单位，可以是词、子词或字符。经过向量表示后，一个 Token 对应 d 个数；长度为 n 的序列便组成 n\times d 的矩阵。这里的 d 是表示维数，也常记为 d_{\text{model}}。 把 B 条序列组成一个批次，并补齐到相同长度 n，得到形状为 B\times n\times d 的三阶张量。三个方向分别对应样本、位置和特征。补齐位置只是占位，后续注意力与损失计算需要排除这些位置。  阶数与维数 三阶张量表示有三个索引方向；一个 Token 的表示有 512 维，则表示该向量有 512 个分量。两种说法中的“维”含义不同。PyTorch...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Backpropagation-Chain-Rule/" title="Backpropagation Chain Rule"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Backpropagation Chain Rule</div></div><div class="info-2"><div class="info-item-1">问题规模设参数总数为 P。一个有 20 万参数的网络，如果用数值差分求梯度，前向差分要对每个参数各做一次前向（共 P+1 次），中心差分要对每个参数做正负两次前向（共 2P 次）。 反向传播把代价压到一次前向加一次反向：从损失出发，逆序遍历计算图，每到一个节点只乘该节点的局部导数，所有参数的梯度一次算出。 符号约定先约定符号。L 是标量损失，Z^{(l)}、A^{(l)} 分别是第 l 层的预激活与激活；预激活指线性变换的输出，激活指预激活经过激活函数后的结果。 下面写的 \mathrm{d}A^{(l)} := \partial L/\partial A^{(l)}、\mathrm{d}Z^{(l)} := \partial L/\partial Z^{(l)}、\mathrm{d}W^{(l)} := \partial L/\partial W^{(l)} 都是梯度矩阵，与对应的量同形，不是微分形式。 一层的前向计算为： Z^{(l)} = W^{(l)} A^{(l-1)} + b^{(l)}, \qquad A^{(l)} =...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/26/Backpropagation-Chain-Rule/" title="Backpropagation Chain Rule"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Backpropagation Chain Rule</div></div><div class="info-2"><div class="info-item-1">问题规模设参数总数为 P。一个有 20 万参数的网络，如果用数值差分求梯度，前向差分要对每个参数各做一次前向（共 P+1 次），中心差分要对每个参数做正负两次前向（共 2P 次）。 反向传播把代价压到一次前向加一次反向：从损失出发，逆序遍历计算图，每到一个节点只乘该节点的局部导数，所有参数的梯度一次算出。 符号约定先约定符号。L 是标量损失，Z^{(l)}、A^{(l)} 分别是第 l 层的预激活与激活；预激活指线性变换的输出，激活指预激活经过激活函数后的结果。 下面写的 \mathrm{d}A^{(l)} := \partial L/\partial A^{(l)}、\mathrm{d}Z^{(l)} := \partial L/\partial Z^{(l)}、\mathrm{d}W^{(l)} := \partial L/\partial W^{(l)} 都是梯度矩阵，与对应的量同形，不是微分形式。 一层的前向计算为： Z^{(l)} = W^{(l)} A^{(l-1)} + b^{(l)}, \qquad A^{(l)} =...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Batch-Norm-And-Layer-Norm/" title="Batch Norm And Layer Norm"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Batch Norm And Layer Norm</div></div><div class="info-2"><div class="info-item-1">归一化要解决的问题初始化只处理第 0 步：权重按合适尺度采样，第一次前向的激活落在可控范围。这种控制是期望意义上的，只在权重与输入独立、分布对称等前提下近似成立。 训练开始后，每层权重按梯度更新，下一层看到的输入分布随之前后移动，初始尺度不再成立。归一化在训练过程中反复把激活按某一维重新定标，让后续层看到的均值与方差保持在可控范围，尺度推导见 Weight-Initialization-And-Variance。 归一化的位置不固定在线性层之后：输入侧可以做输入归一化，残差结构里归一化的位置也会影响训练稳定性。本篇比较的两种归一化都放在线性层之后、激活之前，这是最常见的排布。 标准化与仿射变换标准化指减去均值、再除以标准差。批归一化（Batch Normalization）简称 BatchNorm 或 BN。层归一化（Layer Normalization）简称 LayerNorm 或 LN。两者都在标准化之后接一次仿射变换，即逐维乘 \gamma 再加 \beta。 设 \mu 与 \sigma^2 分别是本次计算使用的均值和方差： \hat{x} = \frac{x -...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Deep-Learning-Study-Route/" title="Deep Learning Study Route"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Deep Learning Study Route</div></div><div class="info-2"><div class="info-item-1">深度学习在机器学习中的位置深度学习是机器学习的一个分支。模型仍是参数化的函数，训练仍是定义损失、求梯度、沿负梯度更新参数。与线性模型的区别在函数形式：多层可微变换复合起来，特征表示与分类器一起从数据中学出。把深度学习当成一组框架 API 的集合，就看不到这条主线。 表示学习与特征工程的分工传统机器学习里，特征通常由人设计，模型在这些特征上做分类或回归。深度学习把“从原始输入构造表示”这一步也纳入学习。以图像为例，靠前的层常对应边缘与局部纹理，中间的层组合出部件，靠后的层组合出物体。 这种从数据中学出的表示称为表示学习。表示学习并不总占优势：结构化表格数据上，人工特征配合中小规模模型往往更合适。优势出现在原始输入维度高、标注数据足够多、结构具有明显层次性的场景。 训练过程中仍有大量人工决策，包括数据清洗与增广、网络结构、损失函数、正则化强度。数据划分、结构、损失函数与正则化都属于训练前的人工配置，不会通过训练自动得到。 非线性与深度仿射变换指形如 Wx + b 的线性变换加平移。只把仿射层串联起来时，多层会合并成一次仿射变换： y =...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Deep-Learning-Training-Pipeline/" title="Deep Learning Training Pipeline"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Deep Learning Training Pipeline</div></div><div class="info-2"><div class="info-item-1">下面用监督学习的例子说明一次训练里发生了什么：有标签、有可导的损失、用反向传播求梯度、用优化器更新参数。强化学习与无监督预训练也常使用同一个前向、损失、反向、更新的骨架，差别在数据来源与目标函数。 从输入到预测训练流程的起点是数据形状与任务形式，这两者决定结构的选择：输入是展平的像素、卷积特征图还是序列，输出是类别、概率还是实数。下面的前向描述以最简单的全连接层为例。 图像是像素张量，可以直接进入线性层或卷积层；文本是词编号，需要先经过嵌入查表变成向量，再做矩阵运算。第一层把输入线性组合，再过激活函数，得到一组新的数值；下一层在这组新数值上重复同样的操作。层数加深，表示从低层模式逐步组合成高层语义。 以图像识别为例，靠前的层常对应边缘与纹理，靠后的层对应部件与物体。换成文本或表格，层次结构并不相同，所以“逐层抽象成边缘、部件、物体”是图像模型的典型情形，不是所有网络都如此。 这条链路叫前向传播： A^{(l)} = \sigma\left(W^{(l)} A^{(l-1)} + b^{(l)}\right) A^{(l-1)} 形状为 [n_{l-1}, B]，B 是...</div></div></div></a><a class="pagination-related" href="/2026/10/26/From-Perceptron-To-MLP/" title="From Perceptron To MLP"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">From Perceptron To MLP</div></div><div class="info-2"><div class="info-item-1">感知机感知机的结构一个感知机对输入做加权求和，再加偏置，最后通过阈值函数输出 0 或 1。这里的阈值函数指阶跃函数：自变量不小于 0 时取 1，否则取 0。 z = \sum_{i=1}^{n} w_i x_i + b, \qquad a = \text{step}(z) = \begin{cases} 1, & z \ge 0 \\ 0, & z < 0 \end{cases} w 与 b 是参数，a 是输出。把 z = 0 当成分界线，输入空间被切成两半：z \ge 0 判为 1，z < 0 判为 0。 所以感知机是一个线性分类器，决策边界是 w \cdot x + b = 0 这个超平面；输入为二维时，超平面退化为一条直线。 感知机的特点在于参数由误差反馈调整：分类错误时按下节规则修改权重，正确时保持不变。 学习规则与收敛条件 线性可分与收敛条件 线性可分指存在一组 (w,b)，使所有正类样本满足 w \cdot x + b \ge 0、所有负类样本满足 w \cdot x + b <...</div></div></div></a><a class="pagination-related" href="/2026/10/26/Weight-Initialization-And-Variance/" title="Weight Initialization And Variance"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-26</div><div class="info-item-2">Weight Initialization And Variance</div></div><div class="info-2"><div class="info-item-1">初始化的目标初始化决定训练开始时的参数取值。初始化需要兼顾以下目标：  同一层的不同单元要能学到不同的特征。 信号在层间的尺度大致保持，不逐层放大或衰减。 梯度在反向传播中不消失也不爆炸。  第一条由对称性分析给出，第二条由方差在层间的传播推出，第三条由反向连乘的幅度决定。训练开始后的分布漂移不归初始化处理，相关机制见 Batch-Norm-And-Layer-Norm。 对称性若同层各单元的输入权重向量、输出连接权重、偏置与优化器状态完全相同，各单元就会产生相同的激活与梯度，更新后仍保持相同。该层只产生同一表示的重复副本，表示能力相当于一个单元。 如果输出层对各单元的权重不同，即使输入侧权重相同，各单元收到的上游梯度也不同，更新后就会分开。实践中通常用随机初始化打破单元之间的对称性，让各单元从不同的起点出发。 全零初始化在单层线性模型或逻辑回归上可以正常训练，因为没有需要区分彼此的隐藏单元。偏置通常初始化为 0；偏置不参与输入侧的特征区分，权重随机化之后，各单元对同一输入的加权结果已经不同，梯度随之不同。 方差的传播考虑一个线性层，输入 x_j 与权重 w_{ij}...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">激活函数的作用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%BF%E5%B0%84%E5%8F%98%E6%8D%A2%E4%B8%8E%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0"><span class="toc-text">仿射变换与激活函数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8E%E6%BF%80%E6%B4%BB%E5%AF%BC%E6%95%B0%E5%88%B0%E6%A2%AF%E5%BA%A6%E4%BC%A0%E6%92%AD"><span class="toc-text">从激活导数到梯度传播</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%84%E4%BC%B0%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E7%9A%84%E5%85%AD%E9%A1%B9%E6%8C%87%E6%A0%87"><span class="toc-text">评估激活函数的六项指标</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%90%E7%82%B9%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E6%97%8F"><span class="toc-text">逐点激活函数族</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B6%E8%B7%83%E5%87%BD%E6%95%B0"><span class="toc-text">阶跃函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sigmoid"><span class="toc-text">Sigmoid</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tanh"><span class="toc-text">Tanh</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ReLU"><span class="toc-text">ReLU</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%A6%E5%B0%8F%E6%96%9C%E7%8E%87%E4%B8%8E%E9%97%A8%E6%8E%A7%E7%9A%84%E5%8F%98%E4%BD%93"><span class="toc-text">带小斜率与门控的变体</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%89%E4%BD%8D%E7%BD%AE%E9%80%89%E5%9E%8B"><span class="toc-text">按位置选型</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

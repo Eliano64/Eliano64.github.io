@@ -1,0 +1,334 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Natural Language Processing | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="语言任务与语言的特点自然语言处理指让计算机处理、理解与生成人类语言，下文以文本任务为例，输入是长度可变的符号序列。任务的输出形态不同，评估方式也不同。    任务 输入 输出 评估方式    机器翻译 一种语言的句子 另一种语言的句子 参考译文比对，人工评估流畅与忠实   情感分析 一段评论或一句话 情感标签 标签准确率，判对样本数除以总数   信息抽取 文档或句子 实体、关系及其位置 边界与类型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Natural Language Processing">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/27/Natural-Language-Processing/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="语言任务与语言的特点自然语言处理指让计算机处理、理解与生成人类语言，下文以文本任务为例，输入是长度可变的符号序列。任务的输出形态不同，评估方式也不同。    任务 输入 输出 评估方式    机器翻译 一种语言的句子 另一种语言的句子 参考译文比对，人工评估流畅与忠实   情感分析 一段评论或一句话 情感标签 标签准确率，判对样本数除以总数   信息抽取 文档或句子 实体、关系及其位置 边界与类型">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-27T15:29:21.000Z">
+<meta property="article:modified_time" content="2026-10-28T03:40:38.488Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="NLP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Natural Language Processing",
+  "url": "https://eliano64.github.io/2026/10/27/Natural-Language-Processing/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-27T15:29:21.000Z",
+  "dateModified": "2026-10-28T03:40:38.488Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/27/Natural-Language-Processing/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Natural Language Processing',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Natural Language Processing</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Natural Language Processing</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-28T03:40:38.488Z" title="更新于 2026-10-28 11:40:38">2026-10-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="语言任务与语言的特点"><a href="#语言任务与语言的特点" class="headerlink" title="语言任务与语言的特点"></a>语言任务与语言的特点</h1><p>自然语言处理指让计算机处理、理解与生成人类语言，下文以文本任务为例，输入是长度可变的符号序列。任务的输出形态不同，评估方式也不同。</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>输入</th>
+<th>输出</th>
+<th>评估方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>机器翻译</td>
+<td>一种语言的句子</td>
+<td>另一种语言的句子</td>
+<td>参考译文比对，人工评估流畅与忠实</td>
+</tr>
+<tr>
+<td>情感分析</td>
+<td>一段评论或一句话</td>
+<td>情感标签</td>
+<td>标签准确率，判对样本数除以总数</td>
+</tr>
+<tr>
+<td>信息抽取</td>
+<td>文档或句子</td>
+<td>实体、关系及其位置</td>
+<td>边界与类型同时匹配</td>
+</tr>
+<tr>
+<td>文本生成</td>
+<td>提示或源文本</td>
+<td>摘要、答案等自由文本</td>
+<td>人工评估为主</td>
+</tr>
+</tbody></table>
+<p>翻译与生成没有唯一答案；抽取要求边界与类型严格对齐；分类只需比较标签是否一致。同一套指标无法覆盖这几类输出。</p>
+<p>文本的困难集中在四点上。文本是离散符号，字面距离不携带含义。词表开放，新词与专名不断出现。词序改变会改变句子的意思。同一个词形在不同句子里指不同对象，“苹果”可以是水果也可以是公司。</p>
+<h1 id="从文本到表示"><a href="#从文本到表示" class="headerlink" title="从文本到表示"></a>从文本到表示</h1><p>模型只做数值运算，文本先切成 token（字、词或子词），再变成向量。最直接的数字化是查词表取编号，但编号的大小与差值没有语义，只能当索引。词表大小记为 <script type="math/tex">V</script>，one-hot 向量只有对应词的位置为 1，其余 <script type="math/tex">V-1</script> 个位置为 0。任意两个不同词的内积为零，彼此同样远，向量中的距离无法体现语义关联。</p>
+<p>嵌入矩阵形状为 <script type="math/tex">V\times d</script>，<script type="math/tex">d</script> 为向量维数，每个词表项保存一个可学习向量，按编号取对应行。用法相近的词在预测目标下得到相近的向量。</p>
+<p>这套做法的前提是分布假设：用法相近的词往往出现在相似上下文中。根据这一假设，可以设计上下文预测任务来学习词向量。词向量的训练目标、两种预测方向与几何性质的边界见 <a href="&#x2F;2026&#x2F;10&#x2F;27&#x2F;Word-Embeddings-And-Word2Vec&#x2F;" class="wikilink">Word-Embeddings-And-Word2Vec</a>。</p>
+<h1 id="序列关系与信息访问"><a href="#序列关系与信息访问" class="headerlink" title="序列关系与信息访问"></a>序列关系与信息访问</h1><p>词按顺序进入模型，模型能访问多远的上下文，决定了模型能处理哪类任务。把词向量求平均得到定长句向量，词序完全丢失，“狗咬人”与“人咬狗”无法区分。顺序必须显式进入模型。</p>
+<p>循环网络按时间步读入词，每一步用当前输入与上一状态算出新状态，同一组权重在所有位置复用。状态是对前缀的压缩摘要：末状态可以接分类头，每个位置的状态可以接标注头，末状态也可以作为生成条件。三类任务的读数位置、状态形状与梯度如何沿时间回传见 <a href="&#x2F;2026&#x2F;10&#x2F;27&#x2F;Recurrent-Neural-Networks&#x2F;" class="wikilink">Recurrent-Neural-Networks</a>。</p>
+<p>状态维度固定，长句里早先的信息容易被覆盖；反向传播沿时间链连乘，也让长距离依赖难学。门控结构把保留与写入变成可学习比例，缓解这条链上的衰减，但没有取消递推；两种门控单元的形式与局限见 <a href="&#x2F;2026&#x2F;10&#x2F;27&#x2F;LSTM-And-GRU&#x2F;" class="wikilink">LSTM-And-GRU</a>。</p>
+<p>输入与输出都是序列时，编码器先读完整条源序列，压成一个条件向量，解码器再逐步生成。条件向量维度固定，源句越长，需要概括的内容越多，细节越容易丢失。生成与训练在每一步的输入上也有差别，细节见 <a href="&#x2F;2026&#x2F;10&#x2F;27&#x2F;Encoder-Decoder-And-Seq2Seq&#x2F;" class="wikilink">Encoder-Decoder-And-Seq2Seq</a>。</p>
+<p>注意力让解码的每一步重新访问编码器的所有位置：用当前状态与各位置打分，归一化成权重，再对位置表示加权求和。上下文因此随生成进度变化，不再是一个固定向量。把同一机制用到序列内部，就是自注意力；每个位置与所有位置两两计算，相隔很远的两个位置也能直接交互。</p>
+<p>自注意力本身不含位置信息，需要位置编码区分次序；输入已知时可以并行，逐 token 生成时仍然串行。打分、QKV 分工与并行边界见 <a href="&#x2F;2026&#x2F;10&#x2F;27&#x2F;Attention-Mechanisms&#x2F;" class="wikilink">Attention-Mechanisms</a>。Transformer 以自注意力为核心，加上前馈网络、残差连接与层归一化，把序列建模从递推改成按位置计算。</p>
+<h1 id="预训练与任务适配"><a href="#预训练与任务适配" class="headerlink" title="预训练与任务适配"></a>预训练与任务适配</h1><p>若每个任务都从头训练，通常需要分别准备标注数据并学习参数。预训练先在大规模无标注文本上学习语言规律，再用少量标注适配下游任务。</p>
+<p>常见的预训练任务包括预测下一个 token、恢复掩码内容和去噪重建。GPT 根据前文预测下一个 token。BERT 根据左右上下文恢复被遮内容。T5 编码受损文本，再生成缺失片段；下游任务沿用文本输入、文本输出的形式，但目标改为相应的译文、摘要或标签文本。</p>
+<p>适配有两种方式。微调用下游标注数据更新权重，可以只训练顶部任务头，也可以更新全部权重。上下文学习把示例与指令写进输入，不改变任何参数，表现随示例数量、选择与顺序变化。两者的分界在是否改变权重，不在提示长短。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/27/Natural-Language-Processing/">https://eliano64.github.io/2026/10/27/Natural-Language-Processing/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">LSTM And GRU</div></div><div class="info-2"><div class="info-item-1">时间链上的信息与梯度循环网络每读一个词就重写一次状态，早期信息要到达后面的位置，必须经过多次矩阵乘法与非线性。反向传播沿同一条链回退，每回退一步乘一个因子；回退 k 步就是 k 个因子相乘，长期小于 1 时梯度趋近 0。 LSTM 与 GRU 没有消除时间链，改的是状态更新的路径：让旧信息沿一条不经过复杂变换的直接通道传递。 LSTM：分开存储与输出门与候选设序列长 T，t 是当前步，x_t\in\mathbb{R}^{D} 是第 t 个 token 的嵌入向量，D 是嵌入维度；h_t\in\mathbb{R}^{H} 与 c_t\in\mathbb{R}^{H} 是成对的状态，H 是隐藏维度。把上一步状态与当前输入拼成 [h_{t-1};x_t]\in\mathbb{R}^{H+D}，四个线性变换各给出一个 H 维向量。\sigma 指 sigmoid，\sigma(v)=1/(1+e^{-v})，逐元素作用： \begin{aligned} f_t &= \sigma(W_f [h_{t-1};x_t] + b_f)\\ i_t &= \sigma(W_i...</div></div></div></a><a class="pagination-related" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Recurrent Neural Networks</div></div><div class="info-2"><div class="info-item-1">定长输入与序列依赖用前馈网络预测下一个词时，可以将固定窗口内的词向量拼接为输入。窗口外的内容不参与预测；扩大窗口又会增加输入维度与参数量，难以直接处理不断增长的前文。 循环神经网络（RNN）用隐藏状态概括已读内容。每读入一个 token，就用当前输入和上一状态更新状态。各步共享参数，因此可以逐步处理不同长度的输入。 循环结构与形状符号约定如下。x_t\in\mathbb{R}^{D} 是第 t 个 token 的嵌入向量，h_t\in\mathbb{R}^{H} 是隐藏状态，D、H 分别是嵌入维度与隐藏维度，V 是词表大小，t 从 1 到 T。\tanh 逐元素作用，把实数压到 (-1,1)： h_t=\tanh(W_x x_t + W_h h_{t-1} + b) W_x\in\mathbb{R}^{H\times D}、W_h\in\mathbb{R}^{H\times H}、b\in\mathbb{R}^{H}，h_0 通常取零向量。同一组权重在所有时间步复用，参数量与句长无关。 h_t 是对已读前缀的摘要：状态把前 t 个 token...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">Attention Mechanisms</div></div><div class="info-2"><div class="info-item-1">固定上下文缺什么编码器-解码器的经典实现把整条源句压进一个向量 c，解码器每一步都从同一个 c 里取信息。不同生成位置所需的源句内容可能不同，一个固定向量只能折中压缩。 编码器本来就在每个输入位置产生过一个隐藏状态，第 i 个位置的状态 h_i 记录了读到该位置为止的内容。让解码器每一步回到这些状态里按需取用，就不必只依赖一个向量。 设源句长度 n，编码器输出列向量 h_1,\dots,h_n，每个都是 d 维。将各位置的编码状态按行组成 H\in\mathbb{R}^{n\times d}，第 i 行是 h_i^{\top}，解码器保留这些状态供每一步读取。第 t 步的状态 s_t 与每一行做内积。 一次注意力计算打分、归一化与加权打分。 用当前状态与每个编码状态算一个标量分数： e_{t,i} = s_t^{\top} h_i 点积要求 s_t 与 h_i 维数相同，分数可以是任意实数。 归一化。 把分数变成一组和为 1 的权重： \alpha_{t,i} = \frac{\exp(e_{t,i})}{\sum_{j=1}^{n}...</div></div></div></a><a class="pagination-related" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">Encoder Decoder And Seq2Seq</div></div><div class="info-2"><div class="info-item-1">从单值输出到序列输出循环网络可以把末状态接分类头，输出一个类别；也可以在每个输入位置接任务头，给出对齐的标签。机器翻译需要一条输出序列，长度与顺序都可能与源句不同，因此需要独立的生成过程。 输入与输出都是序列的任务，称为序列到序列（sequence-to-sequence，简称 Seq2Seq）。输出需要一条独立的时间轴，长度与每个位置的内容由模型逐步决定。 编码器与解码器经典实现把网络拆成两半：编码器读入整条源序列，把内容压成一个固定维度的向量 c；解码器从 c 出发，一次生成一个目标 token，并把已生成的前缀作为下一步输入，递推关系写作： c = h_T^{\text{enc}}, \qquad s_0 = c, \qquad s_t = f(y_{t-1}, s_{t-1}), \qquad p_t = \mathrm{softmax}(W s_t) T 是源句长度，h_T^{\text{enc}} 是编码器的末状态，s_t 是解码器状态。f 是解码器的循环单元，先把输入 token y_{t-1} 查嵌入表变成向量，再与 s_{t-1} 一起更新状态。W...</div></div></div></a><a class="pagination-related" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">LSTM And GRU</div></div><div class="info-2"><div class="info-item-1">时间链上的信息与梯度循环网络每读一个词就重写一次状态，早期信息要到达后面的位置，必须经过多次矩阵乘法与非线性。反向传播沿同一条链回退，每回退一步乘一个因子；回退 k 步就是 k 个因子相乘，长期小于 1 时梯度趋近 0。 LSTM 与 GRU 没有消除时间链，改的是状态更新的路径：让旧信息沿一条不经过复杂变换的直接通道传递。 LSTM：分开存储与输出门与候选设序列长 T，t 是当前步，x_t\in\mathbb{R}^{D} 是第 t 个 token 的嵌入向量，D 是嵌入维度；h_t\in\mathbb{R}^{H} 与 c_t\in\mathbb{R}^{H} 是成对的状态，H 是隐藏维度。把上一步状态与当前输入拼成 [h_{t-1};x_t]\in\mathbb{R}^{H+D}，四个线性变换各给出一个 H 维向量。\sigma 指 sigmoid，\sigma(v)=1/(1+e^{-v})，逐元素作用： \begin{aligned} f_t &= \sigma(W_f [h_{t-1};x_t] + b_f)\\ i_t &= \sigma(W_i...</div></div></div></a><a class="pagination-related" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">Recurrent Neural Networks</div></div><div class="info-2"><div class="info-item-1">定长输入与序列依赖用前馈网络预测下一个词时，可以将固定窗口内的词向量拼接为输入。窗口外的内容不参与预测；扩大窗口又会增加输入维度与参数量，难以直接处理不断增长的前文。 循环神经网络（RNN）用隐藏状态概括已读内容。每读入一个 token，就用当前输入和上一状态更新状态。各步共享参数，因此可以逐步处理不同长度的输入。 循环结构与形状符号约定如下。x_t\in\mathbb{R}^{D} 是第 t 个 token 的嵌入向量，h_t\in\mathbb{R}^{H} 是隐藏状态，D、H 分别是嵌入维度与隐藏维度，V 是词表大小，t 从 1 到 T。\tanh 逐元素作用，把实数压到 (-1,1)： h_t=\tanh(W_x x_t + W_h h_{t-1} + b) W_x\in\mathbb{R}^{H\times D}、W_h\in\mathbb{R}^{H\times H}、b\in\mathbb{R}^{H}，h_0 通常取零向量。同一组权重在所有时间步复用，参数量与句长无关。 h_t 是对已读前缀的摘要：状态把前 t 个 token...</div></div></div></a><a class="pagination-related" href="/2026/10/27/Word-Embeddings-And-Word2Vec/" title="Word Embeddings And Word2Vec"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">Word Embeddings And Word2Vec</div></div><div class="info-2"><div class="info-item-1">词的表示问题文本进入模型前是离散符号，模型内部只有数值运算。第一步是把词映射成向量，并让向量同时承担两件事：区分不同词，让用法相近的词落在相近位置。编号与 one-hot 解决前者，解决不了后者。 编号只能当索引。把编号直接当数值输入，大小与差值会被模型当成信息；换一种词表排序，这些差值立刻改变，甚至反转。差值没有语义依据。 one-hot 把身份放到 V 个独立维度上：词表有 V 个词，向量长度就是 V，只有对应位置为 1。任意两个不同词的内积为 0、余弦为 0、欧氏距离都是 \sqrt2。所有词对彼此同样远，相似度无从表达。 余弦相似度对两个非零向量，余弦衡量方向关系： \cos(x, y) = \frac{x \cdot y}{\lVert x \rVert \, \lVert y \rVert} 分子逐维相乘求和，分母是两个向量的长度，因此余弦只比较方向，取值在 −1 到 1 之间。接近 1 表示方向接近，0 表示正交，接近 −1...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%AD%E8%A8%80%E4%BB%BB%E5%8A%A1%E4%B8%8E%E8%AF%AD%E8%A8%80%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-text">语言任务与语言的特点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8E%E6%96%87%E6%9C%AC%E5%88%B0%E8%A1%A8%E7%A4%BA"><span class="toc-text">从文本到表示</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%85%B3%E7%B3%BB%E4%B8%8E%E4%BF%A1%E6%81%AF%E8%AE%BF%E9%97%AE"><span class="toc-text">序列关系与信息访问</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%84%E8%AE%AD%E7%BB%83%E4%B8%8E%E4%BB%BB%E5%8A%A1%E9%80%82%E9%85%8D"><span class="toc-text">预训练与任务适配</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

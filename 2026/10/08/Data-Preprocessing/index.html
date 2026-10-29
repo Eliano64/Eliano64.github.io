@@ -1,0 +1,543 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Data Preprocessing | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="Cite Garbage in, garbage out.   真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。 预处理是模型的一部分，决定了模型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Data Preprocessing">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/08/Data-Preprocessing/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="Cite Garbage in, garbage out.   真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。 预处理是模型的一部分，决定了模型">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-08T11:04:09.000Z">
+<meta property="article:modified_time" content="2026-10-27T07:01:22.852Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="MachineLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Data Preprocessing",
+  "url": "https://eliano64.github.io/2026/10/08/Data-Preprocessing/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-08T11:04:09.000Z",
+  "dateModified": "2026-10-27T07:01:22.852Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/08/Data-Preprocessing/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Data Preprocessing',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Data Preprocessing</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Data Preprocessing</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-08T11:04:09.000Z" title="发表于 2026-10-08 19:04:09">2026-10-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-27T07:01:22.852Z" title="更新于 2026-10-27 15:01:22">2026-10-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">7.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><div class="callout callout-quote">
+<div class="callout-title"><i class="fa-solid fa-quote-right callout-icon"></i><span class="callout-title-text">Cite</span></div>
+<div class="callout-content"><p>Garbage in, garbage out.</p>
+</div>
+</div>
+<p>真实数据通常不能直接用于训练，常见问题有三类：缺失值与异常值，文本与类别这类非数值类型，以及彼此相差几个数量级的量纲（房价是百万级，房间数是个位数）。多数算法需要数值表示，缺失值、编码与尺度的处理会影响学习结果。这三类问题不处理，模型的拟合结果与评估指标都会跟着偏，后面换什么算法都难以反映真实规律。</p>
+<p>预处理是模型的一部分，决定了模型能看见什么：一列缺失超过七成的特征是留着还是删掉，一个无序的港口名是编成 0、1、2 还是拆成三列 0&#x2F;1，直接改变模型的假设空间。代价有两处。一是每处理一步都要引入一个假设：均值填充与中位数填充的抗极端值能力不同，前者会被极端值拉动，后者更稳；哪种更合适取决于缺失机制与分布，是否成立要回到数据上验证。假设错了，处理得越规整反而离真相越远。二是这些参数（中位数、类别清单、均值与标准差）都必须从训练集估计，再原样套到别的集合上；顺序或作用范围错一步，评估结果就被污染，而这种错误在代码里往往只表现为一个看起来正常的分数。</p>
+<p>全章的推进顺序因此是固定的：先划分数据集，把评估用的部分挡在门外。再在训练集上做探索，看清有哪些问题。然后逐类处理重复值、缺失值、异常值、类别编码与量纲。最后用 Pipeline 把这套顺序固化成一条可复用的流水线。下面用泰坦尼克号的生存数据贯穿全文，891 行记录，其中 712 行划作训练集。</p>
+<h1 id="先划分数据集"><a href="#先划分数据集" class="headerlink" title="先划分数据集"></a>先划分数据集</h1><h2 id="三个子集的分工"><a href="#三个子集的分工" class="headerlink" title="三个子集的分工"></a>三个子集的分工</h2><p>用于拟合模型与预处理的统计量应在划分数据后估计，避免验证集或测试集的信息参与拟合。三个子集的用途互不重叠：</p>
+<table>
+<thead>
+<tr>
+<th>子集</th>
+<th>比例</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>训练集</td>
+<td>60%-80%</td>
+<td>训练模型，学习数据中的规律；这里的 712 行即由此而来</td>
+</tr>
+<tr>
+<td>验证集</td>
+<td>10%-20%</td>
+<td>调整超参数（训练前设定、不由数据学出的量），评估模型在未见过数据上的表现</td>
+</tr>
+<tr>
+<td>测试集</td>
+<td>10%-20%</td>
+<td>模拟真实世界数据，最终评估泛化能力，只在最后用一次</td>
+</tr>
+</tbody></table>
+<p>比例不是硬性规定，样本量大时可给训练集更大份额。要点是验证集与测试集各自只承担一件事：调参看验证集，报成绩看测试集。用测试集反复调参，等于把测试集变成第二个验证集，最后的分数不再是泛化能力的估计；这一点在<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Model-Evaluation&#x2F;" class="wikilink">Model-Evaluation</a>里有更完整的讨论。</p>
+<h2 id="数据泄露的边界"><a href="#数据泄露的边界" class="headerlink" title="数据泄露的边界"></a>数据泄露的边界</h2><div class="callout callout-danger">
+<div class="callout-title"><i class="fa-solid fa-bolt callout-icon"></i><span class="callout-title-text">数据泄露</span></div>
+<div class="callout-content"><p>数据泄露（Data Leakage）指训练阶段用到了预测时根本拿不到的信息。最隐蔽的一种是预处理参数从验证集或测试集上算出来：用全体样本的年龄中位数去填训练集的缺失，这个中位数里已经含有验证集乘客的信息。由此得到一条原则：<strong>所有 fit 操作只在训练集上进行，测试集只做 transform</strong>。</p>
+</div>
+</div>
+<p>fit 从数据估计参数，transform 用已有参数改造数据。两者与数据集合绑定：同一次填充，在训练集上要先估计再变换，在验证集与测试集上只做变换。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">imputer = SimpleImputer(strategy=<span class="string">&quot;median&quot;</span>)</span><br><span class="line"><span class="comment"># fit 只在训练集上估计中位数：712 行里 Age 有 143 行缺失，中位数落在 28.0</span></span><br><span class="line">imputer.fit(X_train[[<span class="string">&quot;Age&quot;</span>]])</span><br><span class="line"><span class="comment"># 验证集与测试集只 transform，沿用训练集的 28.0，绝不重新估计</span></span><br><span class="line">X_val[[<span class="string">&quot;Age&quot;</span>]] = imputer.transform(X_val[[<span class="string">&quot;Age&quot;</span>]])</span><br><span class="line">X_test[[<span class="string">&quot;Age&quot;</span>]] = imputer.transform(X_test[[<span class="string">&quot;Age&quot;</span>]])</span><br></pre></td></tr></table></figure>
+
+
+
+<div class="callout callout-warning">
+<div class="callout-title"><i class="fa-solid fa-triangle-exclamation callout-icon"></i><span class="callout-title-text">写成 fit_transform 也不报错</span></div>
+<div class="callout-content"><p>易错点在最后两行：对 X_val 调 fit_transform 语法合法、执行不报错，但中位数换成了验证集上算出的值，评估随之被污染。分数不一定因此升高，方向取决于数据分布；能确定的是这个数字不再代表未见数据上的表现。</p>
+</div>
+</div>
+<p>交叉验证会把这件事重复很多遍：每一折都相当于重新划分一次，预处理参数必须在每折的训练部分重新 fit，否则验证折的信息提前进了参数。这也是后面用 Pipeline 而不是手写步骤的直接原因。</p>
+<h1 id="EDA-能看出什么"><a href="#EDA-能看出什么" class="headerlink" title="EDA 能看出什么"></a>EDA 能看出什么</h1><p>EDA（Exploratory Data Analysis，探索性数据分析）是建模之前的系统检查。价值不在看图本身，而在每一层查看都对应一个后续决定；下面按结构、缺失与分布、可视化三层展开。</p>
+<h2 id="第一层：结构"><a href="#第一层：结构" class="headerlink" title="第一层：结构"></a>第一层：结构</h2><p><code>.info()</code> 一屏给出列名、非空计数与 dtype，可以回答三类问题。哪些列是文本（dtype 为 object 的 Name、Sex、Ticket、Cabin、Embarked）。哪些列有缺失（Age 只有 569 个非空，Cabin 只有 161 个）。哪些列看似有值却不能直接进模型（Ticket 几乎每行都不同，是取值种类很多的标识，需要先提取信息或编码）。这一层本身不产生处理动作，却定下了后面的清单：object 列是编码的候选，缺失列是清洗的对象，唯一值过多的文本列则要考虑从中提取信息或整列删除。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 只看训练集：dtype 决定后面要不要编码，非空计数决定缺失怎么分档</span></span><br><span class="line">X_train.info()</span><br></pre></td></tr></table></figure>
+
+<h2 id="第二层：缺失与分布"><a href="#第二层：缺失与分布" class="headerlink" title="第二层：缺失与分布"></a>第二层：缺失与分布</h2><p>缺失要看两个数：缺多少行、占多大比例。只看行数分不清严重程度，比例才是决策依据：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 缺失数回答“缺多少行”，缺失率回答“缺到什么程度”，后者才是分档依据</span></span><br><span class="line">missing = X_train.isnull().<span class="built_in">sum</span>()</span><br><span class="line">missing_pct = (missing / <span class="built_in">len</span>(X_train) * <span class="number">100</span>).<span class="built_in">round</span>(<span class="number">1</span>)</span><br><span class="line"><span class="comment"># 只显示有缺失的列，逐列决定删行、填充还是删列</span></span><br><span class="line">pd.DataFrame(&#123;<span class="string">&quot;缺失数&quot;</span>: missing, <span class="string">&quot;缺失率%&quot;</span>: missing_pct&#125;).query(<span class="string">&quot;缺失数 &gt; 0&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>输出只有三列有缺失：Age 143 行、20.1%，Cabin 551 行、77.4%，Embarked 2 行、0.3%。这三个比例是这份数据上的分档依据：0.3% 删行、20.1% 填充、77.4% 删列。这三个阈值是可检验的候选策略，不是普遍规律。</p>
+<p>分布看 describe() 的八个统计量。数值本身不说明问题，彼此对照才有信息：</p>
+<table>
+<thead>
+<tr>
+<th>特征</th>
+<th>describe 里的读法</th>
+<th>对预处理的含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cabin</td>
+<td>非空 161，缺失率 77.4%</td>
+<td>有效观测只有 161 个；本例可先删列作为候选，与保留并加缺失指示变量的方案对照</td>
+</tr>
+<tr>
+<td>Embarked</td>
+<td>非空 710，缺失率 0.3%</td>
+<td>只有 2 行；本例可先删这两行作为候选，与填充方案对照</td>
+</tr>
+<tr>
+<td>Age</td>
+<td>非空 569，均值 29.5，中位数 28.0，最小值 0.4</td>
+<td>缺失 20.1% 属于中间档，需要填充；均值与中位数接近，取中位数即可</td>
+</tr>
+<tr>
+<td>Fare</td>
+<td>均值 33.3，标准差 52.4，中位数 15.7，75% 分位 33.4，最大值 512.3</td>
+<td>标准差大于均值、最大值远高于 75% 分位，右偏且带极端值，填充与缩放都要挑稳健的统计量</td>
+</tr>
+<tr>
+<td>Pclass</td>
+<td>取值只有 1、2、3</td>
+<td>有序类别；编码方式与是否标准化取决于模型假设，不能只凭有序就禁止当数值处理</td>
+</tr>
+</tbody></table>
+<h2 id="第三层：可视化"><a href="#第三层：可视化" class="headerlink" title="第三层：可视化"></a>第三层：可视化</h2><p>统计量给的是概要，图形给的是形状。2×3 的子图网格一次看六件事：标签分布、两个连续特征各自的形状、两个类别特征与标签的关系、特征之间的相关性。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fig, axes = plt.subplots(<span class="number">2</span>, <span class="number">3</span>, figsize=(<span class="number">15</span>, <span class="number">10</span>))</span><br><span class="line"><span class="comment"># 类别看计数：Dead 约 440、Survived 约 270，标签并不均衡</span></span><br><span class="line">y_train.value_counts().plot.bar(ax=axes[<span class="number">0</span>, <span class="number">0</span>])</span><br><span class="line"><span class="comment"># 连续看形状：Fare 的柱子集中在低值区间，与 describe 的右偏一致</span></span><br><span class="line">X_train[<span class="string">&quot;Fare&quot;</span>].hist(bins=<span class="number">30</span>, ax=axes[<span class="number">0</span>, <span class="number">2</span>])</span><br></pre></td></tr></table></figure>
+
+<p>图上看出来的几条事实比统计量更直接。票价直方图的第一根柱子约有 395 人，100 之后几乎贴近底部，右偏的形态从图上就能看出。性别与存活的分组柱状图是 male 约 0.19、female 约 0.74，舱位等级是 1 等约 0.64、2 等约 0.44、3 等约 0.24，两个类别特征都与标签有明显关系。相关性热力图上 Survived 与 Fare 是 0.28、与 Pclass 是 -0.35，而 Pclass 与 Fare 之间是 -0.56。两列存在负相关，但可能仍提供不同信息，是否删减需要验证。Survived 与 Age 的相关系数只有 -0.084，接近于零。年龄直方图在 0 到 15 岁一段很矮、20 到 30 岁最高。边际分布本身不能证明 Age 与 Survived 之间存在非线性关系，要按存活分组比较，或交给模型检验。仅凭接近零的相关系数删列，依据不足。</p>
+<h2 id="把观察变成策略"><a href="#把观察变成策略" class="headerlink" title="把观察变成策略"></a>把观察变成策略</h2><p>每一层观察都要落到一个具体决定上，四层信息对应四类决定：</p>
+<table>
+<thead>
+<tr>
+<th>EDA 看到的信息</th>
+<th>对应的预处理决定</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dtype 为 object 的列（Sex、Embarked、Cabin 等）</td>
+<td>定下编码清单：二分类用 0&#x2F;1，无序多分类用独热，唯一值过多的列先考虑提取信息或删除</td>
+</tr>
+<tr>
+<td>缺失数与样本量的比例</td>
+<td>按比例分档：0.3% 删行、20.1% 填充、77.4% 删列</td>
+</tr>
+<tr>
+<td>均值、中位数、标准差与极值的相对大小</td>
+<td>选填充统计量（偏态用中位数）与缩放方法（受极端值影响的要慎用标准化）</td>
+</tr>
+<tr>
+<td>直方图形状、分组柱状图、相关系数</td>
+<td>判断哪些特征与标签有关系、哪些特征之间重复，决定保留、构造还是删减</td>
+</tr>
+</tbody></table>
+<p>每一条都要把观察翻译成参数或动作；EDA 之后列不出这份清单，说明查看没有落到决定上。</p>
+<h1 id="数据清洗"><a href="#数据清洗" class="headerlink" title="数据清洗"></a>数据清洗</h1><p>清洗面对三类具体的脏数据：重复的行、缺失的值、偏离群体的极端值。处理难度依次上升：重复行只有删与留，缺失值要判断机制，异常值还要判断究竟是不是错误。</p>
+<h2 id="重复行与索引同步"><a href="#重复行与索引同步" class="headerlink" title="重复行与索引同步"></a>重复行与索引同步</h2><p>重复行不一定是错误：标签不同、业务对象不同、同一用户多次访问都可能产生相同的特征行。判据是先确认业务主键与时间戳。真正容易错的是删除之后 X 与 y 的对齐：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">duplicates = X_train.duplicated().<span class="built_in">sum</span>()</span><br><span class="line"><span class="keyword">if</span> duplicates &gt; <span class="number">0</span>:</span><br><span class="line">    X_train = X_train.drop_duplicates()</span><br><span class="line">    <span class="comment"># X_train 与 y_train 靠索引对齐：删了行，标签必须按剩下的索引同步取</span></span><br><span class="line">    y_train = y_train[X_train.index]</span><br></pre></td></tr></table></figure>
+
+<p>X_train 与 y_train 是两个独立的表，行与行靠索引对应。只删特征表而不同步标签，可能造成长度不一致或位置错配；后者可能不报错，却会破坏样本与标签的对应关系。删除前先在特征表上构造保留掩码，再用同一个掩码筛两张表，两边的行才始终按原索引配对。如果两表当前行顺序一致，也可以同时 reset_index(drop&#x3D;True) 之后按位置筛选；但 reset_index 只重排行号，修正不了已经错位的样本，错位要先确认行顺序配对再处理。按索引取子集比按位置切片更稳，因为按索引不依赖两表当前的行号恰好一致。</p>
+<h2 id="缺失值按比例分档"><a href="#缺失值按比例分档" class="headerlink" title="缺失值按比例分档"></a>缺失值按比例分档</h2><p>分档看两个方向。示例采用 5% 与 70% 两个阈值：低于 5% 且可视为随机缺失时删除对应样本行，高于 70% 时删除整列，中间部分进入填充。阈值是可检验的候选规则，不是定律：高缺失列仍可能携带信息，例如缺失与否本身与标签相关，此时保留该列并加一个缺失指示变量更合适。</p>
+<p>两个判据作用的对象不同：比例按列算，决定这一列留不留；删行按样本做，只影响含缺失的那几行。同一个数据集里两者可以同时发生，这份数据正好三种情形各有一例：</p>
+<table>
+<thead>
+<tr>
+<th>缺失比例</th>
+<th>处理动作</th>
+<th>本例中的列与结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0.3%，低于 5%</td>
+<td>删除含缺失的样本行</td>
+<td>Embarked 只有 2 行缺失，删掉这 2 行</td>
+</tr>
+<tr>
+<td>20.1%，处于中间</td>
+<td>保留整列，按类型填充</td>
+<td>Age 有 143 行缺失，用中位数 28.0 填充</td>
+</tr>
+<tr>
+<td>77.4%，高于 70%</td>
+<td>删除整列</td>
+<td>Cabin 只有 161 个非空值，整列删除</td>
+</tr>
+</tbody></table>
+<p>填充什么值由特征类型决定：数值型用均值或中位数，类别型用众数或显式填充 Unknown 类别。示例中 Fare 的均值 33.3 大于中位数 15.7，Age 的均值 29.5 与中位数 28.0 接近，两列都取中位数。用均值或中位数填充，本身不能证明数据是随机缺失，也不能证明极端值就是错误。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.impute <span class="keyword">import</span> SimpleImputer</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数值列取中位数：Fare 右偏，均值 33.3 会被高价票拉高，中位数 15.7 更稳</span></span><br><span class="line">num_imputer = SimpleImputer(strategy=<span class="string">&quot;median&quot;</span>)</span><br><span class="line"><span class="comment"># 类别列取众数；若要保留缺失这件事，可改用 constant 策略填 Unknown</span></span><br><span class="line">cat_imputer = SimpleImputer(strategy=<span class="string">&quot;most_frequent&quot;</span>)</span><br><span class="line">num_imputer.fit(X_train[[<span class="string">&quot;Age&quot;</span>, <span class="string">&quot;Fare&quot;</span>]])</span><br></pre></td></tr></table></figure>
+
+<p>SimpleImputer 本身是估计器，策略里的均值、中位数、众数都要从训练集算出来，所以这两行 fit 之后，验证集与测试集只能用 transform。</p>
+<h2 id="异常值的箱线图检测"><a href="#异常值的箱线图检测" class="headerlink" title="异常值的箱线图检测"></a>异常值的箱线图检测</h2><p>异常值（Outliers）指显著偏离其他观测值的极端值。箱线图是检测异常值的标准工具，因为图形只由分位数构成。箱体的上下边是 75% 与 25% 分位数，箱内的横线是中位数，两条须向外延伸到一定范围内最远的观测点。落在须外的点单独画出，这些点是异常值的候选。</p>
+<p>Fare 的分位数画出来：箱体底边 8.0、箱内 15.7、箱体顶边 33.4，而最大值是 512.3，须外拖着很长一串点。Age 的箱体是 20.0 到 38.0、中位数 28.0，最大值 80，须外只有少量高龄样本。两列的偏离程度完全不同：一列是长尾，一列更接近自然的高龄乘客。</p>
+<p>同一套判据换到一组 40 个票价样本上，须外的点就是候选异常值：</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;data-preprocessing-boxplot.svg">..&#x2F;assets&#x2F;data-preprocessing-boxplot.svg</span></p>
+<h2 id="异常值的统计观察与处理"><a href="#异常值的统计观察与处理" class="headerlink" title="异常值的统计观察与处理"></a>异常值的统计观察与处理</h2><p>检测给出的不只是名单，还有三层信息。第一层是位置：哪些样本、落在哪个特征上，Fare 的长尾与 Age 的高龄段是两类不同的问题。第二层是程度：512.3 相对于 75% 分位的 33.4 是十五倍，80 岁相对于箱体顶边 38.0 只有两倍出头。倍数本身不能证明哪一个是记录错误、哪一个是真实值，只说明两列偏离群体的幅度不同。第三层是影响范围：Fare 的均值 33.3、标准差 52.4 已经达到均值的 1.6 倍，标准化要用的两个统计量都被极端值改写过。</p>
+<p>处理方式取决于这三层判断，没有统一答案：</p>
+<ul>
+<li>能解释的极端值保留。头等舱的高价票是真实存在的业务现象，删掉等于抹掉一类乘客；树模型按阈值切分特征，对特征的绝对尺度不敏感，这类值的影响更小，参见<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Decision-Tree&#x2F;" class="wikilink">Decision-Tree</a>与<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Ensemble-Learning&#x2F;" class="wikilink">Ensemble-Learning</a>。</li>
+<li>有明显证据表明是录入错误、数量又极少的样本，修正或删除。</li>
+<li>想保留样本但压住影响，就做截尾：把超出分位边界的值拉回边界上，样本还在，极端幅度被削平。</li>
+<li>分布本身右偏时，用对数变换把长尾压短，让均值与中位数靠近。这一步有个前提要先查：Fare 的最小值是 0.0，对数在 0 处没有定义，这些 0 票价得先单独处理。</li>
+<li>无论删还是留，都要回到填充与缩放上确认统计量是否稳健：中位数比均值抗极端值；标准化用的标准差会被抬高，归一化的分母则直接由最大值决定，后者更怕离群点。这与下一节的选择直接相关。</li>
+</ul>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">判断的分界线</span></div>
+<div class="callout-content"><p>判断的分界线是能不能在业务上解释这个值，而不是离群体有多远。可解释的极端值保留，让模型决定是否使用；可核实为录入错误的修正或删除；无法核实又解释不了的先保留并记录，不做无依据的删除。</p>
+</div>
+</div>
+<h1 id="类别特征编码"><a href="#类别特征编码" class="headerlink" title="类别特征编码"></a>类别特征编码</h1><p>编码的目的只有一个：把文本映射成数值，让模型能做数学运算。三种编码的差别只有两点：是否保留顺序、是否引入数值大小。这两点决定了哪种特征能用哪种编码。原始的 sex、pclass、embark_town 三列正好各对应一种情况。</p>
+<h2 id="三种编码的差别"><a href="#三种编码的差别" class="headerlink" title="三种编码的差别"></a>三种编码的差别</h2><table>
+<thead>
+<tr>
+<th>编码</th>
+<th>映射规则</th>
+<th>数值大小是否成立</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>序数编码</td>
+<td>按等级映射为整数，如低&#x3D;0、中&#x3D;1、高&#x3D;2</td>
+<td>顺序成立；间距只在把数值直接加权的模型里被当成等距</td>
+<td>特征有明确等级：学历、满意度、舱位等级</td>
+</tr>
+<tr>
+<td>独热编码</td>
+<td>每个类别单独一列，命中为 1，其余为 0</td>
+<td>不成立，各列之间没有大小关系</td>
+<td>无序分类：颜色、城市、登船港口</td>
+</tr>
+<tr>
+<td>标签编码</td>
+<td>直接映射为 0、1、2，顺序由编码器的排列决定</td>
+<td>不成立，但被强行引入</td>
+<td>目标变量的整数编码；二分类特征映射为 0&#x2F;1；无序多分类输入不应使用</td>
+</tr>
+</tbody></table>
+<h2 id="序数编码"><a href="#序数编码" class="headerlink" title="序数编码"></a>序数编码</h2><p>序数编码（Ordinal Encoding）把类别映射为整数并严格保留顺序，低、中、高对应 0、1、2。序数编码只该用在等级本身有意义的列上：舱位等级 1、2、3 是等级，编码成 1、2、3 或 0、1、2 都保留顺序，方向由映射决定；Pclass 数值越大并不代表舱位越好，系数的正负要结合映射读。反过来，如果给颜色编成红&#x3D;0、绿&#x3D;1、蓝&#x3D;2，类别之间本来没有顺序，编码却造出一套没有意义的顺序与间距；线性模型把这一列直接加权时，还会把间距当成等距。</p>
+<h2 id="独热编码"><a href="#独热编码" class="headerlink" title="独热编码"></a>独热编码</h2><p>独热编码（One-Hot Encoding）把每个类别变成独立的一列，用 0 和 1 表示，从而消除虚假的大小关系。登船港口有三个取值，编码后是三列，每行只有一个 1。代价是维度：默认实现为每个类别各给一列，N 类得到 N 列；只有显式丢一类才得到 N-1 列，被丢的那一列可以由其余列推出。类别很多时矩阵会变稀疏，每行只有一个非零元；这时可以考虑 Embedding 这类稠密表示，也可以先合并稀有类别。是否换成 Embedding 取决于模型与数据规模，矩阵稀疏本身并不强制换一种表示。</p>
+<h2 id="标签编码"><a href="#标签编码" class="headerlink" title="标签编码"></a>标签编码</h2><p>标签编码（Label Encoding）把类别按顺序映射成 0、1、2，不保证顺序，同时引入数值大小。sklearn 的 LabelEncoder 面向目标变量 y，不用于编码输入特征；二分类输入特征可以用 0&#x2F;1 映射，两类映射成 0&#x2F;1 与两列独热携带同样的二分类信息。单列整数编码与独热并不在所有情况下等价：独热的两列各有系数，0&#x2F;1 单列只有一个系数，训练时若附加限制权重大小的惩罚，两种参数化受到的约束可能不同。把三分类压成一个 0、1、2 的整数列，线性模型在这一列上同样只有一个系数，等于假定类别之间等距，并不是三个类别各有一个系数。多分类的无序类别不要用标签编码替代独热。树模型按阈值切分，整数顺序会改变可用的切分点，影响比线性模型小，但同样不能说完全不受顺序影响。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 二分类的 Sex 用 0/1 映射，列数更少；两种参数化在正则化下并不完全等价</span></span><br><span class="line">X_train[<span class="string">&quot;Sex&quot;</span>] = X_train[<span class="string">&quot;Sex&quot;</span>].<span class="built_in">map</span>(&#123;<span class="string">&quot;male&quot;</span>: <span class="number">0</span>, <span class="string">&quot;female&quot;</span>: <span class="number">1</span>&#125;)</span><br><span class="line"><span class="comment"># 三个港口无序，用独热；handle_unknown 让训练时未见过的类别编码成全 0 而不是抛错</span></span><br><span class="line">encoder = OneHotEncoder(handle_unknown=<span class="string">&quot;ignore&quot;</span>)</span><br><span class="line">encoder.fit(X_train[[<span class="string">&quot;Embarked&quot;</span>]])</span><br></pre></td></tr></table></figure>
+
+<p>encoder 的 fit 同样只碰训练集，学到的类别清单是一项参数。测试集如果出现训练集没有的港口，不带 handle_unknown 时 transform 会直接抛错，这是把 fit 与 transform 分开之后才会遇到的典型问题。</p>
+<h1 id="特征构造与量纲统一"><a href="#特征构造与量纲统一" class="headerlink" title="特征构造与量纲统一"></a>特征构造与量纲统一</h1><p>编码解决的是能不能进模型，这一步解决的是进去的特征对不对。原始列只是原材料，合并、提取、删减三步把数据列变成有业务含义的特征，随后才轮到把量纲拉到同一尺度。</p>
+<h2 id="合并、提取、删减"><a href="#合并、提取、删减" class="headerlink" title="合并、提取、删减"></a>合并、提取、删减</h2><p>合并是把分散的信息拼成一个更有解释力的量。SibSp 是同行的兄弟姐妹与配偶数，Parch 是父母与子女数，两列单独看都只说明家庭的一部分。家庭规模按 <script type="math/tex">\text{FamilySize} = \text{SibSp} + \text{Parch} + 1</script> 计算，加 1 是把样本本人算进去；再补一个是否独自出行的标记，取值为 1 表示 FamilySize 等于 1。这个标记可单独表示独自出行与结伴出行的差异，是否与存活有关、能否改善预测，要看数据分析与验证集比较。</p>
+<p>提取是从看似无用的文本里挖出结构化信息。姓名列唯一值极多，无法直接编码，但头衔（Mr、Mrs、Master）与性别、婚姻状况相关，可以作为一列类别特征。这种相关性不能当作因果结论，也不能据此断定社会地位；Master 还特指男童。这些是原始列里没有明说、却与存活率相关的变量。</p>
+<p>删减要有明确依据。缺失 77.4% 的 Cabin 与格式混乱的 Ticket 是本例的删除候选，先删掉便于得到一个干净的基线。这两列也可能含有可用信息，可以先尝试提取其中有意义的信息，比较之后再决定。任何在预测时拿不到、或会泄露标签的列则应当直接排除：这类信息来得太晚，如果某列在真实预测场景里根本不存在，训练时使用这类列只会让离线分数虚高。三步共同的目标是把杂乱的原始记录整理成模型容易理解的特征。这些规则在训练集与测试集上执行同样的动作，但规则本身（例如头衔到社会地位的映射）只能由训练集归纳，不能拿测试集去补全没见过的头衔。</p>
+<h2 id="为什么量纲要统一"><a href="#为什么量纲要统一" class="headerlink" title="为什么量纲要统一"></a>为什么量纲要统一</h2><p>同一张表里各特征的取值范围可以差好几个数量级：Age 是 0 到 80，十位数。Fare 是 0 到 100 以上，百位数。SibSp 是 0 到 8，个位数。独热出来的 Embarked_C 只有 0 或 1。尺度大不会自动带来更大的权重，权重由训练决定。尺度的实际作用体现在三处：基于距离的方法让大尺度特征主导距离。梯度下降在不同方向上的曲率差异变大，收敛更慢。正则化对权重的惩罚与特征尺度耦合。是否缩放取决于模型假设，而非特征数值本身。</p>
+<h2 id="标准化"><a href="#标准化" class="headerlink" title="标准化"></a>标准化</h2><p>标准化（Standardization）使用训练集参数缩放各列，使训练集的非常量列均值为 0、标准差为 1。常量列的标准差为 0，需要单独处理。变换只把中心与尺度对齐，不要求原分布是正态分布，也不保证变换之后数据变成正态分布。变换逐列进行：</p>
+<script type="math/tex; mode=display">z = \frac{x - \mu}{\sigma}</script>
+<p><script type="math/tex">\mu</script> 与 <script type="math/tex">\sigma</script> 分别是该特征在训练集上的均值与标准差。标准化不把数据压进某个固定区间，结果可以是负数，也没有上下界；代价是计算依赖均值与标准差，两者都易受异常值影响。Fare 的标准差 52.4 正是被高价票抬起来的，前面保留了这类可解释的极端值，这一步就要把这类值算进去。适用场景是线性模型、<a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Logistic-Regression&#x2F;" class="wikilink">逻辑回归</a>、神经网络与支持向量机，这些方法都靠特征之间的加权距离或梯度尺度工作。</p>
+<h2 id="归一化"><a href="#归一化" class="headerlink" title="归一化"></a>归一化</h2><p>归一化（Normalization）把数据线性变换到一个固定区间，通常是 [0, 1]：</p>
+<script type="math/tex; mode=display">x' = \frac{x - x_{\min}}{x_{\max} - x_{\min}}</script>
+<p>变换后训练集落在 0 到 1 之间。新数据可能超出这个范围，因为边界只来自训练集。常量列的分母为 0，需要单独处理。归一化对异常值比标准化更敏感：<script type="math/tex">x_{\max}</script> 只要被 512.3 这样的值抬高，其余样本就会被压到 0 附近，正常数值之间的差异几乎消失。适用场景是图像数据（像素天然有 0 到 255 的边界），以及模型明确要求输入落在固定区间的场合。神经网络输入也常做归一化，但 sigmoid 只把输出压到 (0, 1)，并不要求输入落在 [0, 1]。</p>
+<p>两者的取舍可以并排看：</p>
+<table>
+<thead>
+<tr>
+<th>对照项</th>
+<th>标准化</th>
+<th>归一化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输出范围</td>
+<td>无固定区间，均值 0、标准差 1，可以为负</td>
+<td>固定为 [0, 1]，不会为负</td>
+</tr>
+<tr>
+<td>依赖的统计量</td>
+<td>均值与标准差，两者都受异常值影响</td>
+<td>最小值与最大值，分母由最大值决定</td>
+</tr>
+<tr>
+<td>对异常值的敏感度</td>
+<td>中等：极端值抬高标准差，整体仍可用</td>
+<td>极高：极端值抬高分母，其余值被压平</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>线性模型、逻辑回归、神经网络、SVM</td>
+<td>图像像素、模型明确要求固定输入区间的场合</td>
+</tr>
+</tbody></table>
+<p>两个公式里的 <script type="math/tex">\mu</script>、<script type="math/tex">\sigma</script>、<script type="math/tex">x_{\min}</script>、<script type="math/tex">x_{\max}</script> 都是参数，只能在训练集上算出来，再 transform 到验证集与测试集。手写这段代码时最常见的错误是对全体数据调一次 fit_transform，语法正确，泄露已经发生。</p>
+<h1 id="用-Pipeline-固定顺序"><a href="#用-Pipeline-固定顺序" class="headerlink" title="用 Pipeline 固定顺序"></a>用 Pipeline 固定顺序</h1><h2 id="手写流程的危险"><a href="#手写流程的危险" class="headerlink" title="手写流程的危险"></a>手写流程的危险</h2><p>至此，预处理已经在训练集上估出了一批参数：Age 的中位数 28.0、Fare 的中位数 15.7、Embarked 的类别清单、各列的均值与标准差。手写流程的危险在于这些参数分散在若干次 fit 里，任何一处用错集合都不会报错，只会在分数上表现为一次无法用模型改进解释的变化。更麻烦的是换数据、换折数时要重新检查每一处；检查靠人眼，迟早会漏。</p>
+<h2 id="流水线的作用"><a href="#流水线的作用" class="headerlink" title="流水线的作用"></a>流水线的作用</h2><p>常见做法是把预处理、特征工程与模型训练封装成流水线（Pipeline），换来三件事：流程可复用、参数归属清楚、便于部署。sklearn 的写法是把列分成两组，各自串一条子流水线，再用 ColumnTransformer 合起来：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">numeric = Pipeline([</span><br><span class="line">    (<span class="string">&quot;imputer&quot;</span>, SimpleImputer(strategy=<span class="string">&quot;median&quot;</span>)),  <span class="comment"># 中位数只在训练集上估</span></span><br><span class="line">    (<span class="string">&quot;scaler&quot;</span>, StandardScaler()),                   <span class="comment"># 均值与标准差同样只在训练集上估</span></span><br><span class="line">])</span><br><span class="line">categorical = Pipeline([</span><br><span class="line">    (<span class="string">&quot;imputer&quot;</span>, SimpleImputer(strategy=<span class="string">&quot;most_frequent&quot;</span>)),</span><br><span class="line">    (<span class="string">&quot;onehot&quot;</span>, OneHotEncoder(handle_unknown=<span class="string">&quot;ignore&quot;</span>)),  <span class="comment"># 类别清单来自训练集</span></span><br><span class="line">])</span><br><span class="line">preprocess = ColumnTransformer([</span><br><span class="line">    (<span class="string">&quot;num&quot;</span>, numeric, [<span class="string">&quot;Age&quot;</span>, <span class="string">&quot;Fare&quot;</span>, <span class="string">&quot;SibSp&quot;</span>, <span class="string">&quot;Parch&quot;</span>]),</span><br><span class="line">    (<span class="string">&quot;cat&quot;</span>, categorical, [<span class="string">&quot;Sex&quot;</span>, <span class="string">&quot;Embarked&quot;</span>]),</span><br><span class="line">])</span><br><span class="line">model = Pipeline([(<span class="string">&quot;preprocess&quot;</span>, preprocess), (<span class="string">&quot;clf&quot;</span>, clf)])  <span class="comment"># clf 是任意分类器</span></span><br><span class="line"><span class="comment"># fit 一次，整条链的参数按顺序在训练集上估完；预处理中间级做 transform，末级做 predict/score</span></span><br><span class="line">model.fit(X_train, y_train)</span><br><span class="line">score = model.score(X_val, y_val)</span><br></pre></td></tr></table></figure>
+
+<p>流水线把“先划分、再 fit、只 transform”从口头约定变成结构约束。调用 model.fit 时，fit 只在训练集上逐级传递，前面的 imputer 与 scaler 拿到的永远是上游 transform 过的训练数据。调用 predict 或 score 时，中间的预处理只做 transform，最后一级才做预测或评分。交叉验证与网格搜索会在每一折内重新 fit 同一条链，预处理参数只用该折的训练部分估计，这样可以避免验证折的信息进入该折的预处理参数。这并不消灭所有泄露：用全体数据的统计量挑特征、把标签信息带进特征、按测试集分布决定分箱边界，仍然需要靠流程设计逐个排除。这也是把顺序写进代码结构而不是写进注释的理由：预处理的价值不在某一步用了多聪明的统计量，而在每一步的参数归属清楚、顺序固定，换一份新数据能按同一顺序重新执行。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/08/Data-Preprocessing/">https://eliano64.github.io/2026/10/08/Data-Preprocessing/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">线性回归模型的训练对于线性回归模型，n 个样本、d 个特征写成设计矩阵 \mathbf{X} \in \mathbb{R}^{n \times d}，第 i 行是第 i 个样本的特征 \boldsymbol{x}_i^{\top}；标签是向量 \boldsymbol{y} \in \mathbb{R}^{n}。参数是权重 \boldsymbol{\theta} \in \mathbb{R}^{d} 与偏置 \boldsymbol{b} \in \mathbb{R}^{n}，预测写成 \hat{\boldsymbol{y}} = \mathbf{X} \boldsymbol{\theta} + \boldsymbol{b} 偏置向量的每个分量都是同一个数 b，即 \boldsymbol{b} = b\boldsymbol{1}（\boldsymbol{1} \in \mathbb{R}^{n} 是全 1 向量），加到每个样本上的是同一个值。  为什么偏置的分量都是同一个数 如果让这些值各不相同，等于给每个样本单独配一个截距。样本一共只有 n...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Model-Evaluation/" title="Model Evaluation"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Model Evaluation</div></div><div class="info-2"><div class="info-item-1">在比较模型性能之前，先要有一个基线模型作为比较的参照系。基线模型（Baseline）指第一个快速实现、结构相对简单但流程完整的模型：数据怎么读、怎么划分、指标怎么算都已经能完整执行，只把模型的表达力压到最低。基线的价值不在精度，而在建立参照系。 训练模型为的是让模型抓住数据背后的规律，从而对从未见过的新数据也给出准确预测，这种能力叫泛化能力。测试集只是“没见过的新数据”的一次抽样，测试集给出的数字既是性能的估计，也带着抽样本身的偶然性。 评估基准与回归指标评估在测试集上完成，指标算的是预测值与真实值之间的差距。本节只处理回归任务。分类任务关心的是混淆矩阵、精确率、召回率、F1、ROC 与 AUC，那套指标的前提是预测输出为类别或概率，放在 逻辑回归 里讲。 Baseline 的作用基线模型的构造原则是取最简单、又能把整个流程做完的那一个：回归任务直接预测训练集的均值，或者用 线性回归 这类最简单的模型。基线同时充当三样东西。基本参照：指标明显差于基线时，应检查实现、特征、复杂度与数据划分，不能仅凭这个结果认定实现有...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/27/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">数据准备训练前需要划分数据、估计预处理参数，再将处理后的数组转为张量批次。以下接口分别处理数值表示、预处理和批次装载。 形状记号中，N 表示样本数，D 表示输入特征数，K 表示输出特征数，C 表示类别数。dtype 表示元素类型，device 表示张量所在的计算设备。 NumPy 构造与属性1234import numpy as nprng = np.random.default_rng(0)X = rng.normal(size=(4, 3))        # 浮点，形状 [4, 3]i = np.arange(6).reshape(2, 3)     # 整数，形状 [2, 3]  np.array(data) 可将列表等序列转为数组，dtype 默认由元素推断：整数列表得到整数数组，含浮点得到浮点数组。np.zeros、np.ones 可以传 dtype；rng.normal 不接受 dtype 参数，得到 float64，需要单精度时用 .astype(np.float32)。shape、dtype、ndim...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Decision-Tree/" title="Decision Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Decision Tree</div></div><div class="info-2"><div class="info-item-1">决策树的位置逻辑回归这类模型把样本的所有特征乘上权重再加起来，一次算出一个分数，训练就是调整这组权重，让分数更接近标签。决策树换了一种做法：对当前这批样本提一个问题，按答案把样本分到不同的子集，再对每个子集继续提问。 这些判断构成一棵倒立的树：问题在内部节点，答案沿分支传递，结论落在末端的叶子上。建树要做的决定只有一个：每一步挑哪个特征来问。判断一个特征挑得好不好，靠的是纯度（节点里样本在类别上有多一致）。 层层提问的结构决策树（Decision...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">集成学习的思路决策树给出的是一串可以直接读出的规则：年龄大于 30，收入低于 5000，就分到这一类。规则可读，代价是对具体样本过分敏感。训练集里少一个样本，或者某个特征取值稍微变动，整棵树的结构就可能改变。 集成学习不试图把单棵树做得更稳，而是承认单棵树会出错，让许多棵各自不完美的树共同给出预测。这条路上有两条分支：让树彼此独立地生长，最后汇总结果，代表是随机森林；让树一棵接一棵地修正前一轮的误差，代表是梯度提升树。 为什么需要集成单棵树的脆弱决策树的划分准则与剪枝在 Decision-Tree...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">线性回归模型的训练对于线性回归模型，n 个样本、d 个特征写成设计矩阵 \mathbf{X} \in \mathbb{R}^{n \times d}，第 i 行是第 i 个样本的特征 \boldsymbol{x}_i^{\top}；标签是向量 \boldsymbol{y} \in \mathbb{R}^{n}。参数是权重 \boldsymbol{\theta} \in \mathbb{R}^{d} 与偏置 \boldsymbol{b} \in \mathbb{R}^{n}，预测写成 \hat{\boldsymbol{y}} = \mathbf{X} \boldsymbol{\theta} + \boldsymbol{b} 偏置向量的每个分量都是同一个数 b，即 \boldsymbol{b} = b\boldsymbol{1}（\boldsymbol{1} \in \mathbb{R}^{n} 是全 1 向量），加到每个样本上的是同一个值。  为什么偏置的分量都是同一个数 如果让这些值各不相同，等于给每个样本单独配一个截距。样本一共只有 n...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归的位置监督学习里，标签是连续数值时（房价、温度、销量），任务要回答的是“给定这些特征，输出是多少”，这一类任务称为回归，整个监督学习的版图见 Machine-Learning-Overview。线性回归（Linear Regression）是最简单的一种做法：把输出写成特征的加权和。特征是描述一个样本的各个属性，例如面积与房龄。名字里有两件事值得拆开：“线性”规定模型的形式，“回归”交代任务的类型。 线性回归先是一个模型，其次才是一套训练方法。下文只处理前一半：模型的形式怎么定，好坏怎么量，参数怎么解出来。把损失逐步降下去的过程见 Gradient-Descent。 什么算线性数学上的线性描述按比例变化、可叠加的关系。一个映射 f 满足两条性质就称为线性：输入放大 a 倍，输出也放大 a 倍，即 f(a\boldsymbol{x}) = a f(\boldsymbol{x})，这条叫齐次性；两个输入叠加后的输出等于各自输出之和，即 f(\boldsymbol{x} + \boldsymbol{z}) = f(\boldsymbol{x}) +...</div></div></div></a><a class="pagination-related" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-05</div><div class="info-item-2">Machine Learning Overview</div></div><div class="info-2"><div class="info-item-1">人工智能与机器学习人工智能（Artificial Intelligence，AI）研究如何让计算机完成感知、学习、推理与决策这类任务。人工编写的规则系统与从数据训练出的系统都属于 AI。 机器学习（Machine Learning，ML）是 AI 中从数据学习参数或规则、用于预测或决策的部分。 深度学习（Deep Learning，DL）是机器学习的一个子集，用多层神经网络从输入逐层构造表示。这里的表示可由网络学习，输入可以是原始像素、波形或文本。 主流大语言模型（Large Language Model，LLM）使用多层神经网络，通常以 Transformer 为基础，学习根据已有上下文预测下一个词元。 !..&#x2F;assets&#x2F;machine-learning-scope.svg 空间智能与世界模型空间智能指在空间中感知、推理并行动的能力，需要处理距离、速度、重力这类几何与物理量。 世界模型学习环境的时空表示，根据历史状态、当前状态与动作预测后续状态，并支持策略学习与规划（World...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%88%E5%88%92%E5%88%86%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="toc-text">先划分数据集</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E4%B8%AA%E5%AD%90%E9%9B%86%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">三个子集的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%B3%84%E9%9C%B2%E7%9A%84%E8%BE%B9%E7%95%8C"><span class="toc-text">数据泄露的边界</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#EDA-%E8%83%BD%E7%9C%8B%E5%87%BA%E4%BB%80%E4%B9%88"><span class="toc-text">EDA 能看出什么</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82%EF%BC%9A%E7%BB%93%E6%9E%84"><span class="toc-text">第一层：结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%EF%BC%9A%E7%BC%BA%E5%A4%B1%E4%B8%8E%E5%88%86%E5%B8%83"><span class="toc-text">第二层：缺失与分布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%82%EF%BC%9A%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc-text">第三层：可视化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%8A%E8%A7%82%E5%AF%9F%E5%8F%98%E6%88%90%E7%AD%96%E7%95%A5"><span class="toc-text">把观察变成策略</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97"><span class="toc-text">数据清洗</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E8%A1%8C%E4%B8%8E%E7%B4%A2%E5%BC%95%E5%90%8C%E6%AD%A5"><span class="toc-text">重复行与索引同步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%BA%E5%A4%B1%E5%80%BC%E6%8C%89%E6%AF%94%E4%BE%8B%E5%88%86%E6%A1%A3"><span class="toc-text">缺失值按比例分档</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E5%80%BC%E7%9A%84%E7%AE%B1%E7%BA%BF%E5%9B%BE%E6%A3%80%E6%B5%8B"><span class="toc-text">异常值的箱线图检测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E5%80%BC%E7%9A%84%E7%BB%9F%E8%AE%A1%E8%A7%82%E5%AF%9F%E4%B8%8E%E5%A4%84%E7%90%86"><span class="toc-text">异常值的统计观察与处理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%B1%BB%E5%88%AB%E7%89%B9%E5%BE%81%E7%BC%96%E7%A0%81"><span class="toc-text">类别特征编码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E7%BC%96%E7%A0%81%E7%9A%84%E5%B7%AE%E5%88%AB"><span class="toc-text">三种编码的差别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%8F%E6%95%B0%E7%BC%96%E7%A0%81"><span class="toc-text">序数编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8B%AC%E7%83%AD%E7%BC%96%E7%A0%81"><span class="toc-text">独热编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%87%E7%AD%BE%E7%BC%96%E7%A0%81"><span class="toc-text">标签编码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E6%9E%84%E9%80%A0%E4%B8%8E%E9%87%8F%E7%BA%B2%E7%BB%9F%E4%B8%80"><span class="toc-text">特征构造与量纲统一</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E3%80%81%E6%8F%90%E5%8F%96%E3%80%81%E5%88%A0%E5%87%8F"><span class="toc-text">合并、提取、删减</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%8F%E7%BA%B2%E8%A6%81%E7%BB%9F%E4%B8%80"><span class="toc-text">为什么量纲要统一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E5%8C%96"><span class="toc-text">标准化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BD%92%E4%B8%80%E5%8C%96"><span class="toc-text">归一化</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8-Pipeline-%E5%9B%BA%E5%AE%9A%E9%A1%BA%E5%BA%8F"><span class="toc-text">用 Pipeline 固定顺序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%8B%E5%86%99%E6%B5%81%E7%A8%8B%E7%9A%84%E5%8D%B1%E9%99%A9"><span class="toc-text">手写流程的危险</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">流水线的作用</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

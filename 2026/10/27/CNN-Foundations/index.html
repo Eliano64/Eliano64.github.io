@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>CNN Foundations | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="图像与空间结构图像分类的输出是一个类别。输入是像素网格排成的张量：一批图像写作 N\times C\times H\times W，N 是批量，C 是通道数，H、W 是高与宽。RGB 图像的 C&#x3D;3，灰度图 C&#x3D;1。 以 32×32 彩图为例，单张写作 3×32×32，通道在前。  通道位置 部分库把通道放在最后，写作 32×32×3。两种写法是同一份数据的两种排列，读数据时需要确认约定。   像">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CNN Foundations">
+<meta property="og:url" content="https://eliano64.github.io/2026/10/27/CNN-Foundations/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="图像与空间结构图像分类的输出是一个类别。输入是像素网格排成的张量：一批图像写作 N\times C\times H\times W，N 是批量，C 是通道数，H、W 是高与宽。RGB 图像的 C&#x3D;3，灰度图 C&#x3D;1。 以 32×32 彩图为例，单张写作 3×32×32，通道在前。  通道位置 部分库把通道放在最后，写作 32×32×3。两种写法是同一份数据的两种排列，读数据时需要确认约定。   像">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-10-27T08:05:29.000Z">
+<meta property="article:modified_time" content="2026-10-28T03:40:38.346Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="CNN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CNN Foundations",
+  "url": "https://eliano64.github.io/2026/10/27/CNN-Foundations/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-10-27T08:05:29.000Z",
+  "dateModified": "2026-10-28T03:40:38.346Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/10/27/CNN-Foundations/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CNN Foundations',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">CNN Foundations</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">CNN Foundations</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-27T08:05:29.000Z" title="发表于 2026-10-27 16:05:29">2026-10-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-28T03:40:38.346Z" title="更新于 2026-10-28 11:40:38">2026-10-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="图像与空间结构"><a href="#图像与空间结构" class="headerlink" title="图像与空间结构"></a>图像与空间结构</h1><p>图像分类的输出是一个类别。输入是像素网格排成的张量：一批图像写作 <script type="math/tex">N\times C\times H\times W</script>，<script type="math/tex">N</script> 是批量，<script type="math/tex">C</script> 是通道数，<script type="math/tex">H</script>、<script type="math/tex">W</script> 是高与宽。RGB 图像的 <script type="math/tex">C=3</script>，灰度图 <script type="math/tex">C=1</script>。</p>
+<p>以 32×32 彩图为例，单张写作 3×32×32，通道在前。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">通道位置</span></div>
+<div class="callout-content"><p>部分库把通道放在最后，写作 32×32×3。两种写法是同一份数据的两种排列，读数据时需要确认约定。</p>
+</div>
+</div>
+<p>像素网格自带两种结构：相邻位置相关，同一模式可以出现在不同位置。全连接层没有显式利用这两种结构，卷积层正为利用这两种结构而设计。</p>
+<h1 id="全连接层的代价"><a href="#全连接层的代价" class="headerlink" title="全连接层的代价"></a>全连接层的代价</h1><p>一个全连接层把 <script type="math/tex">n_{in}</script> 个输入映射到 <script type="math/tex">n_{out}</script> 个输出，参数为 <script type="math/tex">n_{in}\times n_{out}</script> 个权重加上 <script type="math/tex">n_{out}</script> 个偏置。图像一大，输入维度上升，第一层的参数随输入维度线性增长。</p>
+<p>MNIST 的 28×28 灰度图按行展平得到 784 个数，接一个 784→512→10 的多层感知机，第一层参数为 <script type="math/tex">784\times512+512=401{,}920</script>，约 40 万。将下列输入都映射到 512 维时，第一层的参数量如下：</p>
+<table>
+<thead>
+<tr>
+<th>输入</th>
+<th>展平维度</th>
+<th>第一层参数量（含偏置）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MNIST 28×28</td>
+<td>784</td>
+<td>401,920</td>
+</tr>
+<tr>
+<td>CIFAR-10 32×32×3</td>
+<td>3,072</td>
+<td>1,573,376</td>
+</tr>
+<tr>
+<td>ImageNet 224×224×3</td>
+<td>150,528</td>
+<td>77,070,848</td>
+</tr>
+</tbody></table>
+<p>展平本身保留全部像素值。全连接结构没有编码相邻位置之间的局部连接，也没有让不同位置共享同一套检测规则，缺少的是这种结构先验。</p>
+<h1 id="归纳偏置：局部性与共享"><a href="#归纳偏置：局部性与共享" class="headerlink" title="归纳偏置：局部性与共享"></a>归纳偏置：局部性与共享</h1><p>归纳偏置指模型结构对某类规律的偏好。卷积网络偏好两条：相邻像素共同构成局部模式，同一个模式在不同位置用同一套检测规则。</p>
+<h2 id="局部相关性"><a href="#局部相关性" class="headerlink" title="局部相关性"></a>局部相关性</h2><p>边缘与角点都由邻近像素共同形成。感受野是某个输出位置在原始输入上对应的区域；单层 3×3 卷积的感受野为 3×3，层数增加，覆盖范围随之扩大。</p>
+<p>局部性是常见先验，不是绝对规律。全局场景与物体位置也能帮助分类；卷积靠堆叠层数逐步扩大感受野，利用更大范围的信息。</p>
+<h2 id="平移等变与平移不变"><a href="#平移等变与平移不变" class="headerlink" title="平移等变与平移不变"></a>平移等变与平移不变</h2><p>同一种边缘可能出现在图像的任何位置，检测规则应当可以复用。输入整体平移，输出响应跟着平移，这叫平移等变，写作 <script type="math/tex">f(Tx)=Tf(x)</script>，<script type="math/tex">T</script> 是平移算子。平移不变是更强的性质：输入平移，输出完全不变，<script type="math/tex">f(Tx)=f(x)</script>。池化只降低对小位移的敏感度，不保证严格不变。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">成立条件</span></div>
+<div class="callout-content"><p>平移等变在步幅为 1、忽略边界影响时成立。补零会改变边缘响应；步幅大于 1 时，只有平移量是步幅的整数倍才逐格对应。全局平均池化在参与平均的集合不随平移改变时，才给出对这种平移的不变。</p>
+</div>
+</div>
+<h1 id="卷积与特征图"><a href="#卷积与特征图" class="headerlink" title="卷积与特征图"></a>卷积与特征图</h1><p>卷积层用一个小权重矩阵在输入上滑动，每个位置做一次加权和。这个小矩阵叫卷积核。对单通道输入与 <script type="math/tex">k\times k</script> 核：</p>
+<script type="math/tex; mode=display">y_{i,j}=\sum_{u=0}^{k-1}\sum_{v=0}^{k-1} w_{u,v}\,x_{i+u,\,j+v}+b</script>
+<p><script type="math/tex">y_{i,j}</script> 是输出特征图在 <script type="math/tex">(i,j)</script> 的值，<script type="math/tex">x</script> 是输入，<script type="math/tex">w_{u,v}</script> 是核内权重，<script type="math/tex">b</script> 是偏置。同一组 <script type="math/tex">w</script> 在所有位置复用，这就是权重共享。一个核扫描完整输入得到一张特征图，输出通道数等于核的数量。</p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">卷积与互相关</span></div>
+<div class="callout-content"><p>交叉相关不翻转核；数学定义的卷积会把核旋转 180° 再滑动，两者的结果相差一次核的旋转。PyTorch 的 <code>Conv2d</code> 计算的是互相关。</p>
+</div>
+</div>
+<h2 id="一次响应"><a href="#一次响应" class="headerlink" title="一次响应"></a>一次响应</h2><p>取一个 3×3 竖边核，三行都是 −1、0、1，计算右列之和减去左列之和。窗口 A 与核逐项相乘再求和，忽略权重为 0 的中间列：</p>
+<script type="math/tex; mode=display">-30+210-28+205-25+200=532</script>
+<p>同一个核作用于左右亮度接近的窗口 B，响应只有 29。响应是带符号的加权和，不是归一化相似度：数值随像素尺度变化，负值表示局部对比与核的方向相反。</p>
+<p>!<span class="wikilink-unresolved" title="Unresolved: ..&#x2F;assets&#x2F;cnn-convolution-patches.svg">..&#x2F;assets&#x2F;cnn-convolution-patches.svg</span></p>
+<h2 id="参数与感受野"><a href="#参数与感受野" class="headerlink" title="参数与感受野"></a>参数与感受野</h2><p>设输入通道 <script type="math/tex">C_{in}</script>、输出通道 <script type="math/tex">C_{out}</script>、核边长 <script type="math/tex">k</script>，含偏置的参数量为：</p>
+<script type="math/tex; mode=display">C_{out}\times(C_{in}\times k\times k)+C_{out}</script>
+<p><script type="math/tex">H</script>、<script type="math/tex">W</script> 不在公式里：同一层接 224×224 输入仍是同样多的参数。3 通道、16 个 3×3 核对应 <script type="math/tex">16\times27+16=448</script>。</p>
+<p>步幅为 1 时，每加一层 3×3 卷积，感受野边长增加 2，依次为 3、5、7、9。池化或大于 1 的步幅降低特征图分辨率，后续卷积因此覆盖原图更大的区域。代价是位置精度下降。</p>
+<h1 id="层次结构"><a href="#层次结构" class="headerlink" title="层次结构"></a>层次结构</h1><p>语义按层级组合：像素、边缘、纹理、部件、物体。训练好的网络里，浅层常响应颜色、边缘与简单纹理，深层常响应部件与物体。这是训练形成的常见趋势，不是给每层指定的探测器。</p>
+<p>核的数值同样来自训练。不同输出通道可能对竖边、横边、颜色变化或纹理敏感，具体分工由数据与任务决定；层数与数据变化，分工随之变化。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/10/27/CNN-Foundations/">https://eliano64.github.io/2026/10/27/CNN-Foundations/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/27/API/" title="API"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">API</div></div><div class="info-2"><div class="info-item-1">数据准备训练前需要划分数据、估计预处理参数，再将处理后的数组转为张量批次。以下接口分别处理数值表示、预处理和批次装载。 形状记号中，N 表示样本数，D 表示输入特征数，K 表示输出特征数，C 表示类别数。dtype 表示元素类型，device 表示张量所在的计算设备。 NumPy 构造与属性1234import numpy as nprng = np.random.default_rng(0)X = rng.normal(size=(4, 3))        # 浮点，形状 [4, 3]i = np.arange(6).reshape(2, 3)     # 整数，形状 [2, 3]  np.array(data) 可将列表等序列转为数组，dtype 默认由元素推断：整数列表得到整数数组，含浮点得到浮点数组。np.zeros、np.ones 可以传 dtype；rng.normal 不接受 dtype 参数，得到 float64，需要单精度时用 .astype(np.float32)。shape、dtype、ndim...</div></div></div></a><a class="pagination-related" href="/2026/10/27/CNN-Architecture/" title="CNN Architecture"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">CNN Architecture</div></div><div class="info-2"><div class="info-item-1">分类网络的整体结构图像分类网络分两段：特征提取器重复“卷积、激活、池化”，让通道变多、空间变小；分类器把特征图展平，经全连接层输出各类得分。 以 CIFAR-10 的一个分类网络为例。输入 3×32×32，10 类。卷积核 3×3、四周补一圈零（padding&#x3D;1）、步幅 1；池化用 2×2 窗口、步幅 2，每个阶段的空间尺寸减半。参数量含偏置：    阶段 操作 输出形状 参数量    输入 3×32×32 3×32×32 0   1 Conv 3×3，16 通道 → ReLU → MaxPool 2×2 16×16×16 448   2 Conv 3×3，32 通道 → ReLU → MaxPool 2×2 32×8×8 4,640   3 Conv 3×3，64 通道 → ReLU → MaxPool 2×2 64×4×4 18,496   4 Conv 3×3，64 通道 → ReLU → MaxPool 2×2 64×2×2 36,928   展平 64×2×2 → 256 256 0   全连接 256 → 128 →...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/27/CNN-Architecture/" title="CNN Architecture"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">CNN Architecture</div></div><div class="info-2"><div class="info-item-1">分类网络的整体结构图像分类网络分两段：特征提取器重复“卷积、激活、池化”，让通道变多、空间变小；分类器把特征图展平，经全连接层输出各类得分。 以 CIFAR-10 的一个分类网络为例。输入 3×32×32，10 类。卷积核 3×3、四周补一圈零（padding&#x3D;1）、步幅 1；池化用 2×2 窗口、步幅 2，每个阶段的空间尺寸减半。参数量含偏置：    阶段 操作 输出形状 参数量    输入 3×32×32 3×32×32 0   1 Conv 3×3，16 通道 → ReLU → MaxPool 2×2 16×16×16 448   2 Conv 3×3，32 通道 → ReLU → MaxPool 2×2 32×8×8 4,640   3 Conv 3×3，64 通道 → ReLU → MaxPool 2×2 64×4×4 18,496   4 Conv 3×3，64 通道 → ReLU → MaxPool 2×2 64×2×2 36,928   展平 64×2×2 → 256 256 0   全连接 256 → 128 →...</div></div></div></a><a class="pagination-related" href="/2026/10/27/Residual-Networks/" title="Residual Networks"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-27</div><div class="info-item-2">Residual Networks</div></div><div class="info-2"><div class="info-item-1">深度带来的优化困难增加卷积层能提高表达能力，实际训练中却可能越深越差。一个常见现象是：不加捷径连接时，较深的网络在训练集上的误差反而高于较浅的网络。训练误差本身变差，说明问题不在拟合训练集之后的泛化，而在优化。更深的网络没能把训练误差降下来，这类现象称为退化。 深层网络在表达能力上不缺解。新增层若都能实现恒等映射，输出等于输入，其余层复制浅层权重，深网络至少应与浅层持平。解存在不等于优化器能找到。残差连接改的是寻找这个解的方式。 残差写法与直接路径设某几层原本要学的映射是 H(x)，残差写法让这几层只学差值 F(x)=H(x)-x，前向变成： z = x + F(x),\qquad \text{输出} = \mathrm{ReLU}(z) x 是通道数 C、高 H、宽 W 的特征图，F(x) 与 x 同形状，相加按元素进行。若最优映射接近恒等，让 F 接近 0 比让多层非线性精确输出 x 更容易优化：参数只需要描述相对输入的修正量，不必重新生成整个表示。这是参数化上的动机，不保证任何设置下都更易训练。  ReLU 与恒等 F=0 时预激活为 x，后面的 ReLU...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">322</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BE%E5%83%8F%E4%B8%8E%E7%A9%BA%E9%97%B4%E7%BB%93%E6%9E%84"><span class="toc-text">图像与空间结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%A8%E8%BF%9E%E6%8E%A5%E5%B1%82%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="toc-text">全连接层的代价</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BD%92%E7%BA%B3%E5%81%8F%E7%BD%AE%EF%BC%9A%E5%B1%80%E9%83%A8%E6%80%A7%E4%B8%8E%E5%85%B1%E4%BA%AB"><span class="toc-text">归纳偏置：局部性与共享</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E7%9B%B8%E5%85%B3%E6%80%A7"><span class="toc-text">局部相关性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E7%A7%BB%E7%AD%89%E5%8F%98%E4%B8%8E%E5%B9%B3%E7%A7%BB%E4%B8%8D%E5%8F%98"><span class="toc-text">平移等变与平移不变</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%B7%E7%A7%AF%E4%B8%8E%E7%89%B9%E5%BE%81%E5%9B%BE"><span class="toc-text">卷积与特征图</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E5%93%8D%E5%BA%94"><span class="toc-text">一次响应</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E4%B8%8E%E6%84%9F%E5%8F%97%E9%87%8E"><span class="toc-text">参数与感受野</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84"><span class="toc-text">层次结构</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Attention-Mechanisms/" title="Attention Mechanisms">Attention Mechanisms</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Encoder-Decoder-And-Seq2Seq/" title="Encoder Decoder And Seq2Seq">Encoder Decoder And Seq2Seq</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/LSTM-And-GRU/" title="LSTM And GRU">LSTM And GRU</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Recurrent-Neural-Networks/" title="Recurrent Neural Networks">Recurrent Neural Networks</a><time datetime="2026-10-27T15:29:21.000Z" title="发表于 2026-10-27 23:29:21">2026-10-27</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-10-29T07:51:35.356Z" title="更新于 2026-10-29 15:51:35">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/22/How-To-Read-A-Paper/" title="How To Read A Paper">How To Read A Paper</a><time datetime="2026-10-29T06:54:58.483Z" title="更新于 2026-10-29 14:54:58">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Git-Commands/" title="Git Commands">Git Commands</a><time datetime="2026-10-29T02:20:49.912Z" title="更新于 2026-10-29 10:20:49">2026-10-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-10-28T04:44:53.946Z" title="更新于 2026-10-28 12:44:53">2026-10-28</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/15/Realtime-Web-Communication/" title="Realtime Web Communication">Realtime Web Communication</a><time datetime="2026-10-28T04:28:43.347Z" title="更新于 2026-10-28 12:28:43">2026-10-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>
