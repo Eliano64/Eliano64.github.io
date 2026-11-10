@@ -6,7 +6,7 @@
   <link href="https://eliano64.github.io/atom.xml" rel="self"/>
   
   <link href="https://eliano64.github.io/"/>
-  <updated>2026-11-10T05:47:05.837Z</updated>
+  <updated>2026-11-10T05:30:51.058Z</updated>
   <id>https://eliano64.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Transformer Architecture</title>
+    <link href="https://eliano64.github.io/2026/11/10/Transformer-Architecture%201/"/>
+    <id>https://eliano64.github.io/2026/11/10/Transformer-Architecture%201/</id>
+    <published>2026-11-10T05:35:00.000Z</published>
+    <updated>2026-11-10T05:30:51.058Z</updated>
+    
+    <content type="html"><![CDATA[<div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||1000)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||1000)-80))+'px'">−</button></div><iframe src="/assets/transformer-architecture.html" style="width:100%;height:1000px;border:0" loading="lazy"></iframe></div>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;div class=&quot;html-card-embed&quot;&gt;
+&lt;div class=&quot;html-card-controls&quot;&gt;
+&lt;button class=&quot;html-card-reload&quot; title=&quot;Reload&quot; onclick=&quot;var i=this.closest(&#39;</summary>
+      
+    
+    
+    
+    <category term="Artificial Intelligence" scheme="https://eliano64.github.io/categories/Artificial-Intelligence/"/>
+    
+    
+    <category term="Transformer" scheme="https://eliano64.github.io/tags/Transformer/"/>
+    
+  </entry>
   
   <entry>
     <title>Transformer Architecture</title>
@@ -464,31 +490,6 @@
       
       
     <summary type="html">&lt;h1 id=&quot;深度学习在机器学习中的位置&quot;&gt;&lt;a href=&quot;#深度学习在机器学习中的位置&quot; class=&quot;headerlink&quot; title=&quot;深度学习在机器学习中的位置&quot;&gt;&lt;/a&gt;深度学习在机器学习中的位置&lt;/h1&gt;&lt;p&gt;深度学习是机器学习的一个分支。模型仍是参数化的函数，</summary>
-      
-    
-    
-    
-    <category term="Deep Learning" scheme="https://eliano64.github.io/categories/Deep-Learning/"/>
-    
-    
-    <category term="DeepLearning" scheme="https://eliano64.github.io/tags/DeepLearning/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Deep Learning Training Pipeline</title>
-    <link href="https://eliano64.github.io/2026/10/26/Deep-Learning-Training-Pipeline/"/>
-    <id>https://eliano64.github.io/2026/10/26/Deep-Learning-Training-Pipeline/</id>
-    <published>2026-10-26T15:42:25.000Z</published>
-    <updated>2026-11-10T03:24:04.259Z</updated>
-    
-    <content type="html"><![CDATA[<p>下面以监督学习为例，说明一次训练包含哪些环节：数据有标签、损失可导、用反向传播求梯度、用优化器更新参数。强化学习与无监督预训练也常使用同一个前向、损失、反向、更新的骨架，差别在数据来源与目标函数。</p><h1 id="从输入到预测"><a href="#从输入到预测" class="headerlink" title="从输入到预测"></a>从输入到预测</h1><p>训练流程的起点是数据形状与任务形式，这两者决定结构的选择：输入是展平的像素、卷积特征图还是序列，输出是类别、概率还是实数。下面的前向描述以最简单的全连接层为例。</p><p>图像是像素张量，可以直接进入线性层或卷积层；文本是词编号，需要先经过嵌入查表变成向量，再做矩阵运算。第一层把输入线性组合，再过激活函数，得到一组新的数值；下一层在这组新数值上重复同样的操作。层数越深，表示就从低层模式逐步组合成高层语义。</p><p>以图像识别为例，靠前的层常对应边缘与纹理，靠后的层对应部件与物体。换成文本或表格，层次结构并不相同，所以“逐层抽象成边缘、部件、物体”是图像模型的典型情形，不是所有网络都如此。</p><p>这条链路叫前向传播：</p><script type="math/tex; mode=display">\mathbf{A}^{(l)} = \sigma\left(\mathbf{W}^{(l)} \mathbf{A}^{(l-1)} + \boldsymbol{b}^{(l)}\right)</script><p><script type="math/tex">\mathbf{A}^{(l-1)}</script> 形状为 <script type="math/tex">[n_{l-1}, B]</script>，<script type="math/tex">B</script> 是 batch 内样本数；<script type="math/tex">\mathbf{W}^{(l)}</script> 形状为 <script type="math/tex">[n_l, n_{l-1}]</script>，<script type="math/tex">\boldsymbol{b}^{(l)}</script> 形状为 <script type="math/tex">[n_l, 1]</script>，计算时沿 batch 维广播；<script type="math/tex">\sigma</script> 是激活函数。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||680)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||680)-80))+'px'">−</button></div><iframe src="/assets/dl-forward-matrix-card.html" style="width:100%;height:680px;border:0" loading="lazy"></iframe></div><h1 id="训练流程的组成"><a href="#训练流程的组成" class="headerlink" title="训练流程的组成"></a>训练流程的组成</h1><p>这一节先把配置与循环分开，避免把静态设置当成训练步骤。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||820)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||820)-80))+'px'">−</button></div><iframe src="/assets/training-pipeline-overview.html" style="width:100%;height:820px;border:0" loading="lazy"></iframe></div><p>配置阶段确定：数据划分、模型结构、损失函数、优化器与学习率、是否加归一化、是否加正则化（用于抑制过拟合，例如权重衰减、Dropout）、是否做学习率调度与早停。</p><p>循环阶段只有四件事反复执行：前向、算损失、反向、更新。</p><p>归一化层与 Dropout 属于模型结构的一部分，在前向里生效，不在更新之后单独执行。Dropout 在训练时按概率把部分激活置零，以减少模型对特定单元组合的依赖。归一化时哪些元素一起计算均值和方差，以及训练与推理的差异，见 <span class="wikilink-unresolved" title="Unresolved: ..&#x2F;posts&#x2F;Norm">..&#x2F;posts&#x2F;Norm</span>。</p><ol><li>划分数据：训练集用于更新参数，验证集用于选择超参数与早停，测试集用于最终报告。数据较少时，先保留独立的测试集，再在其余数据上做交叉验证：各折轮流充当训练集与验证集，据此选择超参数。</li><li>确定结构：层数、每层宽度、激活函数、归一化与 Dropout 的位置。</li><li>初始化参数：权重按某种分布随机初始化，偏置通常置零，尺度的推导见 <a href="&#x2F;2026&#x2F;10&#x2F;26&#x2F;Weight-Initialization-And-Variance&#x2F;" class="wikilink">Weight-Initialization-And-Variance</a>。</li><li>前向传播：将一个 batch 的数据输入网络，得到预测。</li><li>计算损失：把输出与标签的差距变成一个标量。</li><li>反向传播：算出损失对每个参数的梯度。</li><li>更新参数：优化器按梯度改参数，学习率决定步长。</li></ol><p>正则化、调度、早停是可选项，是否采用取决于过拟合程度与训练预算。把可选项都当成必选项会增加不必要的复杂度；必需项缺失时训练无法进行。</p><h1 id="损失与评价指标"><a href="#损失与评价指标" class="headerlink" title="损失与评价指标"></a>损失与评价指标</h1><h2 id="交叉熵"><a href="#交叉熵" class="headerlink" title="交叉熵"></a>交叉熵</h2><p>输出层的原始输出叫 logits，是未归一化的类别分数，可以是任意实数。</p><div class="callout callout-important"><div class="callout-title"><i class="fa-solid fa-circle-exclamation callout-icon"></i><span class="callout-title-text">交叉熵损失接收的是 logits</span></div><div class="callout-content"><p>多分类的 <code>CrossEntropyLoss</code> 默认接收 logits。内部先计算 log_softmax，再取标签对应项的负值并求平均，即负对数似然，不会再取一次对数。</p><p>若先计算 softmax，概率会被当成新的 logits，再次归一化，损失与梯度都会改变。二分类的 <code>BCEWithLogitsLoss</code> 将 sigmoid 与交叉熵合并为一个数值稳定的计算，不需要预先单独计算 sigmoid。</p></div></div><p>二元交叉熵的形式为：</p><script type="math/tex; mode=display">L = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \ln p_i + (1-y_i)\ln(1-p_i)\right]</script><p><script type="math/tex">N</script> 是样本数，<script type="math/tex">y_i \in \{0,1\}</script> 是标签，<script type="math/tex">p_i \in (0,1)</script> 是预测为正类的概率，<script type="math/tex">\ln</script> 是自然对数。</p><p>真实类别的预测概率趋近 1 时，损失趋近 0；趋近 0 时，损失可任意大。概率严格位于 <script type="math/tex">(0,1)</script> 时，<script type="math/tex">L \in (0,+\infty)</script>：下确界为 0，没有上界。</p><h2 id="准确率与召回率"><a href="#准确率与召回率" class="headerlink" title="准确率与召回率"></a>准确率与召回率</h2><p>准确率的定义为：</p><script type="math/tex; mode=display">\operatorname{accuracy} = \frac{1}{N}\sum_{i=1}^{N} \mathbb{1}\left[\hat{y}_i = y_i\right], \qquad \hat{y}_i = \mathbb{1}\left[p_i \ge 0.5\right]</script><p><script type="math/tex">\mathbb{1}[\cdot]</script> 是指示函数：括号内条件成立时取 1，否则取 0。准确率的取值范围为 <script type="math/tex">[0,1]</script>，只统计分类对错，不区分预测概率与标签的差距。</p><p>三个二分类样本的例子：标签 <script type="math/tex">[1,0,1]</script>，预测概率 <script type="math/tex">[0.9,0.4,0.2]</script>。按 0.5 判类得到 <script type="math/tex">[1,0,0]</script>，2 个样本分类正确，准确率 <script type="math/tex">2/3 \approx 0.667</script>。逐条代入上式，三项是 <script type="math/tex">0.105</script>、<script type="math/tex">0.511</script>、<script type="math/tex">1.609</script>，平均损失 <script type="math/tex">0.742</script>。</p><p>把概率换成 <script type="math/tex">[0.55,0.45,0.2]</script>，判类不变，准确率仍是 <script type="math/tex">0.667</script>，损失升到 <script type="math/tex">0.935</script>。损失反映预测概率与标签的接近程度，准确率只反映分类对错。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||620)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||620)-80))+'px'">−</button></div><iframe src="/assets/dl-classification-probability-card.html" style="width:100%;height:620px;border:0" loading="lazy"></iframe></div><div class="callout callout-example"><div class="callout-title"><i class="fa-solid fa-list-check callout-icon"></i><span class="callout-title-text">不平衡数据上的准确率</span></div><div class="callout-content"><p>1000 个样本中有 999 个负例、1 个正例，全部预测为负时，准确率为 <script type="math/tex">0.999</script>，正例却完全未被识别。</p><p>混淆矩阵按真实类别与预测类别交叉计数，本例的四格如下：</p><table><thead><tr><th>真实 \ 预测</th><th>预测为正</th><th>预测为负</th></tr></thead><tbody><tr><td>真实为正</td><td>0（真正例）</td><td>1（假负例）</td></tr><tr><td>真实为负</td><td>0（假正例）</td><td>999（真负例）</td></tr></tbody></table><p>召回率衡量真实正例中被正确识别的比例，公式为 <script type="math/tex">\operatorname{recall}=\mathrm{TP}/(\mathrm{TP}+\mathrm{FN})</script>，其中 <script type="math/tex">\mathrm{TP}</script> 为真正例数，<script type="math/tex">\mathrm{FN}</script> 为假负例数。</p><p>本例召回率为 <script type="math/tex">0/1=0</script>；取值越接近 1，遗漏的正例比例越低。评估集中没有真实正例时，分母为 0，比例定义不适用。</p></div></div><h1 id="输出层与模块顺序"><a href="#输出层与模块顺序" class="headerlink" title="输出层与模块顺序"></a>输出层与模块顺序</h1><p>分类任务把未归一化的 logits 交给 <code>CrossEntropyLoss</code> 或 <code>BCEWithLogitsLoss</code>，由损失函数内部完成 log_softmax 或 sigmoid。只有在推理或需要展示概率时，才显式计算 softmax 或 sigmoid。无约束回归在输出层不加压缩，直接给出实数；目标有确定范围时可以缩放。</p><p>模块顺序同理不是固定公式。常见写法是 <code>Linear → BatchNorm → ReLU → Dropout</code>：归一化放在线性层之后、激活之前，Dropout 放在激活之后。反例并不少见：残差网络常把归一化放在卷积之前，Transformer 的前馈层是 <code>Linear → GELU → Linear</code>。</p><p>判断顺序是否合理，要看三点：均值和方差在哪些元素上一起计算，激活是否改变尺度，残差连接（把某层输入直接加到该层输出上）相加的两路是否同尺度。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||820)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||820)-80))+'px'">−</button></div><iframe src="/assets/module-order-comparison.html" style="width:100%;height:820px;border:0" loading="lazy"></iframe></div><h1 id="epoch、iteration-与-batch"><a href="#epoch、iteration-与-batch" class="headerlink" title="epoch、iteration 与 batch"></a>epoch、iteration 与 batch</h1><p>batch 是一次前向与反向里的一组样本，batch size 是这一组的样本数。处理一个 batch 算一次循环迭代，通常对应一次优化器更新；使用梯度累积时，处理若干 batch 才更新一次。</p><p>一个 epoch 是把训练集完整遍历一次。保留最后不完整的 batch 时，每个 epoch 的 batch 数为：</p><script type="math/tex; mode=display">\text{每个 epoch 的 batch 数} = \left\lceil \frac{\text{训练样本数}}{\text{batch size}} \right\rceil</script><p>50,000 条样本、batch size 取 64 时，每个 epoch 有 <script type="math/tex">\lceil 50000/64 \rceil = 782</script> 个 batch。若 <code>drop_last=True</code> 丢掉尾批，是 781 个。若用梯度累积、每 4 个 batch 更新一次参数，782 个 batch 对应 <script type="math/tex">\lceil 782/4 \rceil = 196</script> 次更新，最后一组不足 4 个也要更新一次。</p><div class="html-card-embed"><div class="html-card-controls"><button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button><button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||360)+80)+'px'">+</button><button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||360)-80))+'px'">−</button></div><iframe src="/assets/dl-batch-epoch-card.html" style="width:100%;height:360px;border:0" loading="lazy"></iframe></div><p>batch 变大，梯度更平滑但显存占用上升；变小则噪声变大、更新次数变多。比较两个训练配置时，要说清用的是 epoch、batch 数还是更新次数。</p><h1 id="参数量"><a href="#参数量" class="headerlink" title="参数量"></a>参数量</h1><p>fan_in 是这一层每个输出单元接收的输入个数，fan_out 是这一层的输出单元个数。全连接层的参数量为：</p><script type="math/tex; mode=display">\text{参数量} = \sum_{l} \left( \text{fan\_in}^{(l)} \times \text{fan\_out}^{(l)} + \text{fan\_out}^{(l)} \right)</script><p>一个 784 到 256 再到 10 的两层网络，第一层权重 <script type="math/tex">784 \times 256 = 200{,}704</script>、偏置 256，第二层权重 <script type="math/tex">256 \times 10 = 2{,}560</script>、偏置 10，合计 <script type="math/tex">203{,}530</script>。</p><p>卷积层不同：同一个卷积核在所有空间位置上共享，参数量只与核大小、输入输出通道数有关，与图像尺寸无关。以 <script type="math/tex">3 \times 3</script> 卷积、输入 64 通道、输出 128 通道为例，参数量是 <script type="math/tex">3 \times 3 \times 64 \times 128 + 128 = 73{,}856</script>。</p><p>若换成把同样尺寸的特征图展平后接全连接层，参数量会随空间尺寸线性增长。两者差距由特征图大小决定，没有固定的数量级关系。</p><p>参数量也不等于显存占用。激活值随 batch、空间尺寸与序列长度增长。数值精度同样影响占用：fp32 是 32 位浮点格式，bf16 是 bfloat16（一种 16 位浮点格式），相同个数的数分别占 4 字节与 2 字节。Adam 还为每个参数保存两份矩估计。</p><h1 id="验证与早停"><a href="#验证与早停" class="headerlink" title="验证与早停"></a>验证与早停</h1><p>训练集上的损失下降不代表模型变好，可能只是记住了训练样本。验证集用来观察泛化，即模型在未见数据上的表现：验证损失开始上升而训练损失还在下降，是过拟合的信号。</p><p>早停的做法是保存验证损失最低那一轮的参数，而不是最后一轮的参数。测试集只用于报告最终指标，用测试集反复挑模型，等于把测试集变成了验证集。</p><p>损失曲线短期上升是正常现象，小批量梯度带有噪声；判断趋势要看一段窗口内的平均，不要逐点比较。准确率不连续、不可导，只作观察指标，优化器优化的始终是损失。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;下面以监督学习为例，说明一次训练包含哪些环节：数据有标签、损失可导、用反向传播求梯度、用优化器更新参数。强化学习与无监督预训练也常使用同一个前向、损失、反向、更新的骨架，差别在数据来源与目标函数。&lt;/p&gt;
-&lt;h1 id=&quot;从输入到预测&quot;&gt;&lt;a href=&quot;#从输入到预测&quot; </summary>
       
     
     
