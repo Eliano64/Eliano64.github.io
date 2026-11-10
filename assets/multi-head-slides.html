@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多头注意力的计算过程</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--hi:#e8efff;--box:#ffffff;--arr:#8b95a5}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--box:#232a36;--arr:#6b7688}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:1000px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button{font:inherit;font-size:12.5px;padding:4px 10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#stepLabel{font-size:12.5px;color:var(--muted)}
+svg{display:block;width:100%;height:auto}
+.box{fill:var(--box);stroke:var(--line);stroke-width:1}
+.stack{fill:none;stroke:var(--line);stroke-width:1.2;stroke-dasharray:5 4}
+.head1{stroke:#3b5bdb;fill:#3b5bdb;fill-opacity:.09}
+.head2{stroke:#2f9e6e;fill:#2f9e6e;fill-opacity:.09}
+.headh{stroke:#c47f17;fill:#c47f17;fill-opacity:.09}
+@media (prefers-color-scheme:dark){
+  .head1{stroke:#8fa6ff;fill:#8fa6ff;fill-opacity:.10}
+  .head2{stroke:#6fd3a8;fill:#6fd3a8;fill-opacity:.10}
+  .headh{stroke:#e6b45c;fill:#e6b45c;fill-opacity:.10}
+}
+.lbl{font-size:10.5px;fill:var(--fg)}
+.small{font-size:9.5px;fill:var(--muted)}
+.tag{font-size:10px;fill:var(--muted)}
+.arrow{stroke:var(--arr);stroke-width:1.2;fill:none;marker-end:url(#ah)}
+[data-step]{opacity:.55;transition:opacity .15s}
+[data-step].active{opacity:1}
+[data-step].active .box{stroke:var(--accent);fill:var(--hi);stroke-width:1.6}
+.desc{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:8px;margin-top:8px;min-height:52px}
+.batch{margin-top:8px;padding:6px 8px;border:1px dashed var(--line);border-radius:7px;color:var(--muted);font-size:11.5px;font-family:ui-monospace,Consolas,"Courier New",monospace}
+.cap{color:var(--muted);font-size:11.5px;margin:6px 0 0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<h1>多头注意力的计算过程</h1>
+<p class="sub">每个 Head 都走一遍完整流程：线性投影得到 Q、K、V，再计算注意力。形状用符号表示：d_model 是表示维数，h 是头数，d_k 是每头的查询/键维数，d_v 是每头的值维数，N 是序列长度。</p>
+
+<div class="controls" role="group" aria-label="步骤控制">
+  <button id="prev" type="button">上一步</button>
+  <span id="stepLabel" aria-live="polite">第 1 / 5 步</span>
+  <button id="next" type="button">下一步</button>
+</div>
+
+<svg viewBox="0 0 1000 670" role="img" aria-label="多头注意力：每个 Head 的完整计算流程">
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--arr)"/>
+    </marker>
+  </defs>
+
+  <!-- 输入 X -->
+  <g data-step="1">
+    <rect class="box" x="20" y="270" width="120" height="120" rx="7"/>
+    <text class="lbl" x="68" y="322">X</text>
+    <text class="small" x="42" y="342">(N, d_model)</text>
+  </g>
+  <line class="arrow" x1="140" y1="330" x2="170" y2="330"/>
+  <line x1="170" y1="88" x2="170" y2="476" stroke="var(--arr)" stroke-width="1.2"/>
+
+  <!-- Head 1 -->
+  <rect class="stack head1" x="178" y="50" width="552" height="130" rx="8"/>
+  <text class="tag" x="188" y="68">Head 1</text>
+  <g data-step="2">
+    <rect class="box" x="290" y="76" width="95" height="24" rx="4"/><text class="lbl" x="300" y="92">Q₁ (N,d_k)</text>
+    <rect class="box" x="290" y="110" width="95" height="24" rx="4"/><text class="lbl" x="300" y="126">K₁ (N,d_k)</text>
+    <rect class="box" x="290" y="144" width="95" height="24" rx="4"/><text class="lbl" x="300" y="160">V₁ (N,d_v)</text>
+    <text class="small" x="188" y="83">W_Q⁽¹⁾</text>
+    <text class="small" x="188" y="117">W_K⁽¹⁾</text>
+    <text class="small" x="188" y="151">W_V⁽¹⁾</text>
+  </g>
+  <line class="arrow" x1="170" y1="88" x2="290" y2="88"/>
+  <line class="arrow" x1="170" y1="122" x2="290" y2="122"/>
+  <line class="arrow" x1="170" y1="156" x2="290" y2="156"/>
+  <line class="arrow" x1="385" y1="88" x2="405" y2="112"/>
+  <line class="arrow" x1="385" y1="122" x2="405" y2="122"/>
+  <line class="arrow" x1="385" y1="156" x2="405" y2="132"/>
+  <g data-step="3">
+    <rect class="box" x="405" y="98" width="205" height="58" rx="5"/>
+    <text class="lbl" x="416" y="124">softmax(Q₁K₁ᵀ/√d_k)V₁</text>
+    <rect class="box" x="625" y="110" width="95" height="24" rx="4"/>
+    <text class="lbl" x="635" y="126">head₁ (N,d_v)</text>
+  </g>
+  <line class="arrow" x1="610" y1="127" x2="625" y2="122"/>
+
+  <!-- Head 2 -->
+  <rect class="stack head2" x="178" y="210" width="552" height="130" rx="8"/>
+  <text class="tag" x="188" y="228">Head 2</text>
+  <g data-step="2">
+    <rect class="box" x="290" y="236" width="95" height="24" rx="4"/><text class="lbl" x="300" y="252">Q₂ (N,d_k)</text>
+    <rect class="box" x="290" y="270" width="95" height="24" rx="4"/><text class="lbl" x="300" y="286">K₂ (N,d_k)</text>
+    <rect class="box" x="290" y="304" width="95" height="24" rx="4"/><text class="lbl" x="300" y="320">V₂ (N,d_v)</text>
+    <text class="small" x="188" y="243">W_Q⁽²⁾</text>
+    <text class="small" x="188" y="277">W_K⁽²⁾</text>
+    <text class="small" x="188" y="311">W_V⁽²⁾</text>
+  </g>
+  <line class="arrow" x1="170" y1="248" x2="290" y2="248"/>
+  <line class="arrow" x1="170" y1="282" x2="290" y2="282"/>
+  <line class="arrow" x1="170" y1="316" x2="290" y2="316"/>
+  <line class="arrow" x1="385" y1="248" x2="405" y2="272"/>
+  <line class="arrow" x1="385" y1="282" x2="405" y2="282"/>
+  <line class="arrow" x1="385" y1="316" x2="405" y2="292"/>
+  <g data-step="3">
+    <rect class="box" x="405" y="258" width="205" height="58" rx="5"/>
+    <text class="lbl" x="416" y="284">softmax(Q₂K₂ᵀ/√d_k)V₂</text>
+    <rect class="box" x="625" y="270" width="95" height="24" rx="4"/>
+    <text class="lbl" x="635" y="286">head₂ (N,d_v)</text>
+  </g>
+  <line class="arrow" x1="610" y1="287" x2="625" y2="282"/>
+
+  <!-- Head h -->
+  <rect class="stack headh" x="178" y="370" width="552" height="130" rx="8"/>
+  <text class="tag" x="188" y="388">Head h</text>
+  <g data-step="2">
+    <rect class="box" x="290" y="396" width="95" height="24" rx="4"/><text class="lbl" x="300" y="412">Q_h (N,d_k)</text>
+    <rect class="box" x="290" y="430" width="95" height="24" rx="4"/><text class="lbl" x="300" y="446">K_h (N,d_k)</text>
+    <rect class="box" x="290" y="464" width="95" height="24" rx="4"/><text class="lbl" x="300" y="480">V_h (N,d_v)</text>
+    <text class="small" x="188" y="403">W_Q⁽ʰ⁾</text>
+    <text class="small" x="188" y="437">W_K⁽ʰ⁾</text>
+    <text class="small" x="188" y="471">W_V⁽ʰ⁾</text>
+  </g>
+  <line class="arrow" x1="170" y1="408" x2="290" y2="408"/>
+  <line class="arrow" x1="170" y1="442" x2="290" y2="442"/>
+  <line class="arrow" x1="170" y1="476" x2="290" y2="476"/>
+  <line class="arrow" x1="385" y1="408" x2="405" y2="432"/>
+  <line class="arrow" x1="385" y1="442" x2="405" y2="442"/>
+  <line class="arrow" x1="385" y1="476" x2="405" y2="452"/>
+  <g data-step="3">
+    <rect class="box" x="405" y="418" width="205" height="58" rx="5"/>
+    <text class="lbl" x="416" y="444">softmax(Q_hK_hᵀ/√d_k)V_h</text>
+    <rect class="box" x="625" y="430" width="95" height="24" rx="4"/>
+    <text class="lbl" x="635" y="446">head_h (N,d_v)</text>
+  </g>
+  <line class="arrow" x1="610" y1="447" x2="625" y2="442"/>
+
+
+
+  <!-- 拼接与输出投影 -->
+  <g data-step="4">
+    <rect class="box" x="735" y="180" width="75" height="300" rx="7"/>
+    <text class="lbl" x="748" y="318">Concat</text>
+    <text class="small" x="740" y="338">N × h d_v</text>
+  </g>
+  <line class="arrow" x1="720" y1="122" x2="735" y2="250"/>
+  <line class="arrow" x1="720" y1="282" x2="735" y2="320"/>
+  <line class="arrow" x1="720" y1="442" x2="735" y2="400"/>
+  <g data-step="5">
+    <rect class="box" x="935" y="270" width="55" height="120" rx="6"/>
+    <text class="lbl" x="958" y="314">O</text>
+    <text class="small" x="944" y="332">(N,</text>
+    <text class="small" x="942" y="346">d_model)</text>
+    <text class="small" x="855" y="322">W_O</text>
+  </g>
+  <line class="arrow" x1="810" y1="330" x2="935" y2="330"/>
+
+
+  <!-- 批量形状 -->
+  <text class="tag" x="20" y="620">批量形状（B 为批大小）：(B,N,d_model) → (B,N,h,d_k) → (B,h,N,d_k) → Attention → (B,N,d_model)</text>
+  <text class="tag" x="20" y="644">每个 Head 都独立完成投影、打分、Softmax 与加权求和；拼接后再用 W_O 组合各 Head 的信息。</text>
+</svg>
+
+<div class="desc" id="desc" aria-live="polite"></div>
+<p class="cap">所有 Head 同时计算，最后拼接并投影回 d_model。</p>
+
+<script>
+const steps = [
+  { title: "输入", text: "输入矩阵 X 的形状为 N × d_model。N 是序列长度，d_model 是每个 Token 的表示维数。" },
+  { title: "分头与线性投影", text: "每个 Head 各自用一组投影矩阵，从同一个 X 得到 Q、K、V。h 组投影同时进行，互不共享参数。" },
+  { title: "每个 Head 的注意力", text: "在每个 Head 内部，查询与键先得到 N × N 的分数矩阵，Softmax 后按权重汇总 V，得到 N × d_v 的 head。" },
+  { title: "拼接", text: "把 h 个 head 按维度并排，得到 N × h d_v 的矩阵。拼接只放在一起，各 Head 的信息还没有互相组合。" },
+  { title: "输出投影", text: "W_O 把 N × h d_v 映射回 N × d_model。它的每一行读取所有 Head 的维度，让各 Head 的信息重新组合。" }
+];
+const params = new URLSearchParams(location.search);
+let i = Math.max(0, Math.min(steps.length - 1, Number(params.get("step") || 1) - 1));
+const groups = [...document.querySelectorAll("[data-step]")];
+const desc = document.getElementById("desc");
+const label = document.getElementById("stepLabel");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+
+function render() {
+  groups.forEach(g => g.classList.toggle("active", Number(g.dataset.step) === i + 1));
+  desc.innerHTML = "<b>第 " + (i + 1) + " 步： " + steps[i].title + "。</b>" + steps[i].text;
+  label.textContent = "第 " + (i + 1) + " / " + steps.length + " 步";
+  prev.disabled = i === 0;
+  next.disabled = i === steps.length - 1;
+}
+prev.addEventListener("click", () => { if (i > 0) { i--; render(); } });
+next.addEventListener("click", () => { if (i < steps.length - 1) { i++; render(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" && i > 0) { i--; render(); }
+  if (e.key === "ArrowRight" && i < steps.length - 1) { i++; render(); }
+});
+render();
+</script>
+</body>
+</html>

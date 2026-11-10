@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 350" role="img" aria-labelledby="t d">
+  <title id="t">四个 Head 关注不同关系</title>
+  <desc id="d">同一个句子有十个 Token。四个 Head 分别把注意力放在指代、时间、动作、状态这两两相关的位置上，弧线连接被关注的两个位置。该图只作示意，实际分工由训练决定。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--box:#eef3fb;--line:#c8d0da;--accent:#2f66b3;--hi:#dbe7fb}
+    @media (prefers-color-scheme:dark){
+      :root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--box:#1e2430;--line:#3a4250;--accent:#7fa8ee;--hi:#243052}
+    }
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .tok{fill:var(--box);stroke:var(--line);stroke-width:1}
+    .tok.hit{fill:var(--hi);stroke:var(--accent);stroke-width:1.5}
+    .lbl{font-size:12px}
+    .lbl.hit{font-weight:600}
+    .row{font-size:11.5px;fill:var(--muted)}
+    .title{font-size:14px;font-weight:600}
+    .note{font-size:11px;fill:var(--muted)}
+    .arc{stroke:var(--accent);stroke-width:2.2;fill:none;marker-end:url(#ah)}
+    .dim{opacity:0.45}
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+  <rect width="760" height="350" fill="var(--bg)"/>
+  <text class="title" x="12" y="22">同一个句子，四个 Head 关注不同关系</text>
+
+  <!-- row 1: 指代 它(7) -> 猫(0) -->
+  <text class="row" x="12" y="64">Head 1 · 指代</text>
+  <g class="dim">
+    <rect class="tok" x="90" y="48" width="52" height="26" rx="5"/><text class="lbl" x="102" y="66">猫</text>
+    <rect class="tok" x="150" y="48" width="52" height="26" rx="5"/><text class="lbl" x="158" y="66">昨天</text>
+    <rect class="tok" x="210" y="48" width="52" height="26" rx="5"/><text class="lbl" x="226" y="66">在</text>
+    <rect class="tok" x="270" y="48" width="52" height="26" rx="5"/><text class="lbl" x="278" y="66">窗台</text>
+    <rect class="tok" x="330" y="48" width="52" height="26" rx="5"/><text class="lbl" x="338" y="66">睡觉</text>
+    <rect class="tok" x="390" y="48" width="52" height="26" rx="5"/><text class="lbl" x="406" y="66">，</text>
+    <rect class="tok" x="450" y="48" width="52" height="26" rx="5"/><text class="lbl" x="458" y="66">因为</text>
+    <rect class="tok" x="510" y="48" width="52" height="26" rx="5"/><text class="lbl" x="526" y="66">它</text>
+    <rect class="tok" x="570" y="48" width="52" height="26" rx="5"/><text class="lbl" x="586" y="66">累</text>
+    <rect class="tok" x="630" y="48" width="52" height="26" rx="5"/><text class="lbl" x="646" y="66">了</text>
+  </g>
+  <rect class="tok hit" x="90" y="48" width="52" height="26" rx="5"/><text class="lbl hit" x="102" y="66">猫</text>
+  <rect class="tok hit" x="510" y="48" width="52" height="26" rx="5"/><text class="lbl hit" x="526" y="66">它</text>
+  <path class="arc" d="M536 78 Q323 112 116 78"/>
+
+  <!-- row 2: 时间 昨天(1) -> 睡觉(4) -->
+  <text class="row" x="12" y="134">Head 2 · 时间</text>
+  <g class="dim">
+    <rect class="tok" x="90" y="118" width="52" height="26" rx="5"/><text class="lbl" x="102" y="136">猫</text>
+    <rect class="tok" x="150" y="118" width="52" height="26" rx="5"/><text class="lbl" x="158" y="136">昨天</text>
+    <rect class="tok" x="210" y="118" width="52" height="26" rx="5"/><text class="lbl" x="226" y="136">在</text>
+    <rect class="tok" x="270" y="118" width="52" height="26" rx="5"/><text class="lbl" x="278" y="136">窗台</text>
+    <rect class="tok" x="330" y="118" width="52" height="26" rx="5"/><text class="lbl" x="338" y="136">睡觉</text>
+    <rect class="tok" x="390" y="118" width="52" height="26" rx="5"/><text class="lbl" x="406" y="136">，</text>
+    <rect class="tok" x="450" y="118" width="52" height="26" rx="5"/><text class="lbl" x="458" y="136">因为</text>
+    <rect class="tok" x="510" y="118" width="52" height="26" rx="5"/><text class="lbl" x="526" y="136">它</text>
+    <rect class="tok" x="570" y="118" width="52" height="26" rx="5"/><text class="lbl" x="586" y="136">累</text>
+    <rect class="tok" x="630" y="118" width="52" height="26" rx="5"/><text class="lbl" x="646" y="136">了</text>
+  </g>
+  <rect class="tok hit" x="150" y="118" width="52" height="26" rx="5"/><text class="lbl hit" x="158" y="136">昨天</text>
+  <rect class="tok hit" x="330" y="118" width="52" height="26" rx="5"/><text class="lbl hit" x="338" y="136">睡觉</text>
+  <path class="arc" d="M176 148 Q266 182 356 148"/>
+
+  <!-- row 3: 动作 猫(0) -> 睡觉(4) -->
+  <text class="row" x="12" y="204">Head 3 · 动作</text>
+  <g class="dim">
+    <rect class="tok" x="90" y="188" width="52" height="26" rx="5"/><text class="lbl" x="102" y="206">猫</text>
+    <rect class="tok" x="150" y="188" width="52" height="26" rx="5"/><text class="lbl" x="158" y="206">昨天</text>
+    <rect class="tok" x="210" y="188" width="52" height="26" rx="5"/><text class="lbl" x="226" y="206">在</text>
+    <rect class="tok" x="270" y="188" width="52" height="26" rx="5"/><text class="lbl" x="278" y="206">窗台</text>
+    <rect class="tok" x="330" y="188" width="52" height="26" rx="5"/><text class="lbl" x="338" y="206">睡觉</text>
+    <rect class="tok" x="390" y="188" width="52" height="26" rx="5"/><text class="lbl" x="406" y="206">，</text>
+    <rect class="tok" x="450" y="188" width="52" height="26" rx="5"/><text class="lbl" x="458" y="206">因为</text>
+    <rect class="tok" x="510" y="188" width="52" height="26" rx="5"/><text class="lbl" x="526" y="206">它</text>
+    <rect class="tok" x="570" y="188" width="52" height="26" rx="5"/><text class="lbl" x="586" y="206">累</text>
+    <rect class="tok" x="630" y="188" width="52" height="26" rx="5"/><text class="lbl" x="646" y="206">了</text>
+  </g>
+  <rect class="tok hit" x="90" y="188" width="52" height="26" rx="5"/><text class="lbl hit" x="102" y="206">猫</text>
+  <rect class="tok hit" x="330" y="188" width="52" height="26" rx="5"/><text class="lbl hit" x="338" y="206">睡觉</text>
+  <path class="arc" d="M116 218 Q236 252 356 218"/>
+
+  <!-- row 4: 状态 累(8) -> 它(7) -->
+  <text class="row" x="12" y="274">Head 4 · 状态</text>
+  <g class="dim">
+    <rect class="tok" x="90" y="258" width="52" height="26" rx="5"/><text class="lbl" x="102" y="276">猫</text>
+    <rect class="tok" x="150" y="258" width="52" height="26" rx="5"/><text class="lbl" x="158" y="276">昨天</text>
+    <rect class="tok" x="210" y="258" width="52" height="26" rx="5"/><text class="lbl" x="226" y="276">在</text>
+    <rect class="tok" x="270" y="258" width="52" height="26" rx="5"/><text class="lbl" x="278" y="276">窗台</text>
+    <rect class="tok" x="330" y="258" width="52" height="26" rx="5"/><text class="lbl" x="338" y="276">睡觉</text>
+    <rect class="tok" x="390" y="258" width="52" height="26" rx="5"/><text class="lbl" x="406" y="276">，</text>
+    <rect class="tok" x="450" y="258" width="52" height="26" rx="5"/><text class="lbl" x="458" y="276">因为</text>
+    <rect class="tok" x="510" y="258" width="52" height="26" rx="5"/><text class="lbl" x="526" y="276">它</text>
+    <rect class="tok" x="570" y="258" width="52" height="26" rx="5"/><text class="lbl" x="586" y="276">累</text>
+    <rect class="tok" x="630" y="258" width="52" height="26" rx="5"/><text class="lbl" x="646" y="276">了</text>
+  </g>
+  <rect class="tok hit" x="510" y="258" width="52" height="26" rx="5"/><text class="lbl hit" x="526" y="276">它</text>
+  <rect class="tok hit" x="570" y="258" width="52" height="26" rx="5"/><text class="lbl hit" x="586" y="276">累</text>
+  <path class="arc" d="M596 288 Q566 312 536 288"/>
+
+  <text class="note" x="12" y="338">示意：不同 Head 学到不同关系；实际分工由训练决定。</text>
+</svg>

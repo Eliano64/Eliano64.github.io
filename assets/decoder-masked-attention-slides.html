@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>掩码自注意力的完整计算</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--accent:#3b5bdb;--hi:#e8efff;--ok:#e8f3ec;--block:#f6e7e4;--blue:#7fa6e0}
+@media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--accent:#c2d4ff;--hi:#3d5270;--ok:#2e4a3a;--block:#4a3330;--blue:#5a78a8}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:980px;color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:20px;line-height:1.3;margin:0 0 3px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 8px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#stepLabel{font-size:14px;color:var(--muted)}
+svg{display:block;width:100%;height:auto}
+.box{fill:var(--panel);stroke:var(--line);stroke-width:1}
+.chip{fill:var(--hi);stroke:var(--line);stroke-width:1}
+.lbl{font-size:14px;fill:var(--fg)}
+.small{font-size:11.5px;fill:var(--muted)}
+.arrow{stroke:var(--muted);stroke-width:1.2;fill:none;marker-end:url(#ah)}
+.hl{stroke:var(--accent);stroke-width:1.6;fill:none}
+[data-step]{opacity:.35;transition:opacity .15s}
+[data-step].active{opacity:1}
+.desc{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:8px;margin-top:8px;min-height:44px;font-size:14px}
+.note{color:var(--muted);font-size:12.5px;margin-top:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<h1>掩码自注意力的完整计算</h1>
+<p class="sub">目标前缀来自已生成序列：&lt;BOS&gt; 那只 动物 没有 穿过 街道 因为 它 太 累 了。解码器表示 X 经过投影、打分、因果掩码、Softmax 与汇总，得到每个位置的输出。</p>
+
+<div class="controls" role="group" aria-label="步骤控制">
+  <button id="prev" type="button">上一步</button>
+  <span id="stepLabel" aria-live="polite">1 / 5</span>
+  <button id="next" type="button">下一步</button>
+</div>
+
+<svg viewBox="0 0 1000 500" role="img" aria-label="掩码自注意力的完整计算流程">
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker>
+  </defs>
+
+  <!-- full target sequence -->
+  <g id="seq"></g>
+
+  <!-- X -->
+  <g data-step="1">
+    <rect class="box" x="15" y="200" width="92" height="50" rx="5"/>
+    <text class="lbl" x="28" y="222">X</text><text class="small" x="25" y="240">T × d_model</text>
+  </g>
+
+  <!-- Q K V -->
+  <g data-step="1">
+    <rect class="box" x="135" y="110" width="96" height="40" rx="5"/><text class="lbl" x="146" y="135">Q = XW_Q</text>
+    <rect class="box" x="135" y="165" width="96" height="40" rx="5"/><text class="lbl" x="146" y="190">K = XW_K</text>
+    <rect class="box" x="135" y="220" width="96" height="40" rx="5"/><text class="lbl" x="146" y="245">V = XW_V</text>
+    <path class="arrow" d="M107 216 L118 216 L118 130 L132 130"/>
+    <path class="arrow" d="M107 222 L118 222 L118 185 L132 185"/>
+    <path class="arrow" d="M107 228 L118 228 L118 240 L132 240"/>
+  </g>
+
+  <!-- scores -->
+  <g data-step="2">
+    <rect class="box" x="260" y="170" width="112" height="48" rx="5"/>
+    <text class="lbl" x="270" y="191">S = QKᵀ / √d_k</text><text class="small" x="292" y="208">T × T</text>
+    <path class="arrow" d="M231 130 L246 130 L246 184 L257 184"/>
+    <path class="arrow" d="M231 185 L246 185 L246 190 L257 190"/>
+  </g>
+
+  <!-- causal mask -->
+  <g data-step="3">
+    <rect class="box" x="400" y="170" width="92" height="48" rx="5"/>
+    <text class="lbl" x="408" y="191">+ M_causal</text><text class="small" x="422" y="208">T × T</text>
+    <path class="arrow" d="M372 194 L397 194"/>
+  </g>
+  <g data-step="3">
+    <text class="small" x="405" y="248">M_causal（右上 −∞）</text>
+    <g id="maskMatrix"></g>
+    <path class="arrow" d="M446 310 L446 228"/>
+  </g>
+
+  <!-- softmax -->
+  <g data-step="4">
+    <rect class="box" x="520" y="170" width="92" height="48" rx="5"/>
+    <text class="lbl" x="540" y="199">Softmax</text>
+    <path class="arrow" d="M492 194 L517 194"/>
+  </g>
+
+  <!-- A matrix -->
+  <g data-step="4">
+    <rect class="box" x="640" y="92" width="112" height="112" rx="5"/>
+    <text class="small" x="680" y="110">A（T × T）</text>
+    <g id="aMatrix"></g>
+  </g>
+
+  <!-- A x V -->
+  <g data-step="5">
+    <rect class="box" x="780" y="170" width="92" height="48" rx="5"/>
+    <text class="lbl" x="794" y="199">A × V</text>
+    <path class="arrow" d="M612 194 L638 150"/>
+    <path class="arrow" d="M752 148 L766 148 L766 190 L777 190"/>
+  </g>
+
+  <!-- heads / concat / Wo -->
+  <g data-step="5">
+    <rect class="box" x="600" y="330" width="70" height="34" rx="4"/><text class="small" x="612" y="351">Head 1</text>
+    <rect class="box" x="680" y="330" width="70" height="34" rx="4"/><text class="small" x="692" y="351">Head 2</text>
+    <text class="lbl" x="762" y="351">…</text>
+    <rect class="box" x="780" y="330" width="70" height="34" rx="4"/><text class="small" x="792" y="351">Head h</text>
+    <path class="arrow" d="M872 218 L872 300 L850 300 L850 327"/>
+    <path class="arrow" d="M640 364 L677 364"/><path class="arrow" d="M750 364 L780 364"/>
+    <rect class="box" x="860" y="330" width="72" height="34" rx="4"/><text class="small" x="874" y="351">Concat</text>
+    <path class="arrow" d="M850 347 L857 347"/>
+    <rect class="box" x="860" y="380" width="72" height="34" rx="4"/><text class="small" x="878" y="401">W_O</text>
+    <path class="arrow" d="M896 364 L896 377"/>
+    <text class="small" x="846" y="430">T × d_model</text>
+  </g>
+
+  <text class="small" x="15" y="470">Q、K、V 都来自同一段目标前缀 X；M_causal 只遮挡未来位置；A 的每一行只汇总可见前缀。</text>
+</svg>
+
+<div class="desc" id="desc"></div>
+<p class="note">训练与推理使用同一个掩码。</p>
+
+<script>
+const seqTokens = ["<BOS>", "那只", "动物", "没有", "穿过", "街道", "因为", "它", "太", "累", "了"];
+const seq = document.getElementById("seq");
+let x = 10;
+seqTokens.forEach(t => {
+  const w = Math.max(52, t.length * 18 + 14);
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  r.setAttribute("x", x); r.setAttribute("y", 12);
+  r.setAttribute("width", w); r.setAttribute("height", 34); r.setAttribute("rx", 5);
+  r.setAttribute("class", "chip");
+  const tx = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  tx.setAttribute("x", x + 8); tx.setAttribute("y", 34); tx.setAttribute("class", "lbl");
+  tx.textContent = t;
+  g.appendChild(r); g.appendChild(tx); seq.appendChild(g);
+  x += w + 4;
+});
+
+function matrix(target, rows, cols, cell, isA) {
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", 405 + c * cell);
+      rect.setAttribute("y", 255 + r * cell);
+      rect.setAttribute("width", cell - 1);
+      rect.setAttribute("height", cell - 1);
+      let fill = "var(--box)";
+      if (isA) fill = c <= r ? "rgba(120,150,220,.6)" : "var(--bg)";
+      else fill = c <= r ? "var(--ok)" : "var(--block)";
+      rect.setAttribute("fill", fill);
+      rect.setAttribute("stroke", "var(--line)");
+      rect.setAttribute("stroke-width", ".4");
+      target.appendChild(rect);
+    }
+  }
+}
+matrix(document.getElementById("maskMatrix"), 5, 5, 14, false);
+
+// A matrix at x=660, y=116
+for (let r = 0; r < 5; r++) {
+  for (let c = 0; c < 5; c++) {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", 660 + c * 16);
+    rect.setAttribute("y", 116 + r * 16);
+    rect.setAttribute("width", 15); rect.setAttribute("height", 15);
+    rect.setAttribute("fill", c <= r ? "rgba(120,150,220,.6)" : "var(--bg)");
+    rect.setAttribute("stroke", "var(--line)"); rect.setAttribute("stroke-width", ".4");
+    document.getElementById("aMatrix").appendChild(rect);
+  }
+}
+
+const params = new URLSearchParams(location.search);
+let i = Math.max(0, Math.min(4, Number(params.get("step") || 1) - 1));
+const stages = [...document.querySelectorAll("[data-step]")];
+const desc = document.getElementById("desc");
+const label = document.getElementById("stepLabel");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+const texts = [
+  "投影：X 经过 W_Q、W_K、W_V 得到 Q、K、V。",
+  "打分：QKᵀ/√d_k，得到 T × T 的分数矩阵。",
+  "加掩码：M_causal 的右上三角为 −∞，只保留自身及之前的位置。",
+  "Softmax：逐行归一化，得到注意力权重 A。",
+  "汇总：A × V 得到各 Head 输出，拼接后过 W_O，回到 T × d_model。"
+];
+function render() {
+  stages.forEach(s => s.classList.toggle("active", Number(s.dataset.step) === i + 1));
+  desc.textContent = texts[i];
+  label.textContent = (i + 1) + " / 5";
+  prev.disabled = i === 0;
+  next.disabled = i === 4;
+}
+prev.addEventListener("click", () => { if (i > 0) { i--; render(); } });
+next.addEventListener("click", () => { if (i < 4) { i++; render(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" && i > 0) { i--; render(); }
+  if (e.key === "ArrowRight" && i < 4) { i++; render(); }
+});
+render();
+</script>
+</body>
+</html>

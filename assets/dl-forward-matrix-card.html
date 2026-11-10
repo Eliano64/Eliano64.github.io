@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forward matrix card</title>
+<style>
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#ffffff;color:#20242c;font-size:13px;line-height:1.5;padding:12px}
+h2{font-size:14px;line-height:1.3;margin:0 0 4px;font-weight:650}
+p{margin:4px 0}
+.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;background:#f3f5f8;padding:6px 8px;border-radius:6px;overflow-x:auto}
+.control{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:11.5px;color:#5f6673}
+.control input{flex:1;min-width:90px;accent-color:#2563eb}
+.control output{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#20242c;min-width:44px;text-align:right}
+.mats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
+.mat-label{font-size:10.5px;color:#5f6673;margin-bottom:3px;display:flex;justify-content:space-between;gap:6px}
+.mat-label span:last-child{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums}
+.mx{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px}
+.mx td{border:1px solid #e1e5eb;padding:3px 5px;text-align:right;min-width:33px}
+.mx td.hot{outline:2px solid #d97706;outline-offset:-2px}
+.mx td.neg{color:#b45309}
+.note{font-size:11px;color:#5f6673;margin-top:8px}
+@media (max-width:420px){.mats{gap:6px}.mx td{min-width:29px;padding:3px 4px}}
+@media (prefers-color-scheme:dark){
+body{background:#17191d;color:#e6e9ef}
+.formula{background:#232830}
+.mat-label,.note,.control{color:#aab2c0}
+.control output{color:#e6e9ef}
+.mx td{border-color:#3c4350}
+.mx td.neg{color:#fbbf24}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h2>一个 batch 的前向形状</h2>
+<p class="formula">Z = W A + b，&nbsp; A<sub>out</sub> = ReLU(Z)</p>
+<div class="control">
+  <label for="w00">W₁₁</label>
+  <input id="w00" type="range" min="-1" max="1" step="0.1" value="0.5">
+  <output id="w00v" for="w00">0.5</output>
+</div>
+<div class="mats" id="mats"></div>
+<p class="note" id="note"></p>
+<script>
+/* MODEL-START */
+const MODEL = {
+  W: [[0.5, -0.8], [1.2, 0.4], [-0.3, 0.9]],
+  A: [[1.0, -0.5, 2.0], [0.5, 1.5, -1.0]],
+  b: [0.1, -0.2, 0.3]
+};
+function forward(w00) {
+  const W = MODEL.W.map((row) => row.slice());
+  W[0][0] = w00;
+  const Z = W.map((row, i) =>
+    MODEL.A[0].map((_, j) => row.reduce((s, w, k) => s + w * MODEL.A[k][j], 0) + MODEL.b[i])
+  );
+  const out = Z.map((row) => row.map((z) => Math.max(0, z)));
+  const params = W.length * W[0].length + MODEL.b.length;
+  return { W, Z, out, params };
+}
+const __test = { MODEL, forward };
+/* MODEL-END */
+
+function fmt(v) {
+  return (Math.abs(v) < 5e-7 ? 0 : v).toFixed(2);
+}
+function matrixBlock(title, shape, rows, digits, hot) {
+  const t = document.createElement("table");
+  t.className = "mx";
+  const tb = document.createElement("tbody");
+  rows.forEach((row, i) => {
+    const tr = document.createElement("tr");
+    row.forEach((v, j) => {
+      const td = document.createElement("td");
+      td.textContent = fmt(v);
+      if (v < 0) td.className = "neg";
+      if (hot && i === 0 && j === 0) td.classList.add("hot");
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  const box = document.createElement("div");
+  const label = document.createElement("div");
+  label.className = "mat-label";
+  label.innerHTML = "<span>" + title + "</span><span>" + shape + "</span>";
+  box.appendChild(label);
+  box.appendChild(t);
+  return box;
+}
+function render() {
+  const w00 = parseFloat(document.getElementById("w00").value);
+  document.getElementById("w00v").textContent = w00.toFixed(1);
+  const r = forward(w00);
+  const mats = document.getElementById("mats");
+  mats.innerHTML = "";
+  mats.appendChild(matrixBlock("W 权重", r.W.length + "×" + r.W[0].length, r.W, 2, true));
+  mats.appendChild(matrixBlock("A 输入（列是样本）", MODEL.A.length + "×" + MODEL.A[0].length, MODEL.A, 2, false));
+  mats.appendChild(matrixBlock("b 偏置（按列广播）", MODEL.b.length + "×1", MODEL.b.map((v) => [v]), 2, false));
+  mats.appendChild(matrixBlock("Z = WA + b", r.Z.length + "×" + r.Z[0].length, r.Z, 2, false));
+  mats.appendChild(matrixBlock("A_out = ReLU(Z)", r.out.length + "×" + r.out[0].length, r.out, 2, false));
+  document.getElementById("note").textContent =
+    "batch 大小 B = " + MODEL.A[0].length + "，W 参数量 " + (r.W.length * r.W[0].length) +
+    "，b 参数量 " + MODEL.b.length + "，合计 " + r.params + "。";
+}
+document.getElementById("w00").addEventListener("input", render);
+render();
+</script>
+</body>
+</html>

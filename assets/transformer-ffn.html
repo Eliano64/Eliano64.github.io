@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>逐位置两层 FFN 的实际计算</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--hi:#e8efff;--keep:#2f66b3;--write:#b44a35}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--keep:#7fa8ee;--write:#ef9a83}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:680px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+h2{font-size:13.5px;margin:0 0 5px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.cap{color:var(--muted);font-size:11.5px;margin:2px 0 4px}
+.note{color:var(--muted);font-size:11.5px}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.controls .cap{margin:0}
+button{font:inherit;font-size:12.5px;padding:4px 9px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px;margin:7px 0;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:7px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+.card b{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px;overflow-wrap:anywhere}
+.vec{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0}
+.vec span{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11px;background:var(--panel)}
+.vec span.zero{color:var(--muted);border-style:dashed}
+table.m{width:100%;border-collapse:collapse;font-size:11px}
+table.m th,table.m td{border-bottom:1px solid var(--line);padding:1px 3px;text-align:right;font-family:ui-monospace,Consolas,"Courier New",monospace;white-space:nowrap}
+table.m th{font-weight:600;color:var(--muted)}
+.scroll{overflow-x:auto;max-width:100%}
+details{border:1px solid var(--line);border-radius:7px;background:var(--panel);margin:8px 0;padding:0 9px;max-width:100%}
+details[open]{padding-bottom:7px}
+summary{cursor:pointer;font-size:12px;color:var(--muted);padding:6px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<h1>逐位置两层 FFN 的实际计算</h1>
+<p class="sub">3 个位置、d<sub>model</sub> = 4、d<sub>ff</sub> = 6。同一组 W<sub>1</sub>、W<sub>2</sub> 分别作用于每一行，行与行之间不混合。</p>
+<div class="controls" role="group" aria-label="计算步骤">
+<span class="cap">步骤</span>
+<button type="button" class="step" data-step="0" aria-pressed="true">输入</button>
+<button type="button" class="step" data-step="1" aria-pressed="false">仿射</button>
+<button type="button" class="step" data-step="2" aria-pressed="false">激活</button>
+<button type="button" class="step" data-step="3" aria-pressed="false">投影</button>
+</div>
+<div class="controls" role="group" aria-label="选择位置">
+<span class="cap">位置</span>
+<button type="button" class="pos" data-pos="0" aria-pressed="true">1</button>
+<button type="button" class="pos" data-pos="1" aria-pressed="false">2</button>
+<button type="button" class="pos" data-pos="2" aria-pressed="false">3</button>
+</div>
+<div id="stage"></div>
+<details>
+<summary>输入与权重</summary>
+<div class="cap">输入 X：3×4</div>
+<div class="scroll"><table class="m"><thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody id="xtab"></tbody></table></div>
+<div class="cap" style="margin-top:6px">W<sub>1</sub>：4×6；b<sub>1</sub> = <span id="b1txt"></span></div>
+<div class="scroll"><table class="m"><thead><tr><th></th><th>f1</th><th>f2</th><th>f3</th><th>f4</th><th>f5</th><th>f6</th></tr></thead><tbody id="w1tab"></tbody></table></div>
+<div class="cap" style="margin-top:6px">W<sub>2</sub>：6×4；b<sub>2</sub> = <span id="b2txt"></span></div>
+<div class="scroll"><table class="m"><thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody id="w2tab"></tbody></table></div>
+</details>
+<script>
+(function(){
+  "use strict";
+  var X=[[1,0.5,0.2,0],[0.2,1,0.5,0.3],[0.5,0,1,0.2]];
+  var W1=[[0.5,-0.2,0.3,0.1,-0.4,0.2],[0.1,0.6,-0.2,0.4,0.2,-0.3],[-0.3,0.2,0.5,-0.1,0.6,0.1],[0.2,0.1,-0.4,0.3,-0.2,0.5]];
+  var B1=[0.1,-0.1,0,0.2,0.1,-0.2];
+  var W2=[[0.4,0.1,-0.2,0.3],[-0.3,0.5,0.2,0.1],[0.2,-0.1,0.4,0.2],[0.1,0.3,-0.3,0.5],[-0.2,0.2,0.1,-0.1],[0.3,0,0.2,0.4]];
+  var B2=[0.05,-0.05,0.1,0];
+  function mm(A,B){return A.map(function(row){return B[0].map(function(_,j){return row.reduce(function(s,v,k){return s+v*B[k][j];},0);});});}
+  function addB(M,b){return M.map(function(row){return row.map(function(v,j){return v+b[j];});});}
+  function relu(M){return M.map(function(row){return row.map(function(v){return Math.max(0,v);});});}
+  var Z=addB(mm(X,W1),B1);
+  var H=relu(Z);
+  var Y=addB(mm(H,W2),B2);
+  var step=0,pos=0;
+  function f(x){return x.toFixed(3);}
+  function vec(a){return '<div class="vec">'+a.map(function(v){return '<span class="'+(v==='0.000'?'zero':'')+'">'+v+'</span>';}).join('')+'</div>';}
+  function dot(a,b){return a.reduce(function(s,v,i){return s+v*b[i];},0);}
+  function zExp(i,j){return X[i].map(function(v,k){return f(v)+'×'+(W1[k][j]<0?'('+f(W1[k][j])+')':f(W1[k][j]));}).join(' + ')+' + '+f(B1[j])+' = '+f(Z[i][j]);}
+  function yExp(i,j){return H[i].map(function(v,k){return f(v)+'×'+(W2[k][j]<0?'('+f(W2[k][j])+')':f(W2[k][j]));}).join(' + ')+' + '+f(B2[j])+' = '+f(Y[i][j]);}
+  function render(){
+    var h='<div class="panel">',x=X[pos].map(f),z=Z[pos].map(f),hh=H[pos].map(f),y=Y[pos].map(f);
+    if(step===0){
+      h+='<h2>输入：只取一个位置的一行</h2><div class="cap">位置 '+(pos+1)+' 的 4 维向量 x</div>'+vec(x);
+      h+='<p class="mono">FFN 对每个位置独立执行；位置之间不共享计算，但共享同一组 W<sub>1</sub>、W<sub>2</sub>。</p>';
+      h+='<div class="grid"><div class="card"><b>序列形状</b><div class="mono">3×4</div></div><div class="card"><b>当前行</b><div class="mono">位置 '+(pos+1)+'，4 维</div></div></div>';
+    }else if(step===1){
+      h+='<h2>仿射：扩到 6 个隐藏特征</h2><div class="cap">z = xW<sub>1</sub> + b<sub>1</sub></div>'+vec(z);
+      h+='<p class="mono">6 个分量由同一行的 4 个输入加权求和得到，不读取其他位置。</p>';
+    }else if(step===2){
+      h+='<h2>激活：ReLU 把负值置零</h2><div class="cap">h = ReLU(z)，仍是 6 维</div>'+vec(hh);
+      h+='<p class="mono">位置 '+(pos+1)+' 中被置零的分量：'+(H[pos].map(function(v,i){return v===0?('f'+(i+1)):null;}).filter(Boolean).join('、')||'无')+'。</p>';
+    }else{
+      h+='<h2>投影：回到 4 维，与残差同形状</h2><div class="cap">y = hW<sub>2</sub> + b<sub>2</sub></div>'+vec(y);
+      if(pos===0){
+        h+='<p class="mono">z<sub>1,1</sub> = '+zExp(0,0)+'；h<sub>1,1</sub> = ReLU('+f(Z[0][0])+') = '+f(H[0][0])+'</p>';
+        h+='<p class="mono">y<sub>1,1</sub> = '+yExp(0,0)+'</p>';
+      }
+      h+='<p class="note">中间维数从 4 扩到 6，再由 W<sub>2</sub> 投影回 4。每个位置使用同一套矩阵，输出形状仍为 3×4，才能与残差相加。</p>';
+    }
+    document.getElementById('stage').innerHTML=h+'</div>';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.step'),function(b){
+    b.addEventListener('click',function(){
+      step=Number(b.getAttribute('data-step'));
+      Array.prototype.forEach.call(document.querySelectorAll('.step'),function(x){x.setAttribute('aria-pressed',String(x===b));});
+      render();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.pos'),function(b){
+    b.addEventListener('click',function(){
+      pos=Number(b.getAttribute('data-pos'));
+      Array.prototype.forEach.call(document.querySelectorAll('.pos'),function(x){x.setAttribute('aria-pressed',String(x===b));});
+      render();
+    });
+  });
+  document.getElementById('xtab').innerHTML=X.map(function(r,i){return '<tr><th>位置 '+(i+1)+'</th>'+r.map(function(v){return '<td>'+f(v)+'</td>';}).join('')+'</tr>';}).join('');
+  document.getElementById('w1tab').innerHTML=W1.map(function(r){return '<tr><th></th>'+r.map(function(v){return '<td>'+f(v)+'</td>';}).join('')+'</tr>';}).join('');
+  document.getElementById('w2tab').innerHTML=W2.map(function(r){return '<tr><th></th>'+r.map(function(v){return '<td>'+f(v)+'</td>';}).join('')+'</tr>';}).join('');
+  document.getElementById('b1txt').textContent='['+B1.map(f).join(', ')+']';
+  document.getElementById('b2txt').textContent='['+B2.map(f).join(', ')+']';
+  window.__modelTest={inputs:{X:X},params:{W1:W1,B1:B1,W2:W2,B2:B2},compute:{affine:function(A,W,b){return addB(mm(A,W),b);},relu:relu,project:function(A,W,b){return addB(mm(A,W),b);},forward:function(A,W1,B1,W2,B2){var z=addB(mm(A,W1),B1);return addB(mm(relu(z),W2),B2);}}};
+  render();
+})();
+</script>
+</body>
+</html>

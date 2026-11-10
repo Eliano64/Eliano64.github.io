@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token ID、嵌入行与补齐批次</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--hi:#e8efff;--keep:#2f66b3;--write:#b44a35}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--keep:#7fa8ee;--write:#ef9a83}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:680px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+h2{font-size:13.5px;margin:0 0 5px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.cap{color:var(--muted);font-size:11.5px;margin:2px 0 4px}
+.note{color:var(--muted);font-size:11.5px}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.controls .cap{margin:0}
+button{font:inherit;font-size:12.5px;padding:4px 9px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px;margin:7px 0;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+.card b{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.card.pad{border-style:dashed}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px;overflow-wrap:anywhere}
+.vec{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0}
+.vec span{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11px;background:var(--panel)}
+.vec span.one{background:var(--hi);border-color:var(--accent)}
+.vec span.zero{color:var(--muted);border-style:dashed}
+table.m{width:100%;border-collapse:collapse;font-size:11.5px}
+table.m th,table.m td{border-bottom:1px solid var(--line);padding:2px 4px;text-align:left}
+table.m th{font-weight:600;color:var(--muted)}
+table.m td.n,table.m th.n{text-align:right;font-family:ui-monospace,Consolas,"Courier New",monospace;white-space:nowrap}
+table.mat{font-size:10.5px}
+table.mat th,table.mat td{padding:1px 3px}
+table.mat tr.padrow td,table.mat tr.padrow th{border-top:1px dashed var(--accent);background:var(--hi)}
+.matgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:7px}
+details{border:1px solid var(--line);border-radius:7px;background:var(--panel);margin:8px 0;padding:0 9px}
+details[open]{padding-bottom:7px}
+summary{cursor:pointer;font-size:12px;color:var(--muted);padding:6px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<h1>Token ID、嵌入行与补齐批次</h1>
+<p class="sub">词表 8 个 token，d = 4，批次 B = 2，长度 n = 4。ID 0 是 &lt;pad&gt;，其嵌入行为零。</p>
+<div class="controls" role="group" aria-label="计算步骤">
+<span class="cap">步骤</span>
+<button type="button" class="step" data-step="0" aria-pressed="true">取嵌入行</button>
+<button type="button" class="step" data-step="1" aria-pressed="false">补齐与掩码</button>
+<button type="button" class="step" data-step="2" aria-pressed="false">批次张量</button>
+</div>
+<div class="controls" id="smpbar" role="group" aria-label="批次样本">
+<span class="cap">样本</span>
+<button type="button" class="smp" data-smp="0" aria-pressed="true">样本 1</button>
+<button type="button" class="smp" data-smp="1" aria-pressed="false">样本 2</button>
+</div>
+<div id="stage"></div>
+<details>
+<summary>示例参数</summary>
+<div class="cap">嵌入矩阵 E：8×4，行号即 token ID</div>
+<table class="m"><thead><tr><th class="n">ID</th><th class="n">token</th><th class="n">E 行（4 维）</th></tr></thead><tbody id="etab"></tbody></table>
+</details>
+<script>
+(function(){
+  "use strict";
+  var T=["&lt;pad&gt;","很","有趣","深度","学习","模型","训练","数据"];
+  var E=[[0,0,0,0],[0.1,0.2,0,0.4],[0.5,0.1,0.3,0.2],[0.8,0.2,0.1,0.5],[0.3,0.7,0.4,0.1],[0.2,0.6,0.5,0.3],[0.6,0.3,0.2,0.7],[0.4,0.5,0.6,0.2]];
+  var IDS=[[3,4,1,2],[3,4,5,0]];
+  var step=0,smp=0;
+  function f(x){return x.toFixed(3);}
+  function vec(a,cls){return '<div class="vec">'+a.map(function(v){return '<span class="'+(cls||'')+'">'+v+'</span>';}).join('')+'</div>';}
+  function rowIds(){
+    var h='<div class="panel"><h2>一个样本的 4 个位置：先有 ID，再取行</h2>';
+    h+='<div class="cap">token ID 行</div>'+vec(IDS[smp],'one');
+    h+='<div class="cap" style="margin-top:7px">按 ID 取 E 的行，得到 n×d = 4×4</div><div class="grid">';
+    IDS[smp].forEach(function(id,i){
+      var pad=id===0;
+      h+='<div class="card'+(pad?' pad':'')+'"><b>位置 '+(i+1)+'：'+T[id]+'（ID '+id+'）</b>'+vec(E[id].map(f),pad?'zero':'')+'</div>';
+    });
+    h+='</div><p class="mono">这一样本的形状：4 个 ID → 4×4 嵌入块。</p></div>';
+    return h;
+  }
+  function rowPad(){
+    var ids=IDS[smp],mask=ids.map(function(id){return id===0?0:1;});
+    var h='<div class="panel"><h2>补齐只统一长度；掩码单独标记补位</h2>';
+    h+='<div class="cap">token ID</div>'+vec(ids,'one');
+    h+='<div class="cap" style="margin-top:6px">注意力掩码：1 可见，0 屏蔽</div>'+vec(mask);
+    h+='<div class="grid" style="margin-top:7px">';
+    ids.forEach(function(id,i){
+      h+='<div class="card'+(id===0?' pad':'')+'"><b>位置 '+(i+1)+'</b><div class="mono">'+T[id]+'，ID '+id+'</div><div class="mono">掩码 '+mask[i]+'</div></div>';
+    });
+    var hasPad=ids.indexOf(0)>=0;
+    h+='</div>';
+    if(hasPad){
+      h+='<p class="mono">补位行的嵌入为 [0.000, 0.000, 0.000, 0.000]，但位置仍占一个时间步。</p>';
+      h+='<p class="note">补齐只统一长度；注意力掩码与损失屏蔽另行处理补位位置。</p>';
+    }else{
+      h+='<p class="mono">该样本没有补位行，掩码全为 1。</p>';
+      h+='<p class="note">该样本长度已等于 n，不需要补位；掩码仍逐位置标记可见性。</p>';
+    }
+    return h+'</div>';
+  }
+  function batchTensor(){
+    var h='<div class="panel"><h2>整批张量：B = 2、n = 4、d = 4</h2>';
+    h+='<div class="cap">两个样本各为 4×4；拼成 2×4×4。补位行由 IDS 中的 ID 0 标记。</div><div class="matgrid">';
+    IDS.forEach(function(ids,b){
+      h+='<div class="card"><b>样本 '+(b+1)+'</b><table class="m mat"><thead><tr><th>位置</th><th class="n">d1</th><th class="n">d2</th><th class="n">d3</th><th class="n">d4</th></tr></thead><tbody>';
+      ids.forEach(function(id,i){
+        var pad=id===0;
+        h+='<tr'+(pad?' class="padrow"':'')+'><th>'+(i+1)+' '+T[id]+'</th>'+E[id].map(function(v){return '<td class="n">'+f(v)+'</td>';}).join('')+'</tr>';
+      });
+      h+='</tbody></table></div>';
+    });
+    h+='</div><p class="mono">形状：2 个样本 × 4 个位置 × 4 个特征 = 2×4×4。</p></div>';
+    return h;
+  }
+  function render(){
+    document.getElementById('smpbar').hidden=(step===2);
+    document.getElementById('stage').innerHTML=step===0?rowIds():step===1?rowPad():batchTensor();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.step'),function(b){
+    b.addEventListener('click',function(){
+      step=Number(b.getAttribute('data-step'));
+      Array.prototype.forEach.call(document.querySelectorAll('.step'),function(x){x.setAttribute('aria-pressed',String(x===b));});
+      render();
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.smp'),function(b){
+    b.addEventListener('click',function(){
+      smp=Number(b.getAttribute('data-smp'));
+      Array.prototype.forEach.call(document.querySelectorAll('.smp'),function(x){x.setAttribute('aria-pressed',String(x===b));});
+      render();
+    });
+  });
+  function embed(E,ids){return ids.map(function(id){return E[id].slice();});}
+  window.__modelTest={inputs:{T:T,E:E,IDS:IDS},params:{},compute:{embed:embed,mask:function(ids){return ids.map(function(id){return id===0?0:1;});}}};
+  document.getElementById('etab').innerHTML=T.map(function(n,i){
+    return '<tr><td class="n">'+i+'</td><td class="n">'+n+'</td><td class="n">['+E[i].map(f).join(', ')+']</td></tr>';
+  }).join('');
+  render();
+})();
+</script>
+</body>
+</html>

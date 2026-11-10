@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>早停：patience 与停止点</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--hi:#e8efff;--pos:#2f66b3;--neg:#b44a35}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--pos:#7fa8ee;--neg:#ef9a83}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg)}
+body{padding:12px;max-width:700px;font:13px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+label{font-size:12px;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+input[type=range]{width:150px;accent-color:var(--accent)}
+input[type=checkbox]{accent-color:var(--accent)}
+button{font:inherit;font-size:12.5px;padding:4px 10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px;margin:7px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:430px){.grid{grid-template-columns:1fr}}
+.read{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0;font-size:12px;color:var(--muted)}
+.read b{color:var(--fg);font-weight:600}
+svg{display:block;width:100%;height:auto}
+.note{color:var(--muted);font-size:11.5px;margin:4px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<h1>早停：patience 决定什么时候停</h1>
+<p class="sub">验证指标在最优 epoch 之后开始波动上升。连续 patience 个 epoch 没有改善就停，并回退到最优那一轮的权重。</p>
+<div class="controls">
+  <label>patience <input id="pat" type="range" min="1" max="12" step="1" value="5" aria-label="允许连续多少个 epoch 没有改善"><span class="mono" id="patv">5</span></label>
+  <button id="toggle" type="button" aria-pressed="true">显示 patience 窗口</button>
+</div>
+<div class="panel">
+  <svg id="chart" viewBox="0 0 660 240" role="img" aria-label="验证损失随训练轮数的曲线，标出最优轮与按 patience 得到的停止轮"></svg>
+  <p class="note">阴影：patience 等待区间；绿点：最优 epoch；红虚线：停止点。</p>
+<div class="read">
+    <span>最优 epoch <b id="best" class="mono"></b></span>
+    <span>停止 epoch <b id="stop" class="mono"></b></span>
+    <span>多训练 <b id="extra" class="mono"></b></span>
+  </div>
+  <p class="note">停得早，可能在正常波动里误停；停得晚，等于过拟合已经发生之后才停。最优点的位置由验证集决定，不能靠近似训练损失。</p>
+</div>
+<script>
+(function(){
+  const pat = document.getElementById('pat'), patv = document.getElementById('patv');
+  const toggle = document.getElementById('toggle'), chart = document.getElementById('chart');
+  const bestEl = document.getElementById('best'), stopEl = document.getElementById('stop'), extraEl = document.getElementById('extra');
+  const N = 40;
+  const val = [];
+  for (let n = 1; n <= N; n++){ val.push(0.60 + 0.00055*Math.pow(n-18,2) + 0.012*Math.sin(n*1.9)); }
+  function bestEp(){ let b = 1; for (let n = 2; n <= N; n++) if (val[n-1] < val[b-1]) b = n; return b; }
+  function draw(){
+    const p = +pat.value; patv.textContent = p;
+    const b = bestEp();
+    let stop = N;
+    for (let n = b + 1; n <= N; n++){ if (n - b >= p){ stop = n; break; } }
+    bestEl.textContent = b; stopEl.textContent = stop; extraEl.textContent = (stop - b) + ' 轮';
+    const W = 660, H = 240, x0 = 48, x1 = W-20, y0 = 24, y1 = H-34;
+    const lo = 0.55, hi = 0.95;
+    const X = n => x0 + (n-1)/(N-1)*(x1-x0);
+    const Y = v => y1 - (v-lo)/(hi-lo)*(y1-y0);
+    let s = '<line x1="'+x0+'" y1="'+y1+'" x2="'+x1+'" y2="'+y1+'" stroke="var(--line)"/>';
+    for (let v = 0.6; v <= 0.9; v += 0.1){ s += '<line x1="'+x0+'" y1="'+Y(v).toFixed(1)+'" x2="'+x1+'" y2="'+Y(v).toFixed(1)+'" stroke="var(--line)" stroke-dasharray="2 6" opacity="0.7"/><text x="'+(x0-6)+'" y="'+(Y(v)+4).toFixed(1)+'" text-anchor="end" fill="var(--muted)" font-size="15">'+v.toFixed(1)+'</text>'; }
+    if (toggle.getAttribute('aria-pressed') === 'true'){
+      s += '<rect x="'+X(b).toFixed(1)+'" y="'+y0+'" width="'+(X(stop)-X(b)).toFixed(1)+'" height="'+(y1-y0)+'" fill="var(--accent)" opacity="0.10"/>';
+    }
+    s += '<polyline fill="none" stroke="var(--pos)" stroke-width="2.2" points="'+val.map((v,i)=>X(i+1).toFixed(1)+','+Y(v).toFixed(1)).join(' ')+'"/>';
+    s += '<circle cx="'+X(b).toFixed(1)+'" cy="'+Y(val[b-1]).toFixed(1)+'" r="4" fill="var(--pos)"/>';
+    s += '<line x1="'+X(stop).toFixed(1)+'" y1="'+y0+'" x2="'+X(stop).toFixed(1)+'" y2="'+y1+'" stroke="var(--neg)" stroke-width="1.4" stroke-dasharray="5 4"/>';
+    s += '<text x="'+X(stop).toFixed(1)+'" y="'+(y0-6)+'" text-anchor="middle" fill="var(--neg)" font-size="15">停止</text>';
+    s += '<text x="'+X(b).toFixed(1)+'" y="'+(Y(val[b-1])-8).toFixed(1)+'" text-anchor="middle" fill="var(--pos)" font-size="15">最优</text>';
+    s += '<text x="'+x1+'" y="'+(H-10)+'" text-anchor="end" fill="var(--muted)" font-size="15">epoch</text>';
+    chart.innerHTML = s;
+  }
+  pat.addEventListener('input', draw);
+  toggle.addEventListener('click', ()=>{ toggle.setAttribute('aria-pressed', toggle.getAttribute('aria-pressed')==='true'?'false':'true'); draw(); });
+  draw();
+})();
+</script>
+</body></html>

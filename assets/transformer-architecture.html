@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transformer 整体架构</title>
+<style>
+:root{--bg:#ffffff;--fg:#1f2937;--muted:#5f6b7c;--line:#c7d2e1;--panel:#f8fafc;--accent:#3b5bdb;--hi:#dfe8ff;--enc:#e8f0ff;--dec:#f1ebff;--res:#7f8ca3;--node:#ffffff}
+@media (prefers-color-scheme:dark){:root{--bg:#1f2633;--fg:#f5f8fd;--muted:#c4cfdd;--line:#61718a;--panel:#2b3547;--accent:#a8bcff;--hi:#34445e;--enc:#26344c;--dec:#332b47;--res:#94a3b8;--node:#2f3a4e}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:960px;color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:20px;margin:0 0 2px}
+p{margin:4px 0}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 8px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#stepLabel{font-size:14px;color:var(--muted)}
+svg{display:block;width:100%;height:auto}
+.box{fill:var(--node);stroke:var(--line);stroke-width:1.1}
+.box.enc{fill:var(--enc)}
+.box.dec{fill:var(--dec)}
+.box.hi{fill:var(--hi);stroke:var(--accent)}
+.stack{fill:none;stroke:var(--line);stroke-width:1.2;stroke-dasharray:6 4}
+.lbl{font-size:13px;fill:var(--fg)}
+.small{font-size:11.5px;fill:var(--muted)}
+.ttl{font-size:14px;font-weight:600;fill:var(--fg)}
+.arrow{stroke:var(--res);stroke-width:1.3;fill:none;marker-end:url(#ah)}
+.res{stroke:var(--res);stroke-width:1.2;fill:none;marker-end:url(#ah)}
+.kv{stroke:var(--accent);stroke-width:1.8;fill:none;marker-end:url(#ah2)}
+.node{cursor:pointer;outline:none}
+.node:hover .box,.node:focus-visible .box{stroke:var(--accent);stroke-width:2}
+.node:hover .lbl,.node:focus-visible .lbl{fill:var(--accent)}
+[data-step]{opacity:1;transition:opacity .15s}
+svg[data-focus="1"] [data-step]:not([data-step="1"]),
+svg[data-focus="2"] [data-step]:not([data-step="2"]),
+svg[data-focus="3"] [data-step]:not([data-step="3"]),
+svg[data-focus="4"] [data-step]:not([data-step="4"]),
+svg[data-focus="5"] [data-step]:not([data-step="5"]){opacity:.55}
+.tip{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:8px;margin-top:8px;min-height:44px;font-size:13.5px}
+.tip b{color:var(--accent)}
+.status{color:var(--muted);font-size:12px;margin-top:4px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<h1>Transformer 整体架构</h1>
+<p class="sub">左侧编码器、右侧解码器。悬停模块看说明，点击跳到对应笔记；切换步骤只高亮当前数据流。</p>
+
+<div class="controls" role="group" aria-label="步骤控制">
+  <button id="prev" type="button">上一步</button>
+  <span id="stepLabel" aria-live="polite">1 / 5</span>
+  <button id="next" type="button">下一步</button>
+</div>
+
+<svg id="arch" viewBox="0 0 920 690" role="img" aria-label="Transformer 编码器解码器结构">
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--res)"/></marker>
+    <marker id="ah2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker>
+  </defs>
+
+  <!-- encoder inputs -->
+  <g data-step="1">
+    <text class="small" x="80" y="665">Inputs</text>
+    <g>
+      <rect class="box" x="80" y="635" width="52" height="22" rx="4"/><text class="small" x="86" y="650">x₁</text>
+      <rect class="box" x="136" y="635" width="52" height="22" rx="4"/><text class="small" x="142" y="650">x₂</text>
+      <rect class="box" x="192" y="635" width="52" height="22" rx="4"/><text class="small" x="198" y="650">x₃</text>
+      <rect class="box" x="248" y="635" width="52" height="22" rx="4"/><text class="small" x="254" y="650">x₄</text>
+    </g>
+    <line class="arrow" x1="185" y1="635" x2="185" y2="610"/>
+    <g class="node" data-step="1" data-note="Word-Embeddings-And-Word2Vec" data-desc="Input Embedding：把源 Token 映射成 d_model 维向量。">
+      <rect class="box" x="80" y="575" width="220" height="32" rx="5"/>
+      <text class="lbl" x="110" y="596">Input Embedding</text>
+    </g>
+    <line class="arrow" x1="190" y1="575" x2="190" y2="558"/>
+    <circle cx="190" cy="548" r="9" fill="var(--panel)" stroke="var(--line)"/>
+    <text class="lbl" x="186" y="552">+</text>
+    <text class="small" x="40" y="536">Positional</text><text class="small" x="40" y="550">Encoding</text>
+    <text class="small" x="40" y="566">sin / cos</text>
+    <line class="arrow" x1="110" y1="548" x2="178" y2="548"/>
+    <line class="arrow" x1="190" y1="539" x2="190" y2="522"/>
+  </g>
+
+  <!-- encoder stack -->
+  <g>
+    <rect class="stack" x="60" y="250" width="270" height="270" rx="9"/>
+    <text class="small" x="72" y="268">Encoder N×</text>
+
+    <g class="node" data-step="2" data-note="Multi-Head-Attention" data-desc="多头自注意力：Q、K、V 都来自源序列，每个位置查询整个序列。">
+      <rect class="box enc" x="85" y="430" width="220" height="34" rx="5"/>
+      <text class="lbl" x="118" y="452">Multi-Head Attention</text>
+    </g>
+    <line class="arrow" x1="195" y1="430" x2="195" y2="412"/>
+    <g class="node" data-step="2" data-note="Encoder-Workflow" data-heading="归一化顺序" data-desc="Add & Norm：残差相加后做 LayerNorm。">
+      <rect class="box enc" x="85" y="385" width="220" height="26" rx="4"/>
+      <text class="lbl" x="153" y="403">Add &amp; Norm</text>
+    </g>
+    <line class="arrow" x1="195" y1="385" x2="195" y2="370"/>
+    <g class="node" data-step="2" data-note="Encoder-Workflow" data-heading="前馈网络子层" data-desc="FFN：逐位置做非线性变换，不交换位置信息。">
+      <rect class="box enc" x="85" y="335" width="220" height="34" rx="5"/>
+      <text class="lbl" x="160" y="357">Feed Forward</text>
+    </g>
+    <line class="arrow" x1="195" y1="335" x2="195" y2="317"/>
+    <g class="node" data-step="2" data-note="Encoder-Workflow" data-heading="归一化顺序" data-desc="Add & Norm：残差相加后做 LayerNorm。">
+      <rect class="box enc" x="85" y="290" width="220" height="26" rx="4"/>
+      <text class="lbl" x="153" y="308">Add &amp; Norm</text>
+    </g>
+    <line class="arrow" x1="195" y1="290" x2="195" y2="270"/>
+
+    <line class="arrow" x1="195" y1="520" x2="195" y2="464"/>
+    <!-- residuals: branch below each sublayer, bypass it, enter Add & Norm -->
+    <path class="res" d="M195 475 L70 475 L70 398 L85 398"/>
+    <path class="res" d="M195 377 L70 377 L70 303 L85 303"/>
+  </g>
+
+  <!-- H -->
+  <g class="node" data-step="3" data-note="Encoder-Workflow" data-desc="编码器输出 H：形状 S × d_model，作为交叉注意力的 K、V。">
+    <rect class="box hi" x="130" y="180" width="130" height="36" rx="5"/>
+    <text class="lbl" x="150" y="198">H · S × d_model</text>
+    <text class="small" x="152" y="212">编码器输出</text>
+  </g>
+  <line class="arrow" x1="195" y1="270" x2="195" y2="216"/>
+
+  <!-- decoder inputs -->
+  <g data-step="1">
+    <text class="small" x="610" y="665">Outputs (shifted right)</text>
+    <g>
+      <rect class="box" x="610" y="635" width="58" height="22" rx="4"/><text class="small" x="616" y="650">&lt;BOS&gt;</text>
+      <rect class="box" x="672" y="635" width="46" height="22" rx="4"/><text class="small" x="678" y="650">y₁</text>
+      <rect class="box" x="722" y="635" width="46" height="22" rx="4"/><text class="small" x="728" y="650">y₂</text>
+      <rect class="box" x="772" y="635" width="46" height="22" rx="4"/><text class="small" x="778" y="650">…</text>
+    </g>
+    <line class="arrow" x1="720" y1="635" x2="720" y2="610"/>
+    <g class="node" data-step="1" data-note="Word-Embeddings-And-Word2Vec" data-desc="Output Embedding：把已生成的目标 Token 映射成向量。">
+      <rect class="box" x="610" y="575" width="220" height="32" rx="5"/>
+      <text class="lbl" x="638" y="596">Output Embedding</text>
+    </g>
+    <line class="arrow" x1="720" y1="575" x2="720" y2="558"/>
+    <circle cx="720" cy="548" r="9" fill="var(--panel)" stroke="var(--line)"/>
+    <text class="lbl" x="716" y="552">+</text>
+    <text class="small" x="840" y="536">Positional</text><text class="small" x="840" y="550">Encoding</text>
+    <line class="arrow" x1="818" y1="548" x2="732" y2="548"/>
+    <line class="arrow" x1="720" y1="539" x2="720" y2="522"/>
+  </g>
+
+  <!-- decoder stack -->
+  <g>
+    <rect class="stack" x="590" y="230" width="290" height="290" rx="9"/>
+    <text class="small" x="602" y="222">Decoder N×</text>
+
+    <line class="arrow" x1="735" y1="520" x2="735" y2="489"/>
+    <g class="node" data-step="4" data-note="Attention-In-Transformer" data-heading="掩码自注意力" data-desc="Masked Multi-Head Attention：每个位置只读取已生成的目标前缀。">
+      <rect class="box dec" x="615" y="455" width="240" height="34" rx="5"/>
+      <text class="lbl" x="638" y="477">Masked Multi-Head Attention</text>
+    </g>
+    <line class="arrow" x1="735" y1="455" x2="735" y2="438"/>
+    <g class="node" data-step="4" data-note="Encoder-Workflow" data-heading="归一化顺序" data-desc="Add & Norm：残差相加后做 LayerNorm。">
+      <rect class="box dec" x="615" y="412" width="240" height="24" rx="4"/>
+      <text class="lbl" x="693" y="429">Add &amp; Norm</text>
+    </g>
+    <line class="arrow" x1="735" y1="412" x2="735" y2="398"/>
+    <g class="node" data-step="3" data-note="Attention-In-Transformer" data-heading="交叉注意力" data-desc="Cross-Attention：Q 来自解码器，K、V 来自编码器输出 H。">
+      <rect class="box dec" x="615" y="365" width="240" height="32" rx="5"/>
+      <text class="lbl" x="680" y="386">Cross-Attention</text>
+    </g>
+    <line class="arrow" x1="735" y1="365" x2="735" y2="348"/>
+    <g class="node" data-step="4" data-note="Encoder-Workflow" data-heading="归一化顺序" data-desc="Add & Norm：残差相加后做 LayerNorm。">
+      <rect class="box dec" x="615" y="322" width="240" height="24" rx="4"/>
+      <text class="lbl" x="693" y="339">Add &amp; Norm</text>
+    </g>
+    <line class="arrow" x1="735" y1="322" x2="735" y2="308"/>
+    <g class="node" data-step="4" data-note="Encoder-Workflow" data-heading="前馈网络子层" data-desc="FFN：对融合后的每个目标位置再做一次非线性变换。">
+      <rect class="box dec" x="615" y="275" width="240" height="32" rx="5"/>
+      <text class="lbl" x="692" y="296">Feed Forward</text>
+    </g>
+    <line class="arrow" x1="735" y1="275" x2="735" y2="259"/>
+    <g class="node" data-step="4" data-note="Encoder-Workflow" data-heading="归一化顺序" data-desc="Add & Norm：残差相加后做 LayerNorm。">
+      <rect class="box dec" x="615" y="235" width="240" height="24" rx="4"/>
+      <text class="lbl" x="693" y="252">Add &amp; Norm</text>
+    </g>
+    <line class="arrow" x1="735" y1="235" x2="735" y2="226"/>
+
+    <!-- residuals: branch below each sublayer, bypass it, enter Add & Norm -->
+    <path class="res" d="M735 495 L600 495 L600 424 L615 424"/>
+    <path class="res" d="M735 401 L600 401 L600 334 L615 334"/>
+    <path class="res" d="M735 311 L600 311 L600 247 L615 247"/>
+  </g>
+
+  <!-- H to cross attention -->
+  <path class="kv" d="M260 198 L520 198 L520 381 L610 381"/>
+  <text class="small" x="330" y="192" fill="var(--accent)">K、V 来自 H</text>
+
+  <!-- output head -->
+  <g class="node" data-step="5" data-note="Decoder-Workflow" data-heading="输出分布" data-desc="Linear：把解码器隐藏表示映射到词表空间，得到 logits。">
+    <rect class="box" x="615" y="195" width="240" height="30" rx="5"/>
+    <text class="lbl" x="710" y="215">Linear</text>
+  </g>
+  <line class="arrow" x1="735" y1="230" x2="735" y2="226"/>
+  <g class="node" data-step="5" data-note="Decoder-Workflow" data-heading="输出分布" data-desc="Softmax：把 logits 变成词表上的概率分布。">
+    <rect class="box" x="615" y="155" width="240" height="30" rx="5"/>
+    <text class="lbl" x="706" y="175">Softmax</text>
+  </g>
+  <line class="arrow" x1="735" y1="195" x2="735" y2="187"/>
+  <g class="node" data-step="5" data-note="Decoder-Workflow" data-heading="输出采样" data-desc="输出概率：按贪心、Top-K 或 Top-P 选出下一个 Token。">
+    <rect class="box hi" x="605" y="110" width="260" height="32" rx="5"/>
+    <text class="lbl" x="650" y="130">Output Probabilities</text>
+  </g>
+  <line class="arrow" x1="735" y1="155" x2="735" y2="144"/>
+
+  <text class="small" x="80" y="682">残差连接绕过每个子层，再与子层输出相加；所有子层输出都保持同一形状。</text>
+</svg>
+
+<div class="tip" id="tip"><b>提示</b> 悬停模块查看说明；点击带边框的模块跳到对应笔记。</div>
+<div class="status" id="status"></div>
+
+<script>
+const steps = [
+  "输入与输出先经过 Embedding 与位置编码。",
+  "编码器逐层做多头自注意力、Add & Norm、FFN。",
+  "编码器输出 H，作为解码器交叉注意力的 K、V。",
+  "解码器做掩码自注意力、交叉注意力、FFN，并保留残差连接。",
+  "Linear 与 Softmax 把输出变成词表概率，再选下一个 Token。"
+];
+const arch = document.getElementById("arch");
+const tip = document.getElementById("tip");
+const status = document.getElementById("status");
+const label = document.getElementById("stepLabel");
+const params = new URLSearchParams(location.search);
+let step = Math.max(1, Math.min(5, Number(params.get("step") || 1)));
+
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function showTip(text) { tip.innerHTML = "<b>说明</b> " + esc(text); }
+function openNote(file, heading) {
+  const payload = { type: "local-html-card-open", file, heading: heading || "" };
+  if (window.parent !== window) {
+    window.parent.postMessage(payload, "*");
+    status.textContent = "已请求打开：" + file + (heading ? " # " + heading : "");
+  } else {
+    status.textContent = "当前不在卡片 iframe 中，无法跳转。";
+  }
+}
+document.querySelectorAll("[data-note]").forEach(el => {
+  const file = el.dataset.note;
+  const heading = el.dataset.heading || "";
+  const desc = el.dataset.desc || "";
+  el.addEventListener("mouseenter", () => showTip(desc));
+  el.addEventListener("focus", () => showTip(desc));
+  el.addEventListener("click", () => openNote(file, heading));
+  el.setAttribute("tabindex", "0");
+  el.setAttribute("role", "button");
+});
+function render() {
+  arch.dataset.focus = String(step);
+  label.textContent = step + " / 5";
+  showTip(steps[step - 1]);
+}
+document.getElementById("prev").addEventListener("click", () => { if (step > 1) { step--; render(); } });
+document.getElementById("next").addEventListener("click", () => { if (step < 5) { step++; render(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" && step > 1) { step--; render(); }
+  if (e.key === "ArrowRight" && step < 5) { step++; render(); }
+});
+render();
+</script>
+</body>
+</html>

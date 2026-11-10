@@ -1,0 +1,59 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>one-hot 彼此正交，学到的向量才有方向</title><style>
+:root{
+--bg:#fbfcfe; --panel:#ffffff; --fg:#1b2330; --muted:#5b6572; --line:#ccd4df;
+--in:#dbe7ff; --inS:#2f5bb7; --param:#ece0ff; --paramS:#6b46c1;
+--state:#e9edf3; --stateS:#4a5568; --out:#d9f2e2; --outS:#2f7a4f;
+--cur:#ffe6c7; --curS:#b45309; --accent:#2f5bb7;
+}
+@media (prefers-color-scheme:dark){:root{
+--bg:#14181f; --panel:#1c222b; --fg:#e8ecf3; --muted:#9aa4b2; --line:#39424f;
+--in:#1f3149; --inS:#8fb0ef; --param:#2d2350; --paramS:#b49af0;
+--state:#262d38; --stateS:#aab4c2; --out:#1e3a2b; --outS:#87c9a2;
+--cur:#4a3418; --curS:#f0b26b; --accent:#8fb0ef;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg)}
+body{padding:10px;max-width:980px;font:14px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+.deck{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px}
+h1{font-size:16px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+section.page{display:none}
+section.page.active{display:block}
+.stage{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.stage svg{display:block;width:100%;height:100%}
+.cap{font-size:13px;color:var(--fg);background:var(--state);border-left:4px solid var(--curS);border-radius:6px;padding:7px 10px;margin:8px 0 0}
+.nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+button{font:inherit;font-size:12.5px;padding:5px 11px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{font-size:12px;color:var(--muted);margin-left:4px}
+.dots{display:flex;gap:5px;margin-left:auto}
+.dots span{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots span.on{background:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body><h1>one-hot 彼此正交，学到的向量才有方向</h1><p class="sub">one-hot 任意两词余弦为 0、距离为 √2；学到的二维向量把苹果与香蕉放近、汽车放反向</p><div class="deck"><div class="stage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 620" width="100%" role="img" aria-label="one-hot 彼此正交，学到的向量才有方向"><rect x="0" y="0" width="1100" height="620" fill="var(--bg)"/><style>
+text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+.tt{font-size:30px;font-weight:700}.ss{font-size:15px;fill:var(--muted)}
+.lb{font-size:17px}.val{font-size:15px}.sm{font-size:13px;fill:var(--muted)}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace}
+.b{stroke-width:1.4;rx:8}
+.in{fill:var(--in);stroke:var(--inS)}.param{fill:var(--param);stroke:var(--paramS)}
+.state{fill:var(--state);stroke:var(--stateS)}.out{fill:var(--out);stroke:var(--outS)}.cur{fill:var(--cur);stroke:var(--curS)}
+.plain{fill:var(--panel);stroke:var(--line)}
+.wire{stroke:var(--muted);stroke-width:1.6;fill:none;marker-end:url(#ar)}
+.wp{stroke:var(--paramS);stroke-width:2.2;fill:none;marker-end:url(#arp)}
+.ws{stroke:var(--stateS);stroke-width:2.2;fill:none;marker-end:url(#ars)}
+.wout{stroke:var(--outS);stroke-width:2.2;fill:none;marker-end:url(#aro)}
+.wcur{stroke:var(--curS);stroke-width:2.2;fill:none;marker-end:url(#arc)}
+.win{stroke:var(--inS);stroke-width:2.2;fill:none;marker-end:url(#ari)}
+.wired{stroke:var(--muted);stroke-width:1.4;fill:none;stroke-dasharray:6 4;marker-end:url(#ard)}
+.dim{opacity:.22}
+.legend{font-size:13px}
+.grid{stroke:var(--line);stroke-width:1}
+</style><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker>
+<marker id="ard" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker>
+<marker id="arp" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--paramS)"/></marker>
+<marker id="ars" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--stateS)"/></marker>
+<marker id="aro" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--outS)"/></marker>
+<marker id="arc" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--curS)"/></marker>
+<marker id="ari" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--inS)"/></marker></defs><text class="tt" x="28" y="52">one-hot 彼此正交，学到的向量才有方向</text><text class="ss" x="28" y="80">one-hot 任意两词余弦为 0、距离为 √2；学到的二维向量把苹果与香蕉放近、汽车放反向</text><rect x="40" y="120" width="420" height="400" rx="12" fill="var(--panel)" stroke="var(--line)"/><text class="lb" x="58" y="150">one-hot：四根正交轴</text><path class="ws" d="M250,360 L400,360"/><text class="sm" x="410" y="365" text-anchor="middle">猫</text><path class="ws" d="M250,360 L250,210"/><text class="sm" x="250" y="205" text-anchor="middle">狗</text><path class="ws" d="M250,360 L100,360"/><text class="sm" x="90" y="365" text-anchor="middle">苹果</text><path class="ws" d="M250,360 L250,510"/><text class="sm" x="264" y="518" text-anchor="start">汽车</text><text class="sm" x="70" y="500">任意两词：cos = 0，欧氏距离 = √2</text><rect x="500" y="120" width="560" height="400" rx="12" fill="var(--panel)" stroke="var(--line)"/><text class="lb" x="518" y="150">学到的二维词向量</text><path d="M520,340 L1040,340" stroke="var(--line)" stroke-width="1.2"/><path d="M780,480 L780,180" stroke="var(--line)" stroke-width="1.2"/><path d="M780,340 L1019.8,327.5" stroke="var(--outS)" stroke-width="3" marker-end="url(#aro)"/><text class="lb" x="1027.8" y="319.5">苹果</text><path d="M780,340 L1000.3,245.0" stroke="var(--outS)" stroke-width="3" marker-end="url(#aro)"/><text class="lb" x="1008.3" y="237.0">香蕉</text><path d="M780,340 L559.0,247.1" stroke="var(--curS)" stroke-width="3" marker-end="url(#aro)"/><text class="lb" x="567.0" y="239.1">汽车</text><text class="sm" x="560" y="470">苹果与香蕉：cos ≈ 0.94</text><text class="sm" x="560" y="494">苹果与汽车：cos ≈ −0.90</text><rect x="30" y="556" width="1040" height="46" rx="10" fill="var(--state)" opacity="0.55"/><text class="sm" x="46" y="584">结论：one-hot 只标身份，不携带相似度；词向量的几何关系来自共现训练，不是编码本身给的。</text></svg></div><p class="cap"></p></div></body></html>

@@ -1,0 +1,59 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>教师强制：训练与推理的输入不同</title><style>
+:root{
+--bg:#fbfcfe; --panel:#ffffff; --fg:#1b2330; --muted:#5b6572; --line:#ccd4df;
+--in:#dbe7ff; --inS:#2f5bb7; --param:#ece0ff; --paramS:#6b46c1;
+--state:#e9edf3; --stateS:#4a5568; --out:#d9f2e2; --outS:#2f7a4f;
+--cur:#ffe6c7; --curS:#b45309; --accent:#2f5bb7;
+}
+@media (prefers-color-scheme:dark){:root{
+--bg:#14181f; --panel:#1c222b; --fg:#e8ecf3; --muted:#9aa4b2; --line:#39424f;
+--in:#1f3149; --inS:#8fb0ef; --param:#2d2350; --paramS:#b49af0;
+--state:#262d38; --stateS:#aab4c2; --out:#1e3a2b; --outS:#87c9a2;
+--cur:#4a3418; --curS:#f0b26b; --accent:#8fb0ef;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg)}
+body{padding:10px;max-width:980px;font:14px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+.deck{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px}
+h1{font-size:16px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+section.page{display:none}
+section.page.active{display:block}
+.stage{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.stage svg{display:block;width:100%;height:100%}
+.cap{font-size:13px;color:var(--fg);background:var(--state);border-left:4px solid var(--curS);border-radius:6px;padding:7px 10px;margin:8px 0 0}
+.nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+button{font:inherit;font-size:12.5px;padding:5px 11px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{font-size:12px;color:var(--muted);margin-left:4px}
+.dots{display:flex;gap:5px;margin-left:auto}
+.dots span{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots span.on{background:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body><h1>教师强制：训练与推理的输入不同</h1><p class="sub">训练时喂真值前缀，推理时喂自己上一步的输出；生成错一个 token 会改变下一步输入</p><div class="deck"><div class="stage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 620" width="100%" role="img" aria-label="教师强制：训练与推理的输入不同"><rect x="0" y="0" width="1100" height="620" fill="var(--bg)"/><style>
+text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+.tt{font-size:30px;font-weight:700}.ss{font-size:15px;fill:var(--muted)}
+.lb{font-size:17px}.val{font-size:15px}.sm{font-size:13px;fill:var(--muted)}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace}
+.b{stroke-width:1.4;rx:8}
+.in{fill:var(--in);stroke:var(--inS)}.param{fill:var(--param);stroke:var(--paramS)}
+.state{fill:var(--state);stroke:var(--stateS)}.out{fill:var(--out);stroke:var(--outS)}.cur{fill:var(--cur);stroke:var(--curS)}
+.plain{fill:var(--panel);stroke:var(--line)}
+.wire{stroke:var(--muted);stroke-width:1.6;fill:none;marker-end:url(#ar)}
+.wp{stroke:var(--paramS);stroke-width:2.2;fill:none;marker-end:url(#arp)}
+.ws{stroke:var(--stateS);stroke-width:2.2;fill:none;marker-end:url(#ars)}
+.wout{stroke:var(--outS);stroke-width:2.2;fill:none;marker-end:url(#aro)}
+.wcur{stroke:var(--curS);stroke-width:2.2;fill:none;marker-end:url(#arc)}
+.win{stroke:var(--inS);stroke-width:2.2;fill:none;marker-end:url(#ari)}
+.wired{stroke:var(--muted);stroke-width:1.4;fill:none;stroke-dasharray:6 4;marker-end:url(#ard)}
+.dim{opacity:.22}
+.legend{font-size:13px}
+.grid{stroke:var(--line);stroke-width:1}
+</style><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker>
+<marker id="ard" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker>
+<marker id="arp" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--paramS)"/></marker>
+<marker id="ars" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--stateS)"/></marker>
+<marker id="aro" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--outS)"/></marker>
+<marker id="arc" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--curS)"/></marker>
+<marker id="ari" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--inS)"/></marker></defs><text class="tt" x="28" y="52">教师强制：训练与推理的输入不同</text><text class="ss" x="28" y="80">训练时喂真值前缀，推理时喂自己上一步的输出；生成错一个 token 会改变下一步输入</text><rect x="30" y="104" width="14" height="14" rx="3" fill="var(--in)" stroke="var(--inS)"/><text class="sm" x="49" y="116">输入</text><rect x="120" y="104" width="14" height="14" rx="3" fill="var(--param)" stroke="var(--paramS)"/><text class="sm" x="139" y="116">参数</text><rect x="210" y="104" width="14" height="14" rx="3" fill="var(--state)" stroke="var(--stateS)"/><text class="sm" x="229" y="116">中间状态</text><rect x="300" y="104" width="14" height="14" rx="3" fill="var(--out)" stroke="var(--outS)"/><text class="sm" x="319" y="116">输出</text><rect x="390" y="104" width="14" height="14" rx="3" fill="var(--cur)" stroke="var(--curS)"/><text class="sm" x="409" y="116">当前步</text><rect x="848" y="92" width="222" height="66" rx="10" fill="var(--panel)" stroke="var(--line)"/><text class="sm" x="860" y="112">图例</text><text class="sm" x="860" y="132">蓝色：模型输入</text><text class="sm" x="860" y="150">绿色：模型输出</text><rect x="30" y="130" width="1040" height="170" rx="14" fill="none" stroke="var(--inS)" stroke-dasharray="6 5" opacity="0.85"/><text class="sm" x="44" y="150" >训练时：输入是标注里的前一个 token</text><rect class="b in" x="60" y="166" width="110" height="36" rx="10"/><text class="sm" x="115.0" y="190.0" text-anchor="middle">BOS</text><path class="win" d="M115,202 L115,224"/><rect class="b param" x="60" y="228" width="110" height="46" rx="10"/><text class="sm" x="115.0" y="257.0" text-anchor="middle">解码器</text><path class="wout" d="M170,251 L210,251 L210,184 L256,184"/><rect class="b in" x="260" y="166" width="110" height="36" rx="10"/><text class="sm" x="315.0" y="190.0" text-anchor="middle">我</text><path class="win" d="M315,202 L315,224"/><rect class="b param" x="260" y="228" width="110" height="46" rx="10"/><text class="sm" x="315.0" y="257.0" text-anchor="middle">解码器</text><path class="wout" d="M370,251 L410,251 L410,184 L456,184"/><rect class="b in" x="460" y="166" width="110" height="36" rx="10"/><text class="sm" x="515.0" y="190.0" text-anchor="middle">爱</text><path class="win" d="M515,202 L515,224"/><rect class="b param" x="460" y="228" width="110" height="46" rx="10"/><text class="sm" x="515.0" y="257.0" text-anchor="middle">解码器</text><path class="wout" d="M570,251 L610,251 L610,184 L656,184"/><rect class="b in" x="660" y="166" width="110" height="36" rx="10"/><text class="sm" x="715.0" y="190.0" text-anchor="middle">自然</text><path class="win" d="M715,202 L715,224"/><rect class="b param" x="660" y="228" width="110" height="46" rx="10"/><text class="sm" x="715.0" y="257.0" text-anchor="middle">解码器</text><path class="wout" d="M770,251 L810,251 L810,184 L856,184"/><rect class="b in" x="860" y="166" width="110" height="36" rx="10"/><text class="sm" x="915.0" y="190.0" text-anchor="middle">语言</text><path class="win" d="M915,202 L915,224"/><rect class="b param" x="860" y="228" width="110" height="46" rx="10"/><text class="sm" x="915.0" y="257.0" text-anchor="middle">解码器</text><path class="wout" d="M970,251 L1020,251"/><text class="sm" x="1026" y="255">EOS</text><rect x="30" y="310" width="1040" height="170" rx="14" fill="none" stroke="var(--outS)" stroke-dasharray="6 5" opacity="0.85"/><text class="sm" x="44" y="330" >推理时：输入是上一步的输出</text><rect class="b in" x="60" y="346" width="110" height="36" rx="10"/><text class="sm" x="115.0" y="370.0" text-anchor="middle">BOS</text><path class="win" d="M115,382 L115,404"/><rect class="b param" x="60" y="408" width="110" height="46" rx="10"/><text class="sm" x="115.0" y="437.0" text-anchor="middle">解码器</text><path class="wout" d="M170,431 L210,431 L210,364 L256,364"/><rect class="b in" x="260" y="346" width="110" height="36" rx="10"/><text class="sm" x="315.0" y="370.0" text-anchor="middle">?</text><path class="win" d="M315,382 L315,404"/><rect class="b param" x="260" y="408" width="110" height="46" rx="10"/><text class="sm" x="315.0" y="437.0" text-anchor="middle">解码器</text><path class="wout" d="M370,431 L410,431 L410,364 L456,364"/><rect class="b in" x="460" y="346" width="110" height="36" rx="10"/><text class="sm" x="515.0" y="370.0" text-anchor="middle">?</text><path class="win" d="M515,382 L515,404"/><rect class="b param" x="460" y="408" width="110" height="46" rx="10"/><text class="sm" x="515.0" y="437.0" text-anchor="middle">解码器</text><path class="wout" d="M570,431 L610,431 L610,364 L656,364"/><rect class="b in" x="660" y="346" width="110" height="36" rx="10"/><text class="sm" x="715.0" y="370.0" text-anchor="middle">?</text><path class="win" d="M715,382 L715,404"/><rect class="b param" x="660" y="408" width="110" height="46" rx="10"/><text class="sm" x="715.0" y="437.0" text-anchor="middle">解码器</text><path class="wout" d="M770,431 L810,431 L810,364 L856,364"/><rect class="b in" x="860" y="346" width="110" height="36" rx="10"/><text class="sm" x="915.0" y="370.0" text-anchor="middle">?</text><path class="win" d="M915,382 L915,404"/><rect class="b param" x="860" y="408" width="110" height="46" rx="10"/><text class="sm" x="915.0" y="437.0" text-anchor="middle">解码器</text><path class="wout" d="M970,431 L1020,431"/><text class="sm" x="1026" y="435">下一步</text><rect x="70" y="512" width="620" height="60" rx="8" fill="var(--state)" opacity="0.7"/><text class="sm" x="82" y="536">训练：整段前缀一次给入，各步可并行算损失</text><text class="sm" x="82" y="558">推理：错一个 token 会改变下一步输入，错误会往后传</text><rect x="720" y="500" width="350" height="60" rx="12" fill="var(--param)" stroke="var(--paramS)"/><text class="sm" x="736" y="524">训练用真值前缀；推理用自己的输出</text><text class="sm" x="736" y="546">两种模式共用同一组权重</text><rect class="b in" x="30" y="572" width="196" height="34" rx="8"/><text class="sm" x="128.0" y="594" text-anchor="middle">真值前缀</text><path class="wire" d="M228,589 L242,589"/><rect class="b param" x="244" y="572" width="196" height="34" rx="8"/><text class="sm" x="342.0" y="594" text-anchor="middle">并行算损失</text><path class="wire" d="M442,589 L456,589"/><rect class="b out" x="458" y="572" width="196" height="34" rx="8"/><text class="sm" x="556.0" y="594" text-anchor="middle">自己的输出</text><path class="wire" d="M656,589 L670,589"/><rect class="b cur" x="672" y="572" width="196" height="34" rx="8"/><text class="sm" x="770.0" y="594" text-anchor="middle">错误累积</text></svg></div></div></body></html>

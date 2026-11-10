@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batch and epoch card</title>
+<style>
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#ffffff;color:#20242c;font-size:13px;line-height:1.5;padding:12px}
+h2{font-size:14px;line-height:1.3;margin:0 0 6px;font-weight:650}
+.inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:#5f6673}
+input[type=number]{font:inherit;font-size:13px;padding:4px 6px;border:1px solid #c9cfd9;border-radius:6px;background:#fbfbfd;color:#20242c;width:100%}
+.check{flex-direction:row;align-items:center;gap:6px;grid-column:1 / -1;margin-top:2px}
+.check input{width:16px;height:16px;accent-color:#2563eb}
+input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.out{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0 4px}
+.cell{border:1px solid #e3e6eb;border-radius:6px;padding:6px;background:#fbfbfd}
+.cell span{display:block;font-size:10.5px;color:#5f6673;line-height:1.3}
+.cell b{display:block;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:18px;line-height:1.3;margin-top:2px}
+.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;color:#5f6673;margin-top:6px}
+.warn{color:#b45309;font-size:11px;min-height:16px}
+@media (prefers-color-scheme:dark){
+body{background:#17191d;color:#e6e9ef}
+label,.cell span,.formula{color:#aab2c0}
+input[type=number]{background:#232830;color:#e6e9ef;border-color:#4a5260}
+.cell{background:#1b1e24;border-color:#333a46}
+.warn{color:#fbbf24}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h2>batch、尾批与更新次数</h2>
+<div class="inputs">
+  <label>训练样本数<input id="n" type="number" min="1" step="1" value="50000" inputmode="numeric"></label>
+  <label>batch size<input id="bs" type="number" min="1" step="1" value="64" inputmode="numeric"></label>
+  <label>梯度累积步数<input id="acc" type="number" min="1" step="1" value="4" inputmode="numeric"></label>
+  <label class="check"><input id="drop" type="checkbox"> drop_last，丢弃尾批</label>
+</div>
+<div class="out">
+  <div class="cell"><span>每个 epoch 的 batch 数</span><b id="batches"></b></div>
+  <div class="cell"><span>尾批样本数</span><b id="tail"></b></div>
+  <div class="cell"><span>参数更新次数</span><b id="updates"></b></div>
+</div>
+<p class="warn" id="warn"></p>
+<p class="formula" id="formula"></p>
+<script>
+/* MODEL-START */
+const MODEL = { samples: 50000, batchSize: 64, accumulation: 4, dropLast: false };
+function schedule(samples, batchSize, dropLast, accumulation) {
+  const full = Math.floor(samples / batchSize);
+  const remainder = samples % batchSize;
+  const batches = dropLast ? full : full + (remainder > 0 ? 1 : 0);
+  const updates = Math.ceil(batches / accumulation);
+  const used = dropLast ? full * batchSize : samples;
+  return { full, remainder, batches, updates, used, tail: dropLast ? remainder : remainder };
+}
+const __test = { schedule };
+/* MODEL-END */
+
+function render() {
+  const n = Math.max(1, parseInt(document.getElementById("n").value, 10) || 0);
+  const bs = Math.max(1, parseInt(document.getElementById("bs").value, 10) || 0);
+  const acc = Math.max(1, parseInt(document.getElementById("acc").value, 10) || 0);
+  const drop = document.getElementById("drop").checked;
+  const r = schedule(n, bs, drop, acc);
+  document.getElementById("batches").textContent = String(r.batches);
+  document.getElementById("tail").textContent = drop
+    ? (r.remainder > 0 ? "丢弃 " + r.remainder : "0")
+    : String(r.remainder);
+  document.getElementById("updates").textContent = String(r.updates);
+  const warn = document.getElementById("warn");
+  if (r.batches === 0) warn.textContent = "样本数小于 batch size，且丢弃尾批，当前配置没有完整 batch。";
+  else if (r.remainder > 0 && drop) warn.textContent = "尾批 " + r.remainder + " 个样本被丢弃，本 epoch 实际使用 " + r.used + " 个样本。";
+  else warn.textContent = "";
+  document.getElementById("formula").textContent =
+    "batch 数 = " + (drop ? "floor" : "ceil") + "(" + n + " / " + bs + ") = " + r.batches +
+    "；更新次数 = ceil(" + r.batches + " / " + acc + ") = " + r.updates + "。";
+}
+["n", "bs", "acc", "drop"].forEach((id) => {
+  document.getElementById(id).addEventListener("input", render);
+  document.getElementById(id).addEventListener("change", render);
+});
+render();
+</script>
+</body>
+</html>

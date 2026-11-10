@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" role="img" aria-labelledby="t d">
+  <title id="t">三种采样策略</title>
+  <desc id="d">同一组按概率从高到低排列的 Token，贪心取最高的一个，Top-K 保留前 K 个，Top-P 保留累计概率达到 P 的最小集合。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--bar:#b9c8e4;--hi:#3b5bdb;--hi2:#8fa6ff;--accent:#3b5bdb}
+    @media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--bar:#4c5d78;--hi:#c2d4ff;--hi2:#7f9bd8;--accent:#c2d4ff}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .panel{fill:var(--panel);stroke:var(--line);stroke-width:1}
+    .bar{fill:var(--bar)}
+    .bar.on{fill:var(--hi2)}
+    .bar.pick{fill:var(--hi)}
+    .ttl{font-size:15px;font-weight:600}
+    .lbl{font-size:12.5px}
+    .small{font-size:11px;fill:var(--muted)}
+    .axis{stroke:var(--muted);stroke-width:1}
+    .bracket{stroke:var(--accent);stroke-width:1.6;fill:none}
+  </style>
+  <rect width="900" height="340" fill="var(--bg)"/>
+
+  <!-- Greedy -->
+  <rect class="panel" x="10" y="10" width="286" height="320" rx="9"/>
+  <text class="ttl" x="24" y="36">贪心采样</text>
+  <text class="small" x="24" y="54">直接取概率最高的一个</text>
+  <g>
+    <rect class="bar pick" x="34" y="130" width="34" height="120" rx="3"/>
+    <rect class="bar" x="76" y="160" width="34" height="90" rx="3"/>
+    <rect class="bar" x="118" y="188" width="34" height="62" rx="3"/>
+    <rect class="bar" x="160" y="210" width="34" height="40" rx="3"/>
+    <rect class="bar" x="202" y="226" width="34" height="24" rx="3"/>
+  </g>
+  <line class="axis" x1="30" y1="252" x2="248" y2="252"/>
+  <text class="small" x="34" y="270">高</text><text class="small" x="230" y="270">低</text>
+  <text class="lbl" x="34" y="300">候选数 1，直接取最大</text>
+
+  <!-- Top-K -->
+  <rect class="panel" x="307" y="10" width="286" height="320" rx="9"/>
+  <text class="ttl" x="321" y="36">Top-K 采样</text>
+  <text class="small" x="321" y="54">保留概率最高的 K 个</text>
+  <g>
+    <rect class="bar on" x="331" y="130" width="34" height="120" rx="3"/>
+    <rect class="bar on" x="373" y="160" width="34" height="90" rx="3"/>
+    <rect class="bar on" x="415" y="188" width="34" height="62" rx="3"/>
+    <rect class="bar" x="457" y="210" width="34" height="40" rx="3"/>
+    <rect class="bar" x="499" y="226" width="34" height="24" rx="3"/>
+  </g>
+  <line class="axis" x1="327" y1="252" x2="545" y2="252"/>
+  <path class="bracket" d="M328 122 L328 116 L452 116 L452 122"/>
+  <text class="lbl" x="331" y="300">固定 K 个，重归一化后随机抽</text>
+
+  <!-- Top-P -->
+  <rect class="panel" x="604" y="10" width="286" height="320" rx="9"/>
+  <text class="ttl" x="618" y="36">Top-P 采样</text>
+  <text class="small" x="618" y="54">保留累计概率达到 P 的最小集合</text>
+  <g>
+    <rect class="bar on" x="628" y="130" width="34" height="120" rx="3"/>
+    <rect class="bar on" x="670" y="160" width="34" height="90" rx="3"/>
+    <rect class="bar on" x="712" y="188" width="34" height="62" rx="3"/>
+    <rect class="bar" x="754" y="210" width="34" height="40" rx="3"/>
+    <rect class="bar" x="796" y="226" width="34" height="24" rx="3"/>
+  </g>
+  <line class="axis" x1="624" y1="252" x2="842" y2="252"/>
+  <path class="bracket" d="M625 122 L625 116 L749 116 L749 122"/>
+  <text class="lbl" x="628" y="300">动态集合，重归一化后随机抽</text>
+
+  <text class="small" x="10" y="332">柱高只表示按概率从高到低的相对大小；同一分布下，三种策略的候选集合不同。</text>
+</svg>

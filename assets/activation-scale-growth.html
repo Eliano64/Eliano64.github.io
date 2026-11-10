@@ -1,0 +1,49 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>幂次映射的尺度失控</title><style>
+:root{
+--bg:#fbfcfe; --panel:#ffffff; --fg:#1b2330; --muted:#5b6572; --line:#ccd4df;
+--in:#dbe7ff; --inS:#2f5bb7; --param:#ece0ff; --paramS:#6b46c1;
+--state:#e9edf3; --stateS:#4a5568; --out:#d9f2e2; --outS:#2f7a4f;
+--cur:#ffe6c7; --curS:#b45309; --accent:#2f5bb7;
+}
+@media (prefers-color-scheme:dark){:root{
+--bg:#14181f; --panel:#1c222b; --fg:#e8ecf3; --muted:#9aa4b2; --line:#39424f;
+--in:#1f3149; --inS:#8fb0ef; --param:#2d2350; --paramS:#b49af0;
+--state:#262d38; --stateS:#aab4c2; --out:#1e3a2b; --outS:#87c9a2;
+--cur:#4a3418; --curS:#f0b26b; --accent:#8fb0ef;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg)}
+body{padding:10px;max-width:980px;font:14px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+.deck{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:10px}
+h1{font-size:16px;margin:0 0 2px}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+section.page{display:none}
+section.page.active{display:block}
+.stage{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.stage svg{display:block;width:100%;height:100%}
+.cap{font-size:13px;color:var(--fg);background:var(--state);border-left:4px solid var(--curS);border-radius:6px;padding:7px 10px;margin:8px 0 0}
+.nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+button{font:inherit;font-size:12.5px;padding:5px 11px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{font-size:12px;color:var(--muted);margin-left:4px}
+.dots{display:flex;gap:5px;margin-left:auto}
+.dots span{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots span.on{background:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body><h1>幂次映射的尺度失控</h1><p class="sub">单变量 x=1.5：幂次映射每层把指数翻倍，ReLU 每层只乘一个常数</p><div class="deck"><div class="stage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-label="幂次映射的尺度失控"><rect x="0" y="0" width="960" height="540" fill="var(--bg)"/><style>
+text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+.tt{font-size:30px;font-weight:700}.ss{font-size:15px;fill:var(--muted)}
+.lb{font-size:17px}.val{font-size:15px}.sm{font-size:13px;fill:var(--muted)}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace}
+.b{stroke-width:1.4;rx:8}
+.in{fill:var(--in);stroke:var(--inS)}.param{fill:var(--param);stroke:var(--paramS)}
+.state{fill:var(--state);stroke:var(--stateS)}.out{fill:var(--out);stroke:var(--outS)}.cur{fill:var(--cur);stroke:var(--curS)}
+.plain{fill:var(--panel);stroke:var(--line)}
+.wire{stroke:var(--muted);stroke-width:1.6;fill:none;marker-end:url(#ar)}
+.wired{stroke:var(--muted);stroke-width:1.4;fill:none;stroke-dasharray:6 4;marker-end:url(#ard)}
+.dim{opacity:.22}
+.legend{font-size:13px}
+.grid{stroke:var(--line);stroke-width:1}
+</style><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker>
+<marker id="ard" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/></marker></defs><text class="tt" x="28" y="52">幂次映射的尺度失控</text><text class="ss" x="28" y="80">单变量 x=1.5：幂次映射每层把指数翻倍，ReLU 每层只乘一个常数</text><path d="M96,430 L640,430" stroke="var(--line)" stroke-width="1.5"/><path d="M96,430 L96,130" stroke="var(--line)" stroke-width="1.5"/><path d="M96,418.46153846153845 L640,418.46153846153845" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="3 7"/><text class="sm" x="84" y="423.46153846153845" text-anchor="end">0</text><path d="M96,360.7692307692308 L640,360.7692307692308" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="3 7"/><text class="sm" x="84" y="365.7692307692308" text-anchor="end">10</text><path d="M96,303.0769230769231 L640,303.0769230769231" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="3 7"/><text class="sm" x="84" y="308.0769230769231" text-anchor="end">20</text><path d="M96,245.3846153846154 L640,245.3846153846154" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="3 7"/><text class="sm" x="84" y="250.3846153846154" text-anchor="end">30</text><path d="M96,187.69230769230768 L640,187.69230769230768" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="3 7"/><text class="sm" x="84" y="192.69230769230768" text-anchor="end">40</text><path d="M96,130.0 L640,130.0" stroke="var(--line)" stroke-width="0.8" stroke-dasharray="3 7"/><text class="sm" x="84" y="135.0" text-anchor="end">50</text><text class="sm" x="96.0" y="452" text-anchor="middle">1</text><text class="sm" x="173.71428571428572" y="452" text-anchor="middle">2</text><text class="sm" x="251.42857142857142" y="452" text-anchor="middle">3</text><text class="sm" x="329.1428571428571" y="452" text-anchor="middle">4</text><text class="sm" x="406.85714285714283" y="452" text-anchor="middle">5</text><text class="sm" x="484.57142857142856" y="452" text-anchor="middle">6</text><text class="sm" x="562.2857142857142" y="452" text-anchor="middle">7</text><text class="sm" x="640.0" y="452" text-anchor="middle">8</text><text class="sm" x="368.0" y="478" text-anchor="middle">层数 L</text><text class="sm" x="84" y="114" text-anchor="end">log10 |y|</text><path d="M96,196.34615384615384 L640,196.34615384615384" stroke="var(--curS)" stroke-width="1.4" stroke-dasharray="8 5"/><text class="sm" x="108" y="176" text-anchor="start">float32 上限 ≈10^38</text><polyline points="96.0,418.46153846153845 173.71428571428572,418.46153846153845 251.42857142857142,418.46153846153845 329.1428571428571,418.46153846153845 406.85714285714283,418.46153846153845 484.57142857142856,418.46153846153845 562.2857142857142,418.46153846153845 640.0,418.46153846153845" fill="none" stroke="var(--stateS)" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 5"/><polyline points="96.0,417.44562735160184 173.71428571428572,416.42971624166523 251.42857142857142,415.4138051317286 329.1428571428571,414.39789402179196 406.85714285714283,413.38198291185535 484.57142857142856,412.36607180191874 562.2857142857142,411.3501606919821 640.0,410.33424958204546" fill="none" stroke="var(--inS)" stroke-width="3" stroke-linejoin="round" stroke-dasharray=""/><polyline points="96.0,416.42971624166523 173.71428571428572,414.39789402179196 251.42857142857142,410.33424958204546 329.1428571428571,402.2069607025525 406.85714285714283,385.95238294356653 484.57142857142856,353.4432274255946 562.2857142857142,288.4249163896508 640.0,158.3882943177631" fill="none" stroke="var(--curS)" stroke-width="3.4" stroke-linejoin="round" stroke-dasharray=""/><circle cx="96.0" cy="416.42971624166523" r="5" fill="var(--curS)"/><circle cx="173.71428571428572" cy="414.39789402179196" r="5" fill="var(--curS)"/><circle cx="251.42857142857142" cy="410.33424958204546" r="5" fill="var(--curS)"/><circle cx="329.1428571428571" cy="402.2069607025525" r="5" fill="var(--curS)"/><circle cx="406.85714285714283" cy="385.95238294356653" r="5" fill="var(--curS)"/><circle cx="484.57142857142856" cy="353.4432274255946" r="5" fill="var(--curS)"/><circle cx="562.2857142857142" cy="288.4249163896508" r="5" fill="var(--curS)"/><circle cx="640.0" cy="158.3882943177631" r="5" fill="var(--curS)"/><text class="val" x="634.0" y="144.3882943177631" text-anchor="end">8 层：10^45</text><rect x="700" y="150" width="230" height="210" rx="12" fill="var(--panel)" stroke="var(--line)"/><text class="lb" x="718" y="182">曲线</text><path d="M718,207 L752,207" stroke="var(--curS)" stroke-width="3" stroke-dasharray=""/><text class="sm" x="762" y="212">幂次映射 x^(2^L)</text><path d="M718,241 L752,241" stroke="var(--inS)" stroke-width="3" stroke-dasharray=""/><text class="sm" x="762" y="246">ReLU 网络 w=1.5</text><path d="M718,275 L752,275" stroke="var(--stateS)" stroke-width="3" stroke-dasharray="7 5"/><text class="sm" x="762" y="280">w=1.0（恒等）</text><text class="sm" x="718" y="336">x=1.5；横轴为层数</text></svg></div><p class="cap">把非线性直接写成幂次，尺度会在少数几层内溢出；用线性变换 + 激活，放大幅度由权重控制，才留出可控的余地。</p></div></body></html>

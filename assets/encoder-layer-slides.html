@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一层编码器的计算过程</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;--accent:#3b5bdb;--hi:#e8efff;--box:#ffffff;--arr:#8b95a5}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--box:#232a36;--arr:#6b7688}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:760px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button{font:inherit;font-size:12.5px;padding:4px 10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#stepLabel{font-size:12.5px;color:var(--muted)}
+svg{display:block;width:100%;height:auto}
+.box{fill:var(--box);stroke:var(--line);stroke-width:1}
+.lbl{font-size:11px;fill:var(--fg)}
+.small{font-size:9.5px;fill:var(--muted)}
+.arr{stroke:var(--arr);stroke-width:1.2;fill:none;marker-end:url(#ah)}
+.res{stroke:var(--arr);stroke-width:1;fill:none;marker-end:url(#ah)}
+[data-step]{opacity:.45;transition:opacity .15s}
+[data-step].active{opacity:1}
+[data-step].active .box{stroke:var(--accent);fill:var(--hi);stroke-width:1.6}
+.desc{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:8px;margin-top:8px;min-height:52px}
+.cap{color:var(--muted);font-size:11.5px;margin:6px 0 0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<h1>一层编码器的计算过程</h1>
+<p class="sub">每一步都保留完整流程图，只高亮当前环节。d_model 是表示维数，N 是序列长度。</p>
+
+<div class="controls" role="group" aria-label="步骤控制">
+  <button id="prev" type="button">上一步</button>
+  <span id="stepLabel" aria-live="polite">第 1 / 5 步</span>
+  <button id="next" type="button">下一步</button>
+</div>
+
+<svg viewBox="0 0 620 520" role="img" aria-label="一层编码器的计算流程">
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--arr)"/>
+    </marker>
+  </defs>
+
+  <g data-step="5">
+    <rect class="box" x="230" y="34" width="170" height="30" rx="5"/>
+    <text class="lbl" x="246" y="54">X⁽¹⁾ (N × d_model)</text>
+  </g>
+  <line class="arr" x1="315" y1="90" x2="315" y2="64"/>
+
+  <g data-step="5">
+    <rect class="box" x="230" y="90" width="170" height="28" rx="5"/>
+    <text class="lbl" x="280" y="109">LayerNorm</text>
+  </g>
+  <line class="arr" x1="315" y1="145" x2="315" y2="118"/>
+
+  <g data-step="5">
+    <circle cx="315" cy="145" r="10" fill="var(--box)" stroke="var(--line)"/>
+    <text class="lbl" x="311" y="149">+</text>
+  </g>
+  <line class="arr" x1="315" y1="170" x2="315" y2="155"/>
+  <text class="small" x="324" y="222">F</text>
+
+  <g data-step="4">
+    <rect class="box" x="230" y="170" width="170" height="34" rx="5"/>
+    <text class="lbl" x="278" y="192">Feed Forward</text>
+  </g>
+  <line class="arr" x1="315" y1="215" x2="315" y2="204"/>
+
+  <g data-step="3">
+    <rect class="box" x="275" y="215" width="80" height="24" rx="5"/>
+    <text class="lbl" x="300" y="232">U</text>
+  </g>
+  <line class="arr" x1="315" y1="250" x2="315" y2="239"/>
+
+  <g data-step="3">
+    <rect class="box" x="230" y="250" width="170" height="28" rx="5"/>
+    <text class="lbl" x="280" y="269">LayerNorm</text>
+  </g>
+  <line class="arr" x1="315" y1="300" x2="315" y2="278"/>
+
+  <g data-step="3">
+    <circle cx="315" cy="300" r="10" fill="var(--box)" stroke="var(--line)"/>
+    <text class="lbl" x="311" y="304">+</text>
+  </g>
+  <line class="arr" x1="315" y1="330" x2="315" y2="310"/>
+
+  <g data-step="2">
+    <rect class="box" x="230" y="330" width="170" height="34" rx="5"/>
+    <text class="lbl" x="244" y="352">Multi-Head Attention</text>
+  </g>
+  <line class="arr" x1="315" y1="410" x2="315" y2="364"/>
+  <text class="small" x="324" y="386">A</text>
+
+  <g data-step="1">
+    <rect class="box" x="230" y="410" width="170" height="32" rx="5"/>
+    <text class="lbl" x="246" y="431">X⁽⁰⁾ (N × d_model)</text>
+  </g>
+
+  <path class="res" d="M400 426 C450 426 450 300 325 300"/>
+  <path class="res" d="M400 227 C460 227 460 145 325 145"/>
+  <text class="small" x="414" y="402">残差</text>
+  <text class="small" x="424" y="205">残差</text>
+
+  <text class="small" x="20" y="488">每一步的输入输出形状都是 N × d_model。</text>
+</svg>
+
+<div class="desc" id="desc" aria-live="polite"></div>
+<p class="cap">输入先进入多头自注意力，再与输入相加并归一化；之后进入 FFN，再次相加并归一化，得到这一层的输出。</p>
+
+<script>
+const steps = [
+  { title: "输入", text: "输入是序列表示矩阵 X⁽⁰⁾，形状为 N × d_model。N 是序列长度，d_model 是每个 Token 的表示维数。" },
+  { title: "多头自注意力", text: "查询、键、值都来自 X⁽⁰⁾。注意力汇总其他位置的信息，输出 A，形状与输入相同。" },
+  { title: "残差与归一化", text: "把 A 与 X⁽⁰⁾ 相加，再经过 LayerNorm，得到中间表示 U。残差让输入直接参与输出，归一化控制数值尺度。" },
+  { title: "前馈网络", text: "FFN 对每个位置独立做非线性变换，输出 F。位置之间不交换信息，所有位置共用同一套参数。" },
+  { title: "第二次残差与归一化", text: "把 F 与 U 相加，再经过 LayerNorm，得到这一层的输出 X⁽¹⁾。形状仍是 N × d_model。" }
+];
+const params = new URLSearchParams(location.search);
+let i = Math.max(0, Math.min(steps.length - 1, Number(params.get("step") || 1) - 1));
+const groups = [...document.querySelectorAll("[data-step]")];
+const desc = document.getElementById("desc");
+const label = document.getElementById("stepLabel");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+
+function render() {
+  groups.forEach(g => g.classList.toggle("active", Number(g.dataset.step) === i + 1));
+  desc.innerHTML = "<b>第 " + (i + 1) + " 步： " + steps[i].title + "。</b>" + steps[i].text;
+  label.textContent = "第 " + (i + 1) + " / " + steps.length + " 步";
+  prev.disabled = i === 0;
+  next.disabled = i === steps.length - 1;
+}
+prev.addEventListener("click", () => { if (i > 0) { i--; render(); } });
+next.addEventListener("click", () => { if (i < steps.length - 1) { i++; render(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" && i > 0) { i--; render(); }
+  if (e.key === "ArrowRight" && i < steps.length - 1) { i++; render(); }
+});
+render();
+</script>
+</body>
+</html>

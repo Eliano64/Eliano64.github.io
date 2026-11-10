@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>三个位置的展开、共享权重与三种读数</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--hi:#e8efff;--keep:#2f66b3;--write:#b44a35;--pos:#0b6b64;--neg:#a3231c}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--keep:#7fa8ee;--write:#ef9a83;--pos:#5eead4;--neg:#fca5a5}}
+*{box-sizing:border-box}
+svg{max-width:100%;height:auto;display:block}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:680px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+h2{font-size:13.5px;margin:0 0 5px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.cap{color:var(--muted);font-size:11.5px;margin:2px 0 4px}
+.note{color:var(--muted);font-size:11.5px}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+button{font:inherit;font-size:12.5px;padding:4px 9px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+button:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select{font:inherit;font-size:12.5px;padding:4px 8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px;margin:7px 0;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+.card b{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px;overflow-wrap:anywhere}
+.vec{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0}
+.vec span{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11px;background:var(--panel)}
+table.m{width:100%;border-collapse:collapse;font-size:11.5px}
+table.m th,table.m td{border-bottom:1px solid var(--line);padding:2px 4px;text-align:left;overflow-wrap:anywhere}
+table.m th{font-weight:600;color:var(--muted)}
+table.m td.n,table.m th.n{text-align:right;font-family:ui-monospace,Consolas,"Courier New",monospace;white-space:nowrap}
+details{border:1px solid var(--line);border-radius:7px;background:var(--panel);margin:8px 0;padding:0 9px}
+details[open]{padding-bottom:7px}
+summary{cursor:pointer;font-size:12px;color:var(--muted);padding:6px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<h1>三个位置的展开、共享权重与三种读数</h1>
+<p class="sub">同一组小参数在三个时间步复用。状态与读数由权重算出，参数未训练。</p>
+<div class="panel"><svg viewBox="0 0 420 232" width="100%" role="img" aria-label="三个位置的展开循环：共享 Wx、Wh、b，h1 到 h3 依次更新">
+<style>text{font-family:system-ui,-apple-system,"Noto Sans SC",sans-serif;fill:var(--fg)}.b{fill:none;stroke:var(--line);stroke-width:1.4}.a{stroke:var(--line);stroke-width:1.4;fill:none;marker-end:url(#ar)}.t{font-size:12px}.s{font-size:10.5px;fill:var(--muted)}</style>
+<defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--line)"/></marker></defs>
+<text class="s" x="6" y="85">h<tspan baseline-shift="sub">0</tspan> = 0</text>
+<rect class="b" x="55" y="8" width="90" height="30" rx="5"/>
+<text class="t" x="100" y="28" text-anchor="middle">x<tspan baseline-shift="sub">1</tspan> = 顾客</text>
+<rect class="b" x="55" y="66" width="90" height="38" rx="6"/>
+<text class="t" x="100" y="82" text-anchor="middle">h<tspan baseline-shift="sub">1</tspan></text>
+<text class="s" x="100" y="97" text-anchor="middle"><tspan id="h1v"></tspan></text>
+<path class="a" d="M100,38 V64"/>
+<rect class="b" x="55" y="132" width="90" height="34" rx="5"/>
+<text class="t" x="100" y="148" text-anchor="middle">任务头</text>
+<text class="s" x="100" y="162" text-anchor="middle">读 h<tspan baseline-shift="sub">1</tspan></text>
+<path class="a" d="M100,104 V130"/>
+<rect class="b" x="175" y="8" width="90" height="30" rx="5"/>
+<text class="t" x="220" y="28" text-anchor="middle">x<tspan baseline-shift="sub">2</tspan> = 不</text>
+<rect class="b" x="175" y="66" width="90" height="38" rx="6"/>
+<text class="t" x="220" y="82" text-anchor="middle">h<tspan baseline-shift="sub">2</tspan></text>
+<text class="s" x="220" y="97" text-anchor="middle"><tspan id="h2v"></tspan></text>
+<path class="a" d="M220,38 V64"/>
+<rect class="b" x="175" y="132" width="90" height="34" rx="5"/>
+<text class="t" x="220" y="148" text-anchor="middle">任务头</text>
+<text class="s" x="220" y="162" text-anchor="middle">读 h<tspan baseline-shift="sub">2</tspan></text>
+<path class="a" d="M220,104 V130"/>
+<rect class="b" x="295" y="8" width="90" height="30" rx="5"/>
+<text class="t" x="340" y="28" text-anchor="middle">x<tspan baseline-shift="sub">3</tspan> = 喜欢</text>
+<rect class="b" x="295" y="66" width="90" height="38" rx="6"/>
+<text class="t" x="340" y="82" text-anchor="middle">h<tspan baseline-shift="sub">3</tspan></text>
+<text class="s" x="340" y="97" text-anchor="middle"><tspan id="h3v"></tspan></text>
+<path class="a" d="M340,38 V64"/>
+<rect class="b" x="295" y="132" width="90" height="34" rx="5"/>
+<text class="t" x="340" y="148" text-anchor="middle">任务头</text>
+<text class="s" x="340" y="162" text-anchor="middle">读 h<tspan baseline-shift="sub">3</tspan></text>
+<path class="a" d="M340,104 V130"/>
+<path class="a" d="M145,85 H173"/>
+<path class="a" d="M265,85 H293"/>
+<text class="s" x="210" y="198" text-anchor="middle">三步共用同一组 W<tspan baseline-shift="sub">x</tspan>、W<tspan baseline-shift="sub">h</tspan>、b 与任务头</text>
+<text class="s" x="210" y="216" text-anchor="middle" font-size="9">h<tspan baseline-shift="sub">t</tspan> = tanh(W<tspan baseline-shift="sub">x</tspan>x<tspan baseline-shift="sub">t</tspan> + W<tspan baseline-shift="sub">h</tspan>h<tspan baseline-shift="sub">t−1</tspan> + b)</text>
+</svg></div>
+<div class="controls" role="group" aria-label="读数任务">
+<button type="button" id="r-cls" aria-pressed="true">整段分类：末状态</button>
+<button type="button" id="r-lab" aria-pressed="false">序列标注：逐位置</button>
+<button type="button" id="r-lm" aria-pressed="false">语言模型：逐位置</button>
+</div>
+<div class="controls" id="posbar" hidden>
+<span class="cap">位置</span>
+<select id="psel" aria-label="选择位置"><option value="0">t = 1</option><option value="1">t = 2</option><option value="2">t = 3</option></select>
+</div>
+<div id="readout"></div>
+<p class="note">同一组状态递推支撑三种任务；差别只在任务头读取哪些位置，以及任务头的输出维度。</p>
+<details>
+<summary>输入与共享参数</summary>
+<div id="params"></div>
+</details>
+<script>
+(function(){
+  "use strict";
+  var T=["顾客","不","喜欢","这部"];
+  var E=[[0.5,0.2],[-0.1,0.6],[0.4,-0.3],[0.2,0.5]];
+  var p={
+    Wx:[[1.2,-0.8],[0.4,1.5]], Wh:[[1,0.2],[-0.6,0.9]], b:[0,0.2],
+    Wy:[[1.2,0.3],[-0.9,1.5],[0.6,-0.6],[0.3,0.9]],
+    Wc:[[1,0.5],[-0.6,0.9],[0.3,-1.2]], bc:[0,0,0]
+  };
+  var ids=[0,1,2], clsNames=['正面','中性','负面'], lmTargets=[1,2,3];
+  var mode=0,pos=0;
+  function mv(W,v){return W.map(function(row){return row.reduce(function(s,val,i){return s+val*v[i];},0);});}
+  function add(a,b){return a.map(function(v,i){return v+b[i];});}
+  function fmt(a){return '['+a.map(function(v){return v.toFixed(3);}).join(', ')+']';}
+  function vec(a){return '<div class="vec">'+a.map(function(v){return '<span>'+v.toFixed(3)+'</span>';}).join('')+'</div>';}
+  function softmax(z){var m=Math.max.apply(null,z);var e=z.map(function(v){return Math.exp(v-m);});var s=e.reduce(function(a,b){return a+b;},0);return e.map(function(v){return v/s;});}
+  function forward(E,ids,p){
+    var h=[0,0],out=[];
+    ids.forEach(function(id){
+      var pre=add(add(mv(p.Wx,E[id]),mv(p.Wh,h)),p.b);
+      var nh=pre.map(Math.tanh);
+      out.push({id:id,x:E[id],pre:pre,h:nh});
+      h=nh;
+    });
+    return out;
+  }
+  function classLogits(h,p){return add(mv(p.Wc,h),p.bc);}
+  function lmLogits(h,p){return mv(p.Wy,h);}
+  var states=forward(E,ids,p);
+  function render(){
+    var h1=states[0].h,h2=states[1].h,h3=states[2].h;
+    if(mode===0){
+      var lg=classLogits(h3,p),pr=softmax(lg),best=pr.indexOf(Math.max.apply(null,pr));
+      document.getElementById('readout').innerHTML='<div class="panel"><h2>只读 h<sub>3</sub>，经 2→3 任务头得到三个类别得分</h2><div class="grid">'+
+        '<div class="card"><b>末状态 h<sub>3</sub></b>'+vec(h3)+'</div>'+
+        '<div class="card"><b>logits</b>'+vec(lg)+'</div>'+
+        '<div class="card"><b>softmax</b>'+vec(pr)+'</div>'+
+        '<div class="card"><b>最大值类别</b><div class="mono">'+clsNames[best]+'</div></div></div></div>';
+    }else if(mode===1){
+      var s=states[pos],lg=classLogits(s.h,p),pr=softmax(lg);
+      document.getElementById('readout').innerHTML='<div class="panel"><h2>t = '+(pos+1)+'：该位置的标签分布</h2><div class="card"><b>'+T[s.id]+' 的 h<sub>t</sub></b><div class="mono">h = '+fmt(s.h)+'</div><div class="mono">logits = '+fmt(lg)+'</div><div class="mono">softmax = '+fmt(pr)+'</div></div><p class="note">每个 h<sub>t</sub> 各接同一任务头；用上方位置选择查看另外两个位置。</p></div>';
+    }else{
+      var s=states[pos],lg=lmLogits(s.h,p),pr=softmax(lg),tg=lmTargets[pos];
+      document.getElementById('readout').innerHTML='<div class="panel"><h2>t = '+(pos+1)+'：预测下一个 token</h2><div class="card"><b>'+T[s.id]+' → '+T[tg]+'</b><div class="mono">h = '+fmt(s.h)+'</div>'+vec(pr)+'<div class="mono">p(目标) = '+pr[tg].toFixed(4)+'；−ln p = '+(-Math.log(pr[tg])).toFixed(4)+'</div></div><p class="note">输入与目标错开一位；用上方位置选择查看另外两个位置。</p></div>';
+    }
+    document.getElementById('posbar').hidden=(mode===0);
+    document.getElementById('h1v').textContent=fmt(h1);
+    document.getElementById('h2v').textContent=fmt(h2);
+    document.getElementById('h3v').textContent=fmt(h3);
+  }
+  function table(head,rows){
+    return '<table class="m"><thead><tr>'+head.map(function(x){return '<th class="n">'+x+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+r.map(function(x){return '<td class="n">'+x+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';
+  }
+  function paramsHTML(){
+    var h='<div class="grid"><div><div class="cap">嵌入表 E：4×2</div>'+table(['','e1','e2'],T.map(function(n,i){return [n,E[i][0].toFixed(3),E[i][1].toFixed(3)];}))+'</div>';
+    h+='<div><div class="cap">W<sub>x</sub>：2×2（H×D）</div>'+table(['','x1','x2'],[['h1',p.Wx[0][0].toFixed(3),p.Wx[0][1].toFixed(3)],['h2',p.Wx[1][0].toFixed(3),p.Wx[1][1].toFixed(3)]])+'</div>';
+    h+='<div><div class="cap">W<sub>h</sub>：2×2（H×H）</div>'+table(['','h1','h2'],[['h1',p.Wh[0][0].toFixed(3),p.Wh[0][1].toFixed(3)],['h2',p.Wh[1][0].toFixed(3),p.Wh[1][1].toFixed(3)]])+'</div>';
+    h+='<div><div class="cap">W<sub>y</sub>：4×2（V×H）</div>'+table(['','h1','h2'],T.map(function(n,i){return [n,p.Wy[i][0].toFixed(3),p.Wy[i][1].toFixed(3)];}))+'</div></div>';
+    h+='<div class="cap" style="margin-top:6px">3 类任务头 W<sub>c</sub>：3×2（C×H）；b<sub>c</sub> = '+fmt(p.bc)+'</div>'+table(['','h1','h2'],clsNames.map(function(n,i){return [n,p.Wc[i][0].toFixed(3),p.Wc[i][1].toFixed(3)];}));
+    h+='<div class="mono">b = '+fmt(p.b)+'，h<sub>0</sub> = [0, 0]，输入为“顾客 不 喜欢”。</div>';
+    h+='<div class="cap" style="margin-top:6px">逐个位置计算状态</div>'+table(['t','输入','W<sub>x</sub>x + W<sub>h</sub>h + b','h<sub>t</sub>'],states.map(function(s,i){return [i+1,T[s.id],fmt(s.pre),fmt(s.h)];}));
+    return h;
+  }
+  document.getElementById('params').innerHTML=paramsHTML();
+  var ids3=[['r-cls',0],['r-lab',1],['r-lm',2]];
+  ids3.forEach(function(pair){
+    document.getElementById(pair[0]).addEventListener('click',function(){
+      mode=pair[1];
+      ids3.forEach(function(q){document.getElementById(q[0]).setAttribute('aria-pressed',String(q[1]===mode));});
+      render();
+    });
+  });
+  document.getElementById('psel').addEventListener('change',function(){pos=Number(this.value);render();});
+  window.__modelTest={inputs:{T:T,E:E,ids:ids},params:p,compute:{matVec:mv,softmax:softmax,forward:function(E,ids,p){return forward(E,ids,p);},classLogits:classLogits,lmLogits:lmLogits,step:function(x,h,p){var pre=add(add(mv(p.Wx,x),mv(p.Wh,h)),p.b);return {pre:pre,h:pre.map(Math.tanh)};}}};
+  render();
+})();
+</script>
+</body>
+</html>

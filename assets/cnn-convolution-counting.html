@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卷积窗口计数与权重共享</title>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#1b1f24; --muted:#4d5865; --line:#b9c3ce; --cell:#f4f7fa;
+    --hot:#dbe6ff; --warm:#fde9c8; --mark:#b45309; --accent:#3b5bdb; --panel:#f7f9fc;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14171c; --ink:#e8ebf0; --muted:#a7b1be; --line:#3b434e; --cell:#1d222a;
+      --hot:#2a3a5c; --warm:#4a3414; --mark:#fbbf24; --accent:#8fa6ff; --panel:#191e26;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{background:var(--bg)}
+  body{
+    margin:0; color:var(--ink);
+    font:13px/1.45 system-ui,-apple-system,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  main{max-width:650px; margin:0 auto; padding:8px 10px 10px}
+  .title{font-size:16px; font-weight:600; margin:0 0 2px}
+  .sub{color:var(--muted); font-size:12px; margin:0 0 7px}
+  .controls{
+    display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px 8px;
+    padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--panel);
+  }
+  .controls label{display:flex; flex-direction:column; gap:2px; font-size:11px; color:var(--muted)}
+  .controls input{
+    width:100%; min-width:0; padding:3px 5px; border:1px solid var(--line); border-radius:4px;
+    background:var(--cell); color:var(--ink); font:inherit; font-size:12.5px;
+  }
+  .controls input:focus-visible, select:focus-visible{outline:2px solid var(--mark); outline-offset:1px}
+  .steps{display:flex; gap:6px; margin-top:7px}
+  .step{
+    font:inherit; font-size:11.5px; padding:5px 10px; border:1px solid var(--line);
+    border-radius:6px; background:var(--cell); color:var(--ink); cursor:pointer;
+  }
+  .step.active{background:var(--hot); border-color:var(--accent); font-weight:600}
+  .step:focus-visible{outline:2px solid var(--mark); outline-offset:1px}
+  .view{border:1px solid var(--line); border-radius:8px; padding:8px; margin-top:7px; background:var(--panel)}
+  .view[hidden]{display:none}
+  .viewhead{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px}
+  .viewhead h3{font-size:13px; margin:0}
+  .badge{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .label{font-size:11px; color:var(--muted); margin:5px 0 3px}
+  .gridrow{display:grid; grid-template-columns:repeat(var(--len,7),minmax(0,1fr)); gap:2px; width:100%}
+  .cell{
+    aspect-ratio:1; min-width:0; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); background:var(--cell);
+    font-size:clamp(10px,2.7vw,12.5px); font-variant-numeric:tabular-nums;
+  }
+  .cell.pad{border-style:dashed; color:var(--muted); background:transparent}
+  .cell.win{background:var(--warm); outline:2px solid var(--mark); outline-offset:-2px}
+  .cell.outcell{background:var(--hot); border-color:var(--accent); color:var(--ink)}
+  .cell.outcell.sel{outline:2px solid var(--mark); outline-offset:-2px}
+  .ghost{border:none}
+  .empty{grid-column:1 / -1; color:var(--muted); font-size:11px; padding:4px 0}
+  .readouts{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
+    gap:3px 10px; margin-top:5px; font-size:11.2px; color:var(--muted);
+  }
+  .inlinerow{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:5px 0 3px}
+  .label.inline{margin:0}
+  .readouts b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums}
+  .selects{display:flex; gap:5px; align-items:center; flex-wrap:wrap}
+  .selects select{
+    font:inherit; font-size:10.5px; padding:2px 4px; border:1px solid var(--line);
+    border-radius:4px; background:var(--cell); color:var(--ink); max-width:132px;
+  }
+  .slices{display:flex; flex-wrap:wrap; gap:7px; margin-top:2px}
+  .slice{border:1px solid var(--line); border-radius:4px; padding:3px 4px; background:var(--bg)}
+  .slice .name{font-size:10px; color:var(--muted); margin-bottom:2px}
+  .kgrid{display:grid; grid-template-columns:repeat(var(--k,3),22px); gap:1px}
+  .wcell{
+    width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); background:var(--cell); color:var(--muted); font-size:9.5px;
+  }
+  .chips{display:flex; flex-wrap:wrap; gap:4px}
+  .chip{
+    font-size:10px; padding:1px 5px; border:1px solid var(--line); border-radius:999px;
+    color:var(--muted); font-variant-numeric:tabular-nums;
+  }
+  .chip.sel{background:var(--hot); border-color:var(--accent); color:var(--ink)}
+  .caption{font-size:10.5px; color:var(--muted); margin:3px 0 0}
+  .note{font-size:10.5px; color:var(--muted); margin:7px 0 0}
+</style>
+</head>
+<body>
+<main id="card">
+  <p class="title">卷积窗口计数与权重共享</p>
+  <p class="sub">一维计数，高和宽分别套用。一个输出位置对应一个完整落在边界内的窗口。</p>
+
+  <section class="controls" aria-label="模型参数">
+    <label>输入长度 n<input id="n" data-key="n" type="number" min="4" max="12" value="7"></label>
+    <label>窗口宽 k<input id="k" data-key="k" type="number" min="1" max="5" value="3"></label>
+    <label>每侧补零 p<input id="p" data-key="p" type="number" min="0" max="2" value="0"></label>
+    <label>步幅 s<input id="s" data-key="s" type="number" min="1" max="3" value="2"></label>
+    <label>输入通道 Cin<input id="cin" data-key="cin" type="number" min="1" max="3" value="2"></label>
+    <label>输出通道 Cout<input id="cout" data-key="cout" type="number" min="1" max="3" value="3"></label>
+  </section>
+
+  <div class="steps" role="group" aria-label="卡片视图">
+    <button type="button" class="step active" data-panel="panelPos" aria-pressed="true">输出位置</button>
+    <button type="button" class="step" data-panel="panelParam" aria-pressed="false">权重数量</button>
+  </div>
+
+  <section class="view" id="panelPos" aria-labelledby="outTitle">
+    <div class="viewhead">
+      <h3 id="outTitle">输出位置</h3>
+      <span class="badge" id="countBadge" aria-live="polite"></span>
+    </div>
+    <p class="label" id="padLabel">含补零的可用长度</p>
+    <div class="gridrow" id="padGrid" aria-label="含补零的输入格子"></div>
+    <p class="label" id="outLabel">输出位置</p>
+    <div class="gridrow" id="outGrid" aria-label="输出位置格子"></div>
+    <div class="readouts" id="countReadout"></div>
+  </section>
+
+  <section class="view" id="panelParam" aria-labelledby="paramTitle" hidden>
+    <div class="viewhead">
+      <h3 id="paramTitle">权重数量</h3>
+      <div class="selects">
+        <select id="windowSel" aria-label="选择窗口"></select>
+        <select id="filterSel" aria-label="选择输出通道"></select>
+      </div>
+    </div>
+    <p class="label" id="kernelLabel"></p>
+    <div class="inlinerow"><span class="label inline">独立权重组</span><div class="chips" id="filterGroups"></div></div>
+    <div class="slices" id="kernelSlices" aria-label="所选输出通道的权重组"></div>
+    <p class="caption">每个小格是一个独立权重。</p>
+    <p class="label">偏置：每个输出通道一个</p>
+    <div class="chips" id="biasRow"></div>
+    <div class="readouts" id="paramReadout"></div>
+  </section>
+
+</main>
+
+<script>
+  const DEFAULTS = {n:7, k:3, p:0, s:2, cin:2, cout:3, window:0, filter:0};
+  const state = {...DEFAULTS};
+
+  function clampInt(value, min, max) {
+    const v = Math.trunc(Number(value));
+    if (!Number.isFinite(v)) return min;
+    return Math.min(max, Math.max(min, v));
+  }
+
+  function compute(m) {
+    const n = Math.max(1, Math.trunc(Number(m.n) || 1));
+    const k = Math.max(1, Math.trunc(Number(m.k) || 1));
+    const p = Math.max(0, Math.trunc(Number(m.p) || 0));
+    const s = Math.max(1, Math.trunc(Number(m.s) || 1));
+    const cin = Math.max(1, Math.trunc(Number(m.cin) || 1));
+    const cout = Math.max(1, Math.trunc(Number(m.cout) || 1));
+    const effective = n + 2 * p;
+    const raw = effective - k;
+    const valid = raw >= 0;
+    const moves = valid ? Math.floor(raw / s) : 0;
+    const count = valid ? moves + 1 : 0;
+    const starts = Array.from({length: count}, (_, i) => i * s);
+    const weightPerFilter = cin * k * k;
+    const weights = cout * weightPerFilter;
+    const biases = cout;
+    return {
+      n, k, p, s, cin, cout, effective, raw, valid, moves,
+      count, starts, validStarts: starts,
+      weightPerFilter, weights, biases, total: weights + biases,
+      outputPositions1d: count, outputPositions2d: count * count
+    };
+  }
+
+  function addRead(box, name, value) {
+    const span = document.createElement('span');
+    span.textContent = `${name}：`;
+    const b = document.createElement('b');
+    b.textContent = value;
+    span.appendChild(b);
+    box.appendChild(span);
+  }
+
+  function setLen(el, len) {
+    el.style.setProperty('--len', String(Math.max(1, len)));
+  }
+
+  function fillSelect(sel, count, label, selected) {
+    sel.textContent = '';
+    if (count === 0) {
+      const option = document.createElement('option');
+      option.value = '0';
+      option.textContent = '无';
+      sel.appendChild(option);
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    for (let i = 0; i < count; i++) {
+      const option = document.createElement('option');
+      option.value = String(i);
+      option.textContent = `${label} ${i}`;
+      sel.appendChild(option);
+    }
+    sel.value = String(selected);
+  }
+
+  function render() {
+    const c = compute(state);
+    if (c.count === 0) state.window = 0;
+    else state.window = Math.min(state.window, c.count - 1);
+    state.filter = Math.min(state.filter, c.cout - 1);
+
+    fillSelect(document.getElementById('windowSel'), c.count, '窗口', state.window);
+    fillSelect(document.getElementById('filterSel'), c.cout, '输出通道', state.filter);
+
+    const start = c.count > 0 ? c.starts[state.window] : null;
+
+    document.getElementById('countBadge').textContent = c.valid
+      ? `输出 ${c.count} 个位置`
+      : '没有输出位置';
+    document.getElementById('padLabel').textContent = `含补零的可用长度：${c.effective}`;
+    document.getElementById('outLabel').textContent = `输出位置：${c.count}`;
+
+    const pad = document.getElementById('padGrid');
+    pad.textContent = '';
+    setLen(pad, c.effective);
+    for (let i = 0; i < c.effective; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const isPad = i < c.p || i >= c.p + c.n;
+      if (isPad) {
+        cell.classList.add('pad');
+        cell.textContent = '补';
+      } else {
+        cell.textContent = String(i - c.p);
+      }
+      if (start !== null && i >= start && i < start + c.k) cell.classList.add('win');
+      pad.appendChild(cell);
+    }
+
+    const out = document.getElementById('outGrid');
+    out.textContent = '';
+    setLen(out, c.effective);
+    if (c.count === 0) {
+      const msg = document.createElement('div');
+      msg.className = 'empty';
+      msg.textContent = '窗口宽超过可用长度，没有合法起点。';
+      out.appendChild(msg);
+    } else {
+      const startSet = new Set(c.starts);
+      for (let i = 0; i < c.effective; i++) {
+        if (startSet.has(i)) {
+          const outIndex = c.starts.indexOf(i);
+          const cell = document.createElement('div');
+          cell.className = 'cell outcell' + (outIndex === state.window ? ' sel' : '');
+          cell.textContent = `y${outIndex}`;
+          out.appendChild(cell);
+        } else {
+          const ghost = document.createElement('div');
+          ghost.className = 'ghost';
+          out.appendChild(ghost);
+        }
+      }
+    }
+
+    const countRead = document.getElementById('countReadout');
+    countRead.textContent = '';
+    addRead(countRead, '可用长度', `${c.effective} = ${c.n} + 2×${c.p}`);
+    addRead(countRead, '剩余空间', `${c.raw} = ${c.effective} − ${c.k}`);
+    if (c.valid) {
+      addRead(countRead, '完整右移', `${c.moves} 次 = floor(${c.raw} / ${c.s})`);
+      addRead(countRead, '输出位置', `${c.count} = ${c.moves} + 1`);
+      addRead(countRead, '起点', c.starts.join('、'));
+      addRead(countRead, '当前窗口', `起点 ${start}，覆盖 ${start} 到 ${start + c.k - 1}`);
+    } else {
+      addRead(countRead, '结果', '没有合法起点');
+      addRead(countRead, '当前窗口', '无');
+    }
+
+    document.getElementById('kernelLabel').textContent =
+      `输出通道 ${state.filter} 的权重组：${c.cin} 个输入通道，每个 ${c.k}×${c.k} 个权重`;
+
+    const groups = document.getElementById('filterGroups');
+    groups.textContent = '';
+    for (let f = 0; f < c.cout; f++) {
+      const chip = document.createElement('span');
+      chip.className = 'chip' + (f === state.filter ? ' sel' : '');
+      chip.textContent = `组 ${f}`;
+      groups.appendChild(chip);
+    }
+
+    const slices = document.getElementById('kernelSlices');
+    slices.textContent = '';
+    for (let ci = 0; ci < c.cin; ci++) {
+      const box = document.createElement('div');
+      box.className = 'slice';
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = `输入通道 ${ci}`;
+      box.appendChild(name);
+      const grid = document.createElement('div');
+      grid.className = 'kgrid';
+      grid.style.setProperty('--k', String(c.k));
+      for (let r = 0; r < c.k; r++) {
+        for (let col = 0; col < c.k; col++) {
+          const cell = document.createElement('div');
+          cell.className = 'wcell';
+          cell.textContent = 'w';
+          cell.title = `w[${ci}][${r}][${col}]`;
+          grid.appendChild(cell);
+        }
+      }
+      box.appendChild(grid);
+      slices.appendChild(box);
+    }
+
+    const bias = document.getElementById('biasRow');
+    bias.textContent = '';
+    for (let f = 0; f < c.cout; f++) {
+      const chip = document.createElement('span');
+      chip.className = 'chip' + (f === state.filter ? ' sel' : '');
+      chip.textContent = `b${f}`;
+      bias.appendChild(chip);
+    }
+
+    const paramRead = document.getElementById('paramReadout');
+    paramRead.textContent = '';
+    addRead(paramRead, '每组权重', `${c.weightPerFilter} = ${c.cin} × ${c.k} × ${c.k}`);
+    addRead(paramRead, '权重总数', `${c.weights} = ${c.cout} × ${c.weightPerFilter}`);
+    addRead(paramRead, '偏置', `${c.biases} = ${c.cout}`);
+    addRead(paramRead, '参数合计', `${c.total}`);
+    addRead(paramRead, '一维位置', `${c.count} 个，每个位置复用同一组权重`);
+    addRead(paramRead, '空间设置', 'n、p、s 影响窗口位置，不增加独立参数');
+  }
+
+  document.querySelectorAll('input[type="number"]').forEach((input) => {
+    input.addEventListener('input', () => {
+      if (input.value === '') return;
+      const min = Number(input.min);
+      const max = Number(input.max);
+      const value = clampInt(input.value, min, max);
+      state[input.dataset.key] = value;
+      if (input.dataset.key === 'cout') {
+        state.filter = Math.min(state.filter, value - 1);
+      }
+      if (['n', 'k', 'p', 's'].includes(input.dataset.key)) {
+        state.window = 0;
+      }
+      render();
+    });
+    input.addEventListener('change', () => {
+      input.value = String(state[input.dataset.key]);
+    });
+  });
+
+  document.getElementById('windowSel').addEventListener('change', (event) => {
+    state.window = Number(event.target.value);
+    render();
+  });
+  document.getElementById('filterSel').addEventListener('change', (event) => {
+    state.filter = Number(event.target.value);
+    render();
+  });
+
+  const steps = document.querySelectorAll('.step');
+  steps.forEach((step) => {
+    step.addEventListener('click', () => {
+      steps.forEach((other) => {
+        const active = other === step;
+        other.classList.toggle('active', active);
+        other.setAttribute('aria-pressed', String(active));
+        const panel = document.getElementById(other.dataset.panel);
+        if (panel) panel.hidden = !active;
+      });
+    });
+  });
+
+  window.__modelTest = {model: state, compute};
+  render();
+</script>
+</body>
+</html>

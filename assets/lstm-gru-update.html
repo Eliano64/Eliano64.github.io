@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LSTM 与 GRU：同一步的状态更新</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--hi:#e8efff;--keep:#2f66b3;--write:#b44a35;--pos:#0b6b64;--neg:#a3231c}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--keep:#7fa8ee;--write:#ef9a83;--pos:#5eead4;--neg:#fca5a5}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:680px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+h2{font-size:13.5px;margin:0 0 5px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.cap{color:var(--muted);font-size:11.5px;margin:2px 0 4px}
+.note{color:var(--muted);font-size:11.5px}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+button{font:inherit;font-size:12.5px;padding:4px 10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px;margin:7px 0;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px}
+.compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:7px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+.card b{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px;overflow-wrap:anywhere}
+.vec{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0}
+.vec span{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11px;background:var(--panel)}
+.flow{display:flex;flex-direction:column;gap:1px;margin:4px 0}
+.node{border:1px solid var(--line);border-radius:5px;background:var(--bg);padding:3px 8px;font-size:12px}
+.node b{color:var(--muted);font-weight:500;font-size:11px;margin-right:5px}
+.node.hot{border-color:var(--accent)}
+.arrow{width:1.5px;height:9px;background:var(--line);margin-left:14px}
+.bar{display:grid;grid-template-columns:76px 1fr 58px;gap:5px;align-items:center;font-size:11px;margin:2px 0}
+.track{position:relative;background:var(--line);border-radius:3px;height:10px;overflow:hidden}
+.axis{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--muted);opacity:.5}
+.fill2{position:absolute;top:0;height:10px;background:var(--keep)}
+.fill2.write{background:var(--write)}
+.v{font-family:ui-monospace,Consolas,"Courier New",monospace;text-align:right;font-size:10.5px}
+details{border:1px solid var(--line);border-radius:7px;background:var(--panel);margin:8px 0;padding:0 9px}
+details[open]{padding-bottom:7px}
+summary{cursor:pointer;font-size:12px;color:var(--muted);padding:6px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<h1>LSTM 与 GRU：同一步的状态更新</h1>
+<p class="sub">同一输入 x = [0.800, 0.500]、上一步 h = [0.300, 0.200]、LSTM 上一步 c = [0.600, 0.400]。门值由权重与偏置算出，参数未训练。</p>
+<div class="controls" role="group" aria-label="单元类型">
+<button type="button" id="b-lstm" aria-pressed="true">LSTM</button>
+<button type="button" id="b-gru" aria-pressed="false">GRU</button>
+</div>
+<div class="controls" role="group" aria-label="更新视图">
+<span class="cap">步骤</span>
+<button type="button" id="s-compare" aria-pressed="true">对照</button>
+<button type="button" id="s-state" aria-pressed="false">状态更新</button>
+<button type="button" id="s-gates" aria-pressed="false">门值</button>
+</div>
+<div id="unit"></div>
+<p class="note">两种单元的参数量与状态空间不同，这里只对照同一步的计算路径。</p>
+<script>
+(function(){
+  "use strict";
+  var model={
+    x:[0.8,0.5], h:[0.3,0.2], c:[0.6,0.4],
+    lstm:{
+      WF:[[0.5,0.1,0.2,-0.3],[0,0.4,-0.1,0.2]], bF:[0.5,0.4],
+      WI:[[0.3,-0.2,0.4,0.1],[0.1,0.3,0,0.2]], bI:[-0.3,-0.2],
+      WC:[[0.6,0.2,0.3,-0.1],[-0.2,0.5,0.1,0.4]], bC:[0.1,-0.1],
+      WO:[[0.2,0.4,0.1,0.3],[0.3,-0.1,0.2,0.2]], bO:[0,0.1]
+    },
+    gru:{
+      z:{Wx:[[0.4,0.1],[0.2,0.3]],bx:[0.1,0],Wh:[[0.3,-0.2],[0.1,0.4]],bh:[0,0.1]},
+      r:{Wx:[[0.2,0.3],[-0.1,0.4]],bx:[0,0.1],Wh:[[0.5,0.1],[-0.2,0.3]],bh:[0.1,-0.1]},
+      n:{Wx:[[0.3,-0.1],[0.2,0.5]],bx:[0.1,0],Wh:[[0.4,0.2],[-0.3,0.6]],bh:[0,0.1]}
+    }
+  };
+  var unit='lstm',sub='compare';
+  function mv(W,v){return W.map(function(row){return row.reduce(function(s,a,i){return s+a*v[i];},0);});}
+  function add(a,b){return a.map(function(v,i){return v+b[i];});}
+  function mul(a,b){return a.map(function(v,i){return v*b[i];});}
+  function sigmoid(v){return 1/(1+Math.exp(-v));}
+  function fmt(a){return '['+a.map(function(v){return v.toFixed(3);}).join(', ')+']';}
+  function vec(a){return '<div class="vec">'+a.map(function(v){return '<span>'+v.toFixed(3)+'</span>';}).join('')+'</div>';}
+  function lstmStep(p,x,h,c){
+    var v=h.concat(x);
+    var preF=add(mv(p.WF,v),p.bF),preI=add(mv(p.WI,v),p.bI),preC=add(mv(p.WC,v),p.bC),preO=add(mv(p.WO,v),p.bO);
+    var f=preF.map(sigmoid),i=preI.map(sigmoid),ct=preC.map(Math.tanh),o=preO.map(sigmoid);
+    var retained=mul(f,c),written=mul(i,ct),cnew=add(retained,written),tc=cnew.map(Math.tanh),hnew=mul(o,tc);
+    return {v:v,preF:preF,preI:preI,preC:preC,preO:preO,f:f,i:i,ct:ct,o:o,retained:retained,written:written,cnew:cnew,tc:tc,hnew:hnew};
+  }
+  function gruStep(p,x,h){
+    var zPre=add(add(add(mv(p.z.Wx,x),mv(p.z.Wh,h)),p.z.bx),p.z.bh);
+    var rPre=add(add(add(mv(p.r.Wx,x),mv(p.r.Wh,h)),p.r.bx),p.r.bh);
+    var z=zPre.map(sigmoid),r=rPre.map(sigmoid);
+    var rec=add(mv(p.n.Wh,h),p.n.bh);
+    var candPre=add(add(mv(p.n.Wx,x),p.n.bx),mul(r,rec));
+    var n=candPre.map(Math.tanh);
+    var retained=mul(z,h),candidate=mul(z.map(function(v){return 1-v;}),n),hnew=add(retained,candidate);
+    return {zPre:zPre,rPre:rPre,z:z,r:r,rec:rec,candPre:candPre,n:n,retained:retained,candidate:candidate,hnew:hnew};
+  }
+  function bar(label,value,max,cls){
+    var pct=Math.min(50,Math.abs(value)/max*50).toFixed(1);
+    var side=value>=0?'left:50%':'right:50%';
+    return '<div class="bar"><span>'+label+'</span><div class="track"><div class="axis"></div><div class="fill2 '+cls+'" style="'+side+';width:'+pct+'%"></div></div><span class="v">'+(value>0?'+':'')+value.toFixed(3)+'</span></div>';
+  }
+  function gateCard(label,pre,g){return '<div class="card"><b>'+label+'</b><div class="mono">激活前 '+fmt(pre)+'</div>'+vec(g)+'</div>';}
+  function lstmParams(p){
+    return '<div class="mono">W_f = '+JSON.stringify(p.WF)+'；b_f = '+JSON.stringify(p.bF)+'</div>'+
+      '<div class="mono">W_i = '+JSON.stringify(p.WI)+'；b_i = '+JSON.stringify(p.bI)+'</div>'+
+      '<div class="mono">W_c = '+JSON.stringify(p.WC)+'；b_c = '+JSON.stringify(p.bC)+'</div>'+
+      '<div class="mono">W_o = '+JSON.stringify(p.WO)+'；b_o = '+JSON.stringify(p.bO)+'</div>'+
+      '<div class="mono">x = '+JSON.stringify(model.x)+'；h = '+JSON.stringify(model.h)+'；c = '+JSON.stringify(model.c)+'</div>';
+  }
+  function gruParams(p){
+    function g(name,q){return '<div class="mono">'+name+'：W_x = '+JSON.stringify(q.Wx)+'，b_x = '+JSON.stringify(q.bx)+'，W_h = '+JSON.stringify(q.Wh)+'，b_h = '+JSON.stringify(q.bh)+'</div>';}
+    return g('更新门',p.z)+g('重置门',p.r)+g('候选',p.n)+'<div class="mono">x = '+JSON.stringify(model.x)+'；h = '+JSON.stringify(model.h)+'</div>';
+  }
+  function compareView(){
+    var rl=lstmStep(model.lstm,model.x,model.h,model.c),rg=gruStep(model.gru,model.x,model.h);
+    var h='<div class="panel"><h2>同一步的状态对照</h2><div class="compare">';
+    h+='<div class="card"><b>LSTM：保留与写入分开，c 与 h 分工</b>';
+    h+='<div class="mono">保留 f ⊙ c = '+fmt(rl.retained)+'</div><div class="mono">写入 i ⊙ c̃ = '+fmt(rl.written)+'</div>';
+    h+='<div class="mono">c<sub>t</sub> = '+fmt(rl.cnew)+'</div><div class="mono">h<sub>t</sub> = '+fmt(rl.hnew)+'</div></div>';
+    h+='<div class="card"><b>GRU：一份状态，保留与候选相加</b>';
+    h+='<div class="mono">保留 z ⊙ h = '+fmt(rg.retained)+'</div><div class="mono">候选 (1 − z) ⊙ n = '+fmt(rg.candidate)+'</div>';
+    h+='<div class="mono">h<sub>t</sub> = '+fmt(rg.hnew)+'（同时是状态与输出）</div></div>';
+    h+='</div></div>';
+    document.getElementById('unit').innerHTML=h;
+  }
+  function render(){
+    if(sub==='compare'){compareView();return;}
+    var p=unit==='lstm'?model.lstm:model.gru;
+    if(unit==='lstm'){
+      var r=lstmStep(p,model.x,model.h,model.c);
+      var h='<div class="panel"><h2>LSTM：分开保存与输出</h2>';
+      if(sub==='state'){
+        h+='<div class="flow">';
+        h+='<div class="node"><b>上一步</b>c<sub>t−1</sub> = '+fmt(model.c)+'</div><div class="arrow"></div>';
+        h+='<div class="node"><b>保留</b>f<sub>t</sub> ⊙ c<sub>t−1</sub> = '+fmt(r.retained)+'</div><div class="arrow"></div>';
+        h+='<div class="node"><b>写入</b>i<sub>t</sub> ⊙ c̃<sub>t</sub> = '+fmt(r.written)+'</div><div class="arrow"></div>';
+        h+='<div class="node"><b>相加</b>c<sub>t</sub> = '+fmt(r.cnew)+'</div><div class="arrow"></div>';
+        h+='<div class="node"><b>读出</b>tanh(c<sub>t</sub>) = '+fmt(r.tc)+'</div><div class="arrow"></div>';
+        h+='<div class="node hot"><b>本步输出</b>h<sub>t</sub> = o<sub>t</sub> ⊙ tanh(c<sub>t</sub>) = '+fmt(r.hnew)+'</div></div>';
+        h+='<p class="mono">c<sub>t</sub> = f<sub>t</sub> ⊙ c<sub>t−1</sub> + i<sub>t</sub> ⊙ c̃<sub>t</sub>；h<sub>t</sub> = o<sub>t</sub> ⊙ tanh(c<sub>t</sub>)。拼接顺序为 [h<sub>t−1</sub>; x<sub>t</sub>]。</p>';
+      }else{
+        h+='<div class="grid">'+gateCard('遗忘门 f = σ(·)',r.preF,r.f)+gateCard('输入门 i = σ(·)',r.preI,r.i)+gateCard('候选 c̃ = tanh(·)',r.preC,r.ct)+gateCard('输出门 o = σ(·)',r.preO,r.o)+'</div>';
+        h+='<p class="mono">c<sub>t</sub> = '+fmt(r.retained)+' + '+fmt(r.written)+' = '+fmt(r.cnew)+'；h<sub>t</sub> = '+fmt(r.hnew)+'</p>';
+        var max=Math.max.apply(null,r.retained.concat(r.written).map(Math.abs))||1;
+        h+='<details><summary>分量对比</summary><div class="cap">c<sub>t</sub> 的两个来源：保留量与写入量（零轴左侧为负）</div>'+bar('第 1 维保留',r.retained[0],max,'')+bar('第 1 维写入',r.written[0],max,'write')+bar('第 2 维保留',r.retained[1],max,'')+bar('第 2 维写入',r.written[1],max,'write')+'</details>';
+      }
+      h+='<details><summary>输入与权重</summary>'+lstmParams(p)+'</details></div>';
+      document.getElementById('unit').innerHTML=h;
+    }else{
+      var r=gruStep(p,model.x,model.h);
+      var h='<div class="panel"><h2>GRU：两个门与一份状态</h2>';
+      if(sub==='state'){
+        h+='<div class="flow">';
+        h+='<div class="node"><b>上一步</b>h<sub>t−1</sub> = '+fmt(model.h)+'</div><div class="arrow"></div>';
+        h+='<div class="node"><b>保留</b>z<sub>t</sub> ⊙ h<sub>t−1</sub> = '+fmt(r.retained)+'</div><div class="arrow"></div>';
+        h+='<div class="node"><b>候选</b>(1 − z<sub>t</sub>) ⊙ n<sub>t</sub> = '+fmt(r.candidate)+'</div><div class="arrow"></div>';
+        h+='<div class="node hot"><b>本步输出</b>h<sub>t</sub> = '+fmt(r.hnew)+'（同时作为状态）</div></div>';
+        h+='<p class="mono">z<sub>t</sub> = σ(W<sub>xz</sub>x<sub>t</sub> + b<sub>xz</sub> + W<sub>hz</sub>h<sub>t−1</sub> + b<sub>hz</sub>)；r<sub>t</sub> = σ(W<sub>xr</sub>x<sub>t</sub> + b<sub>xr</sub> + W<sub>hr</sub>h<sub>t−1</sub> + b<sub>hr</sub>)</p>';
+        h+='<p class="mono">n<sub>t</sub> = tanh(W<sub>xn</sub>x<sub>t</sub> + b<sub>xn</sub> + r<sub>t</sub> ⊙ (W<sub>hn</sub>h<sub>t−1</sub> + b<sub>hn</sub>))；h<sub>t</sub> = (1 − z<sub>t</sub>) ⊙ n<sub>t</sub> + z<sub>t</sub> ⊙ h<sub>t−1</sub></p>';
+      }else{
+        h+='<div class="grid">'+gateCard('更新门 z = σ(·)',r.zPre,r.z)+gateCard('重置门 r = σ(·)',r.rPre,r.r)+gateCard('候选 n = tanh(·)',r.candPre,r.n)+'<div class="card"><b>重置后的循环项</b><div class="mono">W<sub>hn</sub>h + b<sub>hn</sub> = '+fmt(r.rec)+'</div><div class="mono">r ⊙ 这一项 = '+fmt(mul(r.r,r.rec))+'</div></div></div>';
+        h+='<p class="mono">h<sub>t</sub> = '+fmt(r.retained)+' + '+fmt(r.candidate)+' = '+fmt(r.hnew)+'</p>';
+        var max=Math.max.apply(null,r.retained.concat(r.candidate).map(Math.abs))||1;
+        h+='<details><summary>分量对比</summary><div class="cap">h<sub>t</sub> 的两个来源：旧状态与候选（零轴左侧为负）</div>'+bar('第 1 维保留',r.retained[0],max,'')+bar('第 1 维候选',r.candidate[0],max,'write')+bar('第 2 维保留',r.retained[1],max,'')+bar('第 2 维候选',r.candidate[1],max,'write')+'</details>';
+      }
+      h+='<details><summary>输入与权重</summary>'+gruParams(p)+'</details></div>';
+      document.getElementById('unit').innerHTML=h;
+    }
+  }
+  var bl=document.getElementById('b-lstm'),bg=document.getElementById('b-gru');
+  var sc=document.getElementById('s-compare'),ss=document.getElementById('s-state'),sg=document.getElementById('s-gates');
+  function subButtons(){sc.setAttribute('aria-pressed',String(sub==='compare'));ss.setAttribute('aria-pressed',String(sub==='state'));sg.setAttribute('aria-pressed',String(sub==='gates'));}
+  function pickUnit(u){unit=u;if(sub==='compare')sub='state';subButtons();bl.setAttribute('aria-pressed',String(unit==='lstm'));bg.setAttribute('aria-pressed',String(unit==='gru'));render();}
+  bl.addEventListener('click',function(){pickUnit('lstm');});
+  bg.addEventListener('click',function(){pickUnit('gru');});
+  sc.addEventListener('click',function(){sub='compare';subButtons();render();});
+  ss.addEventListener('click',function(){sub='state';subButtons();render();});
+  sg.addEventListener('click',function(){sub='gates';subButtons();render();});
+  window.__modelTest={inputs:{x:model.x,h:model.h,c:model.c},params:model,compute:{sigmoid:sigmoid,tanh:Math.tanh,lstmStep:lstmStep,gruStep:gruStep,lstm:function(){return lstmStep(model.lstm,model.x,model.h,model.c);},gru:function(){return gruStep(model.gru,model.x,model.h);}}};
+  render();
+})();
+</script>
+</body>
+</html>

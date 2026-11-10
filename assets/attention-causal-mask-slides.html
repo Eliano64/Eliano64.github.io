@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>因果掩码：每一步能看哪些位置</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--ok:#e8f3ec;--okline:#6aa77f;--block:#f6e7e4;--blockline:#c98a7a;--hi:#e8efff}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--ok:#1d2c24;--okline:#5d9a78;--block:#2c211f;--blockline:#a86d5f;--hi:#243052}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:640px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button{font:inherit;font-size:12.5px;padding:4px 10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#posLabel{font-size:12.5px;color:var(--muted)}
+.wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:54px repeat(5,42px);gap:3px;font-size:12px}
+.cell{height:34px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:5px;background:var(--bg);position:relative}
+.hdr{color:var(--muted);border:0;background:transparent;height:auto}
+.rowlab{color:var(--muted);border:0;background:transparent;justify-content:flex-end;padding-right:4px}
+.cell.ok{background:var(--ok);border-color:var(--okline)}
+.cell.blocked{background:var(--block);border-color:var(--blockline);color:var(--muted)}
+.cell.rowhi{outline:2px solid var(--accent);outline-offset:-1px}
+.cell.faded{opacity:0.35}
+.info{flex:1;min-width:190px}
+@media (max-width:560px){.wrap{flex-direction:column}.info{min-width:0;width:100%}}
+@media (max-width:420px){.grid{grid-template-columns:44px repeat(5,34px)}.cell{height:30px;font-size:11px}}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:1px 6px;font-size:12px;font-family:ui-monospace,Consolas,"Courier New",monospace}
+.chip.cur{border-color:var(--accent);background:var(--hi);box-shadow:0 0 0 1px var(--accent) inset}
+.cap{color:var(--muted);font-size:11.5px;margin:6px 0 0}
+.foot{color:var(--muted);font-size:11.5px;margin-top:10px}
+</style>
+</head>
+<body>
+<h1>因果掩码：每一步能看哪些位置</h1>
+<p class="sub">任务：完整目标序列是 x₁、x₂、x₃、x₄、x₅。第 i 个位置只能读取它自己和之前的位置，用来预测下一个 Token。</p>
+
+<div class="controls" role="group" aria-label="位置控制">
+  <button id="prev" type="button">上一位置</button>
+  <span id="posLabel" aria-live="polite">第 1 个位置</span>
+  <button id="next" type="button">下一位置</button>
+</div>
+
+<div class="wrap">
+  <div class="grid" id="grid" role="grid" aria-label="因果掩码矩阵"></div>
+  <div class="info">
+    <div>当前可见的前缀：</div>
+    <div class="chips" id="prefix"></div>
+    <p class="cap">行是查询位置，列是被读取的位置。绿色格子允许参与 Softmax，红色格子被遮挡；被遮挡位置的分数取 −∞，Softmax 后权重为 0。</p>
+    <p class="cap" id="note"></p>
+  </div>
+</div>
+
+<p class="foot">整张矩阵始终保持可见，切换位置时只高亮当前行与它允许读取的列。训练时仍然一次送入完整目标序列，并行计算所有位置；掩码保证每个位置只看前缀。</p>
+
+<script>
+const n = 5;
+const params = new URLSearchParams(location.search);
+let i = Math.max(0, Math.min(n - 1, Number(params.get("pos") || 1) - 1));
+
+const grid = document.getElementById("grid");
+const prefixEl = document.getElementById("prefix");
+const posLabel = document.getElementById("posLabel");
+const noteEl = document.getElementById("note");
+const prevBtn = document.getElementById("prev");
+const nextBtn = document.getElementById("next");
+
+function render() {
+  grid.innerHTML = "";
+  const corner = document.createElement("div");
+  corner.className = "cell hdr";
+  corner.textContent = "行/列";
+  grid.appendChild(corner);
+  for (let j = 0; j < n; j++) {
+    const h = document.createElement("div");
+    h.className = "cell hdr";
+    h.textContent = "x" + (j + 1);
+    grid.appendChild(h);
+  }
+  for (let r = 0; r < n; r++) {
+    const lab = document.createElement("div");
+    lab.className = "cell rowlab";
+    lab.textContent = "x" + (r + 1);
+    grid.appendChild(lab);
+    for (let c = 0; c < n; c++) {
+      const cell = document.createElement("div");
+      const allowed = c <= r;
+      cell.className = "cell " + (allowed ? "ok" : "blocked");
+      if (r === i) cell.classList.add("rowhi");
+      if (r > i) cell.classList.add("faded");
+      cell.textContent = allowed ? "√" : "−∞";
+      cell.setAttribute("role", "gridcell");
+      grid.appendChild(cell);
+    }
+  }
+  prefixEl.innerHTML = "";
+  for (let k = 0; k <= i; k++) {
+    const span = document.createElement("span");
+    span.className = "chip" + (k === i ? " cur" : "");
+    span.textContent = "x" + (k + 1);
+    prefixEl.appendChild(span);
+  }
+  posLabel.textContent = "第 " + (i + 1) + " 个位置";
+  noteEl.textContent = "第 " + (i + 1) + " 个位置只能读取 x₁ 到 x" + (i + 1) + "；它右边的 " + (n - i - 1) + " 个位置被遮挡。";
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === n - 1;
+}
+
+prevBtn.addEventListener("click", () => { if (i > 0) { i--; render(); } });
+nextBtn.addEventListener("click", () => { if (i < n - 1) { i++; render(); } });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") { if (i > 0) { i--; render(); } }
+  if (e.key === "ArrowRight") { if (i < n - 1) { i++; render(); } }
+});
+render();
+</script>
+</body>
+</html>

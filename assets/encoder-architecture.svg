@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 560" role="img" aria-labelledby="t d">
+  <title id="t">编码器一侧的架构</title>
+  <desc id="d">输入 Token 先经过 Input Embedding，再与位置编码相加，进入由 N 个相同层堆叠的编码器。每层包含多头自注意力、Add &amp; Norm、Feed Forward、Add &amp; Norm。最后一层输出 H，形状为 N×d_model。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;--accent:#3b5bdb;--hi:#e8efff}
+    @media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;--panel:#1e2430;--accent:#8fa6ff;--hi:#243052}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .box{fill:var(--panel);stroke:var(--line);stroke-width:1}
+    .attn{fill:var(--hi);stroke:var(--accent);stroke-width:1.4}
+    .stack{fill:none;stroke:var(--line);stroke-width:1.2;stroke-dasharray:5 4}
+    .lbl{font-size:11px}
+    .small{font-size:9.5px;fill:var(--muted)}
+    .tag{font-size:10px;fill:var(--muted)}
+    .arrow{stroke:var(--muted);stroke-width:1.2;fill:none;marker-end:url(#ah)}
+    .res{stroke:var(--muted);stroke-width:1;fill:none;marker-end:url(#ah)}
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <rect width="560" height="560" fill="var(--bg)"/>
+
+  <text class="tag" x="240" y="545">Inputs</text>
+  <g>
+    <rect class="box" x="190" y="505" width="180" height="26" rx="5"/>
+    <text class="small" x="206" y="521">t₁</text><text class="small" x="246" y="521">t₂</text><text class="small" x="286" y="521">t₃</text><text class="small" x="326" y="521">t₄</text>
+  </g>
+  <line class="arrow" x1="280" y1="505" x2="280" y2="491"/>
+  <rect class="box" x="190" y="463" width="180" height="28" rx="5"/>
+  <text class="lbl" x="214" y="482">Input Embedding</text>
+  <line class="arrow" x1="280" y1="463" x2="280" y2="449"/>
+  <text class="small" x="150" y="428">Positional</text><text class="small" x="150" y="441">Encoding</text>
+  <circle cx="280" cy="436" r="9" fill="var(--panel)" stroke="var(--line)"/>
+  <text class="lbl" x="276" y="440">+</text>
+  <line class="arrow" x1="280" y1="427" x2="280" y2="412"/>
+
+  <rect class="stack" x="170" y="132" width="220" height="280" rx="8"/>
+  <text class="tag" x="182" y="151">Encoder  N×</text>
+  <rect class="attn" x="200" y="350" width="160" height="28" rx="5"/>
+  <text class="lbl" x="214" y="369">Multi-Head Attention</text>
+  <rect class="box" x="200" y="312" width="160" height="22" rx="5"/>
+  <text class="lbl" x="242" y="328">Add &amp; Norm</text>
+  <rect class="box" x="200" y="270" width="160" height="28" rx="5"/>
+  <text class="lbl" x="249" y="289">Feed Forward</text>
+  <rect class="box" x="200" y="232" width="160" height="22" rx="5"/>
+  <text class="lbl" x="242" y="248">Add &amp; Norm</text>
+  <line class="arrow" x1="280" y1="350" x2="280" y2="334"/>
+  <line class="arrow" x1="280" y1="312" x2="280" y2="298"/>
+  <line class="arrow" x1="280" y1="270" x2="280" y2="254"/>
+  <line class="arrow" x1="280" y1="232" x2="280" y2="132"/>
+  <path class="res" d="M366 364 C390 364 390 323 366 323"/>
+  <path class="res" d="M366 284 C390 284 390 243 366 243"/>
+
+  <rect class="box" x="200" y="92" width="160" height="30" rx="5"/>
+  <text class="lbl" x="218" y="112">H  (N × d_model)</text>
+  <line class="arrow" x1="280" y1="132" x2="280" y2="122"/>
+
+  <text class="tag" x="18" y="500">形状始终</text>
+  <text class="tag" x="18" y="514">N × d_model</text>
+</svg>

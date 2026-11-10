@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regression residual card</title>
+<style>
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#ffffff;color:#20242c;font-size:13px;line-height:1.5;padding:12px;--axis:#5f6673;--grid:#9aa0aa;--curve:#2563eb;--resid:#d97706}
+h2{font-size:14px;line-height:1.3;margin:0 0 4px;font-weight:650}
+p{margin:4px 0}
+.note{font-size:11px;color:#5f6673}
+.control{display:flex;align-items:center;gap:6px;margin:8px 0 4px;font-size:11px;color:#5f6673;flex-wrap:wrap}
+.control input[type=range]{flex:1;min-width:100px;accent-color:#d97706}
+.control output{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#20242c;min-width:38px;text-align:right}
+button{font:inherit;font-size:11px;padding:3px 7px;border:1px solid #c9cfd9;border-radius:5px;background:#f7f8fa;color:#20242c;cursor:pointer}
+button:hover{background:#eef1f5}
+button:focus-visible,input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px 0}
+.metric{border:1px solid #e3e6eb;border-radius:6px;padding:5px;background:#fbfbfd}
+.metric span{display:block;font-size:10px;color:#5f6673}
+.metric b{display:block;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;margin-top:1px}
+.derive{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10.5px;background:#f3f5f8;border-radius:6px;padding:6px 8px;overflow-x:auto;white-space:pre-line}
+.plotwrap{border:1px solid #e3e6eb;border-radius:6px;padding:3px;margin-top:8px;background:#fbfbfd}
+svg{display:block;width:100%;height:auto}
+svg text{fill:var(--axis)!important}
+svg line{stroke:var(--axis)!important}
+svg circle{fill:var(--curve)!important}
+svg .resid{stroke:var(--resid)!important}
+@media (prefers-color-scheme:dark){
+body{background:#17191d;color:#e6e9ef;--axis:#c9d1dc;--grid:#8b94a5;--curve:#60a5fa;--resid:#fbbf24}
+.note,.control,.metric span{color:#aab2c0}
+.control output{color:#e6e9ef}
+button{background:#232830;color:#e6e9ef;border-color:#4a5260}
+button:hover{background:#2c333d}
+.metric{background:#1b1e24;border-color:#333a46}
+.derive{background:#232830}
+.plotwrap{background:#1b1e24;border-color:#333a46}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h2>回归指标的同一组数据</h2>
+<p class="note">示意数据，用于说明指标定义，不是训练结果。</p>
+<div class="control">
+  <label for="p6">第 6 个样本的预测值</label>
+  <input id="p6" type="range" min="2" max="9" step="0.1" value="7.6">
+  <output id="p6v" for="p6">7.6</output>
+  <button type="button" id="outlier">设为离群</button>
+  <button type="button" id="restore">还原</button>
+</div>
+<div class="metrics">
+  <div class="metric"><span>MAE</span><b id="mae"></b></div>
+  <div class="metric"><span>MSE</span><b id="mse"></b></div>
+  <div class="metric"><span>RMSE</span><b id="rmse"></b></div>
+  <div class="metric"><span>R²</span><b id="r2"></b></div>
+</div>
+<div class="derive" id="derive"></div>
+<div class="plotwrap"><svg id="plot" viewBox="0 0 340 230" role="img" aria-label="真实值、预测值与残差"></svg></div>
+<script>
+/* MODEL-START */
+const MODEL = {
+  y: [3.0, 5.0, 4.0, 7.0, 6.0, 8.0],
+  pred: [2.6, 5.4, 3.7, 7.6, 5.3, 7.6],
+  lastIndex: 5,
+  get restore() { return this.pred[this.lastIndex]; }
+};
+function metrics(lastPred) {
+  const y = MODEL.y;
+  const pred = MODEL.pred.slice();
+  pred[MODEL.lastIndex] = lastPred;
+  const n = y.length;
+  const resid = y.map((v, i) => v - pred[i]);
+  const mean = y.reduce((s, v) => s + v, 0) / n;
+  const sse = resid.reduce((s, r) => s + r * r, 0);
+  const sst = y.reduce((s, v) => s + (v - mean) * (v - mean), 0);
+  const mae = resid.reduce((s, r) => s + Math.abs(r), 0) / n;
+  const mse = sse / n;
+  const rmse = Math.sqrt(mse);
+  const r2 = 1 - sse / sst;
+  return { pred, resid, mean, sse, sst, mae, mse, rmse, r2 };
+}
+const __test = { MODEL, metrics };
+/* MODEL-END */
+
+function fmt(v, d) {
+  return (Math.abs(v) < 5e-7 ? 0 : v).toFixed(d);
+}
+function renderPlot(r) {
+  const W = 340;
+  const H = 230;
+  const m = { l: 34, r: 10, t: 18, b: 28 };
+  const xMax = 6;
+  const yMax = 10;
+  const sx = (i) => m.l + ((i + 1) / xMax) * (W - m.l - m.r);
+  const sy = (v) => H - m.b - (v / yMax) * (H - m.t - m.b);
+  let s = "";
+  for (let v = 0; v <= 10; v += 2) {
+    const y = sy(v);
+    s += '<line x1="' + m.l + '" y1="' + y + '" x2="' + (W - m.r) + '" y2="' + y + '" stroke="#9aa0aa" stroke-opacity="0.28" stroke-width="1"/>';
+    s += '<text x="' + (m.l - 5) + '" y="' + (y + 3.5) + '" text-anchor="end" font-size="9.5" fill="#5f6673">' + v + "</text>";
+  }
+  for (let i = 1; i <= 6; i++) {
+    s += '<text x="' + sx(i - 1) + '" y="' + (H - 11) + '" text-anchor="middle" font-size="9.5" fill="#5f6673">' + i + "</text>";
+  }
+  s += '<text x="' + (W - m.r) + '" y="' + (H - 1) + '" text-anchor="end" font-size="9.5" fill="#5f6673">样本</text>';
+  s += '<text x="4" y="' + m.t + '" font-size="9.5" fill="#5f6673">y</text>';
+  s += '<line x1="' + m.l + '" y1="' + (H - m.b) + '" x2="' + (W - m.r) + '" y2="' + (H - m.b) + '" stroke="#5f6673" stroke-width="0.8"/>';
+  s += '<line x1="' + m.l + '" y1="' + m.t + '" x2="' + m.l + '" y2="' + (H - m.b) + '" stroke="#5f6673" stroke-width="0.8"/>';
+  r.pred.forEach((p, i) => {
+    const cx = sx(i);
+    const yt = sy(MODEL.y[i]);
+    const yp = sy(p);
+    s += '<line class="resid" x1="' + cx + '" y1="' + yt + '" x2="' + cx + '" y2="' + yp + '" stroke="#d97706" stroke-width="2" opacity="0.8"/>';
+    s += '<circle cx="' + cx + '" cy="' + yt + '" r="4" fill="#2563eb"/>';
+    s += '<rect class="resid" x="' + (cx - 3.6) + '" y="' + (yp - 3.6) + '" width="7.2" height="7.2" fill="none" stroke="#d97706" stroke-width="1.8"/>';
+  });
+  s += '<circle cx="' + (W - 116) + '" cy="12" r="3.6" fill="#2563eb"/>';
+  s += '<text x="' + (W - 109) + '" y="15" font-size="9" fill="#5f6673">真实</text>';
+  s += '<rect class="resid" x="' + (W - 82) + '" y="8.5" width="7" height="7" fill="none" stroke="#d97706" stroke-width="1.6"/>';
+  s += '<text x="' + (W - 71) + '" y="15" font-size="9" fill="#5f6673">预测</text>';
+  s += '<line class="resid" x1="' + (W - 40) + '" y1="12" x2="' + (W - 26) + '" y2="12" stroke="#d97706" stroke-width="2"/>';
+  s += '<text x="' + (W - 22) + '" y="15" font-size="9" fill="#5f6673">残差</text>';
+  document.getElementById("plot").innerHTML = s;
+}
+function render() {
+  const last = parseFloat(document.getElementById("p6").value);
+  document.getElementById("p6v").textContent = last.toFixed(1);
+  const r = metrics(last);
+  document.getElementById("mae").textContent = fmt(r.mae, 3);
+  document.getElementById("mse").textContent = fmt(r.mse, 3);
+  document.getElementById("rmse").textContent = fmt(r.rmse, 3);
+  document.getElementById("r2").textContent = fmt(r.r2, 3);
+  document.getElementById("derive").textContent =
+    "n = " + MODEL.y.length + "，ȳ = " + fmt(r.mean, 3) + "\n" +
+    "SSE = Σ(y − ŷ)² = " + fmt(r.sse, 3) + "\n" +
+    "SST = Σ(y − ȳ)² = " + fmt(r.sst, 3) + "\n" +
+    "R² = 1 − SSE / SST = " + fmt(r.r2, 3) + "\n" +
+    "MAE = Σ|y − ŷ| / n = " + fmt(r.mae, 3) + "；MSE = SSE / n = " + fmt(r.mse, 3) + "；RMSE = √MSE = " + fmt(r.rmse, 3);
+  renderPlot(r);
+}
+document.getElementById("p6").addEventListener("input", render);
+document.getElementById("outlier").addEventListener("click", () => {
+  document.getElementById("p6").value = "2.0";
+  render();
+});
+document.getElementById("restore").addEventListener("click", () => {
+  document.getElementById("p6").value = String(MODEL.restore);
+  render();
+});
+document.getElementById("p6").value = String(MODEL.restore);
+render();
+</script>
+</body>
+</html>

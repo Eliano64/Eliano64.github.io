@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>残差相加与逐 token LayerNorm</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f4f7fb;
+--accent:#3b5bdb;--hi:#e8efff;--keep:#2f66b3;--write:#b44a35}
+@media (prefers-color-scheme:dark){:root{--bg:#171b23;--fg:#e6eaf2;--muted:#9aa4b2;--line:#3a4250;
+--panel:#1e2430;--accent:#8fa6ff;--hi:#243052;--keep:#7fa8ee;--write:#ef9a83}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:12px;max-width:680px;color:var(--fg);font:13.5px/1.55 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:17px;line-height:1.35;margin:0 0 3px}
+h2{font-size:13.5px;margin:0 0 5px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.cap{color:var(--muted);font-size:11.5px;margin:2px 0 4px}
+.note{color:var(--muted);font-size:11.5px}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.controls .cap{margin:0}
+button{font:inherit;font-size:12.5px;padding:4px 9px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px;margin:7px 0;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:7px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+.card b{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.mono{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px;overflow-wrap:anywhere}
+.vec{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0}
+.vec span{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11px;background:var(--panel)}
+.vec span.one{background:var(--hi);border-color:var(--accent)}
+.row{display:grid;grid-template-columns:52px 1fr;gap:5px;align-items:start;padding:3px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row b{font-size:11px;color:var(--muted);font-weight:500}
+.calc{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.calc .card{text-align:center}
+.calc .card .mono{font-size:13px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<h1>残差相加与逐 token LayerNorm</h1>
+<p class="sub">两个 token、d = 4。残差要求 X 与 F(X) 同形状；LayerNorm 对每个 token 的 4 个特征单独计算。本例取 γ = 1、β = 0。</p>
+<div class="controls" role="group" aria-label="计算步骤">
+<span class="cap">步骤</span>
+<button type="button" class="step" data-step="0" aria-pressed="true">相加</button>
+<button type="button" class="step" data-step="1" aria-pressed="false">逐 Token 归一化</button>
+</div>
+<div id="stage"></div>
+<details>
+<summary>输入与参数</summary>
+<div id="params"></div>
+</details>
+<script>
+(function(){
+  "use strict";
+  var X=[[1,2,3,4],[0.5,-1,2,0]];
+  var F=[[0.2,-0.1,0.4,0.1],[-0.3,0.2,0.1,-0.2]];
+  var gamma=[1,1,1,1],beta=[0,0,0,0],eps=1e-5;
+  var Y=X.map(function(row,i){return row.map(function(v,j){return v+F[i][j];});});
+  var step=0,tok=0;
+  function f(x,n){return x.toFixed(n===undefined?3:n);}
+  function vec(a,n,cls){return '<div class="vec">'+a.map(function(v){return '<span class="'+(cls||'')+'">'+f(v,n)+'</span>';}).join('')+'</div>';}
+  function row(label,val){return '<div class="row"><b>'+label+'</b><div>'+val+'</div></div>';}
+  function render(){
+    var h='<div class="panel">';
+    if(step===0){
+      h+='<h2>相加：两个同形状张量逐元素相加</h2>';
+      h+='<div class="cap">X：2×4</div>'+[0,1].map(function(i){return row('token '+(i+1),vec(X[i]));}).join('');
+      h+='<div class="cap" style="margin-top:6px">F(X)：子层输出，2×4</div>'+[0,1].map(function(i){return row('token '+(i+1),vec(F[i]));}).join('');
+      h+='<div class="cap" style="margin-top:6px">Y = X + F(X)：形状 (2×4) + (2×4) = (2×4)</div>'+[0,1].map(function(i){return row('token '+(i+1),vec(Y[i],3,'one'));}).join('');
+      h+='<p class="note">相加不改变形状：每个位置、每个特征各自相加，token 之间不混合。</p>';
+    }else{
+      var y=Y[tok],mu=y.reduce(function(a,b){return a+b;},0)/4;
+      var v=y.reduce(function(s,x){return s+(x-mu)*(x-mu);},0)/4;
+      var den=Math.sqrt(v+eps);
+      var xh=y.map(function(x){return (x-mu)/den;});
+      var yn=xh.map(function(x,j){return gamma[j]*x+beta[j];});
+      h+='<h2>逐 Token 归一化：只用该 token 的 4 个特征</h2>';
+      h+='<div class="cap">原输入 X 与子层输出 F(X)</div>'+row('X',vec(X[tok]))+row('F(X)',vec(F[tok]));
+      h+='<div class="cap" style="margin-top:6px">相加结果 Y，作为归一化输入</div>'+vec(y,3,'one');
+      h+='<div class="calc"><div class="card"><b>均值 μ</b><div class="mono">'+f(mu,4)+'</div></div><div class="card"><b>方差 v</b><div class="mono">'+f(v,4)+'</div></div><div class="card"><b>√(v+ε)</b><div class="mono">'+f(den,4)+'</div></div></div>';
+      h+='<div class="cap" style="margin-top:6px">x̂ = (y − μ) / √(v + ε)</div>'+vec(xh,4);
+      h+='<div class="cap" style="margin-top:6px">y = γ ⊙ x̂ + β，本例 γ = 1、β = 0</div>'+vec(yn,4);
+      h+='<p class="mono">ε = '+eps.toExponential()+'；μ、v 只由当前 token 的 4 个特征计算，不跨 token、不跨样本。</p>';
+      h+='<p class="note">γ 与 β 是逐维可学习参数；取 γ = 1、β = 0 时，归一化结果原样输出。</p>';
+    }
+    document.getElementById('stage').innerHTML=h+'</div>';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.step'),function(b){
+    b.addEventListener('click',function(){
+      step=Number(b.getAttribute('data-step'));
+      Array.prototype.forEach.call(document.querySelectorAll('.step'),function(x){x.setAttribute('aria-pressed',String(x===b));});
+      if(step===1){
+        var bar=document.getElementById('tokbar');
+        if(!bar){
+          bar=document.createElement('div');bar.id='tokbar';bar.className='controls';
+          bar.innerHTML='<span class="cap">Token</span><button type="button" class="tk" data-tk="0" aria-pressed="true">1</button><button type="button" class="tk" data-tk="1" aria-pressed="false">2</button>';
+          document.getElementById('stage').parentNode.insertBefore(bar,document.getElementById('stage'));
+          Array.prototype.forEach.call(bar.querySelectorAll('.tk'),function(x){
+            x.addEventListener('click',function(){
+              tok=Number(x.getAttribute('data-tk'));
+              Array.prototype.forEach.call(bar.querySelectorAll('.tk'),function(y){y.setAttribute('aria-pressed',String(y===x));});
+              render();
+            });
+          });
+        }
+        bar.hidden=false;
+      }else{
+        var bar=document.getElementById('tokbar');if(bar)bar.hidden=true;
+      }
+      render();
+    });
+  });
+  document.getElementById('params').innerHTML='<div class="cap">X</div>'+[0,1].map(function(i){return row('token '+(i+1),vec(X[i]));}).join('')+'<div class="cap" style="margin-top:6px">F(X)</div>'+[0,1].map(function(i){return row('token '+(i+1),vec(F[i]));}).join('')+'<div class="cap" style="margin-top:6px">γ、β、ε</div>'+row('γ',vec(gamma))+row('β',vec(beta))+'<div class="mono">ε = '+eps.toExponential()+'</div>';
+  window.__modelTest={inputs:{X:X,F:F},params:{gamma:gamma,beta:beta,eps:eps},compute:{add:function(A,B){return A.map(function(r,i){return r.map(function(v,j){return v+B[i][j];});});},norm:function(row){var m=row.reduce(function(a,b){return a+b;},0)/row.length;var va=row.reduce(function(s,x){return s+(x-m)*(x-m);},0)/row.length;var d=Math.sqrt(va+eps);return {mu:m,v:va,den:d,xhat:row.map(function(x){return (x-m)/d;}),y:row.map(function(x,j){return gamma[j]*((x-m)/d)+beta[j];})};}}};
+  render();
+})();
+</script>
+</body>
+</html>

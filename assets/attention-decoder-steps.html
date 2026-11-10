@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>解码器的逐步生成</title>
+<style>
+:root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--accent:#3b5bdb;--hi:#e8efff;--src:#eef3fb;--out:#f7f0e8;--mat:#c9b8e8;--mat2:#a98fd8}
+@media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--accent:#c2d4ff;--hi:#3d5270;--src:#38475c;--out:#4d3d30;--mat:#9a82c8;--mat2:#bca1e3}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+body{padding:14px;max-width:1040px;color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif}
+h1{font-size:20px;line-height:1.3;margin:0 0 3px}
+p{margin:5px 0}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 8px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button{font:inherit;font-size:14px;padding:5px 12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#stepLabel{font-size:14px;color:var(--muted)}
+svg{display:block;width:100%;height:auto}
+.box{fill:var(--panel);stroke:var(--line);stroke-width:1}
+.chip{fill:var(--src);stroke:var(--line);stroke-width:1}
+.chip.out{fill:var(--out)}
+.dec{fill:var(--panel);stroke:var(--line);stroke-width:1.2}
+.hbox{fill:var(--hi);stroke:var(--accent);stroke-width:1.3}
+.lbl{font-size:16px;fill:var(--fg)}
+.small{font-size:12px;fill:var(--muted)}
+.srctok{font-size:14px;fill:var(--fg)}
+.arrow{stroke:var(--muted);stroke-width:1.2;fill:none;marker-end:url(#ah)}
+.harrow{stroke:var(--accent);stroke-width:1.4;fill:none;marker-end:url(#ah2)}
+[data-step]{opacity:.3;transition:opacity .15s}
+[data-step].active{opacity:1}
+.desc{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:8px;margin-top:8px;min-height:44px;font-size:14px}
+.note{color:var(--muted);font-size:12.5px;margin-top:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<h1>解码器的逐步生成</h1>
+<p class="sub">任务：把英文源序列翻译成中文目标序列。编码器一次输出 H；解码器每步读取已生成的目标前缀，预测下一个 Token。</p>
+
+<div class="controls" role="group" aria-label="步骤控制">
+  <button id="prev" type="button">上一步</button>
+  <span id="stepLabel" aria-live="polite">1 / 4</span>
+  <button id="next" type="button">下一步</button>
+</div>
+
+<svg viewBox="0 0 1040 540" role="img" aria-label="解码器逐步生成：编码器输出 H，四步预测下一个 Token">
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker>
+    <marker id="ah2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker>
+  </defs>
+
+  <g id="srcRow"></g>
+  <rect class="box" x="560" y="10" width="96" height="58" rx="6"/>
+  <text class="lbl" x="578" y="30">Encoder</text>
+  <rect class="box" x="578" y="38" width="58" height="7" rx="2"/>
+  <rect class="box" x="578" y="49" width="58" height="7" rx="2"/>
+  <line class="arrow" x1="530" y1="39" x2="556" y2="39"/>
+  <line class="arrow" x1="656" y1="39" x2="676" y2="39"/>
+
+  <text class="lbl" x="710" y="24">H</text>
+  <text class="small" x="696" y="38">S × d_model</text>
+  <g id="hMatrix"></g>
+  <line class="harrow" x1="750" y1="116" x2="750" y2="140"/>
+  <line class="harrow" x1="30" y1="140" x2="1030" y2="140"/>
+  <text class="small" x="34" y="132">K、V 来自 H</text>
+
+  <g id="steps"></g>
+
+  <text class="small" x="30" y="515">目标序列：那只 动物 没有 穿过 街道 因为 它 太 累 了；生成会继续，直到输出 &lt;EOS&gt;。</text>
+</svg>
+
+<div class="desc" id="desc"></div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+function el(name, attrs = {}) {
+  const e = document.createElementNS(NS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function txt(x, y, s, cls = "small") {
+  const t = el("text", { x, y, class: cls });
+  t.textContent = s;
+  return t;
+}
+
+const srcTokens = ["The", "animal", "didn't", "cross", "the", "street", "...", "tired", "."];
+const src = document.getElementById("srcRow");
+let sx = 16;
+for (const tok of srcTokens) {
+  const w = Math.max(34, tok.length * 7.5 + 12);
+  src.appendChild(el("rect", { x: sx, y: 18, width: w, height: 30, rx: 4, class: "chip" }));
+  src.appendChild(txt(sx + 6, 38, tok, "srctok"));
+  sx += w + 3;
+}
+
+const hMatrix = document.getElementById("hMatrix");
+for (let r = 0; r < 5; r++) {
+  for (let c = 0; c < 8; c++) {
+    const shade = 0.22 + 0.1 * (4 - r);
+    hMatrix.appendChild(el("rect", {
+      x: 690 + c * 16, y: 44 + r * 15, width: 15, height: 14, rx: 1,
+      fill: "rgba(110,145,220," + shade.toFixed(2) + ")", stroke: "var(--line)", "stroke-width": 0.5
+    }));
+  }
+}
+
+const steps = [
+  { pre: ["<BOS>"], shape: "1 × d_model", out: "那只" },
+  { pre: ["<BOS>", "那只"], shape: "2 × d_model", out: "动物" },
+  { pre: ["<BOS>", "那只", "动物"], shape: "3 × d_model", out: "没有" },
+  { pre: ["<BOS>", "那只", "动物", "没有", "…"], shape: "T × d_model", out: "下一个 Token" }
+];
+const stepsG = document.getElementById("steps");
+const params = new URLSearchParams(location.search);
+let current = Math.max(0, Math.min(3, Number(params.get("step") || 1) - 1));
+
+steps.forEach((s, i) => {
+  const x = 30 + i * 250;
+  const g = el("g", { "data-step": String(i + 1) });
+  let cx = x;
+  s.pre.forEach(tok => {
+    const w = Math.max(38, tok.length * 8 + 10);
+    g.appendChild(el("rect", { x: cx, y: 166, width: w, height: 22, rx: 3, class: "chip" }));
+    g.appendChild(txt(cx + 4, 182, tok, "small"));
+    cx += w + 3;
+  });
+  g.appendChild(el("line", { x1: x + 100, y1: 188, x2: x + 100, y2: 208, class: "arrow" }));
+  g.appendChild(txt(x + 2, 202, s.shape, "small"));
+
+  const rows = i + 1;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < 8; c++) {
+      g.appendChild(el("rect", {
+        x: x + 20 + c * 16, y: 210 + r * 16, width: 15, height: 15, rx: 1,
+        fill: r % 2 ? "var(--mat2)" : "var(--mat)", stroke: "var(--line)", "stroke-width": 0.4
+      }));
+    }
+  }
+  const matBottom = 210 + rows * 16;
+  g.appendChild(el("line", { x1: x + 100, y1: matBottom, x2: x + 100, y2: 268, class: "arrow" }));
+
+  g.appendChild(el("rect", { x, y: 270, width: 220, height: 126, rx: 8, class: "dec" }));
+  const blocks = ["Masked SA", "Cross-Attn", "FFN"];
+  blocks.forEach((b, j) => {
+    const by = 280 + j * 36;
+    g.appendChild(el("rect", { x: x + 10, y: by, width: 200, height: 28, rx: 4, class: "box" }));
+    g.appendChild(txt(x + 18, by + 19, b, "lbl"));
+    if (j < 2) g.appendChild(el("line", { x1: x + 110, y1: by + 28, x2: x + 110, y2: by + 36, class: "arrow" }));
+  });
+  g.appendChild(el("line", { x1: x + 110, y1: 396, x2: x + 110, y2: 416, class: "arrow" }));
+  g.appendChild(el("rect", { x: x + 40, y: 418, width: 140, height: 26, rx: 4, class: "chip out" }));
+  g.appendChild(txt(x + 82, 436, s.out, "lbl"));
+
+  g.appendChild(el("line", { x1: x + 238, y1: 140, x2: x + 238, y2: 314, class: "harrow" }));
+  g.appendChild(el("line", { x1: x + 238, y1: 314, x2: x + 212, y2: 314, class: "harrow" }));
+
+  stepsG.appendChild(g);
+});
+
+const label = document.getElementById("stepLabel");
+const desc = document.getElementById("desc");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+const texts = [
+  "前缀只有 <BOS>，解码器预测「那只」。",
+  "前缀是 <BOS> 那只，解码器预测「动物」。",
+  "前缀是 <BOS> 那只 动物，解码器预测「没有」。",
+  "前缀继续增长，解码器预测下一个 Token。"
+];
+function render() {
+  [...stepsG.children].forEach(g => g.classList.toggle("active", Number(g.dataset.step) === current + 1));
+  label.textContent = (current + 1) + " / 4";
+  desc.textContent = texts[current];
+  prev.disabled = current === 0;
+  next.disabled = current === 3;
+}
+prev.addEventListener("click", () => { if (current > 0) { current--; render(); } });
+next.addEventListener("click", () => { if (current < 3) { current++; render(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" && current > 0) { current--; render(); }
+  if (e.key === "ArrowRight" && current < 3) { current++; render(); }
+});
+render();
+</script>
+</body>
+</html>

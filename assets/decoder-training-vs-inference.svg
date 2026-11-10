@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 330" role="img" aria-labelledby="t d">
+  <title id="t">训练与推理的差别</title>
+  <desc id="d">训练时把右移一位的完整目标序列一次送入解码器，所有位置并行预测，只需一次前向。推理时每生成一个 Token 都要再跑一次解码器，必须依次进行，历史键值从缓存读取。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--accent:#3b5bdb;--hi:#e8efff;--input:#eef3fb;--out:#f7f0e8}
+    @media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--accent:#c2d4ff;--hi:#3d5270;--input:#38475c;--out:#4d3d30}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .box{fill:var(--panel);stroke:var(--line);stroke-width:1}
+    .chip{fill:var(--input);stroke:var(--line);stroke-width:1}
+    .chip.out{fill:var(--out)}
+    .dec{fill:var(--hi);stroke:var(--accent);stroke-width:1.4}
+    .lbl{font-size:13px}
+    .small{font-size:11.5px;fill:var(--muted)}
+    .ttl{font-size:15px;font-weight:600}
+    .arrow{stroke:var(--muted);stroke-width:1.2;fill:none;marker-end:url(#ah)}
+    .badge{fill:var(--hi);stroke:var(--accent);stroke-width:1;border-radius:4px}
+    .note{font-size:11.5px;fill:var(--muted)}
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <rect width="800" height="330" fill="var(--bg)"/>
+
+  <rect class="box" x="10" y="10" width="370" height="310" rx="9"/>
+  <text class="ttl" x="24" y="32">训练：Teacher Forcing</text>
+  <text class="small" x="24" y="50">右移一位的完整目标一次送入</text>
+  <g>
+    <rect class="chip" x="24" y="62" width="48" height="24" rx="4"/><text class="lbl" x="30" y="78">&lt;BOS&gt;</text>
+    <rect class="chip" x="78" y="62" width="34" height="24" rx="4"/><text class="lbl" x="90" y="78">x₁</text>
+    <rect class="chip" x="118" y="62" width="34" height="24" rx="4"/><text class="lbl" x="130" y="78">x₂</text>
+    <rect class="chip" x="158" y="62" width="34" height="24" rx="4"/><text class="lbl" x="170" y="78">x₃</text>
+    <rect class="chip" x="198" y="62" width="34" height="24" rx="4"/><text class="lbl" x="210" y="78">x₄</text>
+  </g>
+  <line class="arrow" x1="200" y1="86" x2="200" y2="106"/>
+  <rect class="dec" x="110" y="108" width="180" height="38" rx="5"/>
+  <text class="lbl" x="136" y="132">Decoder（一次前向）</text>
+  <line class="arrow" x1="200" y1="146" x2="200" y2="168"/>
+  <g>
+    <rect class="chip out" x="24" y="170" width="34" height="24" rx="4"/><text class="lbl" x="36" y="186">x₁</text>
+    <rect class="chip out" x="64" y="170" width="34" height="24" rx="4"/><text class="lbl" x="76" y="186">x₂</text>
+    <rect class="chip out" x="104" y="170" width="34" height="24" rx="4"/><text class="lbl" x="116" y="186">x₃</text>
+    <rect class="chip out" x="144" y="170" width="34" height="24" rx="4"/><text class="lbl" x="156" y="186">x₄</text>
+    <rect class="chip out" x="184" y="170" width="48" height="24" rx="4"/><text class="lbl" x="190" y="186">&lt;EOS&gt;</text>
+  </g>
+  <text class="small" x="24" y="216">预测目标：每个位置同时预测下一个 Token</text>
+  <rect class="badge" x="120" y="236" width="87" height="24" rx="5"/>
+  <text class="lbl" x="132" y="252">1 次前向</text>
+  <text class="note" x="24" y="292">T 个位置可以并行计算；因果掩码防止看到未来。</text>
+
+  <rect class="box" x="400" y="10" width="390" height="310" rx="9"/>
+  <text class="ttl" x="414" y="32">推理：自回归</text>
+  <text class="small" x="414" y="50">每生成一个 Token 都要跑一次解码器</text>
+
+  <g>
+    <rect class="chip" x="414" y="66" width="48" height="22" rx="4"/><text class="lbl" x="419" y="81">&lt;BOS&gt;</text>
+    <line class="arrow" x1="468" y1="77" x2="512" y2="77"/>
+    <rect class="dec" x="514" y="66" width="92" height="22" rx="4"/><text class="lbl" x="530" y="81">Decoder</text>
+    <line class="arrow" x1="606" y1="77" x2="644" y2="77"/>
+    <rect class="chip out" x="646" y="66" width="34" height="22" rx="4"/><text class="lbl" x="658" y="81">x₁</text>
+  </g>
+  <g>
+    <rect class="chip" x="414" y="110" width="48" height="22" rx="4"/><text class="lbl" x="419" y="125">&lt;BOS&gt;</text>
+    <rect class="chip" x="468" y="110" width="34" height="22" rx="4"/><text class="lbl" x="480" y="125">x₁</text>
+    <line class="arrow" x1="508" y1="121" x2="552" y2="121"/>
+    <rect class="dec" x="554" y="110" width="92" height="22" rx="4"/><text class="lbl" x="570" y="125">Decoder</text>
+    <line class="arrow" x1="646" y1="121" x2="684" y2="121"/>
+    <rect class="chip out" x="686" y="110" width="34" height="22" rx="4"/><text class="lbl" x="698" y="125">x₂</text>
+  </g>
+  <g>
+    <rect class="chip" x="414" y="154" width="48" height="22" rx="4"/><text class="lbl" x="419" y="169">&lt;BOS&gt;</text>
+    <rect class="chip" x="468" y="154" width="34" height="22" rx="4"/><text class="lbl" x="480" y="169">x₁</text>
+    <rect class="chip" x="508" y="154" width="34" height="22" rx="4"/><text class="lbl" x="520" y="169">x₂</text>
+    <line class="arrow" x1="548" y1="165" x2="592" y2="165"/>
+    <rect class="dec" x="594" y="154" width="92" height="22" rx="4"/><text class="lbl" x="610" y="169">Decoder</text>
+    <line class="arrow" x1="686" y1="165" x2="724" y2="165"/>
+    <rect class="chip out" x="726" y="154" width="34" height="22" rx="4"/><text class="lbl" x="738" y="169">x₃</text>
+  </g>
+  <g>
+    <text class="lbl" x="414" y="208">…</text>
+    <line class="arrow" x1="468" y1="201" x2="512" y2="201"/>
+    <rect class="dec" x="514" y="190" width="92" height="22" rx="4"/><text class="lbl" x="530" y="205">Decoder</text>
+    <line class="arrow" x1="606" y1="201" x2="644" y2="201"/>
+    <rect class="chip out" x="646" y="190" width="48" height="22" rx="4"/><text class="lbl" x="652" y="205">&lt;EOS&gt;</text>
+  </g>
+  <text class="small" x="414" y="240">K、V 从历史缓存读取，只计算最新位置</text>
+  <rect class="badge" x="500" y="256" width="92" height="24" rx="5"/>
+  <text class="lbl" x="512" y="272">T 次前向</text>
+  <text class="note" x="414" y="300">必须依次进行：前一个 Token 生成后，才能作为下一步的输入。</text>
+</svg>

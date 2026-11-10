@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classification probability card</title>
+<style>
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#ffffff;color:#20242c;font-size:13px;line-height:1.5;padding:12px}
+h2{font-size:14px;line-height:1.3;margin:0 0 4px;font-weight:650}
+p{margin:4px 0}
+.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11.5px;background:#f3f5f8;padding:6px 8px;border-radius:6px;overflow-x:auto}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+button{font:inherit;font-size:12px;padding:5px 10px;border:1px solid #c9cfd9;border-radius:6px;background:#f7f8fa;color:#20242c;cursor:pointer}
+button:hover{background:#eef1f5}
+button:focus-visible,input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+button[aria-pressed="true"]{border-color:#2563eb;background:#e8efff;color:#1d4ed8}
+.compare{font-size:11px;color:#5f6673;border-left:3px solid #d97706;padding-left:7px;margin:6px 0 8px}
+.sample{display:grid;grid-template-columns:64px minmax(0,1fr) 40px 44px 62px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid #e8ebf0;font-size:11px}
+.sample .y{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.sample input{width:100%;accent-color:#2563eb}
+.sample output{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right}
+.sample .pred{text-align:right;color:#5f6673}
+.bce{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right}
+.totals{display:flex;gap:16px;margin:8px 0 6px;font-size:12px}
+.totals b{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+table.cm{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:11.5px;margin-top:2px}
+table.cm th,table.cm td{border:1px solid #e1e5eb;padding:3px 7px;text-align:center}
+table.cm th{color:#5f6673;font-weight:500;background:#f7f8fa}
+.note{font-size:11px;color:#5f6673;margin-top:8px}
+@media (max-width:400px){.sample{grid-template-columns:58px minmax(0,1fr) 36px 40px 56px}}
+@media (prefers-color-scheme:dark){
+body{background:#17191d;color:#e6e9ef}
+.formula{background:#232830}
+.compare,.note,.sample .pred,table.cm th{color:#aab2c0}
+button{background:#232830;color:#e6e9ef;border-color:#4a5260}
+button:hover{background:#2c333d}
+button[aria-pressed="true"]{background:#1e2a44;color:#93c5fd;border-color:#3b82f6}
+.sample{border-bottom-color:#333a46}
+table.cm th,table.cm td{border-color:#3c4350}
+table.cm th{background:#232830}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h2>概率与损失：三个样本</h2>
+<p class="formula">L = −(1/3) Σ [ y ln p + (1 − y) ln(1 − p) ]，&nbsp; ŷ = 1[p ≥ 0.5]</p>
+<div class="presets">
+  <button type="button" id="pa" aria-pressed="true">预设 A</button>
+  <button type="button" id="pb" aria-pressed="false">预设 B</button>
+  <button type="button" id="reset">重置 A</button>
+</div>
+<p class="compare" id="compare"></p>
+<div id="samples"></div>
+<div class="totals">
+  <span>损失 <b id="loss"></b></span>
+  <span>准确率 <b id="acc"></b></span>
+</div>
+<div id="cm"></div>
+<p class="note">改变概率会改变损失；只要概率不跨过 0.5，判类与混淆计数保持不变。</p>
+<script>
+/* MODEL-START */
+const MODEL = {
+  labels: [1, 0, 1],
+  presets: {
+    A: [0.9, 0.4, 0.2],
+    B: [0.55, 0.45, 0.2]
+  }
+};
+function evaluate(ps) {
+  const rows = ps.map((p, i) => {
+    const y = MODEL.labels[i];
+    const bce = -(y * Math.log(p) + (1 - y) * Math.log(1 - p));
+    const pred = p >= 0.5 ? 1 : 0;
+    return { p, y, bce, pred, correct: pred === y };
+  });
+  const loss = rows.reduce((s, r) => s + r.bce, 0) / rows.length;
+  const correct = rows.filter((r) => r.correct).length;
+  const cm = { tp: 0, fn: 0, fp: 0, tn: 0 };
+  rows.forEach((r) => {
+    if (r.y === 1 && r.pred === 1) cm.tp += 1;
+    if (r.y === 1 && r.pred === 0) cm.fn += 1;
+    if (r.y === 0 && r.pred === 1) cm.fp += 1;
+    if (r.y === 0 && r.pred === 0) cm.tn += 1;
+  });
+  return { rows, loss, correct, accuracy: correct / rows.length, cm };
+}
+const __test = { MODEL, evaluate };
+/* MODEL-END */
+
+let ps = MODEL.presets.A.slice();
+
+function fmt(v, d) {
+  return v.toFixed(d);
+}
+function setPreset(name) {
+  ps = MODEL.presets[name].slice();
+  document.getElementById("pa").setAttribute("aria-pressed", name === "A" ? "true" : "false");
+  document.getElementById("pb").setAttribute("aria-pressed", name === "B" ? "true" : "false");
+  renderSamples();
+  render();
+}
+function renderSamples() {
+  const host = document.getElementById("samples");
+  host.innerHTML = "";
+  MODEL.labels.forEach((y, i) => {
+    const row = document.createElement("div");
+    row.className = "sample";
+    row.innerHTML =
+      '<span class="y">样本 ' + (i + 1) + " · y=" + y + "</span>" +
+      '<input type="range" id="p' + i + '" min="0.01" max="0.99" step="0.01" value="' + ps[i] + '" aria-label="样本 ' + (i + 1) + ' 的正类概率">' +
+      '<output id="pv' + i + '" for="p' + i + '">' + fmt(ps[i], 2) + "</output>" +
+      '<span class="pred" id="pr' + i + '"></span>' +
+      '<span class="bce" id="bc' + i + '"></span>';
+    host.appendChild(row);
+    const input = row.querySelector("input");
+    input.addEventListener("input", () => {
+      ps[i] = parseFloat(input.value);
+      document.getElementById("pv" + i).textContent = fmt(ps[i], 2);
+      document.getElementById("pa").setAttribute("aria-pressed", "false");
+      document.getElementById("pb").setAttribute("aria-pressed", "false");
+      render();
+    });
+  });
+}
+function render() {
+  const r = evaluate(ps);
+  r.rows.forEach((row, i) => {
+    document.getElementById("pr" + i).textContent = "判 " + row.pred;
+    document.getElementById("bc" + i).textContent = "BCE " + fmt(row.bce, 3);
+  });
+  document.getElementById("loss").textContent = fmt(r.loss, 3);
+  document.getElementById("acc").textContent = r.correct + "/" + r.rows.length + " = " + fmt(r.accuracy, 3);
+  const cm = r.cm;
+  document.getElementById("cm").innerHTML =
+    '<table class="cm"><thead><tr><th>真实 \\ 预测</th><th>正类</th><th>负类</th></tr></thead><tbody>' +
+    "<tr><th>正类</th><td>" + cm.tp + "（TP）</td><td>" + cm.fn + "（FN）</td></tr>" +
+    "<tr><th>负类</th><td>" + cm.fp + "（FP）</td><td>" + cm.tn + "（TN）</td></tr>" +
+    "</tbody></table>";
+  const a = evaluate(MODEL.presets.A);
+  const b = evaluate(MODEL.presets.B);
+  document.getElementById("compare").textContent =
+    "预设 A：损失 " + fmt(a.loss, 3) + "，判类 [" + a.rows.map((x) => x.pred).join(", ") + "]" +
+    "；预设 B：损失 " + fmt(b.loss, 3) + "，判类 [" + b.rows.map((x) => x.pred).join(", ") + "]" +
+    "。两者准确率都是 " + a.correct + "/" + a.rows.length + "。";
+}
+document.getElementById("pa").addEventListener("click", () => setPreset("A"));
+document.getElementById("pb").addEventListener("click", () => setPreset("B"));
+document.getElementById("reset").addEventListener("click", () => setPreset("A"));
+renderSamples();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dropout mask card</title>
+<style>
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#ffffff;color:#20242c;font-size:13px;line-height:1.5;padding:12px}
+h2{font-size:14px;line-height:1.3;margin:0 0 4px;font-weight:650}
+p{margin:4px 0}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:#5f6673;margin:6px 0}
+button{font:inherit;font-size:11.5px;padding:4px 9px;border:1px solid #c9cfd9;border-radius:5px;background:#f7f8fa;color:#20242c;cursor:pointer}
+button:hover{background:#eef1f5}
+button:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.pill{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f3f5f8;border-radius:4px;padding:2px 6px;color:#20242c}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:11.5px;margin-top:4px}
+th,td{padding:3px 4px;border-bottom:1px solid #e8ebf0;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:#5f6673;font-weight:500;font-size:10px}
+td.mono,th.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+tr.drop td{background:#fff7ed;color:#9a3412}
+tr.drop td.mono{color:#9a3412}
+.sum{display:flex;gap:14px;font-size:11px;color:#5f6673;margin-top:6px}
+.sum b{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#20242c}
+.note{font-size:11px;color:#5f6673;margin-top:6px}
+@media (prefers-color-scheme:dark){
+body{background:#17191d;color:#e6e9ef}
+.bar,.sum,.note,th{color:#aab2c0}
+.pill{background:#232830;color:#e6e9ef}
+button{background:#232830;color:#e6e9ef;border-color:#4a5260}
+button:hover{background:#2c333d}
+th,td{border-bottom-color:#333a46}
+tr.drop td{background:#3a2416;color:#fdba74}
+tr.drop td.mono{color:#fdba74}
+.sum b{color:#e6e9ef}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h2>训练与推理的 Dropout</h2>
+<div class="bar">
+  <span>丢弃概率 p = 0.5</span>
+  <span class="pill" id="scale"></span>
+  <button type="button" id="again">重新生成 mask</button>
+  <span id="maskid"></span>
+</div>
+<table>
+  <thead><tr><th>单元</th><th class="mono">激活 a</th><th class="mono">mask</th><th class="mono">训练输出</th><th class="mono">推理输出</th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<div class="sum"><span>保留 <b id="keep"></b> / 6</span><span>丢弃 <b id="drop"></b> / 6</span></div>
+<p class="note">训练时保留的激活乘以 1/(1−p)；推理时所有激活原样通过。同一 mask 编号对应同一组 mask。</p>
+<script>
+/* MODEL-START */
+const MODEL = { a: [1.2, -0.7, 0.4, 1.8, -1.1, 0.9], p: 0.5, baseSeed: 7 };
+function mulberry32(seed) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function draw(seed) {
+  const rnd = mulberry32(seed);
+  const mask = MODEL.a.map(() => (rnd() >= MODEL.p ? 1 : 0));
+  const scale = 1 / (1 - MODEL.p);
+  const train = MODEL.a.map((v, i) => (mask[i] ? v * scale : 0));
+  return { mask, scale, train, infer: MODEL.a.slice() };
+}
+const __test = { MODEL, draw };
+/* MODEL-END */
+
+let maskNumber = 1;
+function fmt(v) {
+  return (Math.abs(v) < 5e-7 ? 0 : v).toFixed(2);
+}
+function render() {
+  const seed = MODEL.baseSeed + maskNumber - 1;
+  const r = draw(seed);
+  document.getElementById("scale").textContent = "缩放 1/(1−p) = " + r.scale.toFixed(2);
+  document.getElementById("maskid").textContent = "mask 编号 " + maskNumber;
+  const rows = document.getElementById("rows");
+  rows.innerHTML = "";
+  MODEL.a.forEach((a, i) => {
+    const tr = document.createElement("tr");
+    if (!r.mask[i]) tr.className = "drop";
+    [String(i + 1), fmt(a), String(r.mask[i]), fmt(r.train[i]), fmt(r.infer[i])].forEach((v, j) => {
+      const td = document.createElement("td");
+      td.textContent = v;
+      if (j > 0) td.className = "mono";
+      tr.appendChild(td);
+    });
+    rows.appendChild(tr);
+  });
+  const kept = r.mask.filter((m) => m === 1).length;
+  document.getElementById("keep").textContent = String(kept);
+  document.getElementById("drop").textContent = String(r.mask.length - kept);
+}
+document.getElementById("again").addEventListener("click", () => {
+  maskNumber += 1;
+  render();
+});
+render();
+</script>
+</body>
+</html>
