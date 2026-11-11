@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" role="img" aria-labelledby="t d">
+  <title id="t">BERT 的掩码语言建模</title>
+  <desc id="d">选约 15% 的 Token，其中 80% 替换为 MASK、10% 替换为随机词、10% 保持不变；双向编码器利用左右上下文预测被选位置的原始 Token，只在这些位置计算损失。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--accent:#3b5bdb;--hi:#e8efff;--green:#e8f5ec;--green2:#3f8f5a;--mask:#efe6ff;--mask2:#7a4fc0;--box:#ffffff}
+    @media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--accent:#a8bcff;--hi:#34445e;--green:#263d2e;--green2:#8fd3a5;--mask:#332b47;--mask2:#c7a6ff;--box:#38475c}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .panel{fill:var(--panel);stroke:var(--line);stroke-width:1}
+    .box{fill:var(--box);stroke:var(--line);stroke-width:1}
+    .hi{fill:var(--hi);stroke:var(--accent);stroke-width:1.3}
+    .mask{fill:var(--mask);stroke:var(--mask2);stroke-width:1.4}
+    .ttl{font-size:15px;font-weight:700}
+    .lbl{font-size:11.5px}
+    .sm{font-size:9.5px;fill:var(--muted)}
+    .arw{stroke:var(--muted);stroke-width:1.2;fill:none;marker-end:url(#a)}
+    .bi{stroke:var(--green2);stroke-width:1.5;fill:none;marker-start:url(#ab);marker-end:url(#ab)}
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker>
+    <marker id="ab" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,0 L8,8 Z" fill="var(--green2)"/></marker>
+  </defs>
+  <rect width="1000" height="460" fill="var(--bg)"/>
+
+  <text class="ttl" x="24" y="32">BERT 的掩码语言建模（MLM）</text>
+  <text class="sm" x="24" y="50">输入可以看见整句，但只监督被选中的位置</text>
+
+  <!-- sentence -->
+  <g>
+    <rect class="box" x="24" y="75" width="54" height="30" rx="4"/><text class="lbl" x="40" y="95">我</text>
+    <rect class="box" x="84" y="75" width="54" height="30" rx="4"/><text class="lbl" x="100" y="95">去</text>
+    <rect class="box" x="144" y="75" width="54" height="30" rx="4"/><text class="lbl" x="158" y="95">银行</text>
+    <rect class="box" x="204" y="75" width="70" height="30" rx="4"/><text class="lbl" x="216" y="95">办理了</text>
+    <rect class="mask" x="280" y="75" width="100" height="30" rx="4"/><text class="lbl" x="299" y="95">[MASK]</text>
+    <rect class="box" x="386" y="75" width="54" height="30" rx="4"/><text class="lbl" x="402" y="95">业务</text>
+    <rect class="box" x="446" y="75" width="34" height="30" rx="4"/><text class="lbl" x="454" y="95">。</text>
+  </g>
+
+  <!-- step 1 -->
+  <rect class="panel" x="24" y="130" width="300" height="120" rx="8"/>
+  <text class="lbl" x="38" y="152">1. 选中约 15% 的 Token</text>
+  <text class="sm" x="38" y="172">被选位置集合记作 M；只有这些位置进入损失。</text>
+  <g>
+    <rect class="box" x="38" y="188" width="216" height="24" rx="4"/><text class="sm" x="46" y="204">随机选择，不按词性或位置</text>
+    <rect class="mask" x="260" y="188" width="52" height="24" rx="4"/><text class="sm" x="270" y="204">15%</text>
+  </g>
+
+  <!-- step 2 -->
+  <rect class="panel" x="340" y="130" width="300" height="120" rx="8"/>
+  <text class="lbl" x="354" y="152">2. 对被选位置做替换</text>
+  <text class="sm" x="354" y="172">80% / 10% / 10% 三种处理</text>
+  <rect class="mask" x="354" y="186" width="82" height="34" rx="4"/><text class="sm" x="366" y="207">[MASK] 80%</text>
+  <rect class="box" x="442" y="186" width="82" height="34" rx="4"/><text class="sm" x="454" y="207">随机词 10%</text>
+  <rect class="box" x="530" y="186" width="96" height="34" rx="4"/><text class="sm" x="542" y="207">保持不变 10%</text>
+
+  <!-- step 3 -->
+  <rect class="panel" x="656" y="130" width="320" height="120" rx="8"/>
+  <text class="lbl" x="670" y="152">3. 双向编码器</text>
+  <text class="sm" x="670" y="172">每个位置同时读取左右上下文</text>
+  <g>
+    <rect class="box" x="676" y="190" width="120" height="34" rx="5"/><text class="sm" x="692" y="211">Transformer</text>
+    <text class="sm" x="700" y="225">Encoder</text>
+    <path class="bi" d="M802,207 L846,207"/>
+    <text class="sm" x="806" y="197">双向</text>
+    <rect class="box" x="852" y="190" width="104" height="34" rx="5"/><text class="sm" x="866" y="211">上下文表示</text>
+  </g>
+
+  <!-- step 4 -->
+  <rect class="panel" x="24" y="270" width="952" height="150" rx="8"/>
+  <text class="lbl" x="38" y="294">4. 预测被遮位置的原始 Token</text>
+  <text class="sm" x="38" y="314">用上下文表示做词表 softmax；只对被选位置计算负对数损失。</text>
+  <rect class="box" x="38" y="330" width="180" height="34" rx="5"/><text class="sm" x="50" y="352">[MASK] → 上下文表示</text>
+  <path class="arw" d="M218,347 L250,347"/>
+  <rect class="hi" x="253" y="330" width="120" height="34" rx="5"/><text class="sm" x="268" y="352">词表 softmax</text>
+  <path class="arw" d="M373,347 L405,347"/>
+  <rect class="box" x="408" y="330" width="150" height="34" rx="5"/><text class="sm" x="420" y="352">预测：取款 / 存款 ...</text>
+
+  <text class="sm" x="590" y="340">损失：</text>
+  <text class="sm" x="590" y="360">只对 M 中的位置求和</text>
+  <rect class="box" x="590" y="370" width="360" height="34" rx="5"/><text class="lbl" x="606" y="392">L = -Σ log p(x_i | 左右上下文)，i ∈ M</text>
+  <text class="sm" x="38" y="404">未被选中的位置不参与 MLM 损失，但它们的上下文仍然被编码器读取。</text>
+</svg>

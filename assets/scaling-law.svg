@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="t d">
+  <title id="t">Scaling Law</title>
+  <desc id="d">在其他条件不成为瓶颈时，增加参数量、数据量或计算量，语言建模损失按较稳定的幂律趋势下降；三者需要匹配扩展。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--accent:#3b5bdb;--curve:#3b5bdb;--box:#ffffff}
+    @media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--accent:#a8bcff;--curve:#a8bcff;--box:#38475c}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .axis{stroke:var(--muted);stroke-width:1.2}
+    .curve{stroke:var(--curve);stroke-width:2.4;fill:none}
+    .ttl{font-size:15px;font-weight:700}
+    .lbl{font-size:11px}
+    .sm{font-size:9.5px;fill:var(--muted)}
+    .box{fill:var(--box);stroke:var(--line);stroke-width:1}
+  </style>
+  <rect width="760" height="420" fill="var(--bg)"/>
+  <text class="ttl" x="24" y="32">Scaling Law</text>
+  <text class="sm" x="24" y="50">损失随规模按幂律下降，但前提是参数、数据与计算同步扩展</text>
+
+  <line class="axis" x1="80" y1="330" x2="700" y2="330"/>
+  <line class="axis" x1="80" y1="330" x2="80" y2="80"/>
+  <text class="sm" x="650" y="350">计算量 / 数据量 / 参数量（对数）</text>
+  <text class="sm" x="28" y="90">损失</text>
+
+  <path class="curve" d="M90,105 C220,180 360,250 668,300"/>
+  <text class="lbl" x="320" y="200">L ∝ C<tspan baseline-shift="super" font-size="10">-α</tspan></text>
+  <text class="sm" x="500" y="285">规模越大，损失越低</text>
+
+  <g>
+    <rect class="box" x="420" y="70" width="300" height="105" rx="7"/>
+    <text class="lbl" x="434" y="92">三个投入</text>
+    <text class="sm" x="434" y="112">参数量：模型容量</text>
+    <text class="sm" x="434" y="130">数据量：学习信号</text>
+    <text class="sm" x="434" y="148">计算量：训练资源</text>
+    <text class="sm" x="434" y="166">只扩大一个，其他会成瓶颈。</text>
+  </g>
+
+  <text class="sm" x="80" y="385">图中只画趋势，不给具体数值；幂律指数与常数取决于数据分布与训练设置。</text>
+</svg>

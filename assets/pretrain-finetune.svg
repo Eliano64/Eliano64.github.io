@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 540" role="img" aria-labelledby="t d">
+  <title id="t">预训练与微调</title>
+  <desc id="d">大规模无标注文本先做自监督预训练，得到通用语言表示；该表示包含词义、上下文、句法、语义、指代搭配与通用语言模式。右侧三条支路分别用少量标注数据微调分类头、序列标注头和问答头。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--accent:#3b5bdb;--hi:#e8efff;--purple:#f1ebff;--purple2:#7a4fc0;--blue:#e8f0ff;--blue2:#3b5bdb;--green:#e8f5ec;--green2:#3f8f5a;--orange:#fdf1e3;--orange2:#c47b2a;--box:#ffffff}
+    @media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--accent:#a8bcff;--hi:#34445e;--purple:#332b47;--purple2:#c7a6ff;--blue:#26344c;--blue2:#a8bcff;--green:#263d2e;--green2:#8fd3a5;--orange:#3d3025;--orange2:#e0b07a;--box:#38475c}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .box{fill:var(--box);stroke:var(--line);stroke-width:1}
+    .panel{fill:var(--panel);stroke:var(--line);stroke-width:1}
+    .purple{fill:var(--purple);stroke:var(--purple2);stroke-width:1.4}
+    .blue{fill:var(--blue);stroke:var(--blue2);stroke-width:1.3}
+    .green{fill:var(--green);stroke:var(--green2);stroke-width:1.3}
+    .orange{fill:var(--orange);stroke:var(--orange2);stroke-width:1.3}
+    .ttl{font-size:15px;font-weight:700}
+    .lbl{font-size:12px}
+    .sm{font-size:10.5px;fill:var(--muted)}
+    .arw{stroke:var(--muted);stroke-width:1.3;fill:none;marker-end:url(#a)}
+    .branch{stroke-width:1.5;fill:none;marker-end:url(#a)}
+  </style>
+  <defs><marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker></defs>
+  <rect width="1150" height="540" fill="var(--bg)"/>
+
+  <!-- corpus -->
+  <g>
+    <rect class="box" x="22" y="110" width="165" height="34" rx="4" transform="rotate(-3 22 110)"/>
+    <rect class="box" x="30" y="102" width="165" height="34" rx="4" transform="rotate(-2 30 102)"/>
+    <rect class="box" x="40" y="94" width="165" height="34" rx="4"/>
+    <g fill="var(--muted)">
+      <rect x="52" y="104" width="90" height="5" rx="2"/><rect x="52" y="114" width="120" height="5" rx="2"/><rect x="52" y="124" width="70" height="5" rx="2"/>
+    </g>
+    <text class="ttl" x="22" y="160">大规模无标注文本</text>
+    <text class="sm" x="22" y="180">（海量文本数据）</text>
+  </g>
+  <path class="arw" d="M210,155 L280,155"/>
+  <text class="sm" x="210" y="144">自监督预训练</text>
+
+  <!-- pretrained model -->
+  <rect class="purple" x="285" y="100" width="235" height="120" rx="10"/>
+  <g fill="var(--purple2)">
+    <rect x="330" y="116" width="145" height="12" rx="3"/><rect x="330" y="134" width="145" height="12" rx="3"/><rect x="330" y="152" width="145" height="12" rx="3"/>
+  </g>
+  <text class="ttl" x="315" y="190">预训练模型</text>
+  <text class="sm" x="325" y="208">（通用的语言表示）</text>
+
+  <!-- capabilities -->
+  <rect class="panel" x="245" y="270" width="365" height="235" rx="10"/>
+  <text class="ttl" x="300" y="296">学到的通用语言能力</text>
+  <g>
+    <rect class="blue" x="260" y="312" width="103" height="32" rx="5"/><text class="sm" x="280" y="332">词义表示</text>
+    <rect class="blue" x="373" y="312" width="103" height="32" rx="5"/><text class="sm" x="386" y="332">上下文理解</text>
+    <rect class="blue" x="486" y="312" width="110" height="32" rx="5"/><text class="sm" x="508" y="332">句法关系</text>
+
+    <rect class="blue" x="260" y="354" width="103" height="32" rx="5"/><text class="sm" x="280" y="374">语义关联</text>
+    <rect class="blue" x="373" y="354" width="103" height="32" rx="5"/><text class="sm" x="386" y="374">指代与搭配</text>
+    <rect class="blue" x="486" y="354" width="110" height="32" rx="5"/><text class="sm" x="500" y="374">通用语言模式</text>
+  </g>
+  <text class="sm" x="260" y="425">这些能力来自大规模文本，不依赖具体任务标签。</text>
+  <path class="arw" d="M402,220 L402,270"/>
+  <path class="arw" d="M340,220 L340,270"/>
+  <path class="arw" d="M465,220 L465,270"/>
+
+  <!-- branches -->
+  <g>
+    <rect class="box" x="630" y="80" width="165" height="54" rx="6"/>
+    <text class="lbl" x="642" y="102">少量标注数据</text>
+    <text class="sm" x="642" y="120">（文本 + 标签）</text>
+    <path class="branch" d="M520,140 C580,140 580,107 628,107" stroke="var(--blue2)"/>
+    <path class="arw" d="M795,107 L825,107"/>
+    <text class="sm" x="800" y="96">微调</text>
+    <rect class="blue" x="828" y="80" width="115" height="54" rx="6"/><text class="lbl" x="860" y="112">分类头</text>
+    <path class="arw" d="M943,107 L973,107"/>
+    <rect class="box" x="976" y="80" width="140" height="54" rx="6"/><text class="sm" x="992" y="101">分类结果</text><text class="sm" x="992" y="118">positive</text>
+  </g>
+
+  <g>
+    <rect class="box" x="630" y="210" width="165" height="54" rx="6"/>
+    <text class="lbl" x="642" y="232">少量标注数据</text>
+    <text class="sm" x="642" y="250">（文本 + 实体标签）</text>
+    <path class="branch" d="M520,160 C580,160 580,237 628,237" stroke="var(--green2)"/>
+    <path class="arw" d="M795,237 L825,237"/>
+    <text class="sm" x="800" y="226">微调</text>
+    <rect class="green" x="828" y="210" width="115" height="54" rx="6"/><text class="lbl" x="848" y="242">序列标注头</text>
+    <path class="arw" d="M943,237 L973,237"/>
+    <rect class="box" x="976" y="210" width="140" height="54" rx="6"/><text class="sm" x="992" y="231">实体识别结果</text><text class="sm" x="992" y="248">B-PER</text>
+  </g>
+
+  <g>
+    <rect class="box" x="630" y="340" width="165" height="54" rx="6"/>
+    <text class="lbl" x="642" y="362">少量标注数据</text>
+    <text class="sm" x="642" y="380">（问题 + 答案）</text>
+    <path class="branch" d="M520,180 C580,180 580,367 628,367" stroke="var(--orange2)"/>
+    <path class="arw" d="M795,367 L825,367"/>
+    <text class="sm" x="800" y="356">微调</text>
+    <rect class="orange" x="828" y="340" width="115" height="54" rx="6"/><text class="lbl" x="860" y="372">问答头</text>
+    <path class="arw" d="M943,367 L973,367"/>
+    <rect class="box" x="976" y="340" width="140" height="54" rx="6"/><text class="sm" x="992" y="361">答案</text><text class="sm" x="992" y="378">北京</text>
+  </g>
+
+  <text class="sm" x="630" y="430">同一个预训练主干，只训练任务头；任务数据通常远少于预训练语料。</text>
+  <text class="sm" x="22" y="500">预训练不是 GPT 独有：BERT 与 GPT-1 采用预训练 + 微调，T5 也在此框架内；GPT-2 起转向不改参数的上下文学习。</text>
+</svg>

@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" role="img" aria-labelledby="t d">
+  <title id="t">BERT、T5、GPT 三种架构</title>
+  <desc id="d">BERT 使用编码器和双向注意力，输出上下文表示；T5 使用编码器解码器，把任务统一为文本到文本；GPT 使用解码器和因果注意力，自回归预测下一个 Token。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--bert:#e6f5ea;--bert2:#3f8f5a;--t5:#e8f0ff;--t52:#3b5bdb;--gpt:#f3ebff;--gpt2:#7a4fc0;--box:#ffffff}
+    @media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--bert:#263d2e;--bert2:#8fd3a5;--t5:#26344c;--t52:#a8bcff;--gpt:#332b47;--gpt2:#c7a6ff;--box:#38475c}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .panel{fill:var(--panel);stroke:var(--line);stroke-width:1}
+    .box{fill:var(--box);stroke:var(--line);stroke-width:1}
+    .stack{fill:none;stroke:var(--line);stroke-width:1.3;stroke-dasharray:6 4}
+    .ttl{font-size:16px;font-weight:700}
+    .lbl{font-size:11.5px}
+    .sm{font-size:9.5px;fill:var(--muted)}
+    .arw{stroke:var(--muted);stroke-width:1.2;fill:none;marker-end:url(#a)}
+    .blue{fill:var(--t5);stroke:var(--t52);stroke-width:1.3}
+    .green{fill:var(--bert);stroke:var(--bert2);stroke-width:1.3}
+    .purple{fill:var(--gpt);stroke:var(--gpt2);stroke-width:1.3}
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker>
+  </defs>
+  <rect width="1100" height="640" fill="var(--bg)"/>
+
+  <!-- BERT -->
+  <rect class="panel" x="15" y="15" width="345" height="610" rx="10"/>
+  <text class="ttl" x="30" y="42">BERT · Encoder-only</text>
+  <text class="sm" x="30" y="60">双向注意力，学习上下文表示</text>
+
+  <g>
+    <rect class="box" x="38" y="90" width="58" height="24" rx="4"/><text class="sm" x="47" y="106">[CLS]</text>
+    <rect class="box" x="102" y="90" width="44" height="24" rx="4"/><text class="sm" x="112" y="106">我</text>
+    <rect class="box" x="152" y="90" width="52" height="24" rx="4"/><text class="sm" x="163" y="106">喜欢</text>
+    <rect class="box" x="210" y="90" width="52" height="24" rx="4"/><text class="sm" x="220" y="106">NLP</text>
+    <rect class="box" x="268" y="90" width="58" height="24" rx="4"/><text class="sm" x="275" y="106">[SEP]</text>
+  </g>
+  <text class="sm" x="30" y="80">输入</text>
+  <path class="arw" d="M188,118 L188,140"/>
+  <rect class="box" x="55" y="145" width="265" height="30" rx="5"/><text class="lbl" x="110" y="164">Token Embedding + 位置编码</text>
+  <path class="arw" d="M188,175 L188,198"/>
+  <rect class="stack green" x="45" y="200" width="285" height="235" rx="8"/>
+  <text class="sm" x="57" y="219">Encoder × L</text>
+  <rect class="box" x="65" y="230" width="245" height="34" rx="5"/><text class="lbl" x="125" y="252">Self-Attention（双向）</text>
+  <rect class="box" x="65" y="278" width="245" height="28" rx="5"/><text class="lbl" x="145" y="297">Add &amp; Norm</text>
+  <rect class="box" x="65" y="320" width="245" height="32" rx="5"/><text class="lbl" x="155" y="341">Feed Forward</text>
+  <rect class="box" x="65" y="366" width="245" height="28" rx="5"/><text class="lbl" x="145" y="385">Add &amp; Norm</text>
+  <path class="arw" d="M188,435 L188,462"/>
+  <rect class="box green" x="65" y="467" width="245" height="34" rx="5"/><text class="lbl" x="95" y="489">上下文表示（每个位置）</text>
+  <text class="sm" x="30" y="540">适合分类、问答、序列标注；不能直接自回归生成。</text>
+
+  <!-- T5 -->
+  <rect class="panel" x="378" y="15" width="345" height="610" rx="10"/>
+  <text class="ttl" x="393" y="42">T5 · Encoder-Decoder</text>
+  <text class="sm" x="393" y="60">所有任务统一为 text-to-text</text>
+
+  <g>
+    <rect class="box" x="394" y="90" width="92" height="24" rx="4"/><text class="sm" x="401" y="106">translate:</text>
+    <rect class="box" x="491" y="90" width="86" height="24" rx="4"/><text class="sm" x="499" y="106">The house</text>
+    <rect class="box" x="582" y="90" width="70" height="24" rx="4"/><text class="sm" x="592" y="106">is...</text>
+  </g>
+  <text class="sm" x="393" y="80">输入：任务前缀 + 文本</text>
+  <path class="arw" d="M522,118 L522,140"/>
+  <rect class="box" x="410" y="145" width="225" height="30" rx="5"/><text class="lbl" x="450" y="164">Token Embedding + 位置</text>
+  <path class="arw" d="M470,175 L470,198"/>
+
+  <rect class="stack blue" x="393" y="200" width="145" height="235" rx="8"/>
+  <text class="sm" x="405" y="219">Encoder × L</text>
+  <rect class="box" x="405" y="230" width="120" height="32" rx="5"/><text class="sm" x="420" y="250">Self-Attention</text>
+  <rect class="box" x="405" y="276" width="120" height="26" rx="5"/><text class="sm" x="423" y="294">Add &amp; Norm</text>
+  <rect class="box" x="405" y="318" width="120" height="30" rx="5"/><text class="sm" x="428" y="338">Feed Forward</text>
+
+  <rect class="stack blue" x="565" y="200" width="145" height="235" rx="8"/>
+  <text class="sm" x="577" y="219">Decoder × L</text>
+  <rect class="box" x="577" y="230" width="120" height="30" rx="5"/><text class="sm" x="588" y="249">Causal Attn</text>
+  <rect class="box" x="577" y="274" width="120" height="30" rx="5"/><text class="sm" x="594" y="293">Cross-Attn</text>
+  <rect class="box" x="577" y="318" width="120" height="30" rx="5"/><text class="sm" x="612" y="337">FFN</text>
+  <path class="arw" d="M538,250 L565,250"/>
+  <text class="sm" x="534" y="240">encoder</text>
+
+  <path class="arw" d="M637,435 L637,462"/>
+  <rect class="box blue" x="540" y="467" width="190" height="34" rx="5"/><text class="lbl" x="568" y="489">输出文本（逐 Token 生成）</text>
+  <text class="sm" x="393" y="540">任务格式统一；但学会新任务通常仍需要训练数据。</text>
+
+  <!-- GPT -->
+  <rect class="panel" x="741" y="15" width="344" height="610" rx="10"/>
+  <text class="ttl" x="756" y="42">GPT · Decoder-only</text>
+  <text class="sm" x="756" y="60">因果注意力，自回归生成</text>
+
+  <g>
+    <rect class="box" x="760" y="90" width="58" height="24" rx="4"/><text class="sm" x="772" y="106">我</text>
+    <rect class="box" x="824" y="90" width="58" height="24" rx="4"/><text class="sm" x="836" y="106">喜欢</text>
+    <rect class="box" x="888" y="90" width="62" height="24" rx="4"/><text class="sm" x="899" y="106">NLP</text>
+    <rect class="box" x="956" y="90" width="62" height="24" rx="4"/><text class="sm" x="967" y="106">？</text>
+  </g>
+  <text class="sm" x="756" y="80">输入（已生成前缀）</text>
+  <path class="arw" d="M910,118 L910,140"/>
+  <rect class="box" x="770" y="145" width="280" height="30" rx="5"/><text class="lbl" x="795" y="164">Token Embedding + 位置编码</text>
+  <path class="arw" d="M910,175 L910,198"/>
+  <rect class="stack purple" x="756" y="200" width="310" height="235" rx="8"/>
+  <text class="sm" x="768" y="219">Decoder × L</text>
+  <rect class="box" x="785" y="230" width="250" height="34" rx="5"/><text class="lbl" x="835" y="252">Causal Self-Attention</text>
+  <rect class="box" x="785" y="278" width="250" height="28" rx="5"/><text class="lbl" x="870" y="297">Add &amp; Norm</text>
+  <rect class="box" x="785" y="320" width="250" height="32" rx="5"/><text class="lbl" x="880" y="341">Feed Forward</text>
+  <rect class="box" x="785" y="366" width="250" height="28" rx="5"/><text class="lbl" x="870" y="385">Add &amp; Norm</text>
+  <path class="arw" d="M910,435 L910,462"/>
+  <rect class="box purple" x="770" y="467" width="280" height="34" rx="5"/><text class="lbl" x="795" y="489">下一个 Token 的概率分布</text>
+  <text class="sm" x="756" y="540">同一个模型用续写完成翻译、摘要、问答。</text>
+</svg>

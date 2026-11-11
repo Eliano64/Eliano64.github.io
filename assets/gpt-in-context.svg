@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" role="img" aria-labelledby="t d">
+  <title id="t">GPT 的上下文学习</title>
+  <desc id="d">GPT-3 在参数不变的情况下，从任务描述、少量示例和输出要求中识别任务并生成结果；不需要更新模型参数。</desc>
+  <style>
+    :root{--bg:#ffffff;--fg:#1b2330;--muted:#5b6572;--line:#c8d0da;--panel:#f6f8fc;--accent:#3b5bdb;--hi:#e8efff;--gpt:#f3ebff;--gpt2:#7a4fc0;--ok:#e8f5ec;--ok2:#3f8f5a;--box:#ffffff}
+    @media (prefers-color-scheme:dark){:root{--bg:#232d3b;--fg:#ffffff;--muted:#dbe3ef;--line:#8d9bb1;--panel:#313e52;--accent:#a8bcff;--hi:#34445e;--gpt:#332b47;--gpt2:#c7a6ff;--ok:#263d2e;--ok2:#8fd3a5;--box:#38475c}}
+    text{font-family:system-ui,-apple-system,"Noto Sans SC","Microsoft YaHei",sans-serif;fill:var(--fg)}
+    .box{fill:var(--box);stroke:var(--line);stroke-width:1}
+    .panel{fill:var(--panel);stroke:var(--line);stroke-width:1}
+    .hi{fill:var(--hi);stroke:var(--accent);stroke-width:1.3}
+    .gpt{fill:var(--gpt);stroke:var(--gpt2);stroke-width:1.4}
+    .ok{fill:var(--ok);stroke:var(--ok2);stroke-width:1.3}
+    .ttl{font-size:15px;font-weight:700}
+    .lbl{font-size:11px}
+    .sm{font-size:9.5px;fill:var(--muted)}
+    .arw{stroke:var(--muted);stroke-width:1.3;fill:none;marker-end:url(#a)}
+  </style>
+  <defs><marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker></defs>
+  <rect width="1000" height="430" fill="var(--bg)"/>
+  <text class="ttl" x="24" y="32">GPT 的上下文学习</text>
+  <text class="sm" x="24" y="50">参数不变，任务信息全部放进输入上下文</text>
+
+  <!-- prompt -->
+  <rect class="panel" x="24" y="75" width="300" height="280" rx="9"/>
+  <text class="lbl" x="38" y="100">上下文（Prompt）</text>
+  <rect class="box" x="40" y="115" width="268" height="42" rx="6"/>
+  <text class="sm" x="52" y="134">任务描述：把英语翻译成中文</text>
+  <rect class="box" x="40" y="170" width="268" height="70" rx="6"/>
+  <text class="sm" x="52" y="190">少 量 示 例：</text>
+  <text class="sm" x="52" y="208">英语：apple　中文：苹果</text>
+  <text class="sm" x="52" y="226">英语：orange　中文：？</text>
+  <rect class="box" x="40" y="255" width="268" height="42" rx="6"/>
+  <text class="sm" x="52" y="274">输出要求：只给中文，不要解释</text>
+  <text class="sm" x="40" y="325">示例只作为当前输入的一部分，不写入参数。</text>
+
+  <path class="arw" d="M324,215 L365,215"/>
+  <text class="sm" x="326" y="204">输入上下文</text>
+
+  <!-- model -->
+  <rect class="gpt" x="368" y="120" width="220" height="190" rx="9"/>
+  <text class="ttl" x="420" y="150">GPT-3</text>
+  <text class="sm" x="388" y="172">同一个预训练模型</text>
+  <rect class="box" x="390" y="190" width="176" height="34" rx="5"/><text class="sm" x="408" y="212">上下文学习</text>
+  <text class="sm" x="390" y="248">阅读任务描述与示例</text>
+  <text class="sm" x="390" y="266">识别任务模式与输出格式</text>
+  <text class="sm" x="390" y="292">参数保持固定</text>
+
+  <path class="arw" d="M588,215 L628,215"/>
+  <text class="sm" x="590" y="204">生成</text>
+
+  <!-- output -->
+  <rect class="ok" x="632" y="160" width="150" height="110" rx="8"/>
+  <text class="lbl" x="648" y="185">输出</text>
+  <text class="sm" x="648" y="208">中文：橙子</text>
+  <text class="sm" x="648" y="230">（按示例格式续写）</text>
+
+  <!-- bottom -->
+  <g>
+    <rect class="box" x="24" y="375" width="300" height="36" rx="6"/><text class="sm" x="38" y="398">同一个模型，不针对任务改结构</text>
+    <rect class="box" x="340" y="375" width="310" height="36" rx="6"/><text class="sm" x="354" y="398">换任务只换上下文，不更新参数</text>
+    <rect class="box" x="666" y="375" width="310" height="36" rx="6"/><text class="sm" x="680" y="398">GPT-2 零样本；GPT-3 系统比较多示例</text>
+  </g>
+</svg>

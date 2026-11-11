@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Transformer Variants | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="三种路线原版 Transformer 为机器翻译设计，为了让它能应用到更多 NLP 工作，后续工作从结构、训练目标和任务接口上改造它，形成三个代表模型：  BERT（Bidirectional Encoder Representations from Transformers）只保留编码器，利用双向上下文学习可迁移的语言表示； T5（Text-to-Text Transfer Transforme">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transformer Variants">
+<meta property="og:url" content="https://eliano64.github.io/2026/11/11/Transformer-Variants/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="三种路线原版 Transformer 为机器翻译设计，为了让它能应用到更多 NLP 工作，后续工作从结构、训练目标和任务接口上改造它，形成三个代表模型：  BERT（Bidirectional Encoder Representations from Transformers）只保留编码器，利用双向上下文学习可迁移的语言表示； T5（Text-to-Text Transfer Transforme">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-11-11T04:20:00.000Z">
+<meta property="article:modified_time" content="2026-11-11T08:37:09.711Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="Transformer">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Transformer Variants",
+  "url": "https://eliano64.github.io/2026/11/11/Transformer-Variants/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-11-11T04:20:00.000Z",
+  "dateModified": "2026-11-11T08:37:09.711Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/11/11/Transformer-Variants/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Transformer Variants',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">329</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Transformer Variants</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Transformer Variants</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-11T04:20:00.000Z" title="发表于 2026-11-11 12:20:00">2026-11-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-11T08:37:09.711Z" title="更新于 2026-11-11 16:37:09">2026-11-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.1k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="三种路线"><a href="#三种路线" class="headerlink" title="三种路线"></a>三种路线</h1><p>原版 Transformer 为机器翻译设计，为了让它能应用到更多 NLP 工作，后续工作从结构、训练目标和任务接口上改造它，形成三个代表模型：</p>
+<ol>
+<li>BERT（Bidirectional Encoder Representations from Transformers）只保留编码器，利用双向上下文学习可迁移的语言表示；</li>
+<li>T5（Text-to-Text Transfer Transformer）保留编码器与解码器，把所有任务统一为 Text-to-Text；</li>
+<li>GPT（Generative Pre-trained Transformer）只保留解码器，做自回归语言建模，预测下一个 Token。</li>
+</ol>
+<p><img src="/assets/transformer-variants.svg" alt="BERT、T5、GPT 三种架构|670"></p>
+<h1 id="BERT"><a href="#BERT" class="headerlink" title="BERT"></a>BERT</h1><p>BERT 的训练分两步：先在海量无标注文本上<strong>预训练</strong>，再用少量标注数据<strong>微调</strong>。这也是 BERT 与 GPT-1 的共同起点；T5 仍在此框架内，GPT-2 起才转向不改参数的上下文学习。</p>
+<h2 id="预训练与微调"><a href="#预训练与微调" class="headerlink" title="预训练与微调"></a>预训练与微调</h2><p>这种方式的核心思路是 <strong>先从海量文本学习语言，再适配具体任务。</strong></p>
+<p>传统监督流程按任务分别准备标注数据、设计专用网络或输出头，并从随机初始化训练。它有四个问题：标注成本高且难以复用；每个任务都从零开始学习语言；任务之间不共享语言知识；换任务就要重新训练，部署多套模型。</p>
+<p>预训练把“学习语言”和“适配任务”拆开：无标注文本先提供自监督信号，主干只训练一次；微调只接少量任务数据，学习任务头。这样，通用语言能力可以复用，任务适配的成本降到少量标注数据。</p>
+<p>微调阶段在预训练主干的输出上接任务头：分类接分类头，序列标注接序列标注头，问答接问答头；再用少量标注数据训练。</p>
+<p>微调的作用是把通用语言表示迁移到具体任务。这样不必从零学习语言。</p>
+<p><img src="/assets/pretrain-finetune.svg" alt="预训练与微调|820"></p>
+<h2 id="掩码语言模型"><a href="#掩码语言模型" class="headerlink" title="掩码语言模型"></a>掩码语言模型</h2><p>BERT 只使用 Transformer 编码器。编码器的自注意力是双向的：每个位置同时读取左右上下文，输出每个位置的上下文表示。它不直接做自回归生成，而是把预训练目标设计成掩码语言建模（MLM）。</p>
+<p>具体做法是随机选中约 15% 的 Token，其中 80% 替换为 <code>[MASK]</code>，10% 替换为随机词，10% 保持不变。编码器看到的是被破坏后的整句，训练目标是恢复被选中位置的原始 Token；损失只在这些位置计算。</p>
+<p><img src="/assets/bert-mlm.svg" alt="BERT 的掩码语言建模|675"></p>
+<p>例如“我去银行办理了 <code>[MASK]</code> 业务”，模型可以同时利用前面的“银行”和后面的“业务”推断被遮位置。双向上下文适合分类、问答、序列标注等理解任务；但编码器没有自回归生成机制，做开放式生成需要额外接解码器或设计生成流程。</p>
+<h1 id="T5"><a href="#T5" class="headerlink" title="T5"></a>T5</h1><p>T5 使用完整的编码器解码器。它把分类、翻译、摘要、问答都改写成“文本输入到文本输出”，任务类型由输入前缀表达，例如 <code>sst2 sentence:</code>、<code>translate English to German:</code>、<code>summarize:</code>。同一个模型用同一套生成机制完成不同任务。</p>
+<p><img src="/assets/t5-text-to-text.svg" alt="T5 的文本到文本统一|675"></p>
+<p>与“每个任务一个专用头”相比，T5 统一了任务接口，减少了模型结构上的分支。但格式统一不等于无需适配：新任务通常仍需要训练数据；编码器、解码器和交叉注意力同时存在，结构和工程链路也更复杂。</p>
+<h1 id="GPT"><a href="#GPT" class="headerlink" title="GPT"></a>GPT</h1><p>GPT 只使用解码器，注意力是因果的：每个位置只能看到自己和之前的位置，训练目标是预测下一个 Token。这个目标与生成方式直接一致，模型学到的就是“给定前缀，续写下一个 Token”。</p>
+<p>GPT-1 采用预训练加微调，验证了这条路线可行。GPT-2 把参数扩大到约 15 亿，尝试不微调的零样本任务迁移：把摘要标记、语言标签或问答格式写进提示，让同一个模型以续写方式完成任务。需要说明的是，GPT-2 在当时的效果仍很一般，很多任务不如 T5；它证明的是路线可行，不是立即全面领先。</p>
+<p>GPT-3 把参数扩大到 175B，并系统比较零样本、单样本和少样本。它把任务描述、少量示例和输出要求一起放进上下文，模型在参数不变的情况下识别任务模式并生成结果，这就是<strong>上下文学习 in-context learning</strong>。</p>
+<p><img src="/assets/gpt-in-context.svg" alt="GPT 的上下文学习|664"></p>
+<div class="callout callout-note">
+<div class="callout-title"><i class="fa-solid fa-pencil callout-icon"></i><span class="callout-title-text">上下文学习与微调</span></div>
+<div class="callout-content"><p>微调把示例作为训练数据，更新模型参数，适配结果保存在权重中；换任务要训练或加载适配后的模型。<br>上下文学习把示例作为当前输入的一部分，不更新参数，适配结果只存在于当前上下文；换任务只需更换任务描述和示例。<br>微调适合稳定、长期复用的任务；上下文学习适合快速试做、少样本或无法微调的模型。</p>
+</div>
+</div>
+<p>对开发者来说，遇到新任务可以先更换任务说明和示例，用同一个模型立即试做，不需要先准备标注数据和微调专用模型。因此能快速验证效果、降低前期成本。效果不够时，再决定是否训练。</p>
+<h2 id="Prompt-Engineering"><a href="#Prompt-Engineering" class="headerlink" title="Prompt Engineering"></a>Prompt Engineering</h2><p>Prompt 是交给模型的输入上下文，通常包括任务描述、少量示例和输出要求。GPT-3 在参数不变时从这些内容中识别任务模式：任务描述说明要做什么，示例给出输入输出的对应关系，输出要求约束格式与风格。</p>
+<p>按示例数量，常见设置有零样本、单样本和少样本：零样本只给任务描述，单样本给一个示例，少样本给几个示例。示例选哪些、怎么排序、如何描述输出格式，都会改变结果；Prompt Engineering 研究的是这些输入设计，不涉及参数更新。</p>
+<p>Prompt 的效果受上下文长度、示例质量和任务复杂度限制。</p>
+<h2 id="Context-Engineering"><a href="#Context-Engineering" class="headerlink" title="Context Engineering"></a>Context Engineering</h2><p>Context Engineering 本质上也是在控制交给模型的提示词：模型每次行动前，究竟能看到哪些任务目标、资料、工具说明、历史动作和最新结果。</p>
+<p>Agent 要连续执行，提示词就要随任务进展更新。每一步都要检索新信息、压缩旧记录，把当下最有用的内容交给模型，才能让它接着前一步决定下一步。</p>
+<h2 id="Scaling-Law"><a href="#Scaling-Law" class="headerlink" title="Scaling Law"></a>Scaling Law</h2><p>当其他条件不构成瓶颈时，增加参数量、数据量、计算量任一投入，语言建模损失会按较稳定的幂律趋势下降，这就是 Scaling Law。</p>
+<p><img src="/assets/scaling-law.svg" alt="Scaling Law|675"></p>
+<p>GPT-2 到 GPT-3 的跃迁说明，路线优势直到规模、数据与训练目标同时推进后才充分显现。</p>
+<h1 id="为什么-GPT-路线胜出"><a href="#为什么-GPT-路线胜出" class="headerlink" title="为什么 GPT 路线胜出"></a>为什么 GPT 路线胜出</h1><p>但现在 Decoder-Only 的 GPT 路线最终成为主流。原因可以归到三点：训练信号更密集、任务切换靠上下文、结构更简单。</p>
+<p><img src="/assets/gpt-advantages.svg" alt="GPT 路线的三个优势|675"></p>
+<p>第一，自回归目标更密集，也更统一。长度为 <script type="math/tex">N</script> 的文本，多个位置都能产生“预测下一个 Token”的监督；网页、书籍、代码、对话，只要是连续文本，都能套用同一目标。BERT 的 MLM 与 T5 的填空式目标需要构造掩码或缺失片段，训练时的“填空”与使用时的“续写”并不完全一致。</p>
+<p>第二，任务切换的成本降低。遇到新任务，可以先改任务描述和示例，用同一个模型试做；不必先准备标注数据并训练专用任务头。代价是上下文长度有限，效果不足时仍要微调或训练。</p>
+<p>第三，解码器结构简单，便于工程扩展。同一套解码器层反复堆叠，训练切分与显存管理更直接；推理围绕逐 Token 生成，可以用 KV Cache、批处理和推理调度优化。结构简单不保证效果好，但这些工程经验可以复用到结构相近的模型上。</p>
+<p>这三条优势在规模扩大时被放大，Scaling Law 与 GPT-3 的少样本能力由此成为可能。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/11/11/Transformer-Variants/">https://eliano64.github.io/2026/11/11/Transformer-Variants/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/10/Transformer-Architecture/" title="Transformer Architecture"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Transformer Architecture</div></div><div class="info-2"><div class="info-item-1">  ↻ + −    </div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/11/09/Attention-In-Transformer/" title="Attention In Transformer"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-09</div><div class="info-item-2">Attention In Transformer</div></div><div class="info-2"><div class="info-item-1">序列中的信息读取Attention 计算序列中不同位置 Token 之间的匹配关系，再按匹配程度读取并汇总信息，为每个 Token 生成新的上下文表示。 循环网络靠隐藏状态沿时间步传递信息。句尾要读句首，必须经过中间一连串隐藏状态，路径随序列变长；同一层的不同位置也不能同时计算。自注意力让每个 Token 用自己的查询直接匹配整个序列的键，再汇总值，任意两个位置之间只有一步。 在进入注意力之前，每个 Token 的向量主要表示自身的语义与位置。经过注意力之后，新向量已经融合了序列中其他相关位置的信息。向量的形状不变，变化的是内容。自注意力的输出序列长度与输入相同。  一次注意力计算分为三步：打分、归一化、加权求和。通用形式见 一次注意力计算。 三类注意力Transformer...</div></div></div></a><a class="pagination-related" href="/2026/11/10/Decoder-Workflow/" title="Decoder Workflow"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-10</div><div class="info-item-2">Decoder Workflow</div></div><div class="info-2"><div class="info-item-1">解码器的任务编码器把输入序列转换成一份可以反复读取的表示 \mathbf{H}，形状为 S\times d_{\text{model}}。这里 S 是编码器输入序列长度（源序列长度）。d_{\text{model}} 是 token 向量的表示维度数。 解码器从一个起始 Token &lt;BOS&gt; 开始，不断预测下一个 Token。它每生成一个 Token，就把这个 Token 追加到已生成的前缀后面，再预测下一个，直到生成 &lt;EOS&gt;。 推理设目标序列总长度为 T，当前生成第 t 个 Token，前缀长度为 t。第 t 步的输入是已经生成的前缀。前缀经过输出侧 Embedding 与位置编码后，得到解码器表示 \mathbf{X}_D，形状为 t\times d_{\text{model}}。 解码器的一层依次执行掩码自注意力、交叉注意力、FFN。每个模块后面都跟着 Add &amp; Norm，作用与编码器中完全相同。一层解码器只完成一轮历史理解、编码器信息融合和特征加工；完整的解码器会堆叠多个结构相同的层，每层有自己独立的注意力与 FFN...</div></div></div></a><a class="pagination-related" href="/2026/11/10/Encoder-Workflow/" title="Encoder Workflow"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-10</div><div class="info-item-2">Encoder Workflow</div></div><div class="info-2"><div class="info-item-1">从序列矩阵开始设序列长度为 N，每个 Token 的表示维数为 d_{\text{model}}。Embedding 把每个 Token 映射成 d_{\text{model}} 维向量，再加上 位置编码，得到序列表示矩阵 \mathbf{X}^{(0)}，形状为 N\times d_{\text{model}}。矩阵的行对应位置，列对应特征；不同行共享同一组权重。  此后在各模块之间传递的，始终是由所有 Token 向量组成的这份矩阵。 一层编码器编码器的一层包含两个子层：多头自注意力，以及逐位置的前馈网络。每个子层都带残差连接与 LayerNorm。自注意力中，查询、键、值都来自同一个 \mathbf{X}^{(0)}，因此每个位置都能与整个序列交换信息。这正是自注意力，而不是交叉注意力。 自注意力子层设输入为 \mathbf{X}^{(0)}。自注意力先让 Token 之间交换信息： \mathbf{A}=\operatorname{MultiHeadAttention}(\mathbf{X}^{(0)}) \mathbf{A} 的形状与 \mathbf{X}^{(0)}...</div></div></div></a><a class="pagination-related" href="/2026/11/10/Multi-Head-Attention/" title="Multi Head Attention"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-10</div><div class="info-item-2">Multi Head Attention</div></div><div class="info-2"><div class="info-item-1">为什么需要多个 Head单个 Head 只有一套投影矩阵，所有位置之间的关系都被压进同一个表示空间。一个查询在更新自身表示时，只能按这一组空间里的相似度分配权重。 如果同一个位置既需要依靠语法关系，又需要依靠指代、时间或状态关系，一组权重可以在多个位置之间分配比例，但无法同时用两套标准衡量同一组位置。 多个 Head 给同一份输入多套投影，让同一个序列在多个不同的表示空间中分别建立关系，再把各空间得到的信息重新融合。 这与 CNN 用多个卷积核提取多组特征的做法类似。每个卷积核只看局部窗口里的一种模式，多个核并行覆盖不同模式；多个 Head 也并行覆盖不同的关系模式。多头不是新的计算机制，而是自注意力在不同子空间里的并行重复。 每个 Head 最终学到什么，由训练过程决定。模型不会预先规定某个 Head 负责指代、另一个负责语法，训练只要求整体预测正确。 例如句子「猫昨天在窗台睡觉，因为它累了」。在这个句子上，四个 Head 可以分别关注：  Head 1 关注指代：它指的是猫。 Head 2 关注时间：昨天修饰睡觉。 Head 3 关注动作：猫发出睡觉这个动作。 Head 4...</div></div></div></a><a class="pagination-related" href="/2026/11/09/Position-Encoding/" title="Position Encoding"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-09</div><div class="info-item-2">Position Encoding</div></div><div class="info-2"><div class="info-item-1">为什么需要位置编码循环网络按时间步依次处理 Token，Token 的先后顺序由递推结构隐含表示。Transformer 以并行计算替代递推，所有位置同时参与注意力计算，序列顺序不再进入计算。 但由于自注意力并不天然关注顺序信息，因此在进入第一层自注意力之前，需要为每个 Token 补充位置信息。词向量表示 Token 的语义，位置向量表示它在序列中的位置，两者相加后作为模型输入： \mathbf{X}_i = \operatorname{Embedding}(x_i) + \operatorname{PositionalEncoding}(i) 位置向量的维数与词向量相同，都是 d_{\text{model}}。逐元素相加之后，输入形状不变，后面的投影矩阵也不需要改动。 同一个 Token 出现在不同位置时，得到的 \mathbf{X}_i...</div></div></div></a><a class="pagination-related" href="/2026/11/10/Transformer-Architecture/" title="Transformer Architecture"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-10</div><div class="info-item-2">Transformer Architecture</div></div><div class="info-2"><div class="info-item-1">  ↻ + −    </div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">329</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E8%B7%AF%E7%BA%BF"><span class="toc-text">三种路线</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BERT"><span class="toc-text">BERT</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%84%E8%AE%AD%E7%BB%83%E4%B8%8E%E5%BE%AE%E8%B0%83"><span class="toc-text">预训练与微调</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A9%E7%A0%81%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B"><span class="toc-text">掩码语言模型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#T5"><span class="toc-text">T5</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#GPT"><span class="toc-text">GPT</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Prompt-Engineering"><span class="toc-text">Prompt Engineering</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context-Engineering"><span class="toc-text">Context Engineering</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Scaling-Law"><span class="toc-text">Scaling Law</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-GPT-%E8%B7%AF%E7%BA%BF%E8%83%9C%E5%87%BA"><span class="toc-text">为什么 GPT 路线胜出</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/11/Transformer-Variants/" title="Transformer Variants">Transformer Variants</a><time datetime="2026-11-11T04:20:00.000Z" title="发表于 2026-11-11 12:20:00">2026-11-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Transformer-Architecture/" title="Transformer Architecture">Transformer Architecture</a><time datetime="2026-11-10T05:35:00.000Z" title="发表于 2026-11-10 13:35:00">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Decoder-Workflow/" title="Decoder Workflow">Decoder Workflow</a><time datetime="2026-11-10T03:45:00.000Z" title="发表于 2026-11-10 11:45:00">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Encoder-Workflow/" title="Encoder Workflow">Encoder Workflow</a><time datetime="2026-11-10T03:20:00.000Z" title="发表于 2026-11-10 11:20:00">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Multi-Head-Attention/" title="Multi Head Attention">Multi Head Attention</a><time datetime="2026-11-09T16:20:00.000Z" title="发表于 2026-11-10 00:20:00">2026-11-10</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/11/Transformer-Variants/" title="Transformer Variants">Transformer Variants</a><time datetime="2026-11-11T08:37:09.711Z" title="更新于 2026-11-11 16:37:09">2026-11-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Word-Embeddings/" title="Word Embeddings">Word Embeddings</a><time datetime="2026-11-11T07:29:29.019Z" title="更新于 2026-11-11 15:29:29">2026-11-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/09/Logistic-Regression/" title="Logistic Regression">Logistic Regression</a><time datetime="2026-11-10T15:24:55.238Z" title="更新于 2026-11-10 23:24:55">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/Transformer-Prerequisites/" title="Transformer Prerequisites">Transformer Prerequisites</a><time datetime="2026-11-10T15:23:40.427Z" title="更新于 2026-11-10 23:23:40">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/27/Natural-Language-Processing/" title="Natural Language Processing">Natural Language Processing</a><time datetime="2026-11-10T15:23:40.416Z" title="更新于 2026-11-10 23:23:40">2026-11-10</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>
