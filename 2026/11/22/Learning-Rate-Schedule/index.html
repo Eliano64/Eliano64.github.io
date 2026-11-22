@@ -1,0 +1,410 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Learning Rate Schedule | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="为什么需要学习率调度学习率调度（Learning Rate Schedule） 将原本恒定的全局学习率替换为随训练步数 t 动态变化的函数 \eta_t：初期参数随机须稳步热身，中期放大步长加速穿越平缓坡面，后期收小步长在谷底精细收敛。下表展示了在两层 MLP（784→128→10）训练 5 个 epoch 时改变固定学习率的典型现象：    固定学习率 训练现象 5 epoch 后损失 5 ep">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Learning Rate Schedule">
+<meta property="og:url" content="https://eliano64.github.io/2026/11/22/Learning-Rate-Schedule/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="为什么需要学习率调度学习率调度（Learning Rate Schedule） 将原本恒定的全局学习率替换为随训练步数 t 动态变化的函数 \eta_t：初期参数随机须稳步热身，中期放大步长加速穿越平缓坡面，后期收小步长在谷底精细收敛。下表展示了在两层 MLP（784→128→10）训练 5 个 epoch 时改变固定学习率的典型现象：    固定学习率 训练现象 5 epoch 后损失 5 ep">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-11-22T14:09:57.000Z">
+<meta property="article:modified_time" content="2026-11-22T15:43:23.169Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="MachineLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Learning Rate Schedule",
+  "url": "https://eliano64.github.io/2026/11/22/Learning-Rate-Schedule/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-11-22T14:09:57.000Z",
+  "dateModified": "2026-11-22T15:43:23.169Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/11/22/Learning-Rate-Schedule/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Learning Rate Schedule',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">328</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Learning Rate Schedule</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Learning Rate Schedule</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-22T14:09:57.000Z" title="发表于 2026-11-22 22:09:57">2026-11-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-22T15:43:23.169Z" title="更新于 2026-11-22 23:43:23">2026-11-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="为什么需要学习率调度"><a href="#为什么需要学习率调度" class="headerlink" title="为什么需要学习率调度"></a>为什么需要学习率调度</h1><p><strong>学习率调度（Learning Rate Schedule）</strong> 将原本恒定的全局学习率替换为随训练步数 <script type="math/tex">t</script> 动态变化的函数 <script type="math/tex">\eta_t</script>：初期参数随机须稳步热身，中期放大步长加速穿越平缓坡面，后期收小步长在谷底精细收敛。下表展示了在两层 MLP（<code>784→128→10</code>）训练 5 个 epoch 时改变固定学习率的典型现象：</p>
+<table>
+<thead>
+<tr>
+<th>固定学习率</th>
+<th>训练现象</th>
+<th>5 epoch 后损失</th>
+<th>5 epoch 后准确率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><script type="math/tex">10</script></td>
+<td>首步发散飙升并卡死，未能收敛</td>
+<td><script type="math/tex">2.34</script></td>
+<td>约 10%</td>
+</tr>
+<tr>
+<td><script type="math/tex">1.0</script></td>
+<td>损失可下降，但跨过谷底剧烈震荡</td>
+<td><script type="math/tex">1.07</script></td>
+<td>约 59%</td>
+</tr>
+<tr>
+<td><script type="math/tex">0.1</script></td>
+<td>平稳快速下降，处于最优区间</td>
+<td><script type="math/tex">0.07</script></td>
+<td>约 97%</td>
+</tr>
+<tr>
+<td><script type="math/tex">10^{-5}</script></td>
+<td>单步位移微乎其微，几乎停滞</td>
+<td><script type="math/tex">2.31</script></td>
+<td>约 15%</td>
+</tr>
+</tbody></table>
+<h2 id="调度与自适应优化器"><a href="#调度与自适应优化器" class="headerlink" title="调度与自适应优化器"></a>调度与自适应优化器</h2><p>即使使用 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Gradient-Descent&#x2F;#Adam-与-AdamW（双旋钮合体与解耦）" class="wikilink">Adam &#x2F; AdamW</a>，二阶矩分母调整的也只是<strong>各参数间的相对步长比例</strong>，全局乘子 <script type="math/tex">\eta_t</script>（设第 <script type="math/tex">t</script> 步参数为 <script type="math/tex">\boldsymbol{\theta}_t</script>，偏差修正矩为 <script type="math/tex">\hat{\boldsymbol{m}}_t, \hat{\boldsymbol{s}}_t</script>，<script type="math/tex">\delta</script> 为防除零小常数）仍完全受外部调度控制：</p>
+<script type="math/tex; mode=display">\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_t - \eta_t \cdot \frac{\hat{\boldsymbol{m}}_t}{\sqrt{\hat{\boldsymbol{s}}_t} + \delta}</script>
+<h1 id="线性预热（Warmup）"><a href="#线性预热（Warmup）" class="headerlink" title="线性预热（Warmup）"></a>线性预热（Warmup）</h1><p>在训练最初若干步（尤其是 Adam &#x2F; AdamW 初期），二阶矩滑动平均样本数极少、分母开方后方差极大，直接采用峰值步长极易引起步长过冲发散。<strong>线性预热</strong>让学习率在前 <script type="math/tex">T_{\text{warmup}}</script> 步从接近 0 线性升温至峰值 <script type="math/tex">\eta_{\max}</script>：</p>
+<script type="math/tex; mode=display">\eta_t = \eta_{\max} \cdot \frac{t}{T_{\text{warmup}}}, \qquad t \le T_{\text{warmup}}</script>
+<p>下表对比四层 MLP 配 Adam（<script type="math/tex">\eta=0.02</script>）训练 MNIST 时加入 200 步线性预热的稳定效果：</p>
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>前 50 batch 最大损失</th>
+<th>5 epoch 测试准确率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接采用 <script type="math/tex">0.02</script></td>
+<td><script type="math/tex">17.73</script></td>
+<td>91.75%</td>
+</tr>
+<tr>
+<td>加入 200 步线性预热</td>
+<td><script type="math/tex">2.30</script></td>
+<td>94.74%</td>
+</tr>
+</tbody></table>
+<h2 id="PyTorch-预热写法"><a href="#PyTorch-预热写法" class="headerlink" title="PyTorch 预热写法"></a>PyTorch 预热写法</h2><p>使用 <code>LinearLR</code> 通过非零 <code>start_factor</code> 控制起步倍率并在到达 <code>total_iters</code> 后精准衔接主峰值：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.optim.lr_scheduler <span class="keyword">import</span> LinearLR</span><br><span class="line"></span><br><span class="line">warmup_scheduler = LinearLR(</span><br><span class="line">    optimizer, start_factor=<span class="number">1e-3</span>, end_factor=<span class="number">1.0</span>, total_iters=warmup_steps</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h1 id="主流调度策略"><a href="#主流调度策略" class="headerlink" title="主流调度策略"></a>主流调度策略</h1><p>预热完成后按训练预算、数据延续性与验证指标形态，主要分为五类策略：</p>
+<h2 id="余弦退火（Cosine-Annealing）"><a href="#余弦退火（Cosine-Annealing）" class="headerlink" title="余弦退火（Cosine Annealing）"></a>余弦退火（Cosine Annealing）</h2><p>沿半周期余弦曲线将学习率从峰值 <script type="math/tex">\eta_{\max}</script> 平滑衰减至下界 <script type="math/tex">\eta_{\min}</script>（<script type="math/tex">T</script> 为衰减总步数），呈「前平、中陡、后缓」分布减少步长跳变：</p>
+<script type="math/tex; mode=display">\eta_t = \eta_{\min} + \frac{1}{2}\left(\eta_{\max} - \eta_{\min}\right)\left(1 + \cos\left(\frac{t\pi}{T}\right)\right)</script>
+<p>注意 PyTorch 的 <code>CosineAnnealingLR</code> 在调用超过 <code>T_max</code> 后会按余弦周期回弹上升，应与总循环次数严格对齐（若带重启探索其他极小点常与稳态动量&#x2F;二阶矩失配，大模型较少用）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.optim.lr_scheduler <span class="keyword">import</span> CosineAnnealingLR</span><br><span class="line"></span><br><span class="line">scheduler = CosineAnnealingLR(optimizer, T_max=<span class="number">100</span>, eta_min=<span class="number">1e-6</span>)</span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    train(...)</span><br><span class="line">    scheduler.step()</span><br></pre></td></tr></table></figure>
+
+<h2 id="预热-恒定-衰减（WSD）"><a href="#预热-恒定-衰减（WSD）" class="headerlink" title="预热-恒定-衰减（WSD）"></a>预热-恒定-衰减（WSD）</h2><p>标准余弦退火开训前须锁死总步数 <script type="math/tex">T</script>，不便于中途追加语料续训。现代大模型预训练广泛改用 <strong>WSD（Warmup-Stable-Decay）</strong> 三阶段调度：</p>
+<ol>
+<li><strong>Warmup</strong>：线性升温至峰值学习率。</li>
+<li><strong>Stable</strong>：长期维持高稳态学习率持续训练；任意中间检查点均可无缝延长语料步数直接续训。</li>
+<li><strong>Decay</strong>：仅在全部训练尾声（如最后 10% 步数）快速退火至近零完成精调收口。</li>
+</ol>
+<h2 id="阶梯与指数衰减"><a href="#阶梯与指数衰减" class="headerlink" title="阶梯与指数衰减"></a>阶梯与指数衰减</h2><p>记初始学习率为 <script type="math/tex">\eta_0</script>、衰减系数为 <script type="math/tex">\gamma\in(0,1)</script>：</p>
+<ul>
+<li><strong>阶梯衰减（Step &#x2F; MultiStep）</strong>：每满 <script type="math/tex">T_{\text{step}}</script> 步乘 <script type="math/tex">\gamma</script>（<script type="math/tex">\eta_t=\eta_0\gamma^{\lfloor t/T_{\text{step}}\rfloor}</script>），或每越过预设节点 <script type="math/tex">\{m_1,\dots,m_N\}</script> 时衰减（记越过节点数 <script type="math/tex">c=\sum_{i=1}^N \mathbf{1}_{\{t\ge m_i\}}</script> 则 <script type="math/tex">\eta_t=\eta_0\gamma^c</script>），简单但需人工定死节点。</li>
+<li><strong>指数衰减（Exponential）</strong>：每步固定乘系数 <script type="math/tex">\eta_t = \eta_0 \gamma^t</script>。对 <script type="math/tex">\gamma</script> 极敏感（如 <script type="math/tex">0.99^{1000}\approx 4\times 10^{-5}</script> 而 <script type="math/tex">0.999^{1000}\approx 0.37</script>）。</li>
+</ul>
+<h2 id="按验证集反馈：ReduceLROnPlateau"><a href="#按验证集反馈：ReduceLROnPlateau" class="headerlink" title="按验证集反馈：ReduceLROnPlateau"></a>按验证集反馈：ReduceLROnPlateau</h2><p>当收敛所需轮数未知或训练易进平台期时，可监控验证指标在连续 <code>patience</code> 轮不下降后自动缩减学习率：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.optim.lr_scheduler <span class="keyword">import</span> ReduceLROnPlateau</span><br><span class="line"></span><br><span class="line">scheduler = ReduceLROnPlateau(optimizer, mode=<span class="string">&quot;min&quot;</span>, factor=<span class="number">0.5</span>, patience=<span class="number">5</span>, min_lr=<span class="number">1e-6</span>)</span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">    train(...)</span><br><span class="line">    val_loss = evaluate(...)</span><br><span class="line">    scheduler.step(val_loss)  <span class="comment"># 显式传入验证指标，连续 5 轮未降减半学习率</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="单周期调度：OneCycleLR"><a href="#单周期调度：OneCycleLR" class="headerlink" title="单周期调度：OneCycleLR"></a>单周期调度：OneCycleLR</h2><p><code>OneCycleLR</code> 按 <strong>batch</strong> 粒度执行，在前 <code>pct_start</code> 段将学习率升至 <code>max_lr</code> 随后余弦退火，同时使动量与学习率反向联动（学习率升时动量降），适合固定预算下的紧凑模型快训：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> torch.optim.lr_scheduler <span class="keyword">import</span> OneCycleLR</span><br><span class="line"></span><br><span class="line">scheduler = OneCycleLR(optimizer, max_lr=<span class="number">0.1</span>, total_steps=epochs * <span class="built_in">len</span>(train_loader), pct_start=<span class="number">0.3</span>)</span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> <span class="built_in">range</span>(epochs):</span><br><span class="line">    <span class="keyword">for</span> batch <span class="keyword">in</span> train_loader:</span><br><span class="line">        loss = train_step(batch)</span><br><span class="line">        optimizer.step()</span><br><span class="line">        scheduler.step()      <span class="comment"># 在每个 batch 后步进，而非 epoch 末尾</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="调度策略选型"><a href="#调度策略选型" class="headerlink" title="调度策略选型"></a>调度策略选型</h1><p>大规模预训练首选 <strong>Warmup + Cosine</strong> 或 <strong>WSD</strong>，步数未知的中小规模调优先用 <strong>ReduceLROnPlateau</strong>，固定预算从头快训可用 <strong>OneCycleLR</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>调度依据与步进粒度</th>
+<th>典型适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Warmup + Cosine Annealing</td>
+<td>预先确定总步数，按 step 推进</td>
+<td>固定算力预算的大模型与视觉预训练</td>
+</tr>
+<tr>
+<td>WSD（Warmup-Stable-Decay）</td>
+<td>恒定主阶段加尾段退火，按 step 推进</td>
+<td>需随时追加语料续训的持续预训练</td>
+</tr>
+<tr>
+<td>Step &#x2F; MultiStep Decay</td>
+<td>固定步距或指定节点衰减</td>
+<td>成熟卷积视觉基线复现</td>
+</tr>
+<tr>
+<td>Exponential Decay</td>
+<td>每步按 <script type="math/tex">\gamma</script> 连续指数收缩</td>
+<td>需要平滑指数降步长的短程任务</td>
+</tr>
+<tr>
+<td>ReduceLROnPlateau</td>
+<td>验证指标连续 <code>patience</code> 轮停滞降速</td>
+<td>总轮数未知的中小实验与微调</td>
+</tr>
+<tr>
+<td>OneCycleLR</td>
+<td>单周期先升后降伴动量反联，按 batch 推进</td>
+<td>总步数已知、追求快收敛的从头训练</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/11/22/Learning-Rate-Schedule/">https://eliano64.github.io/2026/11/22/Learning-Rate-Schedule/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/11/22/Regularization/" title="Regularization"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Regularization</div></div><div class="info-2"><div class="info-item-1">正则化（Regularization） 在保留模型主结构的前提下，从损失函数、参数更新、网络结构、训练流程或数据侧追加约束来压缩有效容量，用略高的训练误差换取更低的验证误差，从而抑制 过拟合。约束强度须由独立验证集挑选，过强会把模型推向欠拟合；现代训练流水线常将多种机制叠加使用：    方法 作用位置 核心机制 工程要点    L1 &#x2F; L2 正则化 损失函数 追加权重绝对值或平方和惩罚，限制幅度 线性模型可用 L1 稀疏选特征；深网首选光滑的 L2   权重衰减（AdamW） 参数更新 每步按 (1-\eta\lambda) 直接缩放权重 配合自适应优化器时须与梯度解耦，直接使用 AdamW   Dropout 网络结构 训练前向按概率 p 置零并用 1/(1-p) 缩放存活输出 按验证曲线调 p；海量语料 LLM 预训练常取 0   早停 训练流程 连续 patience...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/08/Data-Preprocessing/" title="Data Preprocessing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Data Preprocessing</div></div><div class="info-2"><div class="info-item-1"> Cite Garbage in, garbage out.   真实数据普遍混杂缺失值、极端离群点、离散文本与量纲差异。整条预处理流程只守一条防线：所有变换规则与统计量只能从训练集估计，再原样应用到验证集与测试集（下文结合泰坦尼克数据集示例说明工程取舍）。 划分与防泄露边界数据划分为三个互斥子集（完整评估指标与交叉验证详见 Model-Evaluation）：    子集 常见比例 核心职责    训练集 60% 到 80% 拟合模型参数并估计全部预处理统计量   验证集 10% 到 20% 比较候选方案、调整超参数与特征工程   测试集 10% 到 20% 模拟线上未见数据，仅作最终一次泛化评估    数据泄露（Data Leakage） 若用包含验证集或测试集的全体样本估计缺失值、编码清单或均值方差，测试信息就会提前渗入训练。铁律是**训练集调用 fit（或 fit_transform），验证与测试集只能调用 transform**（K 折交叉验证时必须在每一折的训练子集内部重新 fit）：   123456from sklearn.impute import...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Decision-Tree/" title="Decision Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Decision Tree</div></div><div class="info-2"><div class="info-item-1">决策树的位置逻辑回归 将所有特征乘权重后一次相加得出分数；决策树（Decision Tree） 则按单一特征的阈值条件逐层提问，将样本集合递归分裂为越来越纯的子集。从根到叶的判断链即为一条可直接解释的推理规则，无需像权重回归那样逐项反推归因，树由三类部件构成：    部件 在树中的位置 承担的角色    内部节点 每次分叉处 针对单个特征的判断条件   树枝分支 引出的有向边 判断结果的对应取值或区间分支   叶节点 不再分叉的末端 最终类别标签或连续预测均值   每次分裂的选择建树的核心决策只有一件事：当前节点挑选哪一个特征及切分点能把不同类别分得最干净，度量“有多一致”的指标即纯度（Purity）。 熵与信息增益熵（Entropy） 度量当前节点 D 内类别分布的不确定度。设类别总数为 K，第 k 类样本占比为 p_k（约定 0\log 0 = 0）： H(D) = -\sum_{k=1}^{K} p_k \log_2 p_k 两类各半（p_1=p_2=0.5）时熵取最大值 1 比特；节点全属同一类（p_1=1）时熵最小为 0。 信息增益（Information Gain）...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">偏差-方差双路径：Bagging 与 Boosting单棵深 决策树 偏差小但方差极高（训练集增删几个样本就会剧烈改写整棵树结构）。集成学习组合多棵基树（棵数记为 T）以改善泛化，依降方差或降偏差分出两条路线：    路线 训练方式与目标 核心优化对象 代表算法    Bagging 各基学习器相互独立并行，各自拟合原始标签 y 后平均&#x2F;投票 压低方差（基学习器用低偏差深树） 随机森林（Random Forest）   Boosting 基学习器按序串行，每轮新树拟合前序模型未修完的负梯度 压低偏差（基学习器用低方差浅树） GBDT、XGBoost、LightGBM、CatBoost   平均如何削减方差设集合有 T 棵同分布基树 h_1,\dots,h_T，每棵误差方差均为 \sigma^2，任意两棵误差相关系数为 \rho，简单平均 \bar{h} = \frac{1}{T}\sum_{t=1}^T h_t 的误差方差满足： \operatorname{Var}(\bar{h}) = \rho\sigma^2 + \frac{1 -...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">为什么需要梯度下降梯度下降（Gradient Descent） 是面向无闭式解可微目标 \min_{\boldsymbol{\theta}} L(\boldsymbol{\theta}) 的通用一阶迭代优化方法（\boldsymbol{\theta} 为参数向量，L 为损失函数）。面对海量样本、高维特征或深度网络非凸地形，直接求逆解解析式（如 正规方程）不再现实，工程转而按「前向算损失 → 反向求梯度 → 负梯度更新 → 重复」四步循环逐轮压低损失。 !..&#x2F;assets&#x2F;gradient-descent-training-loop.svg 梯度计算与迭代更新损失对各参数偏导组成的向量 \nabla L 指向损失上升最快的方向。沿用 线性回归 MSE 记号（样本数 n、特征数 d、设计矩阵 \mathbf{X}\in\mathbb{R}^{n\times d}、标签 \boldsymbol{y}\in\mathbb{R}^n、权重 \boldsymbol{\theta}\in\mathbb{R}^d、偏置标量 b、全 1 向量...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归与线性性在 监督学习 中，待预测标签为连续实数时称为回归；线性回归用输入特征的线性加权和加偏置构造预测输出。数学上，映射 f 对向量 \boldsymbol{x},\boldsymbol{z} 与标量 a,c 满足齐次性与可加性 f(a\boldsymbol{x}+c\boldsymbol{z}) = af(\boldsymbol{x})+cf(\boldsymbol{z}) 才称线性；带非零偏置 b 时模型对输入是仿射映射，名称中的「线性」指固定特征时预测对待求参数呈线性（因此后文多项式回归仍属线性模型）。 从逐特征展开到矩阵形式面对 d 个特征（第 j 个特征记作 x_j，对应权重 \theta_j），将单样本特征列向量记为 \boldsymbol{x}=(x_1,\dots,x_d)^{\top}\in\mathbb{R}^d、权重记为 \boldsymbol{\theta}=(\theta_1,\dots,\theta_d)^{\top}\in\mathbb{R}^d，预测写作 \hat{y} =...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Logistic-Regression/" title="Logistic Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Logistic Regression</div></div><div class="info-2"><div class="info-item-1">从线性回归到 Sigmoid 概率映射逻辑回归（Logistic Regression） 针对二分类任务，在 线性回归 打分 z = \boldsymbol{w}^{\top}\boldsymbol{x} + b（其中特征向量 \boldsymbol{x}\in\mathbb{R}^d、权重 \boldsymbol{w}\in\mathbb{R}^d、偏置 b\in\mathbb{R}）末端接 Sigmoid 函数，将无界实数压缩进开区间 (0,1) 作为正类后验概率 \hat{y} = P(y=1 \mid \boldsymbol{x})： \sigma(z) = \frac{1}{1+e^{-z}}, \qquad \hat{y} = \sigma\left(\boldsymbol{w}^{\top}\boldsymbol{x} + b\right) = \frac{1}{1+e^{-(\boldsymbol{w}^{\top}\boldsymbol{x}+b)}} !..&#x2F;assets&#x2F;logistic-sigmoid.svg Sigmoid...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">328</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%AD%A6%E4%B9%A0%E7%8E%87%E8%B0%83%E5%BA%A6"><span class="toc-text">为什么需要学习率调度</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E4%B8%8E%E8%87%AA%E9%80%82%E5%BA%94%E4%BC%98%E5%8C%96%E5%99%A8"><span class="toc-text">调度与自适应优化器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E9%A2%84%E7%83%AD%EF%BC%88Warmup%EF%BC%89"><span class="toc-text">线性预热（Warmup）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#PyTorch-%E9%A2%84%E7%83%AD%E5%86%99%E6%B3%95"><span class="toc-text">PyTorch 预热写法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BB%E6%B5%81%E8%B0%83%E5%BA%A6%E7%AD%96%E7%95%A5"><span class="toc-text">主流调度策略</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%99%E5%BC%A6%E9%80%80%E7%81%AB%EF%BC%88Cosine-Annealing%EF%BC%89"><span class="toc-text">余弦退火（Cosine Annealing）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%84%E7%83%AD-%E6%81%92%E5%AE%9A-%E8%A1%B0%E5%87%8F%EF%BC%88WSD%EF%BC%89"><span class="toc-text">预热-恒定-衰减（WSD）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%B6%E6%A2%AF%E4%B8%8E%E6%8C%87%E6%95%B0%E8%A1%B0%E5%87%8F"><span class="toc-text">阶梯与指数衰减</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%89%E9%AA%8C%E8%AF%81%E9%9B%86%E5%8F%8D%E9%A6%88%EF%BC%9AReduceLROnPlateau"><span class="toc-text">按验证集反馈：ReduceLROnPlateau</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E5%91%A8%E6%9C%9F%E8%B0%83%E5%BA%A6%EF%BC%9AOneCycleLR"><span class="toc-text">单周期调度：OneCycleLR</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B0%83%E5%BA%A6%E7%AD%96%E7%95%A5%E9%80%89%E5%9E%8B"><span class="toc-text">调度策略选型</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/22/Learning-Rate-Schedule/" title="Learning Rate Schedule">Learning Rate Schedule</a><time datetime="2026-11-22T14:09:57.000Z" title="发表于 2026-11-22 22:09:57">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/22/Regularization/" title="Regularization">Regularization</a><time datetime="2026-11-22T13:58:08.000Z" title="发表于 2026-11-22 21:58:08">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/11/Transformer-Variants/" title="Transformer Variants">Transformer Variants</a><time datetime="2026-11-11T04:20:00.000Z" title="发表于 2026-11-11 12:20:00">2026-11-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Transformer-Architecture/" title="Transformer Architecture">Transformer Architecture</a><time datetime="2026-11-10T05:35:00.000Z" title="发表于 2026-11-10 13:35:00">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Decoder-Workflow/" title="Decoder Workflow">Decoder Workflow</a><time datetime="2026-11-10T03:45:00.000Z" title="发表于 2026-11-10 11:45:00">2026-11-10</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/26/Deep-Learning-Study-Route/" title="Deep Learning Study Route">Deep Learning Study Route</a><time datetime="2026-11-22T15:49:32.828Z" title="更新于 2026-11-22 23:49:32">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/09/Decision-Tree/" title="Decision Tree">Decision Tree</a><time datetime="2026-11-22T15:46:04.135Z" title="更新于 2026-11-22 23:46:04">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-11-22T15:46:00.243Z" title="更新于 2026-11-22 23:46:00">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Transformer-Architecture/" title="Transformer Architecture">Transformer Architecture</a><time datetime="2026-11-22T15:45:25.653Z" title="更新于 2026-11-22 23:45:25">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/10/Unsupervised-Learning/" title="Unsupervised Learning">Unsupervised Learning</a><time datetime="2026-11-22T15:44:11.113Z" title="更新于 2026-11-22 23:44:11">2026-11-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div></body></html>

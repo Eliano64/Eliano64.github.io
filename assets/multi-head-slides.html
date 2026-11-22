@@ -166,7 +166,7 @@ svg{display:block;width:100%;height:auto}
 
 
   <!-- 批量形状 -->
-  <text class="tag" x="20" y="620">批量形状（B 为批大小）：(B,N,d_model) → (B,N,h,d_k) → (B,h,N,d_k) → Attention → (B,N,d_model)</text>
+  <text class="tag" x="20" y="620">批量形状（B 为批大小）：(B,N,d_model) → (B,N,h,d_k) → (B,h,N,d_k) → Attention → (B,h,N,d_v) → (B,N,hd_v) → (B,N,d_model)</text>
   <text class="tag" x="20" y="644">每个 Head 都独立完成投影、打分、Softmax 与加权求和；拼接后再用 W_O 组合各 Head 的信息。</text>
 </svg>
 
@@ -179,7 +179,7 @@ const steps = [
   { title: "分头与线性投影", text: "每个 Head 各自用一组投影矩阵，从同一个 X 得到 Q、K、V。h 组投影同时进行，互不共享参数。" },
   { title: "每个 Head 的注意力", text: "在每个 Head 内部，查询与键先得到 N × N 的分数矩阵，Softmax 后按权重汇总 V，得到 N × d_v 的 head。" },
   { title: "拼接", text: "把 h 个 head 按维度并排，得到 N × h d_v 的矩阵。拼接只放在一起，各 Head 的信息还没有互相组合。" },
-  { title: "输出投影", text: "W_O 把 N × h d_v 映射回 N × d_model。它的每一行读取所有 Head 的维度，让各 Head 的信息重新组合。" }
+  { title: "输出投影", text: "W_O 把 N × h d_v 映射回 N × d_model。它的每一列读取所有 Head 的维度，让各 Head 的信息重新组合。" }
 ];
 const params = new URLSearchParams(location.search);
 let i = Math.max(0, Math.min(steps.length - 1, Number(params.get("step") || 1) - 1));

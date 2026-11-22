@@ -1,0 +1,376 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Regularization | Elian's blog page</title><meta name="author" content="Eliano"><meta name="copyright" content="Eliano"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="e963a3"><meta name="description" content="正则化（Regularization） 在保留模型主结构的前提下，从损失函数、参数更新、网络结构、训练流程或数据侧追加约束来压缩有效容量，用略高的训练误差换取更低的验证误差，从而抑制 过拟合。约束强度须由独立验证集挑选，过强会把模型推向欠拟合；现代训练流水线常将多种机制叠加使用：    方法 作用位置 核心机制 工程要点    L1 &#x2F; L2 正则化 损失函数 追加权重绝对值或平方和惩罚">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Regularization">
+<meta property="og:url" content="https://eliano64.github.io/2026/11/22/Regularization/index.html">
+<meta property="og:site_name" content="Elian&#39;s blog page">
+<meta property="og:description" content="正则化（Regularization） 在保留模型主结构的前提下，从损失函数、参数更新、网络结构、训练流程或数据侧追加约束来压缩有效容量，用略高的训练误差换取更低的验证误差，从而抑制 过拟合。约束强度须由独立验证集挑选，过强会把模型推向欠拟合；现代训练流水线常将多种机制叠加使用：    方法 作用位置 核心机制 工程要点    L1 &#x2F; L2 正则化 损失函数 追加权重绝对值或平方和惩罚">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/149126004?v=4">
+<meta property="article:published_time" content="2026-11-22T13:58:08.000Z">
+<meta property="article:modified_time" content="2026-11-22T15:44:08.868Z">
+<meta property="article:author" content="Eliano">
+<meta property="article:tag" content="MachineLearning">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/149126004?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Regularization",
+  "url": "https://eliano64.github.io/2026/11/22/Regularization/",
+  "image": "https://avatars.githubusercontent.com/u/149126004?v=4",
+  "datePublished": "2026-11-22T13:58:08.000Z",
+  "dateModified": "2026-11-22T15:44:08.868Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Eliano",
+      "url": "https://eliano64.github.io/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://eliano64.github.io/2026/11/22/Regularization/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><meta name="google-site-verification" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><meta name="msvalidate.01" content="eXUzAhZq-zLrX7wVr1rs6ok3OCK-u8L6UqZ-ZTpDito"/><link rel="stylesheet" href="/css/index.css?v=5.3.5"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'undefined')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'e963a3')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Regularization',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/obsidian-callout.css"><link rel="stylesheet" href="/css/obsidian-footnotes.css"><link rel="stylesheet" href="/css/obsidian-htmlcard.css"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Elian's blog page" type="application/atom+xml">
+</head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">328</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/bg.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Elian's blog page</span></a><a class="nav-page-title" href="/"><span class="site-name">Regularization</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> home</span></a></div><div class="menus_item"><a class="site-page" href="/archives"><i class="fa-fw fas fa-archive"></i><span> archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> tags</span></a></div><div class="menus_item"><a class="site-page" href="/graph/"><i class="fa-fw fas fa-project-diagram"></i><span> graph</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-user"></i><span> about</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Regularization</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-22T13:58:08.000Z" title="发表于 2026-11-22 21:58:08">2026-11-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-22T15:44:08.868Z" title="更新于 2026-11-22 23:44:08">2026-11-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Artificial-Intelligence/">Artificial Intelligence</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><strong>正则化（Regularization）</strong> 在保留模型主结构的前提下，从损失函数、参数更新、网络结构、训练流程或数据侧追加约束来压缩有效容量，用略高的训练误差换取更低的验证误差，从而抑制 <a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Model-Evaluation&#x2F;#欠拟合与过拟合" class="wikilink">过拟合</a>。约束强度须由独立验证集挑选，过强会把模型推向欠拟合；现代训练流水线常将多种机制叠加使用：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用位置</th>
+<th>核心机制</th>
+<th>工程要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1 &#x2F; L2 正则化</td>
+<td>损失函数</td>
+<td>追加权重绝对值或平方和惩罚，限制幅度</td>
+<td>线性模型可用 L1 稀疏选特征；深网首选光滑的 L2</td>
+</tr>
+<tr>
+<td>权重衰减（AdamW）</td>
+<td>参数更新</td>
+<td>每步按 <script type="math/tex">(1-\eta\lambda)</script> 直接缩放权重</td>
+<td>配合自适应优化器时须与梯度解耦，直接使用 AdamW</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>网络结构</td>
+<td>训练前向按概率 <script type="math/tex">p</script> 置零并用 <script type="math/tex">1/(1-p)</script> 缩放存活输出</td>
+<td>按验证曲线调 <script type="math/tex">p</script>；海量语料 LLM 预训练常取 <script type="math/tex">0</script></td>
+</tr>
+<tr>
+<td>早停</td>
+<td>训练流程</td>
+<td>连续 <code>patience</code> 轮验证无改善即停并回退最佳权重</td>
+<td>严禁用测试集代替验证集作停止判据</td>
+</tr>
+<tr>
+<td>数据增强与标签平滑</td>
+<td>数据与标签</td>
+<td>保标签随机变换拓宽输入分布，软化硬标签</td>
+<td>确保变换不破坏语义，可与上述正则协同叠加</td>
+</tr>
+</tbody></table>
+<h1 id="损失函数约束：L1-与-L2"><a href="#损失函数约束：L1-与-L2" class="headerlink" title="损失函数约束：L1 与 L2"></a>损失函数约束：L1 与 L2</h1><p>记原始经验损失为 <script type="math/tex">\mathcal{L}_{\text{原始}}</script>，全部标量权重为 <script type="math/tex">w_j</script>（<script type="math/tex">j</script> 为下标），正则系数 <script type="math/tex">\lambda > 0</script>。直接在损失后追加惩罚即得 <strong>L2 正则（Ridge）</strong> 与 <strong>L1 正则（Lasso）</strong>：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{L2}} = \mathcal{L}_{\text{原始}} + \frac{\lambda}{2}\sum_{j} w_j^{2}, \qquad
+\mathcal{L}_{\text{L1}} = \mathcal{L}_{\text{原始}} + \lambda\sum_{j} \left|w_j\right|</script>
+<p>两者在参数空间呈现不同约束几何形态：</p>
+<ul>
+<li><strong>L2 正则化</strong>：等值面为光滑超球面，导数 <script type="math/tex">\lambda w_j</script> 均匀压小所有权重但通常不归零；光滑可导，契合深度神经网络的协同表达需求。</li>
+<li><strong>L1 正则化</strong>：等值面为带尖角多面体，易先在坐标轴碰壁使大量权重恰等于 <script type="math/tex">0</script>，从而自动完成稀疏特征选择（只保证总体损失极小，不保证因果相关性）。</li>
+</ul>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||820)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||820)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/model-evaluation-l1-l2.html" style="width:100%;height:820px;border:0" loading="lazy"></iframe>
+</div>
+
+<h1 id="权重衰减与-AdamW"><a href="#权重衰减与-AdamW" class="headerlink" title="权重衰减与 AdamW"></a>权重衰减与 AdamW</h1><p>工程更习惯直接在参数更新步中衰减权重，但这在标准 <a href="&#x2F;2026&#x2F;10&#x2F;08&#x2F;Gradient-Descent&#x2F;" class="wikilink">SGD</a> 与自适应优化器中的等价性完全不同。</p>
+<h2 id="权重衰减与-SGD-下的等价性"><a href="#权重衰减与-SGD-下的等价性" class="headerlink" title="权重衰减与 SGD 下的等价性"></a>权重衰减与 SGD 下的等价性</h2><p>记单个权重在第 <script type="math/tex">t</script> 步的取值为 <script type="math/tex">w_t</script>、学习率为 <script type="math/tex">\eta</script>、衰减系数为 <script type="math/tex">\lambda</script>（常取 <script type="math/tex">10^{-4}</script> 至 <script type="math/tex">10^{-2}</script>）。<strong>权重衰减（Weight Decay）</strong> 先按 <script type="math/tex">(1-\eta\lambda)</script> 收缩 <script type="math/tex">w_t</script> 再扣减原始梯度步长；将 <script type="math/tex">\mathcal{L}_{\text{L2}}</script> 求导代入标准 SGD 更新式可得完全一致的结果（系数 <script type="math/tex">\frac{1}{2}</script> 恰好抵消求导系数 <script type="math/tex">2</script>）：</p>
+<script type="math/tex; mode=display">w_{t+1} = w_t - \eta\left(\frac{\partial \mathcal{L}_{\text{原始}}}{\partial w_t} + \lambda w_t\right) = (1 - \eta\lambda)w_t - \eta\frac{\partial \mathcal{L}_{\text{原始}}}{\partial w_t}</script>
+<h2 id="自适应优化器中的解耦：AdamW"><a href="#自适应优化器中的解耦：AdamW" class="headerlink" title="自适应优化器中的解耦：AdamW"></a>自适应优化器中的解耦：AdamW</h2><p>换用 Adam 时 L2 惩罚与权重衰减<strong>不再等价</strong>：把 <script type="math/tex">\lambda w_t</script> 写入损失会令其混入总梯度 <script type="math/tex">g_t = \frac{\partial \mathcal{L}_{\text{原始}}}{\partial w_t} + \lambda w_t</script> 并进入一阶矩 <script type="math/tex">m_t</script> 与二阶矩 <script type="math/tex">v_t</script>；经偏差修正 <script type="math/tex">\hat{m}_t, \hat{v}_t</script> 并除以 <script type="math/tex">\sqrt{\hat{v}_t}</script> 后，历史梯度小者惩罚被放大、梯度大者衰减被削弱，<script type="math/tex">\lambda</script> 失去统一语义。</p>
+<p><strong>AdamW</strong> 将权重衰减彻底从自适应梯度通道解耦，使偏差修正矩 <script type="math/tex">\hat{m}_t, \hat{v}_t</script> 只由原始梯度算出，再直接对 <script type="math/tex">w_t</script> 施以衰减（<script type="math/tex">\epsilon</script> 为防除零常数）：</p>
+<script type="math/tex; mode=display">w_{t+1} = (1 - \eta\lambda)w_t - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon}\hat{m}_t</script>
+<p>解耦恢复了统一的惩罚尺度，是 Transformer 与大语言模型的标准写法。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||820)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||820)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/adam-vs-adamw-update.html" style="width:100%;height:820px;border:0" loading="lazy"></iframe>
+</div>
+
+<h1 id="网络结构与训练流程约束"><a href="#网络结构与训练流程约束" class="headerlink" title="网络结构与训练流程约束"></a>网络结构与训练流程约束</h1><h2 id="Dropout"><a href="#Dropout" class="headerlink" title="Dropout"></a>Dropout</h2><p><strong>Dropout（随机失活）</strong> 在训练前向以概率 <script type="math/tex">p</script> 随机将一层神经元的激活置零（打破神经元对特定邻居的共适应依赖，并在推理时等效大量子网络的隐式集成）。</p>
+<p>工程普遍采用<strong>反向 Dropout（Inverted Dropout）</strong>：训练阶段将存活神经元输出同乘 <script type="math/tex">\frac{1}{1-p}</script> 维持期望不变，推理阶段直接关闭随机置零即可。丢弃率 <script type="math/tex">p</script> 依场景调整：全连接隐藏层常取 <script type="math/tex">0.5</script>，CNN 常置于池化或全连接之后，经典 Transformer 取 <script type="math/tex">0.1</script>，而在数据海量的现代大模型预训练中通常设 <script type="math/tex">p=0</script>；注意 <a href="&#x2F;2026&#x2F;10&#x2F;26&#x2F;Norm&#x2F;" class="wikilink">BatchNorm</a> 的批内噪声不能替代专门 Dropout。</p>
+<h2 id="早停"><a href="#早停" class="headerlink" title="早停"></a>早停</h2><p><strong>早停（Early Stopping）</strong> 靠监控独立验证集（严禁看测试集，见 <a href="&#x2F;2026&#x2F;10&#x2F;09&#x2F;Model-Evaluation&#x2F;#划分与交叉验证" class="wikilink">划分与交叉验证</a>）限制参数偏离初值的搜索半径：连续 <code>patience</code> 轮（常取 <code>5</code> 到 <code>20</code>）验证指标无改善即中止训练。由于确认过拟合滞后于最优拐点数轮，停机后务必加载验证表现最佳的历史 checkpoint。</p>
+<div class="html-card-embed">
+<div class="html-card-controls">
+<button class="html-card-reload" title="Reload" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.src=i.src">↻</button>
+<button class="html-card-resize-up" title="Taller" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=(parseInt(i.style.height||460)+80)+'px'">+</button>
+<button class="html-card-resize-down" title="Shorter" onclick="var i=this.closest('.html-card-embed').querySelector('iframe');i.style.height=Math.max(200,(parseInt(i.style.height||460)-80))+'px'">−</button>
+</div>
+<iframe src="/assets/early-stopping-window.html" style="width:100%;height:460px;border:0" loading="lazy"></iframe>
+</div>
+
+<h1 id="训练数据与标签约束"><a href="#训练数据与标签约束" class="headerlink" title="训练数据与标签约束"></a>训练数据与标签约束</h1><ul>
+<li><strong>数据增强（Data Augmentation）</strong>：对训练样本施以水平翻转、随机裁剪或亮度抖动扩宽分布，迫使模型学习跨变换的不变表示；前提是<strong>必须保持原标签语义成立</strong>（切掉核心目标会直接注入标签噪声，见下图对比）。</li>
+<li><strong>标签平滑与样本混合</strong>：<strong>标签平滑（Label Smoothing）</strong> 将硬 one-hot 的 <script type="math/tex">1</script> 与 <script type="math/tex">0</script> 微调向均匀分布软化，抑制 logits 冲向正无穷；<strong>Mixup &#x2F; CutMix</strong> 按比例线性混合两幅图像及其标签使类间边界过渡更平滑。</li>
+</ul>
+<p><img src="/assets/evaluation-label-transforms.svg" alt="左侧平移、镜像与亮度变化保留杯子标签；右侧裁剪把杯子移出画面，标签不再成立|390"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://eliano64.github.io">Eliano</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://eliano64.github.io/2026/11/22/Regularization/">https://eliano64.github.io/2026/11/22/Regularization/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://eliano64.github.io" target="_blank">Elian's blog page</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/149126004?v=4" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/11/11/Transformer-Variants/" title="Transformer Variants"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Transformer Variants</div></div><div class="info-2"><div class="info-item-1">三种路线Transformer 原为机器翻译设计；为服务更广泛的 NLP 任务，后续衍生出三条代表架构路线，下表对比各自保留的拓扑与预训练目标：    路线代表 保留架构模块 注意力可见范围 预训练目标与主要定位    BERT 仅 Encoder 全序列双向可见 掩码语言建模（MLM），主攻文本理解与表示提取   T5 Encoder + Decoder 编码器双向 + 解码器因果 全任务统一为 Text-to-Text 去噪填空生成   GPT 仅 Decoder 单向因果掩码（只看前文） 下一词元预测（NTP），主攻开放式自回归生成与大语言模型    BERT预训练与微调传统有监督任务需要为每个下游场景独立标注并从头学起语言规律；BERT 率先将过程拆为「无标注语料自监督预训练（只训练一次通用主干）+ 少量标注数据下游微调（接任务头快速迁移）」。  掩码语言模型BERT 保留编码器执行双向上下文编码，通过掩码语言建模（MLM）自监督训练：随机选中约 15% 的词元（80% 替换为 [MASK]、10% 替换为随机词、10% 保持原样），让模型结合左右文恢复原始词元且只在该...</div></div></div></a><a class="pagination-related" href="/2026/11/22/Learning-Rate-Schedule/" title="Learning Rate Schedule"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Learning Rate Schedule</div></div><div class="info-2"><div class="info-item-1">为什么需要学习率调度学习率调度（Learning Rate Schedule） 将原本恒定的全局学习率替换为随训练步数 t 动态变化的函数 \eta_t：初期参数随机须稳步热身，中期放大步长加速穿越平缓坡面，后期收小步长在谷底精细收敛。下表展示了在两层 MLP（784→128→10）训练 5 个 epoch 时改变固定学习率的典型现象：    固定学习率 训练现象 5 epoch 后损失 5 epoch 后准确率    10 首步发散飙升并卡死，未能收敛 2.34 约 10%   1.0 损失可下降，但跨过谷底剧烈震荡 1.07 约 59%   0.1 平稳快速下降，处于最优区间 0.07 约 97%   10^{-5} 单步位移微乎其微，几乎停滞 2.31 约 15%   调度与自适应优化器即使使用 Adam &#x2F; AdamW，二阶矩分母调整的也只是各参数间的相对步长比例，全局乘子 \eta_t（设第 t 步参数为 \boldsymbol{\theta}_t，偏差修正矩为 \hat{\boldsymbol{m}}_t,...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/08/Data-Preprocessing/" title="Data Preprocessing"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Data Preprocessing</div></div><div class="info-2"><div class="info-item-1"> Cite Garbage in, garbage out.   真实数据普遍混杂缺失值、极端离群点、离散文本与量纲差异。整条预处理流程只守一条防线：所有变换规则与统计量只能从训练集估计，再原样应用到验证集与测试集（下文结合泰坦尼克数据集示例说明工程取舍）。 划分与防泄露边界数据划分为三个互斥子集（完整评估指标与交叉验证详见 Model-Evaluation）：    子集 常见比例 核心职责    训练集 60% 到 80% 拟合模型参数并估计全部预处理统计量   验证集 10% 到 20% 比较候选方案、调整超参数与特征工程   测试集 10% 到 20% 模拟线上未见数据，仅作最终一次泛化评估    数据泄露（Data Leakage） 若用包含验证集或测试集的全体样本估计缺失值、编码清单或均值方差，测试信息就会提前渗入训练。铁律是**训练集调用 fit（或 fit_transform），验证与测试集只能调用 transform**（K 折交叉验证时必须在每一折的训练子集内部重新 fit）：   123456from sklearn.impute import...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Decision-Tree/" title="Decision Tree"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Decision Tree</div></div><div class="info-2"><div class="info-item-1">决策树的位置逻辑回归 将所有特征乘权重后一次相加得出分数；决策树（Decision Tree） 则按单一特征的阈值条件逐层提问，将样本集合递归分裂为越来越纯的子集。从根到叶的判断链即为一条可直接解释的推理规则，无需像权重回归那样逐项反推归因，树由三类部件构成：    部件 在树中的位置 承担的角色    内部节点 每次分叉处 针对单个特征的判断条件   树枝分支 引出的有向边 判断结果的对应取值或区间分支   叶节点 不再分叉的末端 最终类别标签或连续预测均值   每次分裂的选择建树的核心决策只有一件事：当前节点挑选哪一个特征及切分点能把不同类别分得最干净，度量“有多一致”的指标即纯度（Purity）。 熵与信息增益熵（Entropy） 度量当前节点 D 内类别分布的不确定度。设类别总数为 K，第 k 类样本占比为 p_k（约定 0\log 0 = 0）： H(D) = -\sum_{k=1}^{K} p_k \log_2 p_k 两类各半（p_1=p_2=0.5）时熵取最大值 1 比特；节点全属同一类（p_1=1）时熵最小为 0。 信息增益（Information Gain）...</div></div></div></a><a class="pagination-related" href="/2026/10/09/Ensemble-Learning/" title="Ensemble Learning"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">Ensemble Learning</div></div><div class="info-2"><div class="info-item-1">偏差-方差双路径：Bagging 与 Boosting单棵深 决策树 偏差小但方差极高（训练集增删几个样本就会剧烈改写整棵树结构）。集成学习组合多棵基树（棵数记为 T）以改善泛化，依降方差或降偏差分出两条路线：    路线 训练方式与目标 核心优化对象 代表算法    Bagging 各基学习器相互独立并行，各自拟合原始标签 y 后平均&#x2F;投票 压低方差（基学习器用低偏差深树） 随机森林（Random Forest）   Boosting 基学习器按序串行，每轮新树拟合前序模型未修完的负梯度 压低偏差（基学习器用低方差浅树） GBDT、XGBoost、LightGBM、CatBoost   平均如何削减方差设集合有 T 棵同分布基树 h_1,\dots,h_T，每棵误差方差均为 \sigma^2，任意两棵误差相关系数为 \rho，简单平均 \bar{h} = \frac{1}{T}\sum_{t=1}^T h_t 的误差方差满足： \operatorname{Var}(\bar{h}) = \rho\sigma^2 + \frac{1 -...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Gradient-Descent/" title="Gradient Descent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Gradient Descent</div></div><div class="info-2"><div class="info-item-1">为什么需要梯度下降梯度下降（Gradient Descent） 是面向无闭式解可微目标 \min_{\boldsymbol{\theta}} L(\boldsymbol{\theta}) 的通用一阶迭代优化方法（\boldsymbol{\theta} 为参数向量，L 为损失函数）。面对海量样本、高维特征或深度网络非凸地形，直接求逆解解析式（如 正规方程）不再现实，工程转而按「前向算损失 → 反向求梯度 → 负梯度更新 → 重复」四步循环逐轮压低损失。 !..&#x2F;assets&#x2F;gradient-descent-training-loop.svg 梯度计算与迭代更新损失对各参数偏导组成的向量 \nabla L 指向损失上升最快的方向。沿用 线性回归 MSE 记号（样本数 n、特征数 d、设计矩阵 \mathbf{X}\in\mathbb{R}^{n\times d}、标签 \boldsymbol{y}\in\mathbb{R}^n、权重 \boldsymbol{\theta}\in\mathbb{R}^d、偏置标量 b、全 1 向量...</div></div></div></a><a class="pagination-related" href="/2026/11/22/Learning-Rate-Schedule/" title="Learning Rate Schedule"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-22</div><div class="info-item-2">Learning Rate Schedule</div></div><div class="info-2"><div class="info-item-1">为什么需要学习率调度学习率调度（Learning Rate Schedule） 将原本恒定的全局学习率替换为随训练步数 t 动态变化的函数 \eta_t：初期参数随机须稳步热身，中期放大步长加速穿越平缓坡面，后期收小步长在谷底精细收敛。下表展示了在两层 MLP（784→128→10）训练 5 个 epoch 时改变固定学习率的典型现象：    固定学习率 训练现象 5 epoch 后损失 5 epoch 后准确率    10 首步发散飙升并卡死，未能收敛 2.34 约 10%   1.0 损失可下降，但跨过谷底剧烈震荡 1.07 约 59%   0.1 平稳快速下降，处于最优区间 0.07 约 97%   10^{-5} 单步位移微乎其微，几乎停滞 2.31 约 15%   调度与自适应优化器即使使用 Adam &#x2F; AdamW，二阶矩分母调整的也只是各参数间的相对步长比例，全局乘子 \eta_t（设第 t 步参数为 \boldsymbol{\theta}_t，偏差修正矩为 \hat{\boldsymbol{m}}_t,...</div></div></div></a><a class="pagination-related" href="/2026/10/08/Linear-Regression/" title="Linear Regression"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">Linear Regression</div></div><div class="info-2"><div class="info-item-1">线性回归与线性性在 监督学习 中，待预测标签为连续实数时称为回归；线性回归用输入特征的线性加权和加偏置构造预测输出。数学上，映射 f 对向量 \boldsymbol{x},\boldsymbol{z} 与标量 a,c 满足齐次性与可加性 f(a\boldsymbol{x}+c\boldsymbol{z}) = af(\boldsymbol{x})+cf(\boldsymbol{z}) 才称线性；带非零偏置 b 时模型对输入是仿射映射，名称中的「线性」指固定特征时预测对待求参数呈线性（因此后文多项式回归仍属线性模型）。 从逐特征展开到矩阵形式面对 d 个特征（第 j 个特征记作 x_j，对应权重 \theta_j），将单样本特征列向量记为 \boldsymbol{x}=(x_1,\dots,x_d)^{\top}\in\mathbb{R}^d、权重记为 \boldsymbol{\theta}=(\theta_1,\dots,\theta_d)^{\top}\in\mathbb{R}^d，预测写作 \hat{y} =...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/149126004?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Eliano</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">328</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Eliano64"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E7%BA%A6%E6%9D%9F%EF%BC%9AL1-%E4%B8%8E-L2"><span class="toc-text">损失函数约束：L1 与 L2</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F%E4%B8%8E-AdamW"><span class="toc-text">权重衰减与 AdamW</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%83%E9%87%8D%E8%A1%B0%E5%87%8F%E4%B8%8E-SGD-%E4%B8%8B%E7%9A%84%E7%AD%89%E4%BB%B7%E6%80%A7"><span class="toc-text">权重衰减与 SGD 下的等价性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E9%80%82%E5%BA%94%E4%BC%98%E5%8C%96%E5%99%A8%E4%B8%AD%E7%9A%84%E8%A7%A3%E8%80%A6%EF%BC%9AAdamW"><span class="toc-text">自适应优化器中的解耦：AdamW</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E4%B8%8E%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E7%BA%A6%E6%9D%9F"><span class="toc-text">网络结构与训练流程约束</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Dropout"><span class="toc-text">Dropout</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A9%E5%81%9C"><span class="toc-text">早停</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E4%B8%8E%E6%A0%87%E7%AD%BE%E7%BA%A6%E6%9D%9F"><span class="toc-text">训练数据与标签约束</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/22/Learning-Rate-Schedule/" title="Learning Rate Schedule">Learning Rate Schedule</a><time datetime="2026-11-22T14:09:57.000Z" title="发表于 2026-11-22 22:09:57">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/22/Regularization/" title="Regularization">Regularization</a><time datetime="2026-11-22T13:58:08.000Z" title="发表于 2026-11-22 21:58:08">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/11/Transformer-Variants/" title="Transformer Variants">Transformer Variants</a><time datetime="2026-11-11T04:20:00.000Z" title="发表于 2026-11-11 12:20:00">2026-11-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Transformer-Architecture/" title="Transformer Architecture">Transformer Architecture</a><time datetime="2026-11-10T05:35:00.000Z" title="发表于 2026-11-10 13:35:00">2026-11-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Decoder-Workflow/" title="Decoder Workflow">Decoder Workflow</a><time datetime="2026-11-10T03:45:00.000Z" title="发表于 2026-11-10 11:45:00">2026-11-10</time></div></div></div></div><div class="card-widget card-recently-updated"><div class="item-headline"><i class="fas fa-pen"></i><span>最近修改</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/26/Deep-Learning-Study-Route/" title="Deep Learning Study Route">Deep Learning Study Route</a><time datetime="2026-11-22T15:49:32.828Z" title="更新于 2026-11-22 23:49:32">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/09/Decision-Tree/" title="Decision Tree">Decision Tree</a><time datetime="2026-11-22T15:46:04.135Z" title="更新于 2026-11-22 23:46:04">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/05/Machine-Learning-Overview/" title="Machine Learning Overview">Machine Learning Overview</a><time datetime="2026-11-22T15:46:00.243Z" title="更新于 2026-11-22 23:46:00">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/11/10/Transformer-Architecture/" title="Transformer Architecture">Transformer Architecture</a><time datetime="2026-11-22T15:45:25.653Z" title="更新于 2026-11-22 23:45:25">2026-11-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/10/Unsupervised-Learning/" title="Unsupervised Learning">Unsupervised Learning</a><time datetime="2026-11-22T15:44:11.113Z" title="更新于 2026-11-22 23:44:11">2026-11-22</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2025 - 2026 By Eliano</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.5</a></div><div class="footer_custom_text">All Rights Reserved.</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.3.5"></script><script src="/js/main.js?v=5.3.5"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章..." type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.3.5"></script></div></div><script>window.__LOCAL_HTML_CARD_LINKS__={"0-1-Knapsack-DP":"/2025/09/26/0-1-Knapsack-DP/","2024-xv6-labs-2":"/2025/07/21/2024-xv6-labs-2/","2024-xv6-Labs-2":"/2025/07/21/2024-xv6-labs-2/","2024-xv6-Labs-1":"/2025/07/14/2024-xv6-Labs-1/","AOE-Network-And-Critical-Path":"/2026/06/28/AOE-Network-And-Critical-Path/","ARP":"/2026/07/08/ARP/","Adapter":"/2025/10/18/Adapter/","Activation-Function-Comparison":"/2026/10/26/Activation-Function-Comparison/","Adjacency-Matrix":"/2026/06/28/Adjacency-Matrix/","Agorithm-Basic-Concepts":"/2026/06/27/Agorithm-Basic-Concepts/","Analytic-Geometry-Of-Space":"/2026/08/24/Analytic-Geometry-Of-Space/","Application-Models":"/2026/07/10/Application-Models/","Antiderivative-And-Riemann-Integral":"/2026/08/18/Antiderivative-And-Riemann-Integral/","Adjacency-List":"/2026/06/28/Adjacency-List/","Arithmetic-Unit-Basics":"/2026/06/30/Arithmetic-Unit-Basics/","Array-Storage":"/2026/06/27/Array-Storage/","Attention":"/2026/10/27/Attention/","Attention-In-Transformer":"/2026/11/09/Attention-In-Transformer/","Backpropagation-Chain-Rule":"/2026/10/26/Backpropagation-Chain-Rule/","B-Tree-And-B-Plus-Tree":"/2026/06/29/B-Tree-And-B-Plus-Tree/","Backtracking":"/2026/06/24/Backtracking/","Balanced-Binary":"/2026/06/29/Balanced-Binary/","Big-Integer-Arithmetic":"/2026/09/15/Big-Integer-Arithmetic/","Big-Picture-For-Computer-Network":"/2026/08/20/Big-Picture-For-Computer-Network/","Best-Time-To-Buy-And-Sell-Stock":"/2025/10/12/Best-Time-To-Buy-And-Sell-Stock/","Big-Picture-For-IO":"/2026/08/15/Big-Picture-For-IO/","Binary-Constraint-Matching":"/2025/11/12/Binary-Constraint-Matching/","Binary-Tree-Storage":"/2026/06/27/Binary-Tree-Storage/","Binary-Search-Tree":"/2026/06/29/Binary-Search-Tree/","Binary-Tree":"/2026/06/27/Binary-Tree/","Boyer-Moore-Majority-Vote":"/2026/09/15/Boyer-Moore-Majority-Vote/","Bridge":"/2025/10/18/Bridge/","Binary-Tree-Traversal":"/2026/06/27/Binary-Tree-Traversal/","Buffer-Pool-Project-Study":"/2025/08/04/Buffer-Pool-Project-Study/","Bus-Overview":"/2026/07/03/Bus-Overview/","Builder":"/2025/10/12/Builder/","Bus-Timing":"/2026/07/03/Bus-Timing/","Bus-Performance":"/2026/07/03/Bus-Performance/","C-And-Cpp-Compilation":"/2026/06/24/C-And-Cpp-Compilation/","CDMA-Code-Division-Multiplexing":"/2026/07/07/CDMA-Code-Division-Multiplexing/","CPU-Modes":"/2026/07/10/CPU-Modes/","CNN-Architecture":"/2026/10/27/CNN-Architecture/","CISC-And-RISC":"/2026/07/02/CISC-And-RISC/","CPU-Pipeline":"/2026/07/03/CPU-Pipeline/","CPU-Multiprocessor-And-Hardware-Multithreading":"/2026/07/03/CPU-Multiprocessor-And-Hardware-Multithreading/","CPU-Scheduling-Metrics":"/2026/07/04/CPU-Scheduling-Metrics/","CPU-Datapath":"/2026/07/02/CPU-Datapath/","CPU-Scheduling":"/2026/07/04/CPU-Scheduling/","Cache-Memory":"/2026/07/01/Cache-Memory/","CPU-Structure":"/2026/07/10/CPU-Structure/","Cesaro-Mean-Theorem":"/2026/08/25/Cesaro-Mean-Theorem/","Chain-Of-Responsibility":"/2025/11/08/Chain-Of-Responsibility/","Circular-Queue":"/2026/06/27/Circular-Queue/","Closest-Equal-Element-Queries":"/2025/11/01/Closest-Equal-Element-Queries/","Combinatorial-Thinking-In-Data-Structures":"/2026/06/30/Combinatorial-Thinking-In-Data-Structures/","Cigarette-Smokers-Problem":"/2026/07/06/Cigarette-Smokers-Problem/","Circular-Linked-List":"/2026/06/27/Circular-Linked-List/","Channel-Capacity-Nyquist-Shannon":"/2026/07/07/Channel-Capacity-Nyquist-Shannon/","Command":"/2025/11/08/Command/","Common-Trigonometric-Identities":"/2026/08/18/Common-Trigonometric-Identities/","Complete-Graph":"/2026/06/28/Complete-Graph/","Composite":"/2025/10/25/Composite/","Computer-System-Overview":"/2026/06/30/Computer-System-Overview/","Computer-Network-Overview":"/2026/07/06/Computer-Network-Overview/","Counting-Sort":"/2026/06/29/Counting-Sort/","Contiguous-Memory-Allocation":"/2026/07/01/Contiguous-Memory-Allocation/","DHCP":"/2026/07/08/DHCP/","DAG-And-AOV-Network":"/2026/06/28/DAG-And-AOV-Network/","Data-And-Data-Elements":"/2026/06/27/Data-And-Data-Elements/","Cpp-STL":"/2026/06/24/Cpp-STL/","Data-Preprocessing":"/2026/10/08/Data-Preprocessing/","Data-Structure-Three-Elements":"/2026/06/27/Data-Structure-Three-Elements/","Data-Link-Layer-Functions":"/2026/07/07/Data-Link-Layer-Functions/","Data-Type-And-ADT":"/2026/06/27/Data-Type-And-ADT/","Deadlock-Basics-And-Necessary-Conditions":"/2026/07/06/Deadlock-Basics-And-Necessary-Conditions/","Deadlock-Handling-Strategies":"/2026/07/06/Deadlock-Handling-Strategies/","Decision-Tree":"/2026/10/09/Decision-Tree/","Decoder-Workflow":"/2026/11/10/Decoder-Workflow/","Decorator":"/2025/10/25/Decorator/","Deep-Learning-Study-Route":"/2026/10/26/Deep-Learning-Study-Route/","Deep-Learning-Training-Pipeline":"/2026/10/26/Deep-Learning-Training-Pipeline/","Deque":"/2026/06/27/Deque/","Device-Independence":"/2026/07/03/Device-Independence/","Differential-Equations":"/2026/08/18/Differential-Equations/","Disk-Management":"/2026/07/03/Disk-Management/","Docker":"/2025/09/26/Docker/","Distribution-And-Numerical-Characteristics":"/2026/09/05/Distribution-And-Numerical-Characteristics/","Domain-Name-System":"/2026/07/10/Domain-Name-System/","Doubly-Linked-List":"/2026/06/27/Doubly-Linked-List/","Email-System":"/2026/07/10/Email-System/","Difference-Array":"/2025/09/26/Difference-Array/","Encoder-Decoder-And-Seq2Seq":"/2026/10/27/Encoder-Decoder-And-Seq2Seq/","Dynamic-Programming":"/2026/06/24/Dynamic-Programming/","Directory":"/2026/07/03/Directory/","Encoder-Workflow":"/2026/11/10/Encoder-Workflow/","Dining-Philosophers-Problem":"/2026/07/06/Dining-Philosophers-Problem/","Encoding-And-Modulation":"/2026/07/07/Encoding-And-Modulation/","Ensemble-Learning":"/2026/10/09/Ensemble-Learning/","Error-Control-Coding":"/2026/07/07/Error-Control-Coding/","Ethernet":"/2026/07/07/Ethernet/","Exception-And-Interrupt":"/2026/07/03/Exception-And-Interrupt/","Exchange-Sorts":"/2026/06/29/Exchange-Sorts/","Expression-Evaluation-With-Stack":"/2026/06/27/Expression-Evaluation-With-Stack/","External-Storage":"/2026/07/03/External-Storage/","Facade":"/2025/10/25/Facade/","File-System":"/2026/07/03/File-System/","File-Transfer-Protocol":"/2026/07/10/File-Transfer-Protocol/","Flow-Control":"/2026/07/07/Flow-Control/","Floating-Point-Numbers":"/2026/06/30/Floating-Point-Numbers/","File":"/2026/07/03/File/","Flyweight":"/2025/10/31/Flyweight/","Function-Calls-And-Stack-Frames":"/2026/07/02/Function-Calls-And-Stack-Frames/","From-Perceptron-To-MLP":"/2026/10/26/From-Perceptron-To-MLP/","Function-Limits-And-Continuity":"/2026/07/18/Function-Limits-And-Continuity/","Geometric-Properties-Of-Functions":"/2026/07/20/Geometric-Properties-Of-Functions/","Git-Commands":"/2026/06/24/Git-Commands/","Graph-Basic-Operations":"/2026/06/28/Graph-Basic-Operations/","Gradient-Descent":"/2026/10/08/Gradient-Descent/","Go-Environment-Management":"/2026/09/15/Go-Environment-Management/","Graph-Connectivity-And-Components":"/2026/06/28/Graph-Connectivity-And-Components/","Graph-Definition":"/2026/06/28/Graph-Definition/","Graph-Degree":"/2026/06/28/Graph-Degree/","Graph-Path-And-Distance":"/2026/06/28/Graph-Path-And-Distance/","Graph-Relation-Concepts-Table":"/2026/06/28/Graph-Relation-Concepts-Table/","Graph-Subgraph":"/2026/06/28/Graph-Subgraph/","Graph-Traversal":"/2026/06/28/Graph-Traversal/","HTTP":"/2026/09/15/HTTP/","Graphs-Of-Functions":"/2026/07/26/Graphs-Of-Functions/","Hardwired-Control-Unit":"/2026/07/02/Hardwired-Control-Unit/","Hash-Table":"/2026/06/29/Hash-Table/","Higher-Order-Derivatives":"/2026/07/18/Higher-Order-Derivatives/","How-To-Calculate-Integrals":"/2026/08/09/How-To-Calculate-Integrals/","How-To-Calculate-SCC":"/2026/06/28/How-To-Calculate-SCC/","How-To-Read-A-Paper":"/2026/10/22/How-To-Read-A-Paper/","How-To-Calculate-Determinants":"/2026/08/30/How-To-Calculate-Determinants/","How-To-Read-Code-In-A-Complex-Project":"/2026/10/25/How-To-Read-Code-In-A-Complex-Project/","Huffman-Tree":"/2026/06/27/Huffman-Tree/","Hungarian-Algorithm":"/2026/06/24/Hungarian-Algorithm/","ICMP":"/2026/07/08/ICMP/","IO-API":"/2026/08/13/IO-API/","IO-Control-Methods":"/2026/07/03/IO-Control-Methods/","IO-Software-Hierarchy":"/2026/07/03/IO-Software-Hierarchy/","IO-Device-And-Controllers":"/2026/07/03/IO-Device-And-Controllers/","IP-Forwarding":"/2026/07/08/IP-Forwarding/","IPC":"/2026/07/04/IPC/","IPv4-Datagram":"/2026/07/08/IPv4-Datagram/","IPv4-Addressing":"/2026/07/08/IPv4-Addressing/","IP-Multicast":"/2026/07/08/IP-Multicast/","IPv6":"/2026/07/08/IPv6/","Improper-Integral":"/2026/07/26/Improper-Integral/","Implementation-Of-Memory-With-RAM":"/2026/06/30/Implementation-Of-Memory-With-RAM/","Infinite-Series":"/2026/08/25/Infinite-Series/","Generating-Functions":"/2026/08/25/Infinite-Series/","Insertion-Sorts":"/2026/06/29/Insertion-Sorts/","Instruction-Cycle":"/2026/07/10/Instruction-Cycle/","Instruction-System-Basics":"/2026/07/02/Instruction-System-Basics/","Inverse-Matrix":"/2026/09/07/Inverse-Matrix/","Integer-Multiplication-And-Division":"/2026/06/30/Integer-Multiplication-And-Division/","Iterator":"/2025/11/08/Iterator/","Instruction-Addressing-Modes":"/2026/07/02/Instruction-Addressing-Modes/","JWT":"/2025/11/14/JWT/","JavaScript":"/2026/06/26/JavaScript/","K-Way-Merge":"/2026/06/29/K-Way-Merge/","KMP":"/2026/06/27/KMP/","LAN":"/2026/08/05/LAN/","Josephus-Problem":"/2026/09/15/Josephus-Problem/","LSTM-And-GRU":"/2026/10/27/LSTM-And-GRU/","LCA":"/2026/06/24/LCA/","Learning-Rate-Schedule":"/2026/11/22/Learning-Rate-Schedule/","Linear-List-Definition-And-Operations":"/2026/06/27/Linear-List-Definition-And-Operations/","Linear-Regression":"/2026/10/08/Linear-Regression/","Linear-Space":"/2026/09/06/Linear-Space/","Linearity-Structural-Search":"/2026/06/28/Linearity-Structural-Search/","Linked-Queue":"/2026/06/27/Linked-Queue/","Linked-Stack":"/2026/06/27/Linked-Stack/","Logical-Structure-Types":"/2026/06/27/Logical-Structure-Types/","Logistic-Regression":"/2026/10/09/Logistic-Regression/","Machine-Learning-Overview":"/2026/10/05/Machine-Learning-Overview/","Matrix-Square-Roots":"/2026/09/02/Matrix-Square-Roots/","Mean-Value-Theorem":"/2026/07/26/Mean-Value-Theorem/","Maximum-Common-Elements":"/2026/09/15/Maximum-Common-Elements/","Media-Access-Control":"/2026/07/07/Media-Access-Control/","Memento":"/2025/11/14/Memento/","Mediator":"/2025/11/14/Mediator/","Memory-System-Overview":"/2026/06/30/Memory-System-Overview/","Memory-Management-Overview":"/2026/07/01/Memory-Management-Overview/","Microprogrammed-Control-Unit":"/2026/07/02/Microprogrammed-Control-Unit/","Minimum-Spanning-Tree":"/2026/06/28/Minimum-Spanning-Tree/","Merge-Sort":"/2026/06/29/Merge-Sort/","Mobile-IP":"/2026/07/08/Mobile-IP/","Model-Evaluation":"/2026/10/09/Model-Evaluation/","Monitor":"/2026/07/06/Monitor/","Monotonic-Stack":"/2025/07/21/Monotonic-Stack/","Multi-Head-Attention":"/2026/11/10/Multi-Head-Attention/","Multiplexing-Technologies":"/2026/07/07/Multiplexing-Technologies/","Multiprocessor-Scheduling":"/2026/07/04/Multiprocessor-Scheduling/","Multivariable-Differentiation":"/2026/08/18/Multivariable-Differentiation/","Multivariable-Function-Property-Relations":"/2026/08/09/Multivariable-Function-Property-Relations/","Naive-Pattern-Matching":"/2026/06/27/Naive-Pattern-Matching/","Natural-Language-Processing":"/2026/10/27/Natural-Language-Processing/","Network-Congestion-Control":"/2026/07/08/Network-Congestion-Control/","Network-Layer-Services":"/2026/07/08/Network-Layer-Services/","Network-Performance-Metrics":"/2026/07/10/Network-Performance-Metrics/","Network-Protocols-Services":"/2026/07/06/Network-Protocols-Services/","Network-Layered-Architecture":"/2026/07/06/Network-Layered-Architecture/","Network-Switching":"/2026/07/10/Network-Switching/","Nginx":"/2025/11/29/Nginx/","Norm":"/2026/10/26/Norm/","Number-In-C":"/2026/07/24/Number-In-C/","Number-In-Machine":"/2026/07/24/Number-In-Machine/","Number-System":"/2026/06/30/Number-System/","OS-Boot":"/2026/07/10/OS-Boot/","OS-Characteristics":"/2026/07/17/OS-Characteristics/","OS-Kernel":"/2026/07/10/OS-Kernel/","OS-Overview":"/2026/07/10/OS-Overview/","Observer":"/2025/11/14/Observer/","OS-VMM":"/2026/07/10/OS-VMM/","On-AI-And-Learning":"/2026/10/25/On-AI-And-Learning/","Orthogonal-List-And-Adjacency-Multilist":"/2026/06/28/Orthogonal-List-And-Adjacency-Multilist/","PPP":"/2026/07/07/PPP/","Output-Sequences":"/2026/06/27/Output-Sequences/","Page-Replacement-Algorithms":"/2026/07/02/Page-Replacement-Algorithms/","Paging-And-Segmentation":"/2026/07/01/Paging-And-Segmentation/","Parentheses-Matching":"/2026/06/27/Parentheses-Matching/","Physical-Layer-Basic-Concepts":"/2026/07/07/Physical-Layer-Basic-Concepts/","Physical-Layer-Transmission-Media":"/2026/07/07/Physical-Layer-Transmission-Media/","Physical-Layer-Transmission-Modes":"/2026/07/07/Physical-Layer-Transmission-Modes/","Position-Encoding":"/2026/11/09/Position-Encoding/","Prefix-Sum":"/2026/06/24/Prefix-Sum/","Probability":"/2026/09/05/Probability/","Process-Address-Space":"/2026/07/24/Process-Address-Space/","Private-Networks":"/2026/07/08/Private-Networks/","Process-Synchronization-And-Mutual-Exclusion":"/2026/07/06/Process-Synchronization-And-Mutual-Exclusion/","Producer-Consumer-Problem":"/2026/07/06/Producer-Consumer-Problem/","Process":"/2026/07/04/Process/","Prototype":"/2025/10/17/Prototype/","Proxy":"/2025/10/31/Proxy/","Process-Scheduling":"/2026/07/04/Process-Scheduling/","Python-Environment-Management":"/2026/09/15/Python-Environment-Management/","Queue-Applications":"/2026/06/27/Queue-Applications/","Radix-Sort":"/2026/06/29/Radix-Sort/","Queue-Definition-And-Operations":"/2026/06/27/Queue-Definition-And-Operations/","Readers-Writers-Problem":"/2026/07/06/Readers-Writers-Problem/","Rank":"/2026/09/03/Rank/","Realtime-Web-Communication":"/2026/09/15/Realtime-Web-Communication/","Recurrent-Neural-Networks":"/2026/10/27/Recurrent-Neural-Networks/","Recursion":"/2026/06/27/Recursion/","Recursion-To-Loop-With-Stack":"/2026/04/15/Recursion-To-Loop-With-Stack/","Regret-Heap":"/2025/09/26/Regret-Heap/","Regularization":"/2026/11/22/Regularization/","Remote-File-Transfer":"/2026/06/24/Remote-File-Transfer/","Replacement-Selection-Sort":"/2026/06/29/Replacement-Selection-Sort/","Optimal-Merge-Tree":"/2026/06/29/Replacement-Selection-Sort/","Reliable-Transmission":"/2026/07/07/Reliable-Transmission/","Residual-Networks":"/2026/10/27/Residual-Networks/","Reverse-Linked-List":"/2025/09/26/Reverse-Linked-List/","Router-Architecture":"/2026/07/08/Router-Architecture/","Routing-Algorithms-And-Protocols":"/2026/07/08/Routing-Algorithms-And-Protocols/","SSD-And-Flash-Storage":"/2026/07/03/SSD-And-Flash-Storage/","SSH":"/2026/06/24/SSH/","Scheduling-Algorithms":"/2026/07/04/Scheduling-Algorithms/","Search-Definition":"/2026/06/28/Search-Definition/","Selection-Sorts":"/2026/06/29/Selection-Sorts/","Semaphores":"/2026/07/06/Semaphores/","Sequence-Limits":"/2026/07/18/Sequence-Limits/","Sequential-List-Insert-Delete":"/2026/06/27/Sequential-List-Insert-Delete/","Sequential-List-Search":"/2026/06/27/Sequential-List-Search/","Sequential-List-Storage":"/2026/06/27/Sequential-List-Storage/","Sequential-List-VS-Linked-List":"/2026/06/27/Sequential-List-VS-Linked-List/","Sequential-Stack":"/2026/06/27/Sequential-Stack/","Shared-Stack":"/2026/06/27/Shared-Stack/","Shortest-Path-Algorithms":"/2026/06/28/Shortest-Path-Algorithms/","Sieve-Of-Eratosthenes":"/2025/08/24/Sieve-Of-Eratosthenes/","Signal":"/2026/07/04/Signal/","Simple-Graph-And-Multigraph":"/2026/06/28/Simple-Graph-And-Multigraph/","Single-Variable-Differentiation":"/2026/07/18/Single-Variable-Differentiation/","Singleton":"/2025/08/24/Singleton/","Singly-Linked-List-Definition":"/2026/06/27/Singly-Linked-List-Definition/","Singly-Linked-List-Insert-Delete":"/2026/06/27/Singly-Linked-List-Insert-Delete/","Singly-Linked-List-Search-And-Build":"/2026/06/27/Singly-Linked-List-Search-And-Build/","Slider-Window":"/2025/10/12/Slider-Window/","Sliding-Window":"/2026/07/07/Sliding-Window/","Sorting":"/2026/06/29/Sorting/","External-Sorting":"/2026/06/29/Sorting/","Software-Defined-Networking":"/2026/07/08/Software-Defined-Networking/","Space-Complexity":"/2026/06/27/Space-Complexity/","Spanning-Tree":"/2026/06/28/Spanning-Tree/","Sparse-And-Dense-Graph":"/2026/06/28/Sparse-And-Dense-Graph/","State":"/2025/11/22/State/","Stack-Definition-And-Operations":"/2026/06/27/Stack-Definition-And-Operations/","Static-Linked-List":"/2026/06/27/Static-Linked-List/","Statistics":"/2026/09/05/Statistics/","Storage-Structure-Types":"/2026/06/27/Storage-Structure-Types/","Strategy":"/2025/11/22/Strategy/","String-Storage":"/2026/06/27/String-Storage/","String-Definition-And-Operations":"/2026/06/27/String-Definition-And-Operations/","Subsequence-Check":"/2025/09/26/Subsequence-Check/","TCP-Connection-Management":"/2026/07/09/TCP-Connection-Management/","System-Call":"/2026/07/10/System-Call/","TCP-Congestion-Control":"/2026/07/09/TCP-Congestion-Control/","TCP-Flow-Control":"/2026/07/09/TCP-Flow-Control/","TCP-Segment":"/2026/07/09/TCP-Segment/","Tarjan-Algorithm":"/2026/06/24/Tarjan-Algorithm/","TCP-Reliable-Transmission":"/2026/07/09/TCP-Reliable-Transmission/","Template":"/2025/11/22/Template/","Threaded-Binary-Tree":"/2026/06/27/Threaded-Binary-Tree/","Thread":"/2026/07/04/Thread/","Time-Complexity":"/2026/06/27/Time-Complexity/","Topological-Sorting":"/2026/06/28/Topological-Sorting/","Transformer-Architecture":"/2026/11/10/Transformer-Architecture/","Transport-Layer":"/2026/07/09/Transport-Layer/","Tree-As-Graph-Special-Form":"/2026/06/28/Tree-As-Graph-Special-Form/","Transformer-Variants":"/2026/11/11/Transformer-Variants/","Tree-Forest-And-Binary-Tree-Conversion":"/2026/06/27/Tree-Forest-And-Binary-Tree-Conversion/","Tree-Basic-Concepts":"/2026/06/27/Tree-Basic-Concepts/","Trie":"/2025/08/24/Trie/","UDP-Datagram":"/2026/07/09/UDP-Datagram/","Undirected-And-Directed-Graph":"/2026/06/28/Undirected-And-Directed-Graph/","Union-Find":"/2026/06/27/Union-Find/","Unsupervised-Learning":"/2026/10/10/Unsupervised-Learning/","VLAN":"/2026/07/07/VLAN/","Virtual-Memory-And-Demand-Paging":"/2026/07/01/Virtual-Memory-And-Demand-Paging/","Visitor":"/2025/11/29/Visitor/","WLAN":"/2026/07/07/WLAN/","Weight-Initialization-And-Variance":"/2026/10/26/Weight-Initialization-And-Variance/","Weighted-Graph":"/2026/06/28/Weighted-Graph/","Word-Embeddings":"/2026/10/27/Word-Embeddings/","factory-method-abstract-factory":"/2025/10/03/factory-method-abstract-factory/","Factory-Method-Abstract-Factory":"/2025/10/03/factory-method-abstract-factory/","World-Wide-Web":"/2026/09/15/World-Wide-Web/","mmap":"/2026/07/02/mmap/","vLLM":"/2026/10/25/vLLM/","x86-Assembly-Basics":"/2026/07/02/x86-Assembly-Basics/"};(function(){window.addEventListener('message',function(e){var d=e.data;if(!d||d.type!=='local-html-card-open'||typeof d.file!=='string')return;var links=window.__LOCAL_HTML_CARD_LINKS__||{};var url=links[d.file];if(!url)return;if(d.heading)url+='#'+encodeURIComponent(d.heading);window.location.href=url;});})();</script></body></html>
